@@ -396,7 +396,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		message = fmt.Sprintf("Unable to identify if the backend is deleted or not; %v", err)
 		phase = tridentv1.PhaseUnknown
 
-		Logx(ctx).WithFields(logFields).Errorf(message)
+		Logx(ctx).WithFields(logFields).Error(message)
 		err = fmt.Errorf("unable to identify if the backend '%v' is deleted or not; %v",
 			backendConfig.Status.BackendInfo.BackendName, err)
 	} else if backend == nil {
@@ -420,7 +420,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		message = "Backend is in a deleting state, cannot proceed with the TridentBackendConfig deletion. "
 		phase = tridentv1.PhaseDeleting
 
-		Logx(ctx).WithFields(logFields).Errorf(message + "Re-adding this work item back to the queue.")
+		Logx(ctx).WithFields(logFields).Error(message + "Re-adding this work item back to the queue.")
 		err = fmt.Errorf("backend is in a deleting state, cannot proceed with the TridentBackendConfig deletion")
 	} else {
 		Logx(ctx).WithFields(logFields).Trace("Backend is present and not in a deleting state, " +
@@ -435,7 +435,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 
 			if !errors.IsNotFoundError(err) {
 				message = fmt.Sprintf("Unable to delete backend; %v", err)
-				Logx(ctx).WithFields(logFields).Errorf(message)
+				Logx(ctx).WithFields(logFields).Error(message)
 			} else {
 				// In the next reconcile loop the above condition `backend == nil` should be true if backend
 				// is not present in-memory as well as the tbe CR
@@ -492,7 +492,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 		message = fmt.Sprintf("Unable to identify if the backend exists or not; %v", err)
 		phase = tridentv1.PhaseUnknown
 
-		Logx(ctx).WithFields(logFields).Errorf(message)
+		Logx(ctx).WithFields(logFields).Error(message)
 		err = fmt.Errorf("unable to identify if the backend '%v' exists or not; %v",
 			backendConfig.Status.BackendInfo.BackendName, err)
 	} else if backend == nil {
@@ -515,7 +515,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 
 			if !errors.IsNotFoundError(err) {
 				message = fmt.Sprintf("Failed to remove configRef from the backend; %v", err)
-				Logx(ctx).WithFields(logFields).Errorf(message)
+				Logx(ctx).WithFields(logFields).Error(message)
 			} else {
 				// In the next reconcile loop the above condition `backend == nil` should be true if backend
 				// is not present in-memory as well as the tbe CR

@@ -164,7 +164,7 @@ func (c *Controller) processNextWorkItem() bool {
 					workItem.ResourceType, workItem.Key, err.Error())
 
 				c.workqueue.Forget(workItem)
-				Log().Errorf(errMessage)
+				Log().Error(errMessage)
 				return errors.New(errMessage)
 			} else if errors.IsReconcileIncompleteError(err) {
 				c.workqueue.Add(workItem)
@@ -174,7 +174,7 @@ func (c *Controller) processNextWorkItem() bool {
 
 			errMessage := fmt.Sprintf("error syncing '%s/%s': %s, requeuing",
 				workItem.ResourceType, workItem.Key, err.Error())
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			return errors.New(errMessage)
 		}
 

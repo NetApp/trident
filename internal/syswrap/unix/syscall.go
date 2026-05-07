@@ -22,6 +22,5 @@ func Exists(args []string) (interface{}, error) {
 		return nil, fmt.Errorf("expected 1 argument")
 	}
 	_, err := os.Stat(args[0])
-	exists := err == nil
-	return &exists, err
+	return new(err == nil), err
 }

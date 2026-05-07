@@ -30,16 +30,19 @@ func TestToTitle(t *testing.T) {
 
 func TestToPtr(t *testing.T) {
 	i := 42
-	pi := ToPtr(i)
+	pi := new(i)
 	assert.Equal(t, i, *pi)
+	assert.Equal(t, i, *ToPtr(i))
 
 	s := "test"
-	ps := ToPtr(s)
+	ps := new(s)
 	assert.Equal(t, s, *ps)
+	assert.Equal(t, s, *ToPtr(s))
 
 	a := [2]int{1, 2}
-	pa := ToPtr(a)
+	pa := new(a)
 	assert.Equal(t, a, *pa)
+	assert.Equal(t, a, *ToPtr(a))
 }
 
 func TestToVal(t *testing.T) {
@@ -48,20 +51,20 @@ func TestToVal(t *testing.T) {
 	}{
 		"int": {
 			test: func(t *testing.T) {
-				actual := ToVal(ToPtr(123))
+				actual := ToVal(new(123))
 				assert.Equal(t, 123, actual)
 			},
 		},
 		"string": {
 			test: func(t *testing.T) {
-				actual := ToVal(ToPtr("test string"))
+				actual := ToVal(new("test string"))
 				assert.Equal(t, "test string", actual)
 			},
 		},
 		"struct": {
 			test: func(t *testing.T) {
 				type s struct{ A int }
-				actual := ToVal(ToPtr(s{A: 10}))
+				actual := ToVal(new(s{A: 10}))
 				assert.EqualValues(t, s{A: 10}, actual)
 			},
 		},
@@ -69,7 +72,7 @@ func TestToVal(t *testing.T) {
 			test: func(t *testing.T) {
 				type s struct{ A int }
 				sStr := s{A: 20}
-				sPtr := ToPtr(&sStr)
+				sPtr := new(&sStr)
 				actual := ToVal(sPtr)
 				assert.EqualValues(t, &sStr, actual)
 			},

@@ -102,10 +102,8 @@ func TestVolumeList(t *testing.T) {
 
 				setupVolumeListMockForMultiple([]string{testVolume1, testVolume2})
 
-				volume1 := createTestVolume(testVolume1, testSize1GB)
-				volume2 := createTestVolumeWithBackend(testVolume2, testSize2GB, testBackendUUID2)
-				setupVolumeGetMock(testVolume1, &volume1)
-				setupVolumeGetMock(testVolume2, &volume2)
+				setupVolumeGetMock(testVolume1, new(createTestVolume(testVolume1, testSize1GB)))
+				setupVolumeGetMock(testVolume2, new(createTestVolumeWithBackend(testVolume2, testSize2GB, testBackendUUID2)))
 
 				return func() { httpmock.DeactivateAndReset() }
 			},
@@ -117,10 +115,8 @@ func TestVolumeList(t *testing.T) {
 			setupMocks: func() func() {
 				httpmock.Activate()
 
-				volume1 := createTestVolume(testVolume1, testSize1GB)
-				volume2 := createTestVolumeWithBackend(testVolume2, testSize2GB, testBackendUUID2)
-				setupVolumeGetMock(testVolume1, &volume1)
-				setupVolumeGetMock(testVolume2, &volume2)
+				setupVolumeGetMock(testVolume1, new(createTestVolume(testVolume1, testSize1GB)))
+				setupVolumeGetMock(testVolume2, new(createTestVolumeWithBackend(testVolume2, testSize2GB, testBackendUUID2)))
 
 				return func() { httpmock.DeactivateAndReset() }
 			},
@@ -158,8 +154,7 @@ func TestVolumeList(t *testing.T) {
 
 				setupVolumeListMockForMultiple([]string{testVolume1, testVolume2})
 
-				volume1 := createTestVolume(testVolume1, testSize1GB)
-				setupVolumeGetMock(testVolume1, &volume1)
+				setupVolumeGetMock(testVolume1, new(createTestVolume(testVolume1, testSize1GB)))
 				setupErrorMock(BaseURL()+urlVolume+"/"+testVolume2, 404, msgNotFound)
 
 				return func() { httpmock.DeactivateAndReset() }
@@ -185,11 +180,9 @@ func TestVolumeList(t *testing.T) {
 			setupMocks: func() func() {
 				httpmock.Activate()
 
-				volume1 := createTestVolume(testVolume1, testSize1GB)
-				setupVolumeGetMock(testVolume1, &volume1)
+				setupVolumeGetMock(testVolume1, new(createTestVolume(testVolume1, testSize1GB)))
 
-				backend := createTestBackend(testBackendName1, testBackendUUID1)
-				setupBackendGetMock(testBackendUUID1, &backend)
+				setupBackendGetMock(testBackendUUID1, new(createTestBackend(testBackendName1, testBackendUUID1)))
 
 				return func() { httpmock.DeactivateAndReset() }
 			},

@@ -103,8 +103,7 @@ func TestIncomingAPITelemeter_Duration_Failure(t *testing.T) {
 
 	rec := IncomingAPITelemeter(client, method)(context.Background())
 
-	err := fmt.Errorf("request failed")
-	rec(&err)
+	rec(new(fmt.Errorf("request failed")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusFailure, client, method),
@@ -121,8 +120,7 @@ func TestIncomingAPITelemeter_Duration_Canceled(t *testing.T) {
 
 	// resolveStatus derives "canceled" from ctx.Err(), not from the error value.
 	// Any non-nil error causes it to fall through to the ctx.Err() check.
-	err := fmt.Errorf("transport: read on canceled context")
-	rec(&err)
+	rec(new(fmt.Errorf("transport: read on canceled context")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusCanceled, client, method),
@@ -156,8 +154,7 @@ func TestIncomingAPITelemeter_Duration_DeadlineExceeded(t *testing.T) {
 	rec := IncomingAPITelemeter(client, method)(ctx)
 
 	// resolveStatus derives "deadline_exceeded" from ctx.Err(), not from the error value.
-	err := fmt.Errorf("transport: read on expired context")
-	rec(&err)
+	rec(new(fmt.Errorf("transport: read on expired context")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusDeadlineExceeded, client, method),
@@ -225,8 +222,7 @@ func TestOutgoingAPITelemeter_Duration_Failure(t *testing.T) {
 
 	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-	err := fmt.Errorf("backend unavailable")
-	rec(&err)
+	rec(new(fmt.Errorf("backend unavailable")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusFailure, target, address, method),
@@ -242,8 +238,7 @@ func TestOutgoingAPITelemeter_Duration_Canceled(t *testing.T) {
 	cancel()
 
 	// resolveStatus derives "canceled" from ctx.Err(), not from the error value.
-	err := fmt.Errorf("transport: read on canceled context")
-	rec(&err)
+	rec(new(fmt.Errorf("transport: read on canceled context")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusCanceled, target, address, method),
@@ -274,8 +269,7 @@ func TestOutgoingAPITelemeter_Duration_DeadlineExceeded(t *testing.T) {
 	rec := OutgoingAPITelemeter(target, address, method)(ctx)
 
 	// resolveStatus derives "deadline_exceeded" from ctx.Err(), not from the error value.
-	err := fmt.Errorf("transport: read on expired context")
-	rec(&err)
+	rec(new(fmt.Errorf("transport: read on expired context")))
 
 	assert.Equal(t, uint64(1),
 		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusDeadlineExceeded, target, address, method),
@@ -319,8 +313,7 @@ func TestOutgoingAPITelemeter_RetryTotal_NoIncrementOnOrdinaryError(t *testing.T
 
 	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-	err := fmt.Errorf("ordinary error, not retryable")
-	rec(&err)
+	rec(new(fmt.Errorf("ordinary error, not retryable")))
 
 	assert.Equal(t, float64(0),
 		readCounter(outgoingAPIRequestRetryTotal, target, address, method),
@@ -335,8 +328,7 @@ func TestOutgoingAPITelemeter_Backpressure_IncrementOnServerBackPressure(t *test
 
 	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-	err := tridentErrors.ServerBackPressureError("received status: 429 from server")
-	rec(&err)
+	rec(new(tridentErrors.ServerBackPressureError("received status: 429 from server")))
 
 	assert.Equal(t, float64(1),
 		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
@@ -351,8 +343,7 @@ func TestOutgoingAPITelemeter_Backpressure_IncrementOnWrappedServerBackPressure(
 
 	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-	err := tridentErrors.WrapWithServerBackPressureError(fmt.Errorf("EOF"), "received EOF from server")
-	rec(&err)
+	rec(new(tridentErrors.WrapWithServerBackPressureError(fmt.Errorf("EOF"), "received EOF from server")))
 
 	assert.Equal(t, float64(1),
 		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
@@ -379,8 +370,7 @@ func TestOutgoingAPITelemeter_Backpressure_NoIncrementOnOrdinaryError(t *testing
 
 	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-	err := fmt.Errorf("ordinary error, not backpressure")
-	rec(&err)
+	rec(new(fmt.Errorf("ordinary error, not backpressure")))
 
 	assert.Equal(t, float64(0),
 		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),

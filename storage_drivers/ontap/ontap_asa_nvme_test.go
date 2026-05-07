@@ -75,7 +75,7 @@ func newTestOntapASANVMeDriver(
 	config.Username = "ontap-asa-nvme-user"
 	config.Password = "password1!"
 	config.StorageDriverName = "ontap-san"
-	config.StoragePrefix = convert.ToPtr("test_")
+	config.StoragePrefix = new("test_")
 
 	asaNvmeDriver := &ASANVMeStorageDriver{}
 	asaNvmeDriver.Config = *config
@@ -188,7 +188,7 @@ func TestGetExternalConfigASANVMe(t *testing.T) {
 		SVM:           "svm0",
 		Username:      "admin",
 		Password:      "password",
-		UseREST:       convert.ToPtr(true),
+		UseREST:       new(true),
 	}
 	driver.Config = config
 	externalConfig := driver.GetExternalConfig(ctx)
@@ -210,7 +210,7 @@ func TestGetExternalConfigASANVMe(t *testing.T) {
 		ChapTargetInitiatorSecret: tridentconfig.REDACTED,
 		ChapTargetUsername:        tridentconfig.REDACTED,
 		ChapUsername:              tridentconfig.REDACTED,
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 
 	assert.Equal(t, expectedConfig, externalConfig, "The returned external configuration should match the expected configuration")
@@ -237,7 +237,7 @@ func TestStoreConfigASANVMe(t *testing.T) {
 		SVM:           "svm0",
 		Username:      "admin",
 		Password:      "password",
-		UseREST:       convert.ToPtr(true),
+		UseREST:       new(true),
 	}
 	driver.Config = config
 
@@ -257,7 +257,7 @@ func TestStoreConfigASANVMe(t *testing.T) {
 		SVM:           "svm0",
 		Username:      "admin",
 		Password:      "password",
-		UseREST:       convert.ToPtr(true),
+		UseREST:       new(true),
 	}
 
 	// Verify that the stored configuration matches the expected configuration
@@ -431,13 +431,13 @@ func TestInitializeASANVMe(t *testing.T) {
 			name: "d.validate returns an error and driverContext is CSI",
 			setupMocks: func() {
 				driver.initialized = false
-				driver.Config.StoragePrefix = convert.ToPtr("#test_")
+				driver.Config.StoragePrefix = new("#test_")
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
-				driver.Config.StoragePrefix = convert.ToPtr("test_")
+				driver.Config.StoragePrefix = new("test_")
 				assert.Error(t, err, "Expected error during initialization")
 				assert.False(t, driver.Initialized(), "Expected driver to be not initialized")
 			},
@@ -527,8 +527,7 @@ func TestValidateASANVMe(t *testing.T) {
 
 	// Initialize the driver and mock API
 	initializeDriver := func() {
-		storagePrefix := "trident_"
-		driver.Config.CommonStorageDriverConfig.StoragePrefix = &storagePrefix
+		driver.Config.CommonStorageDriverConfig.StoragePrefix = new("trident_")
 		driver.ips = []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
 		driver.Config.AutoExportPolicy = true
 		driver.Config.UseCHAP = true
@@ -558,8 +557,7 @@ func TestValidateASANVMe(t *testing.T) {
 		{
 			name: "ValidateStoragePrefix fails",
 			setupDriver: func(driver *ASANVMeStorageDriver) {
-				storagePrefix := "/s"
-				driver.Config.StoragePrefix = &storagePrefix
+				driver.Config.StoragePrefix = new("/s")
 			},
 			expectedError: true,
 		},
@@ -2534,7 +2532,7 @@ func TestGetUpdateTypeASANVMe(t *testing.T) {
 			name: "Storage prefix change",
 			driverOrig: func() storage.Driver {
 				_, drivOrig := newMockOntapASANVMeDriver(t)
-				drivOrig.Config.StoragePrefix = convert.ToPtr("oldPrefix")
+				drivOrig.Config.StoragePrefix = new("oldPrefix")
 				return drivOrig
 			}(),
 			expected: func() *roaring.Bitmap {
@@ -2576,7 +2574,7 @@ func TestGetVolumeExternalWrappersASANVMe(t *testing.T) {
 	}
 
 	mockAPI, driver := newMockOntapASANVMeDriver(t)
-	driver.Config.StoragePrefix = convert.ToPtr("prefix_")
+	driver.Config.StoragePrefix = new("prefix_")
 
 	tests := []testCase{
 		{
@@ -2850,8 +2848,7 @@ func TestCreatePrepareASANVMe_NilPool_TemplateNotContainVolumeName(t *testing.T)
 
 func TestCreateFollowupASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
-	volConfig := getASANVMeVolumeConfig()
-	err := driver.CreateFollowup(ctx, &volConfig)
+	err := driver.CreateFollowup(ctx, new(getASANVMeVolumeConfig()))
 	assert.NoError(t, err, "There shouldn't be any error")
 }
 
@@ -2880,7 +2877,7 @@ func TestGoStringASANVMe(t *testing.T) {
 		ChapTargetInitiatorSecret: "chapTargetInitiatorSecret",
 		ChapTargetUsername:        "chapTargetUsername",
 		ChapUsername:              "chapUsername",
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 
 	driver.Config = config
@@ -3030,8 +3027,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 
 func TestEnablePublishEnforcementASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
-	volConfig := getASANVMeVolumeConfig()
-	vol := storage.Volume{Config: &volConfig}
+	vol := storage.Volume{Config: new(getASANVMeVolumeConfig())}
 
 	driver.EnablePublishEnforcement(ctx, &vol)
 
@@ -3059,11 +3055,10 @@ func TestOntapASANVMeStorageDriver_Resize_Success(t *testing.T) {
 func TestOntapASANVMeStorageDriver_Resize_SizeMoreThanIntMax(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
-	volConfig := getASANVMeVolumeConfig()
 	var requestedSize uint64
 	requestedSize = math.MaxInt64 + 100
 
-	err := driver.Resize(ctx, &volConfig, requestedSize)
+	err := driver.Resize(ctx, new(getASANVMeVolumeConfig()), requestedSize)
 
 	assert.Error(t, err, "Expected error when resizing to size greater than int64 max")
 }
@@ -3071,13 +3066,12 @@ func TestOntapASANVMeStorageDriver_Resize_SizeMoreThanIntMax(t *testing.T) {
 func TestOntapASANVMeStorageDriver_Resize_InvalidCurrentSize(t *testing.T) {
 	mockAPI, driver := newMockOntapASANVMeDriver(t)
 
-	volConfig := getASANVMeVolumeConfig()
 	nsUUID := uuid.New()
 	ns := &api.NVMeNamespace{UUID: nsUUID.String(), Name: "trident-pvc-1234", Size: "invalid-size"}
 
 	mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, "trident-pvc-1234").Return(ns, nil)
 
-	err := driver.Resize(ctx, &volConfig, 1073741824) // 1GB
+	err := driver.Resize(ctx, new(getASANVMeVolumeConfig()), 1073741824) // 1GB
 
 	assert.Error(t, err, "Expected error when namespace current size is invalid")
 	assert.ErrorContains(t, err, "error while parsing ASA NVMe namespace size",
@@ -3087,13 +3081,12 @@ func TestOntapASANVMeStorageDriver_Resize_InvalidCurrentSize(t *testing.T) {
 func TestOntapASANVMeStorageDriver_Resize_LesserSizeThanCurrent(t *testing.T) {
 	mockAPI, driver := newMockOntapASANVMeDriver(t)
 
-	volConfig := getASANVMeVolumeConfig()
 	nsUUID := uuid.New()
 	ns := &api.NVMeNamespace{UUID: nsUUID.String(), Name: "trident-pvc-1234", Size: "2147483648"}
 
 	mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, "trident-pvc-1234").Return(ns, nil)
 
-	err := driver.Resize(ctx, &volConfig, 1073741824) // 1GB
+	err := driver.Resize(ctx, new(getASANVMeVolumeConfig()), 1073741824) // 1GB
 
 	assert.Error(t, err, "Expected error when resizing to lesser size than current")
 }

@@ -224,8 +224,8 @@ func TestImages_WriteImageTable_Markdown(t *testing.T) {
 	outputStr := string(output)
 
 	assert.Contains(t, outputStr, "|")
-	assert.Contains(t, outputStr, "KUBERNETES VERSION")
-	assert.Contains(t, outputStr, "CONTAINER IMAGE")
+	assert.Contains(t, outputStr, "Kubernetes Version")
+	assert.Contains(t, outputStr, "Container Image")
 }
 
 func TestImages_ListImages_ErrorConditions(t *testing.T) {

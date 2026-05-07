@@ -130,15 +130,15 @@ func WriteStorageClasses(storageClasses []api.StorageClass) {
 
 func writeStorageClassTable(storageClasses []api.StorageClass) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
+	table.Header([]string{"Name"})
 
 	for _, sc := range storageClasses {
-		table.Append([]string{
+		_ = table.Append([]string{
 			sc.Config.Name,
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeStorageClassNames(storageClasses []api.StorageClass) {

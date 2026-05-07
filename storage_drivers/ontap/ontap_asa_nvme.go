@@ -591,7 +591,7 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 		err = d.API.NVMeNamespaceRename(ctx, nsInfo.UUID, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
-				"Could not import ASA NVMe namespace, rename of ASA NVMe namespace failed: %w.", err)
+				"Could not import ASA NVMe namespace, rename of ASA NVMe namespace failed: %v.", err)
 			return fmt.Errorf("ASA NVMe namespace %s rename failed: %w", originalName, err)
 		}
 	}
@@ -659,7 +659,7 @@ func (d *ASANVMeStorageDriver) createNSCommentBasedOnSourceNS(
 		if err != nil {
 			// Existing comment seems not to be set by Trident. Ignore it.
 			Logc(ctx).WithFields(commentFields).Warnf(
-				"Failed to parse ASA NVMe namespace comment; it doesn't seem to be set by Trident, thus ignoring it: %w.", err)
+				"Failed to parse ASA NVMe namespace comment; it doesn't seem to be set by Trident, thus ignoring it: %v.", err)
 			return "", nil
 		} else {
 			// Existing comment is set by Trident. Check if we can overwrite the labels.
@@ -889,7 +889,7 @@ func (d *ASANVMeStorageDriver) Publish(
 
 		if perVolumeSS != nil {
 			ssName = perVolumeSSName
-			Logc(ctx).Info("Using existing per-volume subsystem for volume %v", name)
+			Logc(ctx).Infof("Using existing per-volume subsystem for volume %v", name)
 		}
 
 		if ssName == "" {
@@ -897,7 +897,7 @@ func (d *ASANVMeStorageDriver) Publish(
 			if err != nil {
 				return fmt.Errorf("failed to get SuperSubsystem for volume %v: %w", name, err)
 			}
-			Logc(ctx).WithField("superSubsystem", ssName).Info("Using SuperSubsystem for volume %v", ssName)
+			Logc(ctx).WithField("superSubsystem", ssName).Infof("Using SuperSubsystem for volume %v", name)
 		}
 		completeSSName = ssName
 	} else {
@@ -920,7 +920,7 @@ func (d *ASANVMeStorageDriver) Publish(
 	// Checks if subsystem exists and creates a new one if not
 	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName, completeSSName)
 	if err != nil {
-		Logc(ctx).Errorf("subsystem create failed, %w", err)
+		Logc(ctx).WithError(err).Error("subsystem create failed")
 		return err
 	}
 
@@ -939,7 +939,7 @@ func (d *ASANVMeStorageDriver) Publish(
 
 	// Add HostNQN to the subsystem using api call
 	if err := d.API.NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID); err != nil {
-		Logc(ctx).Errorf("Add host to subsystem failed; %w.", err)
+		Logc(ctx).WithError(err).Error("add host to subsystem failed")
 		return err
 	}
 
@@ -1385,7 +1385,7 @@ func (d *ASANVMeStorageDriver) Resize(
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	if requestedSizeBytes > math.MaxInt64 {
-		Logc(ctx).WithFields(fields).Error(
+		Logc(ctx).WithFields(fields).Errorf(
 			"Invalid volume size. Requested size is more than maximum integer limit %v", math.MaxInt64)
 		return fmt.Errorf("invalid volume size")
 	}

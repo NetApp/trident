@@ -220,17 +220,17 @@ func WriteSnapshots(snapshots []storage.SnapshotExternal) {
 
 func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Volume", "Managed"})
+	table.Header([]string{"Name", "Volume", "Managed"})
 
 	for _, snapshot := range snapshots {
-		table.Append([]string{
+		_ = table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
 			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
@@ -244,10 +244,10 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		"Managed",
 		"GroupSnapshot",
 	}
-	table.SetHeader(header)
+	table.Header(header)
 
 	for _, snapshot := range snapshots {
-		table.Append([]string{
+		_ = table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
 			snapshot.Created,
@@ -258,7 +258,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeSnapshotIDs(snapshots []storage.SnapshotExternal) {

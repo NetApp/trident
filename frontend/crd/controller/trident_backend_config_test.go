@@ -606,8 +606,7 @@ func TestHandleTridentBackendConfig_LifecycleTests(t *testing.T) {
 
 		ctx := context.Background()
 		backendConfig := createTestBackendConfig("test-backend-config", "default")
-		now := metav1.Now()
-		backendConfig.DeletionTimestamp = &now // Mark for deletion
+		backendConfig.DeletionTimestamp = new(metav1.Now()) // Mark for deletion
 
 		// Create the backend config
 		_, err := controller.crdClientset.TridentV1().TridentBackendConfigs("default").Create(ctx, backendConfig, metav1.CreateOptions{})
@@ -788,8 +787,7 @@ func TestCheckAndHandleNewlyBoundCRDeletion_EdgeCases(t *testing.T) {
 		backendConfig.Status.Phase = string(tridentv1.PhaseUnbound)
 
 		// Mark for deletion
-		now := metav1.Now()
-		backendConfig.DeletionTimestamp = &now
+		backendConfig.DeletionTimestamp = new(metav1.Now())
 
 		// Create the backend config
 		_, err := controller.crdClientset.TridentV1().TridentBackendConfigs("default").Create(ctx, backendConfig, metav1.CreateOptions{})

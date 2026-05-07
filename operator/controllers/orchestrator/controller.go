@@ -299,7 +299,7 @@ func (c *Controller) processNextWorkItem() bool {
 
 				c.workqueue.Forget(keyItem)
 
-				Log().Errorf(errMessage)
+				Log().Error(errMessage)
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
@@ -311,7 +311,7 @@ func (c *Controller) processNextWorkItem() bool {
 			}
 
 			errMessage := fmt.Sprintf("error syncing '%s': %s, requeuing", keyItem.keyDetails, err.Error())
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			Log().Info("-------------------------------------------------")
 			Log().Info("-------------------------------------------------")
 

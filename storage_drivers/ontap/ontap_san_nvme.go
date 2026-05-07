@@ -1066,7 +1066,7 @@ func (d *NVMeStorageDriver) Publish(
 
 		if perVolumeSS != nil {
 			ssName = perVolumeSSName
-			Logc(ctx).Info("Using existing per-volume subsystem for volume %v", volConfig.InternalID)
+			Logc(ctx).Infof("Using existing per-volume subsystem for volume %v", volConfig.InternalID)
 		}
 
 		if ssName == "" {
@@ -1074,7 +1074,7 @@ func (d *NVMeStorageDriver) Publish(
 			if err != nil {
 				return fmt.Errorf("failed to get SuperSubsystem: %w", err)
 			}
-			Logc(ctx).WithField("superSubsystem", ssName).Info("Using SuperSubsystem for volume %v", ssName)
+			Logc(ctx).WithField("superSubsystem", ssName).Infof("Using SuperSubsystem for volume %v", name)
 		}
 
 	} else {
@@ -1120,7 +1120,7 @@ func (d *NVMeStorageDriver) Publish(
 
 	// Add HostNQN to the subsystem using api call
 	if err := d.API.NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID); err != nil {
-		Logc(ctx).Errorf("add host to subsystem failed, %v", err)
+		Logc(ctx).WithError(err).Error("add host to subsystem failed")
 		return err
 	}
 
@@ -1439,7 +1439,7 @@ func (d *NVMeStorageDriver) createOrGetSubsystem(
 	// This checks if subsystem exists and creates it if not.
 	ss, err := d.API.NVMeSubsystemCreate(ctx, ssName, comment)
 	if err != nil {
-		Logc(ctx).Errorf("subsystem create failed, %v", err)
+		Logc(ctx).WithError(err).Error("subsystem create failed")
 		return nil, err
 	}
 	return ss, nil

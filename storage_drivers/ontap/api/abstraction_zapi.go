@@ -759,8 +759,8 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		SerialNumber:   responseSerial,
 		State:          responseState,
 		VolumeName:     responseVolumeName,
-		SpaceReserved:  convert.ToPtr(responseSpaceReserved),
-		SpaceAllocated: convert.ToPtr(responseSpaceAllocated),
+		SpaceReserved:  new(responseSpaceReserved),
+		SpaceAllocated: new(responseSpaceAllocated),
 		CreateTime:     responseCreateTime,
 	}
 	return lunInfo, nil
@@ -1654,7 +1654,7 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 
 			aggrName := aggrSpace.Aggregate()
 			if aggregate != aggrName {
-				Logc(ctx).Debugf("Skipping " + aggrName)
+				Logc(ctx).Debugf("Skipping %s", aggrName)
 				continue
 			}
 
@@ -2048,7 +2048,7 @@ func (d OntapAPIZAPI) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 	listResponse, err := d.api.QtreeList(prefix, volumePrefix)
 	if err = azgo.GetError(ctx, listResponse, err); err != nil {
 		msg := fmt.Sprintf("Error listing qtrees. %v", err)
-		Logc(ctx).Errorf(msg)
+		Logc(ctx).Error(msg)
 		return nil, errors.New(msg)
 	}
 	qtrees := Qtrees{}

@@ -21,7 +21,6 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -35,8 +34,8 @@ var (
 	driverContextCSI     = tridentconfig.ContextCSI
 	driverContextDocker  = tridentconfig.ContextDocker
 	mockError            = errors.New("mock error")
-	invalidStoragePrefix = convert.ToPtr("$invalid$")
-	validStoragePrefix   = convert.ToPtr("trident")
+	invalidStoragePrefix = new("$invalid$")
+	validStoragePrefix   = new("trident")
 	nameMoreThan64char   = "foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo"
 	volInternalID        = "/svm/svm0_nas/flexvol/trident_qtree_pool_trident_GLVRJSQGLP/qtree/trident_pvc_92c02355"
 	flexvol              = "trident_qtree_pool_trident_GLVRJSQGLP"
@@ -335,8 +334,7 @@ func TestInitialize_WithInvalidConfigJson(t *testing.T) {
 	commonConfig, configJSON, secrets := getStructsForInitializeDriver()
 
 	// Modify configJSON to be of invalid format
-	invalidJson := strings.Replace(*configJSON, "{", "", -1)
-	configJSON = &invalidJson
+	configJSON = new(strings.Replace(*configJSON, "{", "", -1))
 
 	// Create mock driver
 	_, driver := newMockOntapNasQtreeDriver(t)
@@ -560,10 +558,14 @@ func getStructsForInitializeDriver() (*drivers.CommonStorageDriverConfig, *strin
 		BackendName:       "myOntapNasEcoBackend",
 		DriverContext:     driverContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("t-e-s-t"),
+		StoragePrefix:     new("t-e-s-t"),
 	}
 
-	configJSON := `
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+
+	return commonConfig, new(`
 	{
 		"version":           1,
 		"storageDriverName": "ontap-nas-economy",
@@ -573,13 +575,7 @@ func getStructsForInitializeDriver() (*drivers.CommonStorageDriverConfig, *strin
 		"username":          "dummyuser",
 		"password":          "dummypassword",
 		"qtreesPerFlexvol":  ""
-	}`
-
-	secrets := map[string]string{
-		"clientcertificate": "dummy-certificate",
-	}
-
-	return commonConfig, &configJSON, secrets
+	}`), secrets
 }
 
 func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
@@ -783,7 +779,7 @@ func TestCreateClone_Success_ROClone(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -877,7 +873,7 @@ func TestCreateClone_FailureNoVolInfo(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -913,7 +909,7 @@ func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(false),
+		SnapshotDir: new(false),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -1452,7 +1448,7 @@ func TestRestoreSnapshot_NotSupported(t *testing.T) {
 func TestGet_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
-	driver.Config.StoragePrefix = convert.ToPtr("test_")
+	driver.Config.StoragePrefix = new("test_")
 	driver.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s", "trident", *driver.Config.StoragePrefix)
 	volName := "vol1"
 	volNameInternal := "test_vol1"
@@ -1473,7 +1469,7 @@ func TestGet_Success(t *testing.T) {
 func TestGet_Success_InternalID(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
-	driver.Config.StoragePrefix = convert.ToPtr("test_")
+	driver.Config.StoragePrefix = new("test_")
 	driver.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s", "trident", *driver.Config.StoragePrefix)
 	volName := "vol1"
 	volNameInternal := "test_vol1"
@@ -1535,7 +1531,7 @@ func TestEnsureFlexvolForQtree_Success_EligibleFlexvolFound(t *testing.T) {
 	// Ensure flexvol for qtree
 	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		driverConfig, "", "")
 
 	assert.NoError(t, result, "Expected no error when eligible flexvol found, got error")
@@ -1568,7 +1564,7 @@ func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
 
 	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		driverConfig, "", "")
 
 	// Expect no error as new flexvol is created when no eligible flexvol found
@@ -1608,7 +1604,7 @@ func TestEnsureFlexvolForQtree_Success_NewFlexvolNotPermitted(t *testing.T) {
 
 	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		&driver.Config, "", "")
 
 	// Expect error as no new flexvol may be created
@@ -1625,7 +1621,7 @@ func TestEnsureFlexvolForQtree_WithInvalidConfig(t *testing.T) {
 
 	_, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		driverConfig, "", "")
 
 	assert.Error(t, result, "Expected error with invalid config, got nil")
@@ -1643,7 +1639,7 @@ func TestEnsureFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	_, result1 := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		driverConfig, "", "")
 
 	assert.Error(t, result1, "Expected error when api failed to list volumes, got nil")
@@ -1656,7 +1652,7 @@ func TestEnsureFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	_, result2 := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
-		"", false, convert.ToPtr(false), 0,
+		"", false, new(false), 0,
 		driverConfig, "", "")
 
 	assert.Error(t, result2, "Expected error when api failed to create volume, got nil")
@@ -1670,7 +1666,7 @@ func TestCreateFlexvolForQtree_Success_NasTypeNFS(t *testing.T) {
 
 	resultFlexvol, result := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snap-policy-1",
-		"", false, convert.ToPtr(false), "10", "export-policy-1",
+		"", false, new(false), "10", "export-policy-1",
 	)
 
 	assert.NoError(t, result, "Expected no error in create flexvol for qtree, got error")
@@ -1685,7 +1681,7 @@ func TestCreateFlexvolForQtree_Success_NasTypeSMB(t *testing.T) {
 
 	resultFlexvol, result := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snap-policy-1",
-		"", false, convert.ToPtr(false), "10", "export-policy-1",
+		"", false, new(false), "10", "export-policy-1",
 	)
 
 	assert.NoError(t, result, "Expected no error in create flexvol for qtree, got error")
@@ -1703,7 +1699,7 @@ func TestCreateFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 
 	resultFlexvol, result := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snap-policy-1",
-		"", false, convert.ToPtr(false), "invalid", "export-policy-1",
+		"", false, new(false), "invalid", "export-policy-1",
 	)
 
 	assert.Error(t, result, "Expected error when invalid snapshot reserve, got error")
@@ -1716,7 +1712,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(mockError)
 	resultFlexvol1, result1 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result1, "Expected error, got nil")
 	assert.Emptyf(t, resultFlexvol1, "Expected empty volume name, got non-empty")
@@ -1729,7 +1725,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol2, result2 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result2, "Expected error when api failed to disable snapshot directory, got nil")
 	assert.Emptyf(t, resultFlexvol2, "Expected empty volume name, got non-empty")
@@ -1742,7 +1738,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol3, result3 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result3, "Expected error when api failed to destroy volume, got nil")
 	assert.Emptyf(t, resultFlexvol3, "Expected empty volume name, got non-empty")
@@ -1756,7 +1752,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol4, result4 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result4, "Expected error when api failed to mount volume, got nil")
 	assert.Emptyf(t, resultFlexvol4, "Expected empty volume name, got non-empty")
@@ -1770,7 +1766,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol5, result5 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result5, "Expected error when api failed to destroy volume, got nil")
 	assert.Emptyf(t, resultFlexvol5, "Expected empty volume name, got non-empty")
@@ -1786,7 +1782,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol6, result6 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result6, "Expected error when api failed to add quota entry, got nil")
 	assert.Emptyf(t, resultFlexvol6, "Expected empty volume name, got non-empty")
@@ -1802,7 +1798,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	resultFlexvol7, result7 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", false, convert.ToPtr(false), "10", "export-policy-1")
+		"", false, new(false), "10", "export-policy-1")
 
 	assert.Error(t, result7, "Expected error when api failed to destroy volume, got nil")
 	assert.Emptyf(t, resultFlexvol7, "Expected empty volume name, got non-empty")
@@ -1826,12 +1822,12 @@ func TestFindFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
 
-	isEncrypt := convert.ToPtr(false)
+	isEncrypt := new(false)
 	volAttrs := &api.Volume{
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     convert.ToPtr(false),
+		SnapshotDir:     new(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1856,12 +1852,12 @@ func TestFindFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
 
-	isEncrypt := convert.ToPtr(false)
+	isEncrypt := new(false)
 	volAttrs := &api.Volume{
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     convert.ToPtr(false),
+		SnapshotDir:     new(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1895,12 +1891,12 @@ func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
 
-	isEncrypt := convert.ToPtr(false)
+	isEncrypt := new(false)
 	volAttrs := &api.Volume{
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     convert.ToPtr(false),
+		SnapshotDir:     new(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1937,12 +1933,12 @@ func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
 
-	isEncrypt := convert.ToPtr(false)
+	isEncrypt := new(false)
 	volAttrs := &api.Volume{
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     convert.ToPtr(false),
+		SnapshotDir:     new(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1980,7 +1976,7 @@ func TestFindFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 
 	_, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", "invalid", false, convert.ToPtr(false),
+		"", "invalid", false, new(false),
 		true, 1073741824, 10,
 	)
 
@@ -1997,7 +1993,7 @@ func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	lockedFlexvol1, result1 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", "10", false, convert.ToPtr(false),
+		"", "10", false, new(false),
 		false, 0, 0,
 	)
 
@@ -2012,7 +2008,7 @@ func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	lockedFlexvol2, result2 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
-		"", "10", false, convert.ToPtr(false),
+		"", "10", false, new(false),
 		false, 0, 0,
 	)
 
@@ -3309,7 +3305,7 @@ func TestConvertDiskLimitToBytes(t *testing.T) {
 func TestGetUpdateType_Success(t *testing.T) {
 	// Create and initialize old driver
 	_, oldDriver := newMockOntapNasQtreeDriver(t)
-	oldDriver.Config.StoragePrefix = convert.ToPtr("test_")
+	oldDriver.Config.StoragePrefix = new("test_")
 	oldDriver.Config.Username = "user1"
 	oldDriver.Config.Password = "password1"
 	oldDriver.Config.Credentials = map[string]string{
@@ -3319,7 +3315,7 @@ func TestGetUpdateType_Success(t *testing.T) {
 
 	// Create a new driver
 	_, newDriver := newMockOntapNasQtreeDriver(t)
-	newDriver.Config.StoragePrefix = convert.ToPtr("storage_")
+	newDriver.Config.StoragePrefix = new("storage_")
 	newDriver.Config.Username = "user2"
 	newDriver.Config.Password = "password2"
 	newDriver.Config.Credentials = map[string]string{

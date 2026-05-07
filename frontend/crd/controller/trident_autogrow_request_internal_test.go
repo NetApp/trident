@@ -411,13 +411,13 @@ func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T)
 		{
 			name:              "Completed with ProcessedAt set still deleted immediately",
 			phase:             TagriPhaseCompleted,
-			processedAtOffset: durationPtr(30 * time.Second),
+			processedAtOffset: new(30 * time.Second),
 			expectDeleted:     true,
 		},
 		{
 			name:              "Rejected with ProcessedAt set still requeued for timeout",
 			phase:             TagriPhaseRejected,
-			processedAtOffset: durationPtr(70 * time.Second),
+			processedAtOffset: new(70 * time.Second),
 			expectDeleted:     false,
 		},
 	}
@@ -434,8 +434,7 @@ func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T)
 			tagri := createTestTagri("test-tagri", "test-pv", "test-policy", tt.phase, 1)
 
 			if tt.processedAtOffset != nil {
-				processedAt := metav1.NewTime(time.Now().Add(-*tt.processedAtOffset))
-				tagri.Status.ProcessedAt = &processedAt
+				tagri.Status.ProcessedAt = new(metav1.NewTime(time.Now().Add(-*tt.processedAtOffset)))
 			}
 
 			created, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
@@ -2149,8 +2148,7 @@ func TestUpdateTagriStatus_DeletionTimestampSet(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
-	now := metav1.Now()
-	tagri.ObjectMeta.DeletionTimestamp = &now
+	tagri.ObjectMeta.DeletionTimestamp = new(metav1.Now())
 
 	result, err := controller.updateTagriStatus(context.Background(), tagri)
 	assert.NoError(t, err)
@@ -2441,8 +2439,7 @@ func TestIntegration_TerminalPhaseRetentionWorkflow(t *testing.T) {
 
 	// Completed TAGRIs are deleted immediately.
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseCompleted, 1)
-	processedAt := metav1.NewTime(time.Now().Add(-30 * time.Second))
-	tagri.Status.ProcessedAt = &processedAt
+	tagri.Status.ProcessedAt = new(metav1.NewTime(time.Now().Add(-30 * time.Second)))
 
 	created, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
 		context.Background(), tagri, metav1.CreateOptions{})
@@ -2921,8 +2918,7 @@ func TestHandleTridentAutogrowRequestInternal_EventUpdateWithDeletionTimestamp_R
 
 	// Lister returns object with DeletionTimestamp set (as when delete is delivered as Update)
 	tagriWithDeletion := created.DeepCopy()
-	now := metav1.Now()
-	tagriWithDeletion.ObjectMeta.DeletionTimestamp = &now
+	tagriWithDeletion.ObjectMeta.DeletionTimestamp = new(metav1.Now())
 	controller.crdInformer.TridentAutogrowRequestInternals().Informer().GetIndexer().Add(tagriWithDeletion)
 
 	keyItem := &KeyItem{
@@ -3393,8 +3389,7 @@ func TestTagriIsBeingDeleted(t *testing.T) {
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
 	assert.False(t, controller.tagriIsBeingDeleted(tagri), "tagri without DeletionTimestamp should not be considered being deleted")
 
-	now := metav1.NewTime(time.Now())
-	tagri.ObjectMeta.DeletionTimestamp = &now
+	tagri.ObjectMeta.DeletionTimestamp = new(metav1.NewTime(time.Now()))
 	assert.True(t, controller.tagriIsBeingDeleted(tagri), "tagri with DeletionTimestamp set should be considered being deleted")
 }
 

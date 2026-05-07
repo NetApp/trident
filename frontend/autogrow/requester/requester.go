@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package requester
 
 import (
@@ -349,8 +351,7 @@ func (r *Requester) workerLoop(ctx context.Context) {
 							// Check if error contains rate limit retry-after hint
 							if k8serrors.IsTooManyRequests(err) {
 								// Unwrap to access the StatusError details
-								var statusErr *k8serrors.StatusError
-								if stderrors.As(err, &statusErr) && statusErr.Status().Details != nil && statusErr.Status().Details.RetryAfterSeconds > 0 {
+								if statusErr, ok := stderrors.AsType[*k8serrors.StatusError](err); ok && statusErr.Status().Details != nil && statusErr.Status().Details.RetryAfterSeconds > 0 {
 									duration := time.Duration(statusErr.Status().Details.RetryAfterSeconds) * time.Second
 									Logc(workItem.Ctx).WithFields(LogFields{
 										"tvpName":    workItem.TVPName,

@@ -278,7 +278,7 @@ func FlexVolInfoFromRestAttrsHelper(volume *models.Volume) (*Volume, error) {
 		}
 	}
 
-	snapshotDirAccessEnabled := convert.ToPtr(false)
+	snapshotDirAccessEnabled := new(false)
 	if volume.SnapshotDirectoryAccessEnabled != nil {
 		snapshotDirAccessEnabled = volume.SnapshotDirectoryAccessEnabled
 	}
@@ -963,7 +963,7 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 
 		aggrName := *aggr.Name
 		if aggregate != aggrName {
-			Logc(ctx).Debugf("Skipping " + aggrName)
+			Logc(ctx).Debugf("Skipping %s", aggrName)
 			continue
 		}
 
@@ -1336,7 +1336,7 @@ func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 	qtreeList, err := d.api.QtreeList(ctx, prefix, volumePrefix, fields)
 	if err != nil {
 		msg := fmt.Sprintf("Error listing qtrees; %v", err)
-		Logc(ctx).Errorf(msg)
+		Logc(ctx).Error(msg)
 		return nil, errors.New(msg)
 	}
 	qtrees := Qtrees{}
@@ -1376,7 +1376,7 @@ func (d OntapAPIREST) QtreeGetByName(ctx context.Context, name, volumePrefix str
 	qtree, err := d.api.QtreeGet(ctx, name, volumePrefix)
 	if err != nil {
 		msg := "error getting qtree"
-		Logc(ctx).WithError(err).Errorf(msg)
+		Logc(ctx).WithError(err).Error(msg)
 		return nil, errors.New(msg)
 	}
 	return d.convertQtree(qtree), nil

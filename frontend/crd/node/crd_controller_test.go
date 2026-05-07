@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 package crd
 
 import (
@@ -227,14 +227,12 @@ func TestUpdateCRHandler_TridentVolumePublication_Deleted(t *testing.T) {
 	require.NoError(t, err)
 
 	now := time.Now()
-	v1Now := metav1.NewTime(now)
-
 	oldTvp := createTestTridentVolumePublication("test-tvp", testNamespace, testNodeName, "vol-123")
 	oldTvp.Generation = 1
 
 	newTvp := createTestTridentVolumePublication("test-tvp", testNamespace, testNodeName, "vol-123")
 	newTvp.Generation = 1
-	newTvp.DeletionTimestamp = &v1Now // Object is being deleted
+	newTvp.DeletionTimestamp = new(metav1.NewTime(now)) // Object is being deleted
 
 	// Update the object
 	controller.updateCRHandler(oldTvp, newTvp)

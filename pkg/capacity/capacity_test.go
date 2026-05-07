@@ -333,7 +333,7 @@ func TestQuantityFloorBytes(t *testing.T) {
 	}{
 		{"nil returns 0", nil, 0},
 		{"1Gi", resource.NewQuantity(oneGiB, resource.BinarySI), 1073741824},
-		{"parsed 1.7Gi floors to 1825361100", ptrQuantity(resource.MustParse("1.7Gi")), 1825361100},
+		{"parsed 1.7Gi floors to 1825361100", new(resource.MustParse("1.7Gi")), 1825361100},
 		{"zero", resource.NewQuantity(0, resource.BinarySI), 0},
 		{"negative returns 0", resource.NewQuantity(-1, resource.BinarySI), 0},
 	}

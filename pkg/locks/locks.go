@@ -50,8 +50,7 @@ func Unlock(ctx context.Context, lockContext, lockID string) {
 func IncrementQueueSize(lockID string) {
 	currentWait, ok := waitQueue.Load(lockID)
 	if !ok {
-		val := uint32(1)
-		valPtr := &val
+		valPtr := new(uint32(1))
 		waitQueue.Store(lockID, valPtr)
 	} else {
 		if ptr, ok := currentWait.(*uint32); ok {

@@ -517,8 +517,7 @@ func (t *tracker) add(
 	}
 
 	// Set the creation timestamp
-	creationTimeStamp := newMeta.GetCreationTimestamp()
-	if (&creationTimeStamp).IsZero() {
+	if (new(newMeta.GetCreationTimestamp())).IsZero() {
 		newMeta.SetCreationTimestamp(metav1.Now())
 	} else {
 		return nil, k8serrors.NewBadRequest("new object may not contain a creation timestamp")
@@ -578,8 +577,7 @@ func (t *tracker) Delete(gvr schema.GroupVersionResource, ns, name string) error
 			Log().WithFields(LogFields{"object": obj}).Debug(
 				"Delete: object has finalizers and deletion timestamp, nothing to do.")
 		} else {
-			now := metav1.Now()
-			newMeta.SetDeletionTimestamp(&now)
+			newMeta.SetDeletionTimestamp(new(metav1.Now()))
 
 			t.objects[gvr][namespacedName] = obj
 

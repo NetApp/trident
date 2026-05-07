@@ -48,8 +48,7 @@ func createTestSecret(name, namespace string, withDeletionTimestamp bool) *v1.Se
 		},
 	}
 	if withDeletionTimestamp {
-		now := metav1.NewTime(time.Now())
-		secret.ObjectMeta.DeletionTimestamp = &now
+		secret.ObjectMeta.DeletionTimestamp = new(metav1.NewTime(time.Now()))
 	}
 	return secret
 }

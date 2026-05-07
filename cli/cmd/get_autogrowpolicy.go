@@ -138,7 +138,7 @@ func writeAutogrowPolicyTable(autogrowPolicies []storage.AutogrowPolicyExternal)
 	})
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Used Threshold", "Growth Amount", "Max Size", "Volumes"})
+	table.Header([]string{"Name", "Used Threshold", "Growth Amount", "Max Size", "Volumes"})
 
 	for _, agp := range autogrowPolicies {
 		maxSize := agp.MaxSize
@@ -151,7 +151,7 @@ func writeAutogrowPolicyTable(autogrowPolicies []storage.AutogrowPolicyExternal)
 			growthAmount = config.DefaultAGPGrowthAmount // Default value
 		}
 
-		table.Append([]string{
+		_ = table.Append([]string{
 			agp.Name,
 			agp.UsedThreshold,
 			growthAmount,
@@ -160,7 +160,7 @@ func writeAutogrowPolicyTable(autogrowPolicies []storage.AutogrowPolicyExternal)
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeAutogrowPolicyNames(autogrowPolicies []storage.AutogrowPolicyExternal) {

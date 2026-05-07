@@ -113,8 +113,7 @@ func (c *Config) Copy() *Config {
 
 	// Deep copy AutogrowPeriod pointer
 	if c.AutogrowPeriod != nil {
-		period := *c.AutogrowPeriod
-		newConfig.AutogrowPeriod = &period
+		newConfig.AutogrowPeriod = new(*c.AutogrowPeriod)
 	}
 
 	return newConfig

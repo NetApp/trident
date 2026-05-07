@@ -27,7 +27,6 @@ import (
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -4604,53 +4603,53 @@ func TestUpdateNode(t *testing.T) {
 			name:              "readyStayClean",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeClean,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(true), AdministratorReady: new(false)},
 		},
 		{
 			name:              "cleanedStayClean",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeClean,
-			flags:             &models.NodePublicationStateFlags{ProvisionerReady: convert.ToPtr(true)},
+			flags:             &models.NodePublicationStateFlags{ProvisionerReady: new(true)},
 		},
 		{
 			name:              "cleanToDirty",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 		},
 		{
 			name:              "cleanableToClean",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeClean,
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(true),
-				AdministratorReady: convert.ToPtr(true),
-				ProvisionerReady:   convert.ToPtr(true),
+				OrchestratorReady:  new(true),
+				AdministratorReady: new(true),
+				ProvisionerReady:   new(true),
 			},
 		},
 		{
 			name:              "readyStayCleanable",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeCleanable,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(true), AdministratorReady: new(true)},
 		},
 		{
 			name:              "cleanableToDirty",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 		},
 		{
 			name:              "dirtyToCleanable",
 			initialNodeState:  models.NodeDirty,
 			expectedNodeState: models.NodeCleanable,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(true), AdministratorReady: new(true)},
 		},
 		{
 			name:              "notReadyStayDirty",
 			initialNodeState:  models.NodeDirty,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(true)},
 		},
 	}
 
@@ -4692,7 +4691,7 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 	orchestrator.bootstrapError = expectedError
 
 	result := orchestrator.UpdateNode(ctx(), "testNode1",
-		&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false)})
+		&models.NodePublicationStateFlags{OrchestratorReady: new(false)})
 
 	assert.Equal(t, expectedError, result, "UpdateNode did not return bootstrap error")
 }
@@ -4701,7 +4700,7 @@ func TestUpdateNode_NodeNotFound(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 
 	result := orchestrator.UpdateNode(ctx(), "testNode1",
-		&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false)})
+		&models.NodePublicationStateFlags{OrchestratorReady: new(false)})
 
 	assert.True(t, errors.IsNotFoundError(result), "UpdateNode did not fail")
 }
@@ -4717,8 +4716,8 @@ func TestUpdateNode_NodeStoreUpdateFailed(t *testing.T) {
 	}
 	expectedError := errors.New("failure")
 	flags := &models.NodePublicationStateFlags{
-		OrchestratorReady:  convert.ToPtr(false),
-		AdministratorReady: convert.ToPtr(false),
+		OrchestratorReady:  new(false),
+		AdministratorReady: new(false),
 	}
 
 	mockCtrl := gomock.NewController(t)

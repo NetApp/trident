@@ -13,7 +13,6 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -63,8 +62,7 @@ func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (r
 		updateStatus := &actionCR.Status
 		updateStatus.State = netappv1.TridentActionStateFailed
 		updateStatus.Message = "Node remediation requires '--enable-force-detach' flag to be enabled"
-		completionTime := metav1.Now()
-		updateStatus.CompletionTime = &completionTime
+		updateStatus.CompletionTime = new(metav1.Now())
 		// Update the CR and return error
 		err = c.updateNodeRemediationCR(ctx, namespace, name, updateStatus)
 		if err != nil {
@@ -118,7 +116,7 @@ func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (r
 			// no more volume attachments; remediation is complete; update node with admin ready true
 			Logc(ctx).WithField("node", nodeName).Info("Volume attachments removed from node.")
 			flags := &models.NodePublicationStateFlags{
-				AdministratorReady: convert.ToPtr(true),
+				AdministratorReady: new(true),
 			}
 			err = c.orchestrator.UpdateNode(ctx, nodeName, flags)
 			if err != nil {
@@ -129,8 +127,8 @@ func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (r
 		} else if node.PublicationState == models.NodeClean {
 			// If node is clean, set to dirty and start force detach work
 			dirtyFlags := &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(false),
-				AdministratorReady: convert.ToPtr(false),
+				OrchestratorReady:  new(false),
+				AdministratorReady: new(false),
 			}
 			err = c.orchestrator.UpdateNode(ctx, nodeName, dirtyFlags)
 			if err != nil {
@@ -167,8 +165,7 @@ func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (r
 	case netappv1.TridentActionStateSucceeded, netappv1.TridentActionStateFailed:
 		// State succeeded or failed; update completion time
 		Logc(ctx).Infof("Trident node remediation state %v.", actionCR.Status.State)
-		completionTime := metav1.Now()
-		updateStatus.CompletionTime = &completionTime
+		updateStatus.CompletionTime = new(metav1.Now())
 	default:
 		Logc(ctx).Infof("Trident node remediation state %v, updating to `remediating`.", actionCR.Status.State)
 		updateStatus.State = netappv1.TridentNodeRemediatingState

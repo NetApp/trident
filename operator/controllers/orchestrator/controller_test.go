@@ -737,14 +737,13 @@ func TestController_MatchDeploymentControllingCR(t *testing.T) {
 		}
 
 		// Set up the deployment to be controlled by this CR
-		trueVal := true
 		deployment.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
 			{
 				APIVersion: "trident.netapp.io/v1",
 				Kind:       "TridentOrchestrator",
 				Name:       controllingCR.Name,
 				UID:        controllingCR.UID,
-				Controller: &trueVal,
+				Controller: new(true),
 			},
 		}
 

@@ -165,15 +165,15 @@ func writeGroupSnapshotIDs(groups []storage.GroupSnapshotExternal) {
 
 func writeGroupSnapshotTable(groupSnapshots []storage.GroupSnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
+	table.Header([]string{"Name"})
 
 	for _, group := range groupSnapshots {
-		table.Append([]string{
+		_ = table.Append([]string{
 			group.ID(),
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func formatIDs(ids []string, max int) string {
@@ -194,7 +194,7 @@ func formatIDs(ids []string, max int) string {
 
 func writeWideGroupSnapshotTable(groupSnapshots []storage.GroupSnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{
+	table.Header([]string{
 		"Name",
 		"Created",
 		"Snapshots",
@@ -202,7 +202,7 @@ func writeWideGroupSnapshotTable(groupSnapshots []storage.GroupSnapshotExternal)
 	})
 
 	for _, group := range groupSnapshots {
-		table.Append([]string{
+		_ = table.Append([]string{
 			group.ID(),
 			group.GetCreated(),
 			formatIDs(group.GetSnapshotIDs(), maxSnapshotRows),
@@ -210,5 +210,5 @@ func writeWideGroupSnapshotTable(groupSnapshots []storage.GroupSnapshotExternal)
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }

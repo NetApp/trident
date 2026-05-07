@@ -14,7 +14,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/pkg/convert"
 	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils/errors"
@@ -450,12 +449,10 @@ func (c Client) LunMapsGetByIgroup(initiatorGroupName string) (*azgo.LunMapGetIt
 // LunMapGet returns a list of LUN map details
 // equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 func (c Client) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error) {
-	lunMapInfo := *azgo.NewLunMapInfoType().
-		SetInitiatorGroup(initiatorGroupName).
-		SetPath(lunPath)
-
 	response, err := azgo.NewLunMapGetIterRequest().
-		SetQuery(azgo.LunMapGetIterRequestQuery{LunMapInfoPtr: &lunMapInfo}).
+		SetQuery(azgo.LunMapGetIterRequestQuery{LunMapInfoPtr: new(*azgo.NewLunMapInfoType().
+			SetInitiatorGroup(initiatorGroupName).
+			SetPath(lunPath))}).
 		ExecuteUsing(c.zr)
 	return response, err
 }
@@ -2827,7 +2824,7 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 		if destinationInfo.DestinationLocationPtr != nil {
 			destinationLocation = destinationInfo.DestinationLocationPtr
 		} else if destinationVserver != nil && destinationVolume != nil {
-			destinationLocation = convert.ToPtr(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
+			destinationLocation = new(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
 		} else {
 			destinationLocation = nil
 		}

@@ -137,8 +137,7 @@ func (c *TridentCrdController) updateActionSnapshotRestoreCRInProgress(
 	}
 	actionCR.Status.State = netappv1.TridentActionStateInProgress
 	actionCR.Status.Message = ""
-	startTime := metav1.Now()
-	actionCR.Status.StartTime = &startTime
+	actionCR.Status.StartTime = new(metav1.Now())
 
 	_, err = c.crdClientset.TridentV1().TridentActionSnapshotRestores(namespace).Update(ctx, actionCR, updateOpts)
 	if apierrors.IsNotFound(err) {
@@ -177,8 +176,7 @@ func (c *TridentCrdController) updateActionSnapshotRestoreCRComplete(
 		actionCR.Status.Message = restoreError.Error()
 	}
 
-	completionTime := metav1.Now()
-	actionCR.Status.CompletionTime = &completionTime
+	actionCR.Status.CompletionTime = new(metav1.Now())
 
 	_, err = c.crdClientset.TridentV1().TridentActionSnapshotRestores(namespace).Update(ctx, actionCR, updateOpts)
 	if apierrors.IsNotFound(err) {

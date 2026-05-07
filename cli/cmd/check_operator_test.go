@@ -132,7 +132,7 @@ func TestWriteStatus(t *testing.T) {
 					"tconf1": {Status: "Done", Message: "Done"},
 				},
 			},
-			contains: []string{"DONE", "Done", "torc1", "tconf1"},
+			contains: []string{"Done", "torc1", "tconf1"},
 		},
 		{
 			name:         "WideFormatError",
@@ -141,7 +141,7 @@ func TestWriteStatus(t *testing.T) {
 				Status:       "Failed",
 				ErrorMessage: "Error",
 			},
-			contains: []string{"FAILED", "ERROR"},
+			contains: []string{"Failed", "Error"},
 		},
 		{
 			name:         "DefaultFormat",
@@ -155,7 +155,7 @@ func TestWriteStatus(t *testing.T) {
 					"tconf1": {Status: "Done"},
 				},
 			},
-			contains: []string{"DONE", "Done", "torc1", "tconf1"},
+			contains: []string{"Done", "torc1", "tconf1"},
 		},
 		{
 			name:         "DefaultFormatError",
@@ -164,7 +164,7 @@ func TestWriteStatus(t *testing.T) {
 				Status:       "Failed",
 				ErrorMessage: "Error",
 			},
-			contains: []string{"FAILED", "ERROR"},
+			contains: []string{"Failed", "Error"},
 		},
 	}
 

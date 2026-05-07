@@ -95,7 +95,6 @@ func TestMakeContextBasedTelemetry(t *testing.T) {
 	recorder(&noErr)
 	assert.Equal(t, 2, telemetryCalled)
 
-	someErr := errors.New("boom")
-	recorder(&someErr)
+	recorder(new(errors.New("boom")))
 	assert.Equal(t, 4, telemetryCalled)
 }

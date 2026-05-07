@@ -199,14 +199,13 @@ func NewFakeStorageDriverWithDebugTraceFlags(debugTraceFlags map[string]bool) *S
 func NewFakeStorageDriverConfigJSON(
 	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool, volumes []fake.Volume,
 ) (string, error) {
-	prefix := ""
-	jsonBytes, err := json.Marshal(
+	jsonBytes, err := json.Marshal( //nolint:gosec // test/fake driver config JSON for tests
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
-				StoragePrefix:     &prefix,
+				StoragePrefix:     new(""),
 				Flags:             make(map[string]string),
 			},
 			Protocol:     protocol,
@@ -225,14 +224,13 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool,
 	vpool drivers.FakeStorageDriverPool, vpools []drivers.FakeStorageDriverPool,
 ) (string, error) {
-	prefix := ""
-	jsonBytes, err := json.Marshal(
+	jsonBytes, err := json.Marshal( //nolint:gosec // test/fake driver config JSON for tests
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
-				StoragePrefix:     &prefix,
+				StoragePrefix:     new(""),
 			},
 			Protocol:              protocol,
 			Pools:                 pools,
@@ -250,7 +248,7 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
 	name string, protocol tridentconfig.Protocol, debugTraceFlags map[string]bool, storagePrefix string,
 ) (string, error) {
-	jsonBytes, err := json.Marshal(
+	jsonBytes, err := json.Marshal( //nolint:gosec // test/fake driver config JSON for tests
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -331,7 +329,7 @@ func (d *StorageDriver) Initialize(
 	d.GroupSnapshots = make(map[string]*storage.GroupSnapshot)
 	d.DestroyedGroupSnapshots = make(map[string]bool)
 
-	s, _ := json.Marshal(d.Config)
+	s, _ := json.Marshal(d.Config) //nolint:gosec // debug log of fake driver config in tests
 	Logc(ctx).Debugf("FakeStorageDriverConfig: %s", string(s))
 
 	err = d.validate(ctx)
@@ -389,8 +387,7 @@ func (d *StorageDriver) populateConfigurationDefaults(
 	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		config.StoragePrefix = &prefix
+		config.StoragePrefix = new(drivers.GetDefaultStoragePrefix(config.DriverContext))
 		config.StoragePrefixRaw = json.RawMessage("\"" + *config.StoragePrefix + "\"")
 	}
 

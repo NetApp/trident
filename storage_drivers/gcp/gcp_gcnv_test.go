@@ -42,12 +42,10 @@ var (
 )
 
 func newTestGCNVDriver(mockAPI api.GCNV) *NASStorageDriver {
-	prefix := "test-"
-
 	config := drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "google-cloud-netapp-volumes",
-			StoragePrefix:     &prefix,
+			StoragePrefix:     new("test-"),
 			DebugTraceFlags:   debugTraceFlags,
 		},
 		ProjectNumber: api.ProjectNumber,
@@ -550,12 +548,10 @@ func TestGCNVInitialize_InvalidMaxCacheAge(t *testing.T) {
 func TestGCNVInitialize_InvalidStoragePrefix(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "&trident"
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "google-cloud-netapp-volumes",
-		StoragePrefix:     &storagePrefix,
+		StoragePrefix:     new("&trident"),
 		BackendName:       "myGCNVBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
@@ -881,13 +877,11 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
-	prefix := "myPrefix"
-
 	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
-			StoragePrefix:   &prefix,
+			StoragePrefix:   new("myPrefix"),
 			LimitVolumeSize: "123456789000",
 		},
 		GCNVNASDriverConfig: drivers.GCNVNASDriverConfig{
@@ -3197,8 +3191,6 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *storage.VolumeConfig, *api.VolumeCreateRequest, *api.Volume, *api.Volume, *api.Snapshot,
 ) {
-	snapshotReserve := int64(0)
-
 	sourceVolConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -3242,7 +3234,7 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 			"plugin":           "google-cloud-netapp-volumes",
 			"version":          driver.fixGCPLabelValue(driver.telemetry.TridentVersion),
 		},
-		SnapshotReserve:   &snapshotReserve,
+		SnapshotReserve:   new(int64(0)),
 		SnapshotDirectory: false,
 		SecurityStyle:     "Unix",
 	}
@@ -4176,13 +4168,11 @@ func TestImport_Managed(t *testing.T) {
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 	var snapshotDirAccess bool
 	originalName := "importMe"
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -4213,13 +4203,11 @@ func TestImport_ManagedVolumeFullName(t *testing.T) {
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 	var snapshotDirAccess bool
 	originalFullName := "projects/123456789/locations/fake-location/volumes/testvol1"
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalFullName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -4251,14 +4239,11 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 
 	originalName := "importMe"
-	expectedUnixPermissions := "0770"
-	snapshotDirAccess := true
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), new(true), nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -4290,14 +4275,11 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 
 	originalName := "importMe"
-	expectedUnixPermissions := "0770"
-	snapshotDirAccess := false
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), new(false), nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -4651,14 +4633,11 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 	originalName := "importMe"
-	expectedUnixPermissions := "0770"
-	snapshotDirAccess := false
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(errFailed).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), new(false), nil).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4685,14 +4664,11 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 
 	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
 	originalName := "importMe"
-	expectedUnixPermissions := "0770"
-	snapshotDirAccess := false
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, new("0770"), new(false), nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return("", errFailed).Times(1)
@@ -6740,8 +6716,7 @@ func getVolumesForList() *[]*api.Volume {
 func TestGCNVList(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := getVolumesForList()
 
@@ -6757,8 +6732,7 @@ func TestGCNVList(t *testing.T) {
 func TestList_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
@@ -6771,8 +6745,7 @@ func TestList_DiscoveryFailed(t *testing.T) {
 func TestList_ListFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volumes(ctx).Return(nil, errFailed).Times(1)
@@ -6786,8 +6759,7 @@ func TestList_ListFailed(t *testing.T) {
 func TestList_ListNone(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volumes(ctx).Return(&[]*api.Volume{}, nil).Times(1)
@@ -6800,8 +6772,7 @@ func TestList_ListNone(t *testing.T) {
 
 func TestListOnlyNASProtocolVolumes(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
-	storagePrefix := "p-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("p-")
 
 	nfsVol := &api.Volume{
 		State:         api.VolumeStateReady,
@@ -6835,8 +6806,7 @@ func TestListOnlyNASProtocolVolumes(t *testing.T) {
 func TestGCNVGet(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := &api.Volume{}
 
@@ -6856,8 +6826,7 @@ func TestGCNVGet(t *testing.T) {
 func TestGet_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
@@ -6874,8 +6843,7 @@ func TestGet_DiscoveryFailed(t *testing.T) {
 func TestGet_NotFound(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, "volume1").Return(nil, errFailed).Times(1)
@@ -7076,8 +7044,7 @@ func TestGCNVCreatePrepare(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["gcnv_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -7099,8 +7066,7 @@ func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["gcnv_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -7114,8 +7080,7 @@ func TestGetInternalVolumeName_CSI(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["gcnv_pool"]
 	volConfig := &storage.VolumeConfig{Name: "pvc-5e522901-b891-41d8-9e83-5496d2e62e71"}
@@ -7129,8 +7094,7 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["gcnv_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -7389,8 +7353,7 @@ func TestGCNVStoreConfig(t *testing.T) {
 func TestGCNVGetVolumeForImport(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volume := &api.Volume{
 		Name:          "testvol1",
@@ -7414,8 +7377,7 @@ func TestGCNVGetVolumeForImport(t *testing.T) {
 func TestGCNVGetVolumeForImport_VolumeNameWithPrefix(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volume := &api.Volume{
 		Name:          "myPrefix-testvol1",
@@ -7439,8 +7401,7 @@ func TestGCNVGetVolumeForImport_VolumeNameWithPrefix(t *testing.T) {
 func TestGetVolumeForImport_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
@@ -7453,8 +7414,7 @@ func TestGetVolumeForImport_DiscoveryFailed(t *testing.T) {
 func TestGetVolumeForImport_GetFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, "testvol1").Return(nil, errFailed).Times(1)
@@ -7476,8 +7436,7 @@ func TestGCNVGetExternalConfig(t *testing.T) {
 func TestGCNVGetVolumeExternalWrappers(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*volumes))
@@ -7502,8 +7461,7 @@ func TestGCNVGetVolumeExternalWrappers(t *testing.T) {
 
 func TestGetVolumeExternalWrappersOnlyNASProtocolVolumes(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
-	storagePrefix := "p-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("p-")
 
 	nfsVol := &api.Volume{
 		State:         api.VolumeStateReady,
@@ -7534,8 +7492,7 @@ func TestGetVolumeExternalWrappersOnlyNASProtocolVolumes(t *testing.T) {
 func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*volumes))
@@ -7559,8 +7516,7 @@ func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
 func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*volumes))
@@ -7634,16 +7590,14 @@ func TestGetUpdateType_WrongDriverType(t *testing.T) {
 
 func TestGetUpdateType_OtherChanges(t *testing.T) {
 	_, oldDriver := newMockGCNVDriver(t)
-	prefix1 := "prefix1-"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("prefix1-")
 	oldDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret1",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
 	}
 
 	_, newDriver := newMockGCNVDriver(t)
-	prefix2 := "prefix2-"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("prefix2-")
 	newDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret2",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
@@ -8379,8 +8333,7 @@ func TestCreateClone_AutoTieringInheritance(t *testing.T) {
 
 	// Source volume with custom tiering
 	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
-	sourceCoolingDays := int32(60)
-	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+	sourceVolume.TieringMinimumCoolingDays = new(int32(60))
 
 	// Orchestrator layer populates clone config with inherited values before calling driver
 	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto
@@ -8600,8 +8553,7 @@ func TestCreateClone_AnnotationOverride(t *testing.T) {
 
 	// Source volume has auto tiering with 60 days
 	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
-	sourceCoolingDays := int32(60)
-	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+	sourceVolume.TieringMinimumCoolingDays = new(int32(60))
 
 	// Orchestrator populates clone config with override: policy=none
 	cloneVolConfig.TieringPolicy = drivers.TieringPolicyNone
@@ -8673,8 +8625,7 @@ func TestCreateClone_AnnotationOverrideCoolingDays(t *testing.T) {
 
 	// Source volume with auto tiering
 	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
-	sourceCoolingDays := int32(30)
-	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+	sourceVolume.TieringMinimumCoolingDays = new(int32(30))
 
 	// Orchestrator inherits policy from source and applies override for cooling days
 	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto // Inherited from source
@@ -8747,8 +8698,7 @@ func TestCreateClone_InvalidCoolingDaysOverride(t *testing.T) {
 
 	// Source volume with auto tiering
 	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
-	sourceCoolingDays := int32(45)
-	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+	sourceVolume.TieringMinimumCoolingDays = new(int32(45))
 
 	// Clone has invalid cooling days (with auto tiering policy)
 	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto

@@ -20,7 +20,6 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -238,8 +237,6 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
@@ -247,7 +244,7 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
-	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, &fsxId, mockAPI)
+	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, new(FSX_ID), mockAPI)
 	driver.AWSAPI = mockAWSAPI
 	return mockAPI, mockAWSAPI, driver
 }
@@ -596,7 +593,7 @@ func TestDriverIgnoresDataLIF(t *testing.T) {
 func TestDriverValidateInvalidPrefix(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 
-	d.Config.StoragePrefix = convert.ToPtr("B@D")
+	d.Config.StoragePrefix = new("B@D")
 
 	assert.EqualError(t, d.validate(ctx), "storage prefix may only contain letters/digits/underscore/dash")
 }
@@ -4269,7 +4266,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -4389,7 +4386,7 @@ func TestOntapSanEconomyGetStorageBackendPools(t *testing.T) {
 
 func TestOntapSanEconomyGetInternalVolumeName(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
-	d.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
+	d.Config.StoragePrefix = new("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "my-Lun"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -4627,8 +4624,7 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.API = mockAPI
-	prefix1 := "storagePrefix_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("storagePrefix_")
 	oldDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret1",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
@@ -4639,9 +4635,7 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 
 	newDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.API = mockAPI
-	prefix2 := "storagePREFIX_"
-
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("storagePREFIX_")
 	newDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret2",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
@@ -5167,7 +5161,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5233,7 +5227,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5294,7 +5288,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5363,7 +5357,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5428,7 +5422,7 @@ func TestOntapSanEconomyInitialize_InvalidConfig(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `{invalid-json}`
 	secrets := map[string]string{
@@ -5451,7 +5445,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5502,7 +5496,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
@@ -5572,7 +5566,7 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{
@@ -5626,7 +5620,7 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	commonConfigJSON := `
 	{

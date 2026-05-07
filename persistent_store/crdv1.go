@@ -1468,9 +1468,8 @@ func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *models.Vo
 
 // deleteOpts returns a DeleteOptions struct suitable for most DELETE calls to the K8S REST API.
 func (k *CRDClientV1) deleteOpts() metav1.DeleteOptions {
-	propagationPolicy := metav1.DeletePropagationBackground
 	return metav1.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
+		PropagationPolicy: new(metav1.DeletePropagationBackground),
 	}
 }
 

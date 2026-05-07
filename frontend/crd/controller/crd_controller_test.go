@@ -166,12 +166,11 @@ func TestCRHandlersTableDriven(t *testing.T) {
 			},
 			updateDeletedFunc: func(controller *TridentCrdController) {
 				now := time.Now()
-				v1Now := metav1.NewTime(now)
 				tmr := &tridentv1.TridentMirrorRelationship{}
 				tmr.Generation = 1
 				tmrNew := &tridentv1.TridentMirrorRelationship{}
 				tmrNew.Generation = 1
-				tmrNew.DeletionTimestamp = &v1Now
+				tmrNew.DeletionTimestamp = new(metav1.NewTime(now))
 				controller.updateCRHandler(tmr, tmrNew)
 				controller.workqueue.Get()
 			},
@@ -209,12 +208,11 @@ func TestCRHandlersTableDriven(t *testing.T) {
 			},
 			updateDeletedFunc: func(controller *TridentCrdController) {
 				now := time.Now()
-				v1Now := metav1.NewTime(now)
 				tnr := &tridentv1.TridentNodeRemediation{}
 				tnr.Generation = 1
 				tnrNew := &tridentv1.TridentNodeRemediation{}
 				tnrNew.Generation = 1
-				tnrNew.DeletionTimestamp = &v1Now
+				tnrNew.DeletionTimestamp = new(metav1.NewTime(now))
 				controller.updateCRHandler(tnr, tnrNew)
 				controller.workqueue.Get()
 			},
@@ -272,7 +270,6 @@ func TestCRHandlersTableDriven(t *testing.T) {
 			},
 			updateDeletedFunc: func(controller *TridentCrdController) {
 				now := time.Now()
-				v1Now := metav1.NewTime(now)
 				agp := &tridentv1.TridentAutogrowPolicy{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "test-policy",
@@ -283,7 +280,7 @@ func TestCRHandlersTableDriven(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "test-policy",
 						Generation:        1,
-						DeletionTimestamp: &v1Now,
+						DeletionTimestamp: new(metav1.NewTime(now)),
 					},
 				}
 				controller.updateCRHandler(agp, agpNew)
@@ -1682,7 +1679,7 @@ func TestGetSnapshotHandle_WithSnapshot(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: stringPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 	}

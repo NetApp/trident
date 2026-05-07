@@ -962,14 +962,12 @@ func TestGetAzureErrorFromError_Success(t *testing.T) {
 }
 
 func TestDerefString(t *testing.T) {
-	s := "test"
-
 	testCases := []struct {
 		Ptr            *string
 		ExpectedResult string
 	}{
 		{nil, ""},
-		{&s, "test"},
+		{new("test"), "test"},
 	}
 
 	for _, testCase := range testCases {
@@ -996,16 +994,13 @@ func TestDerefStringArray(t *testing.T) {
 }
 
 func TestDerefBool(t *testing.T) {
-	b1 := true
-	b2 := false
-
 	testCases := []struct {
 		Ptr            *bool
 		ExpectedResult bool
 	}{
 		{nil, false},
-		{&b1, true},
-		{&b2, false},
+		{new(true), true},
+		{new(false), false},
 	}
 
 	for _, testCase := range testCases {
@@ -1015,16 +1010,13 @@ func TestDerefBool(t *testing.T) {
 }
 
 func TestDerefInt32(t *testing.T) {
-	i1 := int32(0)
-	i2 := int32(42)
-
 	testCases := []struct {
 		Ptr            *int32
 		ExpectedResult int32
 	}{
 		{nil, 0},
-		{&i1, 0},
-		{&i2, 42},
+		{new(int32(0)), 0},
+		{new(int32(42)), 42},
 	}
 
 	for _, testCase := range testCases {
@@ -1034,16 +1026,13 @@ func TestDerefInt32(t *testing.T) {
 }
 
 func TestDerefInt64(t *testing.T) {
-	i1 := int64(0)
-	i2 := int64(42)
-
 	testCases := []struct {
 		Ptr            *int64
 		ExpectedResult int64
 	}{
 		{nil, 0},
-		{&i1, 0},
-		{&i2, 42},
+		{new(int64(0)), 0},
+		{new(int64(42)), 42},
 	}
 
 	for _, testCase := range testCases {
@@ -1053,16 +1042,13 @@ func TestDerefInt64(t *testing.T) {
 }
 
 func TestDerefFloat32(t *testing.T) {
-	i1 := float32(0.0)
-	i2 := float32(42.0)
-
 	testCases := []struct {
 		Ptr            *float32
 		ExpectedResult float32
 	}{
 		{nil, 0.0},
-		{&i1, 0.0},
-		{&i2, 42.0},
+		{new(float32(0.0)), 0.0},
+		{new(float32(42.0)), 42.0},
 	}
 
 	for _, testCase := range testCases {

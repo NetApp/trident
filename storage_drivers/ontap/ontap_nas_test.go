@@ -18,7 +18,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -342,10 +341,8 @@ func newMockOntapNASDriverWithSVM(t *testing.T, svmName string) (*mockapi.MockOn
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
 	driver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false, &fsxId)
+		"CSI", false, new(FSX_ID))
 	driver.API = mockAPI
 	return mockAPI, driver
 }
@@ -360,7 +357,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -413,7 +410,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *te
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	nameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -473,7 +470,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -538,7 +535,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -650,7 +647,7 @@ func TestOntapNasStorageDriverInitialize_ErrorScenarios(t *testing.T) {
 				BackendName:       "myOntapNasBackend",
 				DriverContext:     tridentconfig.ContextCSI,
 				DebugTraceFlags:   debugTraceFlags,
-				StoragePrefix:     convert.ToPtr("storagePrefix_"),
+				StoragePrefix:     new("storagePrefix_"),
 			}
 
 			configJSON := `
@@ -783,7 +780,7 @@ func TestOntapNasStorageDriverValidate_ErrorScenarios(t *testing.T) {
 			name: "InvalidPrefix",
 			setupConfig: func(driver *NASStorageDriver) {
 				driver.Config.LUKSEncryption = "false"
-				driver.Config.StoragePrefix = convert.ToPtr("B@D")
+				driver.Config.StoragePrefix = new("B@D")
 			},
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				dataLIF := []string{"10.0.201.1"}
@@ -957,7 +954,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
@@ -990,7 +987,7 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBEnabled(t *testing.T) 
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 	driver.Config.NASType = sa.SMB
 
@@ -1026,7 +1023,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone_Failure(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(false),
+		SnapshotDir: new(false),
 	}
 
 	// Creating a readonly clone only results in the driver looking up volume information and no other calls to ONTAP.
@@ -1127,8 +1124,7 @@ func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_On(t *testing.T) {
 	driver.Config.SplitOnClone = "false"
 	driver.Config.Labels = pool1.GetLabels(ctx, "")
 	driver.Config.AutoExportPolicy = true
-	prefix := "trident-"
-	driver.Config.StoragePrefix = &prefix
+	driver.Config.StoragePrefix = new("trident-")
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
@@ -1174,8 +1170,7 @@ func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_Off(t *testing.T) {
 	driver.Config.SplitOnClone = "false"
 	driver.Config.Labels = pool1.GetLabels(ctx, "")
 	driver.Config.AutoExportPolicy = false
-	prefix := "trident-"
-	driver.Config.StoragePrefix = &prefix
+	driver.Config.StoragePrefix = new("trident-")
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
@@ -1634,7 +1629,7 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlCreateFai
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
@@ -1677,7 +1672,7 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlDeleteFai
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
@@ -1717,7 +1712,7 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSMBShareCreateFail(t *testing.T
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: convert.ToPtr(true),
+		SnapshotDir: new(true),
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
@@ -2733,7 +2728,7 @@ func TestOntapAFXNasStorageDriverGetStorageBackendPools(t *testing.T) {
 
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
+	driver.Config.StoragePrefix = new("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -2744,7 +2739,7 @@ func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 
 func TestOntapNasStorageDriverGetInternalVolumeNameTemplate(t *testing.T) {
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
+	driver.Config.StoragePrefix = new("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1", Namespace: "testNamespace"}
 
 	pool := storage.NewStoragePool(nil, "dummyPool")
@@ -2758,11 +2753,9 @@ func TestOntapNasStorageDriverGetInternalVolumeNameTemplate(t *testing.T) {
 func TestInitializeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
 	// Add required SVMName expectation
@@ -3214,11 +3207,9 @@ func TestOntapNasStorageDriverCreatePrepare(t *testing.T) {
 func TestOntapNasStorageDriverCreatePrepareNilPool(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
 	// Add required SVMName expectation
@@ -3251,11 +3242,9 @@ func TestOntapNasStorageDriverCreatePrepareNilPool(t *testing.T) {
 func TestOntapNasStorageDriverCreatePrepareNilPool_templateNotContainVolumeName(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
 	// Add required SVMName expectation
@@ -3289,8 +3278,7 @@ func TestOntapNasStorageDriverGetUpdateType(t *testing.T) {
 	mockAPI, oldDriver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 	oldDriver.Config.Username = "user1"
 	oldDriver.Config.Password = "password1"
 	oldDriver.Config.Credentials = map[string]string{
@@ -3301,8 +3289,7 @@ func TestOntapNasStorageDriverGetUpdateType(t *testing.T) {
 	newDriver := newTestOntapNASDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
 		"CSI", false, nil)
 	newDriver.API = mockAPI
-	prefix2 := "storage_"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("storage_")
 	newDriver.Config.Username = "user2"
 	newDriver.Config.Password = "password2"
 	newDriver.Config.Credentials = map[string]string{
@@ -3326,15 +3313,13 @@ func TestOntapNasStorageDriverGetUpdateType_Failure(t *testing.T) {
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 
 	// Created a SAN driver
 	newDriver := newTestOntapNASDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
 		"CSI", false, nil)
 	newDriver.API = mockAPI
-	prefix2 := "storage_"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("storage_")
 
 	expectedBitmap := &roaring.Bitmap{}
 	expectedBitmap.Add(storage.InvalidUpdate)
@@ -6286,11 +6271,10 @@ func TestOntapNasStorageDriverCheckMirrorTransferState(t *testing.T) {
 func TestOntapStorageDriverGetMirrorTransferTime(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "fakesvm1")
 
-	timeNow := time.Now()
 	snapmirror := &api.Snapmirror{
 		State:              "snapmirrored",
 		RelationshipStatus: "idle",
-		EndTransferTime:    &timeNow,
+		EndTransferTime:    new(time.Now()),
 	}
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "", "").Return(snapmirror, nil)
 

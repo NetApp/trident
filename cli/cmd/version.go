@@ -215,49 +215,49 @@ func writeVersions(versions *api.VersionResponse) {
 
 func writeVersionTable(version *api.ClientVersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Client Version"})
+	table.Header([]string{"Client Version"})
 
-	table.Append([]string{
+	_ = table.Append([]string{
 		version.Client.Version,
 	})
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeVersionsTable(versions *api.VersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
 
-	table.SetHeader([]string{"Server Version", "Client Version"})
+	table.Header([]string{"Server Version", "Client Version"})
 
-	table.Append([]string{
+	_ = table.Append([]string{
 		versions.Server.Version,
 		versions.Client.Version,
 	})
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideVersionTable(version *api.ClientVersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Client Version", "Client API Version", "Client Go Version"})
+	table.Header([]string{"Client Version", "Client API Version", "Client Go Version"})
 
-	table.Append([]string{
+	_ = table.Append([]string{
 		version.Client.Version,
 		version.Client.APIVersion,
 		version.Client.GoVersion,
 	})
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideVersionsTable(versions *api.VersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{
+	table.Header([]string{
 		"Server Version", "Server API Version", "Server Go Version", "Client Version",
 		"Client API Version", "Client Go Version",
 	})
 
-	table.Append([]string{
+	_ = table.Append([]string{
 		versions.Server.Version,
 		versions.Server.APIVersion,
 		versions.Server.GoVersion,
@@ -266,5 +266,5 @@ func writeWideVersionsTable(versions *api.VersionResponse) {
 		versions.Client.GoVersion,
 	})
 
-	table.Render()
+	_ = table.Render()
 }

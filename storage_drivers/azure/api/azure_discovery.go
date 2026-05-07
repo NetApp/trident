@@ -543,16 +543,15 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 	}
 
 	subscriptions := []string{c.config.SubscriptionID}
-	query := fmt.Sprintf(`
-    Resources
-    | where type =~ 'Microsoft.NetApp/netAppAccounts/capacityPools' and location =~ '%s'`, c.config.Location)
-	resultFormat := resourcegraph.ResultFormat("objectArray")
+	resultFormat := resourcegraph.ResultFormatObjectArray
 	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: &resultFormat}
 
 	request := resourcegraph.QueryRequest{
 		Subscriptions: CreateStringPtrArray(subscriptions),
-		Query:         &query,
-		Options:       &requestOptions,
+		Query: new(fmt.Sprintf(`
+    Resources
+    | where type =~ 'Microsoft.NetApp/netAppAccounts/capacityPools' and location =~ '%s'`, c.config.Location)),
+		Options: &requestOptions,
 	}
 
 	var rawResponse *http.Response
@@ -685,7 +684,12 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 	}
 
 	subscriptions := []string{c.config.SubscriptionID}
-	query := fmt.Sprintf(`
+	resultFormat := resourcegraph.ResultFormatObjectArray
+	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: &resultFormat}
+
+	request := resourcegraph.QueryRequest{
+		Subscriptions: CreateStringPtrArray(subscriptions),
+		Query: new(fmt.Sprintf(`
     Resources
 	| where type =~ 'Microsoft.Network/virtualNetworks' and location =~ '%s'
 	| project subnets = (properties.subnets)
@@ -693,14 +697,8 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 	| project subnetID = (subnets.id), delegations = (subnets.properties.delegations)
 	| mv-expand delegations limit 2000
 	| project subnetID, serviceName = (delegations.properties.serviceName)
-	| where serviceName =~ 'Microsoft.NetApp/volumes'`, c.config.Location)
-	resultFormat := resourcegraph.ResultFormat("objectArray")
-	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: &resultFormat}
-
-	request := resourcegraph.QueryRequest{
-		Subscriptions: CreateStringPtrArray(subscriptions),
-		Query:         &query,
-		Options:       &requestOptions,
+	| where serviceName =~ 'Microsoft.NetApp/volumes'`, c.config.Location)),
+		Options: &requestOptions,
 	}
 
 	var rawResponse *http.Response

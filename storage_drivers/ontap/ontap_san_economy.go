@@ -482,7 +482,7 @@ func (d *SANEconomyStorageDriver) Create(
 	// Determine a way to see if the volume already exists
 	exists, existsInFlexvol, err := d.LUNExists(ctx, name, "", d.FlexvolNamePrefix())
 	if err != nil {
-		Logc(ctx).Errorf("Error checking for existing volume: %w", err)
+		Logc(ctx).WithError(err).Error("Error checking for existing volume.")
 		return createError
 	}
 	if exists {
@@ -694,8 +694,8 @@ func (d *SANEconomyStorageDriver) Create(
 					Qos:            qosPolicyGroup,
 					Size:           lunSize,
 					OsType:         osType,
-					SpaceReserved:  convert.ToPtr(false),
-					SpaceAllocated: convert.ToPtr(spaceAllocation),
+					SpaceReserved:  new(false),
+					SpaceAllocated: new(spaceAllocation),
 				})
 			if err != nil {
 				if api.IsTooManyLunsError(err) {
@@ -1676,7 +1676,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	}
 	if !volLunExists {
 		message := fmt.Sprintf("volume LUN %s does not exist", volLunName)
-		Logc(ctx).Warnf(message)
+		Logc(ctx).Warn(message)
 		return errors.NotFoundError(message)
 	}
 
@@ -1693,7 +1693,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	}
 	if !volLunExists {
 		message := fmt.Sprintf("volume LUN %s does not exist", volLunName)
-		Logc(ctx).Warnf(message)
+		Logc(ctx).Warn(message)
 		return errors.NotFoundError(message)
 	}
 	// Verify the bucket volume hasn't changed
@@ -1779,7 +1779,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	}
 
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), tempVolLunPath); err != nil {
-		Logc(ctx).WithError(err).Warning("Could not remove all mappings from original LUN %s after RestoreSnapshot",
+		Logc(ctx).WithError(err).Warningf("Could not remove all mappings from original LUN %s after RestoreSnapshot",
 			tempVolLunPath)
 	}
 

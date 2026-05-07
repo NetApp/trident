@@ -223,17 +223,19 @@ func writeImages(k8sVersions []string, imageMap map[string][]string) {
 }
 
 func writeImageTable(k8sVersions []string, imageMap map[string][]string) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoWrapText(false)
-	table.SetHeader([]string{"Kubernetes Version", "Container Image"})
 	if OutputFormat == FormatMarkdown {
-		// print in markdown table format
-		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		table.SetCenterSeparator("|")
+		fmt.Fprintln(os.Stdout, "| Kubernetes Version | Container Image |")
+		fmt.Fprintln(os.Stdout, "|---|---|")
+		for _, k8sVersion := range k8sVersions {
+			fmt.Fprintf(os.Stdout, "| %s | %s |\n", k8sVersion, strings.Join(imageMap[k8sVersion], "<br>"))
+		}
+		return
 	}
-	table.SetRowLine(true)
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.Header([]string{"Kubernetes Version", "Container Image"})
 	for _, k8sVersion := range k8sVersions {
-		table.Append([]string{k8sVersion, strings.Join(imageMap[k8sVersion], "\n")})
+		_ = table.Append([]string{k8sVersion, strings.Join(imageMap[k8sVersion], "\n")})
 	}
-	table.Render()
+	_ = table.Render()
 }

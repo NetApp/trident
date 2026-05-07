@@ -29,7 +29,7 @@ import (
 	listerv1 "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
 	"github.com/netapp/trident/pkg/eventbus"
 	eventbusTypes "github.com/netapp/trident/pkg/eventbus/types"
-	errors "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // createPublishFunc creates the publish callback function for the assorter
@@ -377,8 +377,7 @@ func (s *Scheduler) workerLoop(ctx context.Context) {
 						var addedWithDelay bool
 						if k8serrors.IsTooManyRequests(err) {
 							// Unwrap to access the StatusError details
-							var statusErr *k8serrors.StatusError
-							if stderrors.As(err, &statusErr) && statusErr.Status().Details != nil && statusErr.Status().Details.RetryAfterSeconds > 0 {
+							if statusErr, ok := stderrors.AsType[*k8serrors.StatusError](err); ok && statusErr.Status().Details != nil && statusErr.Status().Details.RetryAfterSeconds > 0 {
 								duration := time.Duration(statusErr.Status().Details.RetryAfterSeconds) * time.Second
 								Logc(workItem.Ctx).WithFields(LogFields{
 									"key":        workItem.Key,

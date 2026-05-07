@@ -1429,11 +1429,10 @@ func TestWaitForTridentPod(t *testing.T) {
 				deployment := &appsv1.Deployment{
 					ObjectMeta: metav1.ObjectMeta{Name: "trident-deployment"},
 				}
-				deletionTime := metav1.Now()
 				pod := &v1.Pod{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "trident-pod",
-						DeletionTimestamp: &deletionTime,
+						DeletionTimestamp: new(metav1.Now()),
 					},
 				}
 

@@ -1175,8 +1175,7 @@ func (c *TridentCrdController) failTagri(
 	tagriCopy := tagri.DeepCopy()
 	tagriCopy.Status.Phase = TagriPhaseFailed
 	tagriCopy.Status.Message = reason
-	now := metav1.NewTime(time.Now())
-	tagriCopy.Status.ProcessedAt = &now
+	tagriCopy.Status.ProcessedAt = new(metav1.NewTime(time.Now()))
 	updated, err := c.updateTagriStatus(ctx, tagriCopy)
 	if err != nil {
 		return nil, errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
@@ -1431,9 +1430,8 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusAttempt(
 	}
 	return c.updateVolumeAutogrowStatus(ctx, volExternal,
 		func(status *models.VolumeAutogrowStatus) {
-			now := time.Now()
 			status.LastAutogrowPolicyUsed = tagri.Spec.AutogrowPolicyRef.Name
-			status.LastAutogrowAttemptedAt = &now
+			status.LastAutogrowAttemptedAt = new(time.Now())
 			status.LastProposedSize = proposedSize
 			status.LastError = errorMsg
 			status.TotalAutogrowAttempted++
@@ -1467,9 +1465,8 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusSuccess(
 	}
 	return c.updateVolumeAutogrowStatus(ctx, volExternal,
 		func(status *models.VolumeAutogrowStatus) {
-			now := time.Now()
 			status.LastAutogrowPolicyUsed = tagri.Spec.AutogrowPolicyRef.Name
-			status.LastSuccessfulAutogrowAt = &now
+			status.LastSuccessfulAutogrowAt = new(time.Now())
 			status.LastSuccessfulSize = finalSize
 			status.LastError = ""
 			status.TotalSuccessfulAutogrow++

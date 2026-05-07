@@ -850,8 +850,7 @@ func (d *NASStorageDriver) Create(
 
 		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
 		coolingDays, _ := strconv.ParseInt(coolingDaysStr, 10, 32)
-		coolingDaysInt32 := int32(coolingDays)
-		tieringMinimumCoolingDays = &coolingDaysInt32
+		tieringMinimumCoolingDays = new(int32(coolingDays))
 	}
 
 	// Determine protocol from mount options
@@ -1194,8 +1193,7 @@ func (d *NASStorageDriver) CreateClone(
 
 		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
 		coolingDays, _ := strconv.ParseInt(cloneCoolingDaysStr, 10, 32)
-		coolingDaysInt32 := int32(coolingDays)
-		cloneTieringMinimumCoolingDays = &coolingDaysInt32
+		cloneTieringMinimumCoolingDays = new(int32(coolingDays))
 	}
 
 	// Update clone config to reflect resolved tiering values used for the clone.
@@ -1219,7 +1217,7 @@ func (d *NASStorageDriver) CreateClone(
 		SizeBytes:                 sourceVolume.SizeBytes,
 		ProtocolTypes:             sourceVolume.ProtocolTypes,
 		Labels:                    labels,
-		SnapshotReserve:           convert.ToPtr(sourceVolume.SnapshotReserve),
+		SnapshotReserve:           new(sourceVolume.SnapshotReserve),
 		SnapshotDirectory:         sourceVolume.SnapshotDirectory,
 		SecurityStyle:             sourceVolume.SecurityStyle,
 		SnapshotID:                sourceSnapshot.FullName,

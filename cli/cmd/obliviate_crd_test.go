@@ -132,8 +132,7 @@ func createTestCRD(name string, withFinalizers bool,
 		crd.Finalizers = []string{"test-finalizer"}
 	}
 	if withDeletionTimestamp {
-		now := metav1.NewTime(time.Now())
-		crd.DeletionTimestamp = &now
+		crd.DeletionTimestamp = new(metav1.NewTime(time.Now()))
 	}
 	return crd
 }

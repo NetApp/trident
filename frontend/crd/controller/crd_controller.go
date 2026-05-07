@@ -735,7 +735,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 
 					c.workqueue.Forget(keyItem)
 
-					Logx(keyItem.ctx).Errorf(errMessage)
+					Logx(keyItem.ctx).Error(errMessage)
 					Log().Info("-------------------------------------------------")
 					Log().Info("-------------------------------------------------")
 
@@ -747,7 +747,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 
 					c.workqueue.Forget(keyItem)
 
-					Logx(keyItem.ctx).WithError(err).Errorf(errMessage)
+					Logx(keyItem.ctx).WithError(err).Error(errMessage)
 					Log().Info("-------------------------------------------------")
 					Log().Info("-------------------------------------------------")
 

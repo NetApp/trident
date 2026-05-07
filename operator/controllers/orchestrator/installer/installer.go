@@ -329,14 +329,14 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 		tridentImageVersion, err := versionutils.ParseDate(tridentClientVersion.Client.Version)
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during Trident client version retrieval; err: %v", err)
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			return "", errors.New(errMessage)
 		}
 
 		supportedTridentVersion, err := versionutils.ParseDate(DefaultTridentVersion)
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during supported Trident version; err: %v", err)
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			return "", errors.New(errMessage)
 		}
 
@@ -346,7 +346,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 		if tridentImageShortVersion != supportedTridentShortVersion {
 			errMessage := fmt.Sprintf("unsupported Trident image version '%s', supported Trident version is '%s'",
 				tridentImageVersion.ShortStringWithRelease(), supportedTridentVersion.ShortStringWithRelease())
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			return "", errors.New(errMessage)
 		}
 
@@ -1009,7 +1009,7 @@ func (i *Installer) InstallOrPatchTrident(
 	} else {
 		// Remove TridentNodeRemediation resources if enableForceDetach was toggled off
 		if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
-			Log().Warn("could not remove TridentNodeRemediation resources; %v", err)
+			Log().WithError(err).Warn("could not remove TridentNodeRemediation resources")
 		}
 	}
 
@@ -2186,7 +2186,7 @@ func (i *Installer) getTridentClientVersionInfo(
 	clientVersion := api.ClientVersionResponse{}
 	if err := yaml.Unmarshal(clientVersionYAML, &clientVersion); err != nil {
 		errMessage := fmt.Sprintf("unable to umarshall client version YAML to Version struct; err: %v", err)
-		Log().WithField("image", imageName).Errorf(errMessage)
+		Log().WithField("image", imageName).Error(errMessage)
 
 		return nil, errors.New(errMessage)
 	}

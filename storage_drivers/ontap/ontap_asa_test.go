@@ -19,7 +19,6 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/pkg/capacity"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -56,8 +55,7 @@ func newMockOntapASADriver(t *testing.T) (*mockapi.MockOntapAPI, *ASAStorageDriv
 }
 
 func cloneTestOntapASADriver(driver *ASAStorageDriver) *ASAStorageDriver {
-	clone := *driver
-	return &clone
+	return new(*driver)
 }
 
 func newTestOntapASADriver(
@@ -76,7 +74,7 @@ func newTestOntapASADriver(
 	config.Username = "ontap-asa-user"
 	config.Password = "password1!"
 	config.StorageDriverName = "ontap-san"
-	config.StoragePrefix = convert.ToPtr("test_")
+	config.StoragePrefix = new("test_")
 
 	iscsiClient, _ := iscsi.New()
 
@@ -231,7 +229,7 @@ func TestGetExternalConfigASA(t *testing.T) {
 		ChapTargetInitiatorSecret: "chapTargetInitiatorSecret",
 		ChapTargetUsername:        "chapTargetUsername",
 		ChapUsername:              "chapUsername",
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 	driver.Config = config
 	externalConfig := driver.GetExternalConfig(ctx)
@@ -253,7 +251,7 @@ func TestGetExternalConfigASA(t *testing.T) {
 		ChapTargetInitiatorSecret: tridentconfig.REDACTED,
 		ChapTargetUsername:        tridentconfig.REDACTED,
 		ChapUsername:              tridentconfig.REDACTED,
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 
 	assert.Equal(t, expectedConfig, externalConfig, "The returned external configuration should match the expected configuration")
@@ -285,7 +283,7 @@ func TestStoreConfigASA(t *testing.T) {
 		ChapTargetInitiatorSecret: "chapTargetInitiatorSecret",
 		ChapTargetUsername:        "chapTargetUsername",
 		ChapUsername:              "chapUsername",
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 	driver.Config = config
 
@@ -310,7 +308,7 @@ func TestStoreConfigASA(t *testing.T) {
 		ChapTargetInitiatorSecret: "chapTargetInitiatorSecret",
 		ChapTargetUsername:        "chapTargetUsername",
 		ChapUsername:              "chapUsername",
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 
 	// Verify that the stored configuration matches the expected configuration
@@ -466,13 +464,13 @@ func TestInitializeASA(t *testing.T) {
 			name: "d.validate returns an error and driverContext is CSI",
 			setupMocks: func() {
 				driver.initialized = false
-				driver.Config.StoragePrefix = convert.ToPtr("#test_")
+				driver.Config.StoragePrefix = new("#test_")
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
-				driver.Config.StoragePrefix = convert.ToPtr("test_")
+				driver.Config.StoragePrefix = new("test_")
 				assert.Error(t, err, "Expected error during initialization")
 				assert.False(t, driver.Initialized(), "Expected driver to be not initialized")
 			},
@@ -618,8 +616,7 @@ func TestValidateASA(t *testing.T) {
 
 	// Initialize the driver and mock API
 	initializeDriver := func() {
-		storagePrefix := "trident_"
-		driver.Config.CommonStorageDriverConfig.StoragePrefix = &storagePrefix
+		driver.Config.CommonStorageDriverConfig.StoragePrefix = new("trident_")
 		driver.ips = []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
 		driver.Config.AutoExportPolicy = true
 		driver.Config.UseCHAP = true
@@ -649,8 +646,7 @@ func TestValidateASA(t *testing.T) {
 		{
 			name: "ValidateStoragePrefix fails",
 			setupDriver: func(driver *ASAStorageDriver) {
-				storagePrefix := "/s"
-				driver.Config.StoragePrefix = &storagePrefix
+				driver.Config.StoragePrefix = new("/s")
 			},
 			expectedError: true,
 		},
@@ -2555,7 +2551,7 @@ func TestGetUpdateType(t *testing.T) {
 			name: "Storage prefix change",
 			driverOrig: func() storage.Driver {
 				_, drivOrig := newMockOntapASADriver(t)
-				drivOrig.Config.StoragePrefix = convert.ToPtr("oldPrefix")
+				drivOrig.Config.StoragePrefix = new("oldPrefix")
 				return drivOrig
 			}(),
 			expected: func() *roaring.Bitmap {
@@ -2597,7 +2593,7 @@ func TestGetVolumeExternalWrappersASA(t *testing.T) {
 	}
 
 	mockAPI, driver := newMockOntapASADriver(t)
-	driver.Config.StoragePrefix = convert.ToPtr("prefix_")
+	driver.Config.StoragePrefix = new("prefix_")
 
 	tests := []testCase{
 		{
@@ -2810,8 +2806,7 @@ func TestCreatePrepareASA(t *testing.T) {
 
 func TestCreateFollowupASA(t *testing.T) {
 	_, driver := newMockOntapASADriver(t)
-	volConfig := getASAVolumeConfig()
-	err := driver.CreateFollowup(ctx, &volConfig)
+	err := driver.CreateFollowup(ctx, new(getASAVolumeConfig()))
 	assert.NoError(t, err, "There shouldn't be any error")
 }
 
@@ -2865,7 +2860,7 @@ func TestGoStringASA(t *testing.T) {
 		ChapTargetInitiatorSecret: "chapTargetInitiatorSecret",
 		ChapTargetUsername:        "chapTargetUsername",
 		ChapUsername:              "chapUsername",
-		UseREST:                   convert.ToPtr(true),
+		UseREST:                   new(true),
 	}
 
 	driver.Config = config
@@ -3128,13 +3123,11 @@ func TestEnablePublishEnforcementASA(t *testing.T) {
 func TestOntapASAStorageDriver_Resize_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapASADriver(t)
 
-	volConfig := getASAVolumeConfig()
-
 	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
 	mockAPI.EXPECT().LunSetSize(ctx, "trident-pvc-1234", "2147483648").Return(uint64(214748364), nil)
 
-	err := driver.Resize(ctx, &volConfig, 2147483648) // 2GB
+	err := driver.Resize(ctx, new(getASAVolumeConfig()), 2147483648) // 2GB
 
 	assert.NoError(t, err, "Volume resize failed")
 }
@@ -3142,12 +3135,10 @@ func TestOntapASAStorageDriver_Resize_Success(t *testing.T) {
 func TestOntapASAStorageDriver_Resize_LesserSizeThanCurrent(t *testing.T) {
 	mockAPI, driver := newMockOntapASADriver(t)
 
-	volConfig := getASAVolumeConfig()
-
 	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(2147483648, nil) // 2GB
 
-	err := driver.Resize(ctx, &volConfig, 1073741824) // 1GB
+	err := driver.Resize(ctx, new(getASAVolumeConfig()), 1073741824) // 1GB
 
 	assert.Error(t, err, "Expected error when resizing to lesser size than current")
 }

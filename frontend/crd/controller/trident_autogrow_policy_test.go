@@ -779,12 +779,11 @@ func TestDeleteAutogrowPolicy_Success(t *testing.T) {
 	ctx := context.Background()
 
 	// Set deletion timestamp to simulate Kubernetes deletion flow
-	now := metav1.Now()
 	policy := &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-policy-delete-success",
 			Finalizers:        []string{"trident.netapp.io"},
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: tridentv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "80%",
@@ -888,12 +887,11 @@ func TestDeleteAutogrowPolicy_OrchestratorNotFoundIsOK(t *testing.T) {
 	ctx := context.Background()
 
 	// Set deletion timestamp to simulate Kubernetes deletion flow
-	now := metav1.Now()
 	policy := &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-policy-not-found",
 			Finalizers:        []string{"trident.netapp.io"},
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: tridentv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "80%",
@@ -1032,12 +1030,11 @@ func TestHandleAutogrowPolicy_WithOrchestrator_DeleteWithDeletionTimestamp(t *te
 
 	ctx := context.Background()
 
-	now := metav1.Now()
 	policy := &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-full-delete",
 			Finalizers:        []string{"trident.netapp.io"},
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: tridentv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "80%",
@@ -1092,12 +1089,11 @@ func TestDeleteAutogrowPolicy_AlreadyDeleted(t *testing.T) {
 
 	ctx := context.Background()
 
-	now := metav1.Now()
 	policy := &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-policy-already-deleted",
 			Finalizers:        []string{"trident.netapp.io"},
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: tridentv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "80%",
@@ -1134,12 +1130,11 @@ func TestDeleteAutogrowPolicy_SoftDeletedThenHardDeleted(t *testing.T) {
 	ctx := context.Background()
 
 	// Set deletion timestamp to trigger finalizer removal
-	now := metav1.Now()
 	policy := &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-policy-transition",
 			Finalizers:        []string{"trident.netapp.io"},
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: tridentv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "80%",

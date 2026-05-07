@@ -29,10 +29,9 @@ func TestConfigCopy(t *testing.T) {
 		{
 			name: "Config with all fields set",
 			config: func() *Config {
-				period := 3 * time.Minute
 				return &Config{
 					WorkerPool:       mockWorkerpool.NewMockPool(ctrl),
-					AutogrowPeriod:   &period,
+					AutogrowPeriod:   new(3 * time.Minute),
 					MaxRetries:       5,
 					ShutdownTimeout:  45 * time.Second,
 					WorkQueueName:    "test-queue",
@@ -88,8 +87,7 @@ func TestConfigCopy(t *testing.T) {
 			copy.ShutdownTimeout = 99 * time.Second
 			copy.WorkQueueName = "modified-queue"
 			copy.TridentNamespace = "modified-namespace"
-			modifiedPeriod := 10 * time.Minute
-			copy.AutogrowPeriod = &modifiedPeriod
+			copy.AutogrowPeriod = new(10 * time.Minute)
 
 			// Original should be unchanged
 			assert.NotEqual(t, tt.config.MaxRetries, copy.MaxRetries)

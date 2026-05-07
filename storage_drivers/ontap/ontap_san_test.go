@@ -18,7 +18,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -53,7 +52,7 @@ func getCommonConfig() *drivers.CommonStorageDriverConfig {
 		BackendName:       "myOntapSANBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("trident_"),
+		StoragePrefix:     new("trident_"),
 	}
 }
 
@@ -75,8 +74,7 @@ func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
-	fsxId := FSX_ID
-	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, testDefaultPort, ONTAPTEST_VSERVER_AGGR_NAME, true, &fsxId, mockAPI)
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, testDefaultPort, ONTAPTEST_VSERVER_AGGR_NAME, true, new(FSX_ID), mockAPI)
 	driver.API = mockAPI
 	driver.ips = []string{testLocalHostIP}
 
@@ -412,10 +410,9 @@ func TestOntapSanVolumeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
 	})
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
-	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
 
-	err := d.Create(ctx, &volConfig, pool1, volAttrs)
+	err := d.Create(ctx, new(getVolumeConfig()), pool1, volAttrs)
 
 	assert.Error(t, err, "Expected error for invalid skipRecoveryQueue value")
 }
@@ -874,10 +871,9 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
-	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
 
-	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+	err := driver.Create(ctx, new(getVolumeConfig()), pool1, volAttrs)
 
 	assert.Error(t, err, "Error is nil")
 }
@@ -1260,7 +1256,6 @@ func TestOntapSanVolumeCreate_GetPool(t *testing.T) {
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
 
-	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
@@ -1269,7 +1264,7 @@ func TestOntapSanVolumeCreate_GetPool(t *testing.T) {
 		},
 	).MaxTimes(1)
 
-	err := driver.Create(ctx, &volConfig, pool2, volAttrs)
+	err := driver.Create(ctx, new(getVolumeConfig()), pool2, volAttrs)
 
 	assert.Error(t, err, "Storage pool is present in backend")
 }
@@ -1442,10 +1437,9 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	// checking whether the argument FormatOptions matches with what we pass in the internal attributes.
 	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, tempFormatOptions, gomock.Any()).Return(nil).MaxTimes(1)
 
-	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
 
-	err := d.Create(ctx, &volConfig, pool1, volAttrs)
+	err := d.Create(ctx, new(getVolumeConfig()), pool1, volAttrs)
 
 	assert.Nil(t, err, "Error is not nil")
 }
@@ -2861,8 +2855,6 @@ func TestOntapSanVolumeSnapshot(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	volConfig := getVolumeConfig()
-
 	snapshotConfig := &storage.SnapshotConfig{
 		Name:               "snap_vol1",
 		InternalName:       "trident-pvc-1234_snap",
@@ -2887,7 +2879,7 @@ func TestOntapSanVolumeSnapshot(t *testing.T) {
 		},
 		nil)
 
-	snap, err := driver.CreateSnapshot(ctx, snapshotConfig, &volConfig)
+	snap, err := driver.CreateSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.Equal(t, snap.Config.InternalName, snapshotConfig.InternalName)
 	assert.Equal(t, snap.Config.VolumeInternalName, snapshotConfig.VolumeInternalName)
@@ -2902,8 +2894,6 @@ func TestOntapSanVolumeSnapshot_SnapshotNotFound(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-
-	volConfig := getVolumeConfig()
 
 	snapshotConfig := &storage.SnapshotConfig{
 		Name:               "snap_vol1",
@@ -2930,7 +2920,7 @@ func TestOntapSanVolumeSnapshot_SnapshotNotFound(t *testing.T) {
 		errors.NotFoundError("snapshot %v not found for volume %v", snapshotConfig.InternalName,
 			snapshotConfig.VolumeInternalName))
 
-	_, err := driver.CreateSnapshot(ctx, snapshotConfig, &volConfig)
+	_, err := driver.CreateSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.Error(t, err, "Snapshot created")
 }
@@ -2942,8 +2932,6 @@ func TestOntapSanVolumeSnapshotRestore(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	volConfig := getVolumeConfig()
-
 	snapshotConfig := &storage.SnapshotConfig{
 		Name:               "snap_vol1",
 		InternalName:       "trident-pvc-1234_snap",
@@ -2954,7 +2942,7 @@ func TestOntapSanVolumeSnapshotRestore(t *testing.T) {
 	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, snapshotConfig.InternalName,
 		snapshotConfig.VolumeInternalName).Return(nil)
 
-	err := driver.RestoreSnapshot(ctx, snapshotConfig, &volConfig)
+	err := driver.RestoreSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.NoError(t, err, "Snapshot restore failed")
 }
@@ -2966,8 +2954,6 @@ func TestOntapSanVolumeSnapshotDelete(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	volConfig := getVolumeConfig()
-
 	snapshotConfig := &storage.SnapshotConfig{
 		Name:               "snap_vol1",
 		InternalName:       "trident-pvc-1234_snap",
@@ -2978,7 +2964,7 @@ func TestOntapSanVolumeSnapshotDelete(t *testing.T) {
 	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, snapshotConfig.InternalName,
 		snapshotConfig.VolumeInternalName).Return(nil)
 
-	err := driver.DeleteSnapshot(ctx, snapshotConfig, &volConfig)
+	err := driver.DeleteSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.NoError(t, err, "Snapshot delete failed")
 }
@@ -2989,8 +2975,6 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-
-	volConfig := getVolumeConfig()
 
 	snapshotConfig := &storage.SnapshotConfig{
 		Name:               "snap_vol1",
@@ -3007,7 +2991,7 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
 	driver.cloneSplitTimers.Store(snapshotConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
-	err := driver.DeleteSnapshot(ctx, snapshotConfig, &volConfig)
+	err := driver.DeleteSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.Error(t, err, "Snapshot destroyed, expected an error")
 }
@@ -3154,10 +3138,9 @@ func TestOntapSanVolumeCreatePrepare(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	volConfig := getVolumeConfig()
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	driver.CreatePrepare(ctx, &volConfig, pool)
+	driver.CreatePrepare(ctx, new(getVolumeConfig()), pool)
 }
 
 func TestOntapSanVolumeCreatePrepare_NilPool(t *testing.T) {
@@ -3230,9 +3213,7 @@ func TestOntapSanVolumeCreateFollowup(t *testing.T) {
 	ctx := context.Background()
 	_, driver := newMockOntapSANDriver(t)
 
-	volConfig := getVolumeConfig()
-
-	_ = driver.CreateFollowup(ctx, &volConfig)
+	_ = driver.CreateFollowup(ctx, new(getVolumeConfig()))
 }
 
 func TestOntapSanVolumeGetVolumeForImport(t *testing.T) {
@@ -3240,8 +3221,7 @@ func TestOntapSanVolumeGetVolumeForImport(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 
-	storagePrefix := "trident-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("trident-")
 
 	originalVolumeName := "trident-vol1"
 	volume := api.Volume{
@@ -3276,8 +3256,7 @@ func TestOntapSanVolumeGetVolumeForImport_Fail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 
-	storagePrefix := "trident-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("trident-")
 
 	originalVolumeName := "vol1"
 	volume := api.Volume{
@@ -3426,8 +3405,7 @@ func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	mockAPI, oldDriver := newMockOntapSANDriver(t)
 
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 	oldDriver.Config.Username = "user1"
 	oldDriver.Config.Password = "password1"
 	oldDriver.Config.Credentials = map[string]string{
@@ -3483,15 +3461,13 @@ func TestOntapSANStorageDriverGetUpdateType_Failure(t *testing.T) {
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 
 	// Created a SAN driver
 	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 
 	newDriver.API = mockAPI
-	prefix2 := "storage_"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("storage_")
 
 	expectedBitmap := &roaring.Bitmap{}
 	expectedBitmap.Add(storage.InvalidUpdate)
@@ -3511,8 +3487,6 @@ func TestOntapSANStorageDriverResize(t *testing.T) {
 		Aggregates:     aggr,
 		SnapshotPolicy: "none",
 	}
-	volConfig := getVolumeConfig()
-
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
@@ -3521,7 +3495,7 @@ func TestOntapSANStorageDriverResize(t *testing.T) {
 		"2362232012").Return(nil) // LUNMetadataBufferMultiplier * 1.1
 	mockAPI.EXPECT().LunSetSize(ctx, "/vol/trident-pvc-1234/lun0", "2147483648").Return(uint64(214748364), nil)
 
-	err := driver.Resize(ctx, &volConfig, 2147483648) // 2GB
+	err := driver.Resize(ctx, new(getVolumeConfig()), 2147483648) // 2GB
 
 	assert.NoError(t, err, "Volume resize failed")
 }
@@ -3536,14 +3510,12 @@ func TestOntapSANStorageDriverResize_SameSize(t *testing.T) {
 		Aggregates:     aggr,
 		SnapshotPolicy: "none",
 	}
-	volConfig := getVolumeConfig()
-
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1181116006), nil)
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 
-	err := driver.Resize(ctx, &volConfig, 1073741824) // 2GB
+	err := driver.Resize(ctx, new(getVolumeConfig()), 1073741824) // 2GB
 
 	assert.NoError(t, err, "able to update volume size smaller than actual size")
 }
@@ -3558,15 +3530,13 @@ func TestOntapSANStorageDriverResize_VolumeLargerThanResizeRequest(t *testing.T)
 		Aggregates:     aggr,
 		SnapshotPolicy: "none",
 	}
-	volConfig := getVolumeConfig()
-
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(2684354560), nil) // 2.5 Gi
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)  // 1 Gi
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 	mockAPI.EXPECT().LunSetSize(ctx, "/vol/trident-pvc-1234/lun0", "2147483648").Return(uint64(214748364), nil)
 
-	err := driver.Resize(ctx, &volConfig, 2147483648) // 2Gi
+	err := driver.Resize(ctx, new(getVolumeConfig()), 2147483648) // 2Gi
 
 	assert.NoError(t, err, "Volume resize failed")
 }
@@ -3581,14 +3551,12 @@ func TestOntapSANStorageDriverResize_UpdateSmallerSize(t *testing.T) {
 		Aggregates:     aggr,
 		SnapshotPolicy: "none",
 	}
-	volConfig := getVolumeConfig()
-
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1181116006), nil)
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 
-	err := driver.Resize(ctx, &volConfig, 107374182)
+	err := driver.Resize(ctx, new(getVolumeConfig()), 107374182)
 
 	assert.Error(t, err, "Update the size of a volume")
 }
@@ -4659,8 +4627,7 @@ func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *t
 
 func getOntapSANStorageDriverConfigJson() ([]byte, error) {
 	commonConfig := getCommonConfig()
-	storagePrefix := "Test_"
-	commonConfig.StoragePrefix = &storagePrefix
+	commonConfig.StoragePrefix = new("Test_")
 
 	ontapStorageDriverConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -5182,8 +5149,6 @@ func TestOntapSanVolumeGetSnapshot(t *testing.T) {
 		VolumeName:         "vol1",
 	}
 
-	volConfig := getVolumeConfig()
-
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
 		snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(
@@ -5193,7 +5158,7 @@ func TestOntapSanVolumeGetSnapshot(t *testing.T) {
 		},
 		nil)
 
-	snapshot, err := driver.GetSnapshot(ctx, snapshotConfig, &volConfig)
+	snapshot, err := driver.GetSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
 	assert.NoError(t, err, "Failed to get a snaphot")
 	assert.Equal(t, "vol1", snapshot.Config.VolumeName)
@@ -5207,8 +5172,6 @@ func TestOntapSanVolumeGetSnapshots(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	volConfig := getVolumeConfig()
-
 	snapshots := api.Snapshots{}
 	snapshots = append(snapshots, api.Snapshot{
 		CreateTime: "time",
@@ -5218,7 +5181,7 @@ func TestOntapSanVolumeGetSnapshots(t *testing.T) {
 	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotList(ctx, "trident-pvc-1234").Return(snapshots, nil)
 
-	snapshot, err := driver.GetSnapshots(ctx, &volConfig)
+	snapshot, err := driver.GetSnapshots(ctx, new(getVolumeConfig()))
 
 	assert.NoError(t, err, "Failed to get a snaphot list")
 	assert.Equal(t, "vol1", snapshot[0].Config.VolumeName)
@@ -5253,9 +5216,8 @@ func TestOntapSanVolumeValidate(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	storagePrefix := "trident_"
 	commonConfig := getCommonConfig()
-	commonConfig.StoragePrefix = &storagePrefix
+	commonConfig.StoragePrefix = new("trident_")
 
 	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
 
@@ -5289,9 +5251,8 @@ func TestOntapSanVolumeValidate_ValidateSANDriver(t *testing.T) {
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
 
-	storagePrefix := "trident&#"
 	commonConfig := getCommonConfig()
-	commonConfig.StoragePrefix = &storagePrefix
+	commonConfig.StoragePrefix = new("trident&#")
 	commonConfig.DriverContext = tridentconfig.ContextDocker
 
 	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
@@ -5319,9 +5280,8 @@ func TestOntapSanVolumeValidate_ValidateStoragePrefix(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	storagePrefix := "trident&#"
 	commonConfig := getCommonConfig()
-	commonConfig.StoragePrefix = &storagePrefix
+	commonConfig.StoragePrefix = new("trident&#")
 
 	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
 
@@ -5348,9 +5308,8 @@ func TestOntapSanVolumeValidate_ValidateStoragePools(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	storagePrefix := "trident_"
 	commonConfig := getCommonConfig()
-	commonConfig.StoragePrefix = &storagePrefix
+	commonConfig.StoragePrefix = new("trident_")
 
 	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
 

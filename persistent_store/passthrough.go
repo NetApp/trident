@@ -70,7 +70,7 @@ func (c *PassthroughClient) initialize(ctx context.Context, configPath string) e
 	}
 
 	// Check path
-	configPathInfo, err := os.Stat(configPath)
+	configPathInfo, err := os.Stat(configPath) // #nosec G703 -- path from passthrough bootstrap (trusted admin)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return errors.New("passthrough store initialization failed, config path does not exist")
@@ -114,7 +114,7 @@ func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) 
 	Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config file.")
 
 	// Read config file
-	fileContents, err := os.ReadFile(configPath)
+	fileContents, err := os.ReadFile(configPath) // #nosec G703 -- path from initialize/loadBackend (trusted bootstrap)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"configPath": configPath,

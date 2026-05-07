@@ -456,38 +456,38 @@ var (
 		Controller: ContainersResourceRequirements{
 			TridentControllerMain: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("10m")),
-					Memory: ToPtr(resource.MustParse("80Mi")),
+					CPU:    new(resource.MustParse("10m")),
+					Memory: new(resource.MustParse("80Mi")),
 				},
 			},
 			CSISidecarProvisioner: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("2m")),
-					Memory: ToPtr(resource.MustParse("20Mi")),
+					CPU:    new(resource.MustParse("2m")),
+					Memory: new(resource.MustParse("20Mi")),
 				},
 			},
 			CSISidecarAttacher: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("2m")),
-					Memory: ToPtr(resource.MustParse("20Mi")),
+					CPU:    new(resource.MustParse("2m")),
+					Memory: new(resource.MustParse("20Mi")),
 				},
 			},
 			CSISidecarResizer: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("3m")),
-					Memory: ToPtr(resource.MustParse("20Mi")),
+					CPU:    new(resource.MustParse("3m")),
+					Memory: new(resource.MustParse("20Mi")),
 				},
 			},
 			CSISidecarSnapshotter: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("2m")),
-					Memory: ToPtr(resource.MustParse("20Mi")),
+					CPU:    new(resource.MustParse("2m")),
+					Memory: new(resource.MustParse("20Mi")),
 				},
 			},
 			TridentAutosupport: &ContainerResource{
 				Requests: &ResourceRequirements{
-					CPU:    ToPtr(resource.MustParse("1m")),
-					Memory: ToPtr(resource.MustParse("30Mi")),
+					CPU:    new(resource.MustParse("1m")),
+					Memory: new(resource.MustParse("30Mi")),
 				},
 			},
 		},
@@ -495,34 +495,34 @@ var (
 			Linux: ContainersResourceRequirements{
 				TridentNodeMain: &ContainerResource{
 					Requests: &ResourceRequirements{
-						CPU:    ToPtr(resource.MustParse("10m")),
-						Memory: ToPtr(resource.MustParse("60Mi")),
+						CPU:    new(resource.MustParse("10m")),
+						Memory: new(resource.MustParse("60Mi")),
 					},
 				},
 				CSISidecarRegistrar: &ContainerResource{
 					Requests: &ResourceRequirements{
-						CPU:    ToPtr(resource.MustParse("1m")),
-						Memory: ToPtr(resource.MustParse("10Mi")),
+						CPU:    new(resource.MustParse("1m")),
+						Memory: new(resource.MustParse("10Mi")),
 					},
 				},
 			},
 			Windows: ContainersResourceRequirements{
 				TridentNodeMain: &ContainerResource{
 					Requests: &ResourceRequirements{
-						CPU:    ToPtr(resource.MustParse("10m")),
-						Memory: ToPtr(resource.MustParse("60Mi")),
+						CPU:    new(resource.MustParse("10m")),
+						Memory: new(resource.MustParse("60Mi")),
 					},
 				},
 				CSISidecarRegistrar: &ContainerResource{
 					Requests: &ResourceRequirements{
-						CPU:    ToPtr(resource.MustParse("6m")),
-						Memory: ToPtr(resource.MustParse("40Mi")),
+						CPU:    new(resource.MustParse("6m")),
+						Memory: new(resource.MustParse("40Mi")),
 					},
 				},
 				CSISidecarWindowsLivenessProbe: &ContainerResource{
 					Requests: &ResourceRequirements{
-						CPU:    ToPtr(resource.MustParse("2m")),
-						Memory: ToPtr(resource.MustParse("40Mi")),
+						CPU:    new(resource.MustParse("2m")),
+						Memory: new(resource.MustParse("40Mi")),
 					},
 				},
 			},

@@ -1085,7 +1085,7 @@ func TestGetSnapshotContentFromSnapshot(t *testing.T) {
 					Name: "test-snapshot",
 				},
 				Status: &vsv1.VolumeSnapshotStatus{
-					BoundVolumeSnapshotContentName: stringPtr(""),
+					BoundVolumeSnapshotContentName: new(""),
 				},
 			},
 			expectError: true,
@@ -1735,7 +1735,7 @@ func TestValidateSubordinateVolumeConfig_DeepValidation(t *testing.T) {
 					},
 				},
 				Spec: v1.PersistentVolumeClaimSpec{
-					StorageClassName: stringPtr("fast-ssd"),
+					StorageClassName: new("fast-ssd"),
 				},
 			},
 			volConfig:   &storage.VolumeConfig{Name: "test-volume"},

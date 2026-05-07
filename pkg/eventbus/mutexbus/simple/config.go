@@ -7,7 +7,6 @@ import (
 
 	"github.com/brunoga/deep"
 
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/eventbus/types"
 	workerpooltypes "github.com/netapp/trident/pkg/workerpool/types"
 )
@@ -79,8 +78,7 @@ func (c *Config) Copy() types.Config {
 	copied, err := deep.Copy(c)
 	if err != nil {
 		// Fallback to simple struct copy if deep copy fails
-		cfgCopy := *c
-		return &cfgCopy
+		return new(*c)
 	}
 	return copied
 }
@@ -104,7 +102,7 @@ func NewConfig(opts ...ConfigOption) *Config {
 	// Start with empty config
 	cfg := &Config{
 		PreAllocHandlers: defaultPreAllocHandlers,
-		NoHooks:          convert.ToPtr(defaultNoHooks),
+		NoHooks:          new(defaultNoHooks),
 		ShutdownTimeout:  defaultShutdownTimeout,
 	}
 
@@ -138,7 +136,7 @@ func WithWorkerPoolConfig(pool workerpooltypes.Pool) ConfigOption {
 //	cfg := simple.NewConfig(simple.WithNoHooks())
 func WithNoHooks() ConfigOption {
 	return func(c *Config) {
-		c.NoHooks = convert.ToPtr(true)
+		c.NoHooks = new(true)
 	}
 }
 
@@ -150,7 +148,7 @@ func WithNoHooks() ConfigOption {
 //	cfg := simple.NewConfig(simple.WithHooks())
 func WithHooks() ConfigOption {
 	return func(c *Config) {
-		c.NoHooks = convert.ToPtr(false)
+		c.NoHooks = new(false)
 	}
 }
 

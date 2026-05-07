@@ -31,13 +31,12 @@ func TestMain(m *testing.M) {
 // TestInitializeRecovery intentionally passes a bogus config to
 // NewStorageBackendForConfig to test its ability to recover.
 func TestInitializeRecovery(t *testing.T) {
-	empty := ""
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "ontap-nas",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 		},
 		// These should be bogus yet valid connection parameters
 		ManagementLIF: "127.0.0.1",
@@ -66,13 +65,12 @@ func TestInitializeRecovery(t *testing.T) {
 
 func TestNewStorageBackendForConfig(t *testing.T) {
 	backendUUID := uuid.New().String()
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "fake",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",
@@ -98,13 +96,12 @@ func TestNewStorageBackendForConfig(t *testing.T) {
 
 func TestNewStorageBackendForConfig_UnknownDriver(t *testing.T) {
 	backendUUID := uuid.New().String()
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "unknown",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",
@@ -175,13 +172,12 @@ func TestGetStorageDriver(t *testing.T) {
 }
 
 func TestSpecOnlyValidation(t *testing.T) {
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "fake",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",
@@ -205,13 +201,12 @@ func TestSpecOnlyValidation(t *testing.T) {
 }
 
 func TestSpecOnlyValidation_UnknownDriver(t *testing.T) {
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "unknown",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",
@@ -235,13 +230,12 @@ func TestSpecOnlyValidation_UnknownDriver(t *testing.T) {
 }
 
 func TestSpecOnlyValidation_InvalidYaml(t *testing.T) {
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "fake",
 			StoragePrefixRaw:  json.RawMessage("{}"),
-			StoragePrefix:     &empty,
+			StoragePrefix:     new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",
@@ -276,12 +270,11 @@ func TestValidateCommonSettings_InvalidJson(t *testing.T) {
 }
 
 func TestValidateCommonSettings_ValidationFailed(t *testing.T) {
-	empty := ""
 	config := &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:          1,
 			StoragePrefixRaw: json.RawMessage("{}"),
-			StoragePrefix:    &empty,
+			StoragePrefix:    new(""),
 			Credentials: map[string]string{
 				"name": "secret1",
 				"type": "secret",

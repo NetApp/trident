@@ -124,7 +124,7 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 			return nil, err
 		}
 	} else if config.APIKey != nil {
-		keyBytes, jsonErr := json.Marshal(config.APIKey)
+		keyBytes, jsonErr := json.Marshal(config.APIKey) //nolint:gosec // serialized for google.CredentialsFromJSON only
 		if jsonErr != nil {
 			return nil, jsonErr
 		}
@@ -391,16 +391,11 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapppb.ExportPolicy {
 
 	for _, rule := range exportPolicy.Rules {
 
-		allowedClients := rule.AllowedClients
-		accessType := GCNVAccessTypeFromVolumeAccessType(rule.AccessType)
-		nfsv3 := rule.Nfsv3
-		nfsv4 := rule.Nfsv4
-
 		gcnvRule := netapppb.SimpleExportPolicyRule{
-			AllowedClients: &allowedClients,
-			AccessType:     &accessType,
-			Nfsv3:          &nfsv3,
-			Nfsv4:          &nfsv4,
+			AllowedClients: new(rule.AllowedClients),
+			AccessType:     new(GCNVAccessTypeFromVolumeAccessType(rule.AccessType)),
+			Nfsv3:          new(rule.Nfsv3),
+			Nfsv4:          new(rule.Nfsv4),
 		}
 
 		gcnvRules = append(gcnvRules, &gcnvRule)
@@ -642,7 +637,7 @@ func (c Client) Volumes(ctx context.Context) (*[]*Volume, error) {
 				return nil, err
 			}
 			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithFields(logFields).WithError(err).Debug("Volume: %v.", gcnvVolume)
+				WithFields(logFields).WithError(err).Debugf("Volume: %v.", gcnvVolume)
 
 			volume, err := c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
 			if err != nil {
@@ -943,9 +938,8 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		}
 
 		// If cooling days is unset, omit it and let the service apply its default.
-		tierAction := netapppb.TieringPolicy_ENABLED
 		newVol.TieringPolicy = &netapppb.TieringPolicy{
-			TierAction:           &tierAction,
+			TierAction:           new(netapppb.TieringPolicy_ENABLED),
 			CoolingThresholdDays: request.TieringMinimumCoolingDays,
 		}
 
@@ -956,9 +950,8 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		}).Debug("Auto-tiering enabled for volume creation")
 	case drivers.TieringPolicyNone:
 		if cPool.AutoTiering {
-			tierAction := netapppb.TieringPolicy_PAUSED
 			newVol.TieringPolicy = &netapppb.TieringPolicy{
-				TierAction: &tierAction,
+				TierAction: new(netapppb.TieringPolicy_PAUSED),
 			}
 		}
 	}
@@ -1237,7 +1230,7 @@ func (c Client) SnapshotsForVolume(ctx context.Context, volume *Volume) (*[]*Sna
 			return nil, err
 		}
 		Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-			WithFields(logFields).WithError(err).Debug("Snapshot: %v.", gcnvSnapshot)
+			WithFields(logFields).WithError(err).Debugf("Snapshot: %v.", gcnvSnapshot)
 
 		snapshot, err := c.newSnapshotFromGCNVSnapshot(ctx, gcnvSnapshot)
 		if err != nil {

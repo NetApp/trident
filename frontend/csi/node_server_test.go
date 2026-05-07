@@ -44,7 +44,6 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
 	"github.com/netapp/trident/pkg/collection"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/devices"
@@ -1719,7 +1718,7 @@ func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: convert.ToPtr(true),
+		ProvisionerReady: new(true),
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -1741,7 +1740,7 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: convert.ToPtr(true),
+		ProvisionerReady: new(true),
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -9525,8 +9524,7 @@ func createFCPStageRequests(numRequests int) ([]*csi.NodeStageVolumeRequest, []*
 	publishInfos := make([]*models.VolumePublishInfo, numRequests)
 	for i := 0; i < numRequests; i++ {
 		requests[i] = NewNodeStageVolumeRequestBuilder(TypeFCPRequest).Build()
-		publishInfo := NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build()
-		publishInfos[i] = &publishInfo
+		publishInfos[i] = new(NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build())
 	}
 	return requests, publishInfos
 }
@@ -9537,8 +9535,7 @@ func createFCPUnstageRequests(numRequests int) ([]*csi.NodeUnstageVolumeRequest,
 	publishInfos := make([]*models.VolumePublishInfo, numRequests)
 	for i := 0; i < numRequests; i++ {
 		requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
-		publishInfo := NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build()
-		publishInfos[i] = &publishInfo
+		publishInfos[i] = new(NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build())
 	}
 	return requests, publishInfos
 }
@@ -9566,8 +9563,7 @@ func createNVMeStageRequests(numRequests int) ([]*csi.NodeStageVolumeRequest, []
 	publishInfos := make([]*models.VolumePublishInfo, numRequests)
 	for i := 0; i < numRequests; i++ {
 		requests[i] = NewNodeStageVolumeRequestBuilder(TypeNVMERequest).WithVolumeID(uuid.NewString()).Build()
-		publishInfo := NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build()
-		publishInfos[i] = &publishInfo
+		publishInfos[i] = new(NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build())
 	}
 	return requests, publishInfos
 }
@@ -9578,8 +9574,7 @@ func createNVMeUnstageRequests(numRequests int) ([]*csi.NodeUnstageVolumeRequest
 	publishInfos := make([]*models.VolumePublishInfo, numRequests)
 	for i := 0; i < numRequests; i++ {
 		requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
-		publishInfo := NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build()
-		publishInfos[i] = &publishInfo
+		publishInfos[i] = new(NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build())
 	}
 	return requests, publishInfos
 }

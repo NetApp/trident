@@ -5085,9 +5085,6 @@ func TestIsStalePortal(t *testing.T) {
 			publishedPortalData, _ := input.PublishedPortals.Info[portal]
 			currentPortalData, _ := input.CurrentPortals.Info[portal]
 
-			publishedPortalInfo := publishedPortalData.PortalInfo
-			currentPortalInfo := currentPortalData.PortalInfo
-
 			const chrootPathPrefix = ""
 			ctrl := gomock.NewController(t)
 			iscsiClient := NewDetailed(
@@ -5104,7 +5101,7 @@ func TestIsStalePortal(t *testing.T) {
 			)
 
 			action := iscsiClient.isStalePortal(
-				context.TODO(), &publishedPortalInfo, &currentPortalInfo, input.SessionWaitTime, input.TimeNow, portal,
+				context.TODO(), new(publishedPortalData.PortalInfo), new(currentPortalData.PortalInfo), input.SessionWaitTime, input.TimeNow, portal,
 			)
 			assert.Equal(t, input.ResultAction, action, "Remediation action mismatch")
 		})

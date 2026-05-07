@@ -77,5 +77,5 @@ func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusC
 	logFields["UserAgent"] = r.UserAgent()
 	logFields["Host"] = r.Host
 
-	Audit().Logf(r.Context(), AuditRESTAccess, logFields, msg)
+	Audit().Log(r.Context(), AuditRESTAccess, logFields, msg)
 }

@@ -897,7 +897,7 @@ func resizeValidation(
 	}
 
 	if requestedSizeBytes == volConfigSizeBytes {
-		Logc(ctx).Debugf("Requested volume size %s is the same as current volume size %s.", requestedSizeBytes,
+		Logc(ctx).Debugf("Requested volume size %d is the same as current volume size %d.", requestedSizeBytes,
 			volSizeBytes)
 		// nothing to do
 		return 0, nil
@@ -1571,8 +1571,7 @@ func InitializeOntapDriver(
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriver")
 
 	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		config.StoragePrefix = &prefix
+		config.StoragePrefix = new(drivers.GetDefaultStoragePrefix(config.DriverContext))
 	}
 
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
@@ -2152,8 +2151,7 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 	}
 
 	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		config.StoragePrefix = &prefix
+		config.StoragePrefix = new(drivers.GetDefaultStoragePrefix(config.DriverContext))
 	}
 
 	if config.SpaceAllocation == "" {
@@ -3973,7 +3971,7 @@ func GetVolumeNameFromTemplate(
 ) (string, error) {
 	t, err := template.New("templatizedVolumeName").Parse(pool.InternalAttributes()[NameTemplate])
 	if err != nil {
-		Logc(ctx).WithError(err).Error("invalid name template in pool %s: %v", pool.Name(), err)
+		Logc(ctx).WithError(err).Errorf("invalid name template in pool %s", pool.Name())
 		return "", errors.New("invalid name template in pool")
 	} else {
 		templateData := make(map[string]interface{})
@@ -4039,7 +4037,7 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	// It's how gob encoding-decoding works, it flattens the pointer while encoding,
 	// and during the decoding phase, if the default value is encountered, it is assigned as nil.
 	if config.UseREST != nil {
-		cloneConfig.UseREST = convert.ToPtr(*config.UseREST)
+		cloneConfig.UseREST = new(*config.UseREST)
 	}
 
 	return cloneConfig
@@ -4616,7 +4614,7 @@ func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath str
 	igroups, err := clientAPI.LunListIgroupsMapped(ctx, lunPath)
 	if err != nil {
 		msg := "error listing igroup mappings"
-		Logc(ctx).WithError(err).Errorf(msg)
+		Logc(ctx).WithError(err).Error(msg)
 		return errors.New(msg)
 	}
 

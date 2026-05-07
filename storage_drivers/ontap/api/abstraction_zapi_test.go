@@ -176,11 +176,11 @@ func TestExportRuleList_Zapi_NoDuplicateRules(t *testing.T) {
 	policyName := "testPolicy"
 	ruleListResponse := &azgo.ExportRuleGetIterResponse{
 		Result: azgo.ExportRuleGetIterResponseResult{
-			NumRecordsPtr: intPtr(2),
+			NumRecordsPtr: new(2),
 			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
 				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{
-					{RuleIndexPtr: intPtr(1), ClientMatchPtr: convert.ToPtr("192.168.1.0")},
-					{RuleIndexPtr: intPtr(2), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+					{RuleIndexPtr: new(1), ClientMatchPtr: new("192.168.1.0")},
+					{RuleIndexPtr: new(2), ClientMatchPtr: new("192.168.1.1")},
 				},
 			},
 			ResultStatusAttr: "passed",
@@ -200,14 +200,14 @@ func TestExportRuleList_Zapi_DuplicateRules(t *testing.T) {
 	policyName := "testPolicy"
 	ruleListResponse := &azgo.ExportRuleGetIterResponse{
 		Result: azgo.ExportRuleGetIterResponseResult{
-			NumRecordsPtr: intPtr(5),
+			NumRecordsPtr: new(5),
 			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
 				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{
-					{RuleIndexPtr: intPtr(1), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
-					{RuleIndexPtr: intPtr(2), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
-					{RuleIndexPtr: intPtr(3), ClientMatchPtr: convert.ToPtr("192.168.1.2")},
-					{RuleIndexPtr: intPtr(4), ClientMatchPtr: convert.ToPtr("192.168.1.2")},
-					{RuleIndexPtr: intPtr(5), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+					{RuleIndexPtr: new(1), ClientMatchPtr: new("192.168.1.1")},
+					{RuleIndexPtr: new(2), ClientMatchPtr: new("192.168.1.1")},
+					{RuleIndexPtr: new(3), ClientMatchPtr: new("192.168.1.2")},
+					{RuleIndexPtr: new(4), ClientMatchPtr: new("192.168.1.2")},
+					{RuleIndexPtr: new(5), ClientMatchPtr: new("192.168.1.1")},
 				},
 			},
 			ResultStatusAttr: "passed",
@@ -246,7 +246,7 @@ func TestExportRuleList_Zapi_NoRecords(t *testing.T) {
 	policyName := "testPolicy"
 	ruleListResponse := &azgo.ExportRuleGetIterResponse{
 		Result: azgo.ExportRuleGetIterResponseResult{
-			NumRecordsPtr: intPtr(0),
+			NumRecordsPtr: new(0),
 			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
 				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{},
 			},
@@ -267,7 +267,7 @@ func TestExportRuleList_Zapi_NilPayload(t *testing.T) {
 	policyName := "testPolicy"
 	ruleListResponse := &azgo.ExportRuleGetIterResponse{
 		Result: azgo.ExportRuleGetIterResponseResult{
-			NumRecordsPtr:     intPtr(0),
+			NumRecordsPtr:     new(0),
 			AttributesListPtr: nil,
 			ResultStatusAttr:  "passed",
 		},
@@ -334,7 +334,7 @@ func TestOntapAPIZAPI_ConsistencyGroupSnapshot_success(t *testing.T) {
 
 	cgStartResponse := &azgo.CgStartResponse{
 		Result: azgo.CgStartResponseResult{
-			CgIdPtr:          convert.ToPtr(123),
+			CgIdPtr:          new(123),
 			ResultStatusAttr: "passed",
 		},
 	}
@@ -393,7 +393,7 @@ func TestOntapAPIZAPI_VolumeCreate_Success(t *testing.T) {
 		TieringPolicy:   "",
 		Comment:         "test volume",
 		Qos:             api.QosPolicyGroup{},
-		Encrypt:         convert.ToPtr(false),
+		Encrypt:         new(false),
 		SnapshotReserve: 5,
 		DPVolume:        false,
 	}
@@ -536,7 +536,7 @@ func TestOntapAPIZAPI_VolumeDestroy_WithRecoveryQueuePurge(t *testing.T) {
 			ResultStatusAttr: "passed",
 			AttributesListPtr: &azgo.VolumeRecoveryQueueGetIterResponseResultAttributesList{
 				VolumeRecoveryQueueInfoPtr: []azgo.VolumeRecoveryQueueInfoType{
-					{VolumeNamePtr: convert.ToPtr(recoveryQueueName)},
+					{VolumeNamePtr: new(recoveryQueueName)},
 				},
 			},
 		},
@@ -570,22 +570,22 @@ func TestOntapAPIZAPI_VolumeList_Success(t *testing.T) {
 				VolumeAttributesPtr: []azgo.VolumeAttributesType{
 					{
 						VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
-							NamePtr:                    convert.ToPtr("test_volume1"),
-							ContainingAggregateNamePtr: convert.ToPtr("aggr1"),
-							TypePtr:                    convert.ToPtr("rw"),
+							NamePtr:                    new("test_volume1"),
+							ContainingAggregateNamePtr: new("aggr1"),
+							TypePtr:                    new("rw"),
 						},
 						VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
-							SizePtr: convert.ToPtr(1073741824),
+							SizePtr: new(1073741824),
 						},
 					},
 					{
 						VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
-							NamePtr:                    convert.ToPtr("test_volume2"),
-							ContainingAggregateNamePtr: convert.ToPtr("aggr2"),
-							TypePtr:                    convert.ToPtr("rw"),
+							NamePtr:                    new("test_volume2"),
+							ContainingAggregateNamePtr: new("aggr2"),
+							TypePtr:                    new("rw"),
 						},
 						VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
-							SizePtr: convert.ToPtr(2147483648),
+							SizePtr: new(2147483648),
 						},
 					},
 				},
@@ -733,8 +733,8 @@ func TestOntapAPIZAPI_LunCreate_Success(t *testing.T) {
 		Size:           "1g",
 		OsType:         "linux",
 		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
-		SpaceReserved:  convert.ToPtr(true),
-		SpaceAllocated: convert.ToPtr(true),
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
 	}
 
 	lunCreateResponse := &azgo.LunCreateBySizeResponse{
@@ -763,8 +763,8 @@ func TestOntapAPIZAPI_LunCreate_InvalidSize(t *testing.T) {
 		Size:           "invalid_size",
 		OsType:         "linux",
 		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
-		SpaceReserved:  convert.ToPtr(true),
-		SpaceAllocated: convert.ToPtr(true),
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
 	}
 
 	err := oapi.LunCreate(ctx, lun)
@@ -786,8 +786,8 @@ func TestOntapAPIZAPI_LunCreate_ApiError(t *testing.T) {
 		Size:           "1g",
 		OsType:         "linux",
 		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
-		SpaceReserved:  convert.ToPtr(true),
-		SpaceAllocated: convert.ToPtr(true),
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
 	}
 
 	mock.EXPECT().LunCreate(lun.Name, 1073741824, lun.OsType, lun.Qos, *lun.SpaceReserved, *lun.SpaceAllocated).Return(nil, errors.New("API error")).Times(1)
@@ -811,8 +811,8 @@ func TestOntapAPIZAPI_LunCreate_NilResponse(t *testing.T) {
 		Size:           "1g",
 		OsType:         "linux",
 		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
-		SpaceReserved:  convert.ToPtr(true),
-		SpaceAllocated: convert.ToPtr(true),
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
 	}
 
 	mock.EXPECT().LunCreate(lun.Name, 1073741824, lun.OsType, lun.Qos, *lun.SpaceReserved, *lun.SpaceAllocated).Return(nil, nil).Times(1)
@@ -836,8 +836,8 @@ func TestOntapAPIZAPI_LunCreate_JobExists(t *testing.T) {
 		Size:           "1g",
 		OsType:         "linux",
 		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
-		SpaceReserved:  convert.ToPtr(true),
-		SpaceAllocated: convert.ToPtr(true),
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
 	}
 
 	lunCreateResponse := &azgo.LunCreateBySizeResponse{
@@ -1036,12 +1036,12 @@ func TestOntapAPIZAPI_LunList_Success(t *testing.T) {
 
 	lunInfoPtr := []azgo.LunInfoType{
 		{
-			PathPtr: convert.ToPtr("/vol/test_volume/test_lun1"),
-			SizePtr: convert.ToPtr(1073741824),
+			PathPtr: new("/vol/test_volume/test_lun1"),
+			SizePtr: new(1073741824),
 		},
 		{
-			PathPtr: convert.ToPtr("/vol/test_volume/test_lun2"),
-			SizePtr: convert.ToPtr(2147483648),
+			PathPtr: new("/vol/test_volume/test_lun2"),
+			SizePtr: new(2147483648),
 		},
 	}
 
@@ -1193,16 +1193,16 @@ func TestOntapAPIZAPI_IgroupList_Success(t *testing.T) {
 	igroupGetIterResponse := &azgo.IgroupGetIterResponse{
 		Result: azgo.IgroupGetIterResponseResult{
 			ResultStatusAttr: "passed",
-			NumRecordsPtr:    convert.ToPtr(2),
+			NumRecordsPtr:    new(2),
 			AttributesListPtr: &azgo.IgroupGetIterResponseResultAttributesList{
 				InitiatorGroupInfoPtr: []azgo.InitiatorGroupInfoType{
 					{
-						InitiatorGroupNamePtr: convert.ToPtr("test_igroup1"),
-						InitiatorGroupTypePtr: convert.ToPtr("iscsi"),
+						InitiatorGroupNamePtr: new("test_igroup1"),
+						InitiatorGroupTypePtr: new("iscsi"),
 					},
 					{
-						InitiatorGroupNamePtr: convert.ToPtr("test_igroup2"),
-						InitiatorGroupTypePtr: convert.ToPtr("fcp"),
+						InitiatorGroupNamePtr: new("test_igroup2"),
+						InitiatorGroupTypePtr: new("fcp"),
 					},
 				},
 			},
@@ -1531,12 +1531,12 @@ func TestOntapAPIZAPI_FcpInterfaceGet_Success(t *testing.T) {
 			AttributesListPtr: &azgo.FcpInterfaceGetIterResponseResultAttributesList{
 				FcpInterfaceInfoPtr: []azgo.FcpInterfaceInfoType{
 					{
-						NodeNamePtr: convert.ToPtr("20:00:00:25:b5:a0:a0:01"),
-						PortNamePtr: convert.ToPtr("20:00:00:25:b5:a0:a0:02"),
+						NodeNamePtr: new("20:00:00:25:b5:a0:a0:01"),
+						PortNamePtr: new("20:00:00:25:b5:a0:a0:02"),
 					},
 					{
-						NodeNamePtr: convert.ToPtr("20:00:00:25:b5:a0:a0:03"),
-						PortNamePtr: convert.ToPtr("20:00:00:25:b5:a0:a0:04"),
+						NodeNamePtr: new("20:00:00:25:b5:a0:a0:03"),
+						PortNamePtr: new("20:00:00:25:b5:a0:a0:04"),
 					},
 				},
 			},
@@ -1595,7 +1595,7 @@ func TestOntapAPIZAPI_FcpNodeGetNameRequest_Success(t *testing.T) {
 	fcpNodeResponse := &azgo.FcpNodeGetNameResponse{
 		Result: azgo.IscsiNodeGetNameResponseResult{
 			ResultStatusAttr: "passed",
-			NodeNamePtr:      convert.ToPtr("20:00:00:25:b5:a0:a0:01"),
+			NodeNamePtr:      new("20:00:00:25:b5:a0:a0:01"),
 		},
 	}
 
@@ -2177,9 +2177,9 @@ func TestOntapAPIZAPI_IscsiInitiatorGetDefaultAuth(t *testing.T) {
 			mockResponse: &azgo.IscsiInitiatorGetDefaultAuthResponse{
 				Result: azgo.IscsiInitiatorGetDefaultAuthResponseResult{
 					ResultStatusAttr:    "passed",
-					AuthTypePtr:         convert.ToPtr("CHAP"),
-					UserNamePtr:         convert.ToPtr("test_user"),
-					OutboundUserNamePtr: convert.ToPtr("test_outbound_user"),
+					AuthTypePtr:         new("CHAP"),
+					UserNamePtr:         new("test_user"),
+					OutboundUserNamePtr: new("test_outbound_user"),
 				},
 			},
 			mockError: nil,
@@ -2215,7 +2215,7 @@ func TestOntapAPIZAPI_IscsiInitiatorGetDefaultAuth(t *testing.T) {
 			mockResponse: &azgo.IscsiInitiatorGetDefaultAuthResponse{
 				Result: azgo.IscsiInitiatorGetDefaultAuthResponseResult{
 					ResultStatusAttr: "passed",
-					AuthTypePtr:      convert.ToPtr("none"),
+					AuthTypePtr:      new("none"),
 				},
 			},
 			mockError: nil,
@@ -2330,14 +2330,14 @@ func TestOntapAPIZAPI_IscsiInterfaceGet(t *testing.T) {
 					AttributesListPtr: &azgo.IscsiInterfaceGetIterResponseResultAttributesList{
 						IscsiInterfaceListEntryInfoPtr: []azgo.IscsiInterfaceListEntryInfoType{
 							{
-								IpAddressPtr:          convert.ToPtr("192.168.1.10"),
-								IpPortPtr:             convert.ToPtr(3260),
-								IsInterfaceEnabledPtr: convert.ToPtr(true),
+								IpAddressPtr:          new("192.168.1.10"),
+								IpPortPtr:             new(3260),
+								IsInterfaceEnabledPtr: new(true),
 							},
 							{
-								IpAddressPtr:          convert.ToPtr("192.168.1.11"),
-								IpPortPtr:             convert.ToPtr(3260),
-								IsInterfaceEnabledPtr: convert.ToPtr(true),
+								IpAddressPtr:          new("192.168.1.11"),
+								IpPortPtr:             new(3260),
+								IsInterfaceEnabledPtr: new(true),
 							},
 						},
 					},
@@ -2406,7 +2406,7 @@ func TestOntapAPIZAPI_IscsiNodeGetNameRequest(t *testing.T) {
 			mockResponse: &azgo.IscsiNodeGetNameResponse{
 				Result: azgo.IscsiNodeGetNameResponseResult{
 					ResultStatusAttr: "passed",
-					NodeNamePtr:      convert.ToPtr("iqn.1992-08.com.netapp:sn.12345678901234567890123456789012:vs.1"),
+					NodeNamePtr:      new("iqn.1992-08.com.netapp:sn.12345678901234567890123456789012:vs.1"),
 				},
 			},
 			mockError:        nil,
@@ -2425,7 +2425,7 @@ func TestOntapAPIZAPI_IscsiNodeGetNameRequest(t *testing.T) {
 			mockResponse: &azgo.IscsiNodeGetNameResponse{
 				Result: azgo.IscsiNodeGetNameResponseResult{
 					ResultStatusAttr: "passed",
-					NodeNamePtr:      convert.ToPtr(""),
+					NodeNamePtr:      new(""),
 				},
 			},
 			mockError:        nil,
@@ -2487,10 +2487,10 @@ func TestOntapAPIZAPI_IgroupListLUNsMapped(t *testing.T) {
 					AttributesListPtr: &azgo.LunMapGetIterResponseResultAttributesList{
 						LunMapInfoPtr: []azgo.LunMapInfoType{
 							{
-								PathPtr: convert.ToPtr("/vol/test_volume/test_lun1"),
+								PathPtr: new("/vol/test_volume/test_lun1"),
 							},
 							{
-								PathPtr: convert.ToPtr("/vol/test_volume/test_lun2"),
+								PathPtr: new("/vol/test_volume/test_lun2"),
 							},
 						},
 					},
@@ -2578,14 +2578,14 @@ func TestOntapAPIZAPI_IgroupGetByName(t *testing.T) {
 			name:               "successful_igroup_retrieval",
 			initiatorGroupName: "test_igroup",
 			mockResponse: &azgo.InitiatorGroupInfoType{
-				InitiatorGroupNamePtr: convert.ToPtr("test_igroup"),
+				InitiatorGroupNamePtr: new("test_igroup"),
 				InitiatorsPtr: &azgo.InitiatorGroupInfoTypeInitiators{
 					InitiatorInfoPtr: []azgo.InitiatorInfoType{
 						{
-							InitiatorNamePtr: convert.ToPtr("iqn.1991-05.com.microsoft:test-server1"),
+							InitiatorNamePtr: new("iqn.1991-05.com.microsoft:test-server1"),
 						},
 						{
-							InitiatorNamePtr: convert.ToPtr("iqn.1991-05.com.microsoft:test-server2"),
+							InitiatorNamePtr: new("iqn.1991-05.com.microsoft:test-server2"),
 						},
 					},
 				},
@@ -2609,7 +2609,7 @@ func TestOntapAPIZAPI_IgroupGetByName(t *testing.T) {
 			name:               "empty_initiators",
 			initiatorGroupName: "empty_igroup",
 			mockResponse: &azgo.InitiatorGroupInfoType{
-				InitiatorGroupNamePtr: convert.ToPtr("empty_igroup"),
+				InitiatorGroupNamePtr: new("empty_igroup"),
 				InitiatorsPtr:         nil,
 			},
 			mockError:          nil,
@@ -2620,11 +2620,11 @@ func TestOntapAPIZAPI_IgroupGetByName(t *testing.T) {
 			name:               "initiator_parsing_with_nil_names",
 			initiatorGroupName: "test_igroup",
 			mockResponse: &azgo.InitiatorGroupInfoType{
-				InitiatorGroupNamePtr: convert.ToPtr("test_igroup"),
+				InitiatorGroupNamePtr: new("test_igroup"),
 				InitiatorsPtr: &azgo.InitiatorGroupInfoTypeInitiators{
 					InitiatorInfoPtr: []azgo.InitiatorInfoType{
 						{
-							InitiatorNamePtr: convert.ToPtr("iqn.1991-05.com.microsoft:valid-server"),
+							InitiatorNamePtr: new("iqn.1991-05.com.microsoft:valid-server"),
 						},
 						{
 							InitiatorNamePtr: nil,
@@ -2683,16 +2683,16 @@ func TestOntapAPIZAPI_GetSLMDataLifs(t *testing.T) {
 					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
 						NetInterfaceInfoPtr: []azgo.NetInterfaceInfoType{
 							{
-								AddressPtr:     convert.ToPtr("192.168.1.10"),
-								CurrentNodePtr: convert.ToPtr("node1"),
+								AddressPtr:     new("192.168.1.10"),
+								CurrentNodePtr: new("node1"),
 							},
 							{
-								AddressPtr:     convert.ToPtr("192.168.1.11"),
-								CurrentNodePtr: convert.ToPtr("node2"),
+								AddressPtr:     new("192.168.1.11"),
+								CurrentNodePtr: new("node2"),
 							},
 							{
-								AddressPtr:     convert.ToPtr("192.168.1.12"),
-								CurrentNodePtr: convert.ToPtr("node3"),
+								AddressPtr:     new("192.168.1.12"),
+								CurrentNodePtr: new("node3"),
 							},
 						},
 					},
@@ -2930,13 +2930,13 @@ func TestOntapAPIZAPI_FlexgroupInfo(t *testing.T) {
 			volumeName: "test_flexgroup",
 			mockResponse: &azgo.VolumeAttributesType{
 				VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
-					NamePtr: convert.ToPtr("test_flexgroup"),
+					NamePtr: new("test_flexgroup"),
 				},
 				VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
-					SizePtr: convert.ToPtr(1073741824),
+					SizePtr: new(1073741824),
 				},
 				VolumeStateAttributesPtr: &azgo.VolumeStateAttributesType{
-					StatePtr: convert.ToPtr("online"),
+					StatePtr: new("online"),
 				},
 			},
 			mockError:   nil,
@@ -3639,8 +3639,8 @@ func TestOntapAPIZAPI_VolumeListByAttrs(t *testing.T) {
 				SpaceReserve:    "none",
 				SnapshotPolicy:  "default",
 				TieringPolicy:   "auto",
-				SnapshotDir:     convert.ToPtr(true),
-				Encrypt:         convert.ToPtr(false),
+				SnapshotDir:     new(true),
+				Encrypt:         new(false),
 				SnapshotReserve: 5,
 			},
 			mockResponse: &azgo.VolumeGetIterResponse{
@@ -3650,13 +3650,13 @@ func TestOntapAPIZAPI_VolumeListByAttrs(t *testing.T) {
 						VolumeAttributesPtr: []azgo.VolumeAttributesType{
 							{
 								VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
-									NamePtr: convert.ToPtr("test_vol_1"),
+									NamePtr: new("test_vol_1"),
 								},
 								VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
-									SizePtr: convert.ToPtr(1073741824),
+									SizePtr: new(1073741824),
 								},
 								VolumeStateAttributesPtr: &azgo.VolumeStateAttributesType{
-									StatePtr: convert.ToPtr("online"),
+									StatePtr: new("online"),
 								},
 							},
 						},
@@ -4607,20 +4607,20 @@ func TestOntapAPIZAPI_QtreeListByPrefix(t *testing.T) {
 					AttributesListPtr: &azgo.QtreeListIterResponseResultAttributesList{
 						QtreeInfoPtr: []azgo.QtreeInfoType{
 							{
-								QtreePtr:         convert.ToPtr("test_qtree1"),
-								VolumePtr:        convert.ToPtr("vol_1"),
-								ExportPolicyPtr:  convert.ToPtr("default"),
-								SecurityStylePtr: convert.ToPtr("unix"),
-								VserverPtr:       convert.ToPtr("svm1"),
-								ModePtr:          convert.ToPtr("0755"),
+								QtreePtr:         new("test_qtree1"),
+								VolumePtr:        new("vol_1"),
+								ExportPolicyPtr:  new("default"),
+								SecurityStylePtr: new("unix"),
+								VserverPtr:       new("svm1"),
+								ModePtr:          new("0755"),
 							},
 							{
-								QtreePtr:         convert.ToPtr("test_qtree2"),
-								VolumePtr:        convert.ToPtr("vol_2"),
-								ExportPolicyPtr:  convert.ToPtr("custom"),
-								SecurityStylePtr: convert.ToPtr("mixed"),
-								VserverPtr:       convert.ToPtr("svm1"),
-								ModePtr:          convert.ToPtr("0644"),
+								QtreePtr:         new("test_qtree2"),
+								VolumePtr:        new("vol_2"),
+								ExportPolicyPtr:  new("custom"),
+								SecurityStylePtr: new("mixed"),
+								VserverPtr:       new("svm1"),
+								ModePtr:          new("0644"),
 							},
 						},
 					},
@@ -4708,12 +4708,12 @@ func TestOntapAPIZAPI_QtreeGetByName(t *testing.T) {
 			qtreeName:    "test_qtree",
 			volumePrefix: "vol_",
 			mockQtree: &azgo.QtreeInfoType{
-				QtreePtr:         convert.ToPtr("test_qtree"),
-				VolumePtr:        convert.ToPtr("vol_1"),
-				ExportPolicyPtr:  convert.ToPtr("default"),
-				SecurityStylePtr: convert.ToPtr("unix"),
-				VserverPtr:       convert.ToPtr("svm1"),
-				ModePtr:          convert.ToPtr("0755"),
+				QtreePtr:         new("test_qtree"),
+				VolumePtr:        new("vol_1"),
+				ExportPolicyPtr:  new("default"),
+				SecurityStylePtr: new("unix"),
+				VserverPtr:       new("svm1"),
+				ModePtr:          new("0755"),
 			},
 			mockError:   nil,
 			expectError: false,
@@ -4778,18 +4778,18 @@ func TestOntapAPIZAPI_QuotaEntryList(t *testing.T) {
 					AttributesListPtr: &azgo.QuotaListEntriesIterResponseResultAttributesList{
 						QuotaEntryPtr: []azgo.QuotaEntryType{
 							{
-								VolumePtr:      convert.ToPtr("test_volume"),
-								QuotaTargetPtr: convert.ToPtr("/vol/test_volume"),
-								QtreePtr:       convert.ToPtr(""),
-								QuotaTypePtr:   convert.ToPtr("tree"),
-								DiskLimitPtr:   convert.ToPtr("1048576"),
+								VolumePtr:      new("test_volume"),
+								QuotaTargetPtr: new("/vol/test_volume"),
+								QtreePtr:       new(""),
+								QuotaTypePtr:   new("tree"),
+								DiskLimitPtr:   new("1048576"),
 							},
 							{
-								VolumePtr:      convert.ToPtr("test_volume"),
-								QuotaTargetPtr: convert.ToPtr("/vol/test_volume/qtree1"),
-								QtreePtr:       convert.ToPtr("qtree1"),
-								QuotaTypePtr:   convert.ToPtr("tree"),
-								DiskLimitPtr:   convert.ToPtr("2097152"),
+								VolumePtr:      new("test_volume"),
+								QuotaTargetPtr: new("/vol/test_volume/qtree1"),
+								QtreePtr:       new("qtree1"),
+								QuotaTypePtr:   new("tree"),
+								DiskLimitPtr:   new("2097152"),
 							},
 						},
 					},
@@ -4953,7 +4953,7 @@ func TestOntapAPIZAPI_QuotaStatus(t *testing.T) {
 			mockResponse: &azgo.QuotaStatusResponse{
 				Result: azgo.QuotaStatusResponseResult{
 					ResultStatusAttr: "passed",
-					StatusPtr:        convert.ToPtr("on"),
+					StatusPtr:        new("on"),
 				},
 			},
 			mockError:      nil,
@@ -4966,7 +4966,7 @@ func TestOntapAPIZAPI_QuotaStatus(t *testing.T) {
 			mockResponse: &azgo.QuotaStatusResponse{
 				Result: azgo.QuotaStatusResponseResult{
 					ResultStatusAttr: "passed",
-					StatusPtr:        convert.ToPtr("off"),
+					StatusPtr:        new("off"),
 				},
 			},
 			mockError:      nil,
@@ -5207,11 +5207,11 @@ func TestOntapAPIZAPI_QuotaGetEntry(t *testing.T) {
 			quotaType:      "tree",
 			expectedTarget: "/vol/test_volume",
 			mockQuota: &azgo.QuotaEntryType{
-				VolumePtr:      convert.ToPtr("test_volume"),
-				QuotaTargetPtr: convert.ToPtr("/vol/test_volume"),
-				QtreePtr:       convert.ToPtr(""),
-				QuotaTypePtr:   convert.ToPtr("tree"),
-				DiskLimitPtr:   convert.ToPtr("1048576"),
+				VolumePtr:      new("test_volume"),
+				QuotaTargetPtr: new("/vol/test_volume"),
+				QtreePtr:       new(""),
+				QuotaTypePtr:   new("tree"),
+				DiskLimitPtr:   new("1048576"),
 			},
 			mockError:   nil,
 			expectError: false,
@@ -5223,11 +5223,11 @@ func TestOntapAPIZAPI_QuotaGetEntry(t *testing.T) {
 			quotaType:      "tree",
 			expectedTarget: "/vol/test_volume/test_qtree",
 			mockQuota: &azgo.QuotaEntryType{
-				VolumePtr:      convert.ToPtr("test_volume"),
-				QuotaTargetPtr: convert.ToPtr("/vol/test_volume/test_qtree"),
-				QtreePtr:       convert.ToPtr("test_qtree"),
-				QuotaTypePtr:   convert.ToPtr("tree"),
-				DiskLimitPtr:   convert.ToPtr("2097152"),
+				VolumePtr:      new("test_volume"),
+				QuotaTargetPtr: new("/vol/test_volume/test_qtree"),
+				QtreePtr:       new("test_qtree"),
+				QuotaTypePtr:   new("tree"),
+				DiskLimitPtr:   new("2097152"),
 			},
 			mockError:   nil,
 			expectError: false,
@@ -5239,11 +5239,11 @@ func TestOntapAPIZAPI_QuotaGetEntry(t *testing.T) {
 			quotaType:      "tree",
 			expectedTarget: "/vol/test_volume",
 			mockQuota: &azgo.QuotaEntryType{
-				VolumePtr:      convert.ToPtr("test_volume"),
-				QuotaTargetPtr: convert.ToPtr("/vol/test_volume"),
-				QtreePtr:       convert.ToPtr(""),
-				QuotaTypePtr:   convert.ToPtr("tree"),
-				DiskLimitPtr:   convert.ToPtr("-"),
+				VolumePtr:      new("test_volume"),
+				QuotaTargetPtr: new("/vol/test_volume"),
+				QtreePtr:       new(""),
+				QuotaTypePtr:   new("tree"),
+				DiskLimitPtr:   new("-"),
 			},
 			mockError:   nil,
 			expectError: false,
@@ -5255,11 +5255,11 @@ func TestOntapAPIZAPI_QuotaGetEntry(t *testing.T) {
 			quotaType:      "tree",
 			expectedTarget: "/vol/error_volume",
 			mockQuota: &azgo.QuotaEntryType{
-				VolumePtr:      convert.ToPtr("error_volume"),
-				QuotaTargetPtr: convert.ToPtr("/vol/error_volume"),
-				QtreePtr:       convert.ToPtr(""),
-				QuotaTypePtr:   convert.ToPtr("tree"),
-				DiskLimitPtr:   convert.ToPtr("-"),
+				VolumePtr:      new("error_volume"),
+				QuotaTargetPtr: new("/vol/error_volume"),
+				QtreePtr:       new(""),
+				QuotaTypePtr:   new("tree"),
+				DiskLimitPtr:   new("-"),
 			},
 			mockError:   errors.New("API call failed"),
 			expectError: false, // The function doesn't propagate the API error, it just logs it
@@ -5315,12 +5315,12 @@ func TestOntapAPIZAPI_VolumeSnapshotInfo(t *testing.T) {
 			mockResponse: &azgo.SnapshotGetIterResponse{
 				Result: azgo.SnapshotGetIterResponseResult{
 					ResultStatusAttr: "passed",
-					NumRecordsPtr:    convert.ToPtr(1),
+					NumRecordsPtr:    new(1),
 					AttributesListPtr: &azgo.SnapshotGetIterResponseResultAttributesList{
 						SnapshotInfoPtr: []azgo.SnapshotInfoType{
 							{
-								AccessTimePtr: convert.ToPtr(1640995200), // Unix timestamp
-								NamePtr:       convert.ToPtr("test_snapshot"),
+								AccessTimePtr: new(1640995200), // Unix timestamp
+								NamePtr:       new("test_snapshot"),
 							},
 						},
 					},
@@ -5341,7 +5341,7 @@ func TestOntapAPIZAPI_VolumeSnapshotInfo(t *testing.T) {
 			mockResponse: &azgo.SnapshotGetIterResponse{
 				Result: azgo.SnapshotGetIterResponseResult{
 					ResultStatusAttr: "passed",
-					NumRecordsPtr:    convert.ToPtr(0),
+					NumRecordsPtr:    new(0),
 				},
 			},
 			mockError:      nil,
@@ -5356,7 +5356,7 @@ func TestOntapAPIZAPI_VolumeSnapshotInfo(t *testing.T) {
 			mockResponse: &azgo.SnapshotGetIterResponse{
 				Result: azgo.SnapshotGetIterResponseResult{
 					ResultStatusAttr: "passed",
-					NumRecordsPtr:    convert.ToPtr(2),
+					NumRecordsPtr:    new(2),
 				},
 			},
 			mockError:      nil,
@@ -5434,12 +5434,12 @@ func TestOntapAPIZAPI_VolumeSnapshotList(t *testing.T) {
 					AttributesListPtr: &azgo.SnapshotGetIterResponseResultAttributesList{
 						SnapshotInfoPtr: []azgo.SnapshotInfoType{
 							{
-								AccessTimePtr: convert.ToPtr(1640995200),
-								NamePtr:       convert.ToPtr("snapshot1"),
+								AccessTimePtr: new(1640995200),
+								NamePtr:       new("snapshot1"),
 							},
 							{
-								AccessTimePtr: convert.ToPtr(1641081600),
-								NamePtr:       convert.ToPtr("snapshot2"),
+								AccessTimePtr: new(1641081600),
+								NamePtr:       new("snapshot2"),
 							},
 						},
 					},
@@ -5996,8 +5996,6 @@ func TestOntapAPIZAPI_SnapmirrorGet(t *testing.T) {
 
 	// Create a mock time for testing
 	mockTime := int64(1234567890)
-	expectedTime := time.Unix(mockTime, 0).UTC()
-
 	tests := []struct {
 		name           string
 		mockResponse   *azgo.SnapmirrorGetResponse
@@ -6033,7 +6031,7 @@ func TestOntapAPIZAPI_SnapmirrorGet(t *testing.T) {
 				UnhealthyReason:     "",
 				ReplicationPolicy:   "async-policy",
 				ReplicationSchedule: "hourly",
-				EndTransferTime:     &expectedTime,
+				EndTransferTime:     new(time.Unix(mockTime, 0).UTC()),
 			},
 			expectError: false,
 		},

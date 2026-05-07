@@ -585,8 +585,8 @@ func (d *SANStorageDriver) Create(
 					Qos:            qosPolicyGroup,
 					Size:           lunSize,
 					OsType:         osType,
-					SpaceReserved:  convert.ToPtr(false),
-					SpaceAllocated: convert.ToPtr(spaceAllocation),
+					SpaceReserved:  new(false),
+					SpaceAllocated: new(spaceAllocation),
 				})
 			if err != nil {
 				errMessage := fmt.Sprintf(

@@ -38,7 +38,6 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -1426,8 +1425,8 @@ func (h *helper) getNodePublicationState(ctx context.Context, node *v1.Node) *mo
 	adminReady := !outOfService && !remediating
 
 	return &models.NodePublicationStateFlags{
-		OrchestratorReady:  convert.ToPtr(ready),
-		AdministratorReady: convert.ToPtr(adminReady),
+		OrchestratorReady:  new(ready),
+		AdministratorReady: new(adminReady),
 	}
 }
 

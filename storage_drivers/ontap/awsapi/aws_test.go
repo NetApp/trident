@@ -876,10 +876,9 @@ func TestConversionFunctions(t *testing.T) {
 		{
 			name: "GetFilesystemFromFSxFilesystem",
 			testFunc: func(t *testing.T) {
-				creationTime := time.Now()
 				fsxFilesystem := fsxtypes.FileSystem{
 					FileSystemId: aws.String(testFilesystemID),
-					CreationTime: &creationTime,
+					CreationTime: new(time.Now()),
 					Lifecycle:    fsxtypes.FileSystemLifecycleAvailable,
 					ResourceARN:  aws.String("arn:aws:fsx:us-east-1:123456789012:file-system/" + testFilesystemID),
 					OwnerId:      aws.String(testAccountID),
@@ -897,11 +896,10 @@ func TestConversionFunctions(t *testing.T) {
 		{
 			name: "GetSVMFromFSxSVM",
 			testFunc: func(t *testing.T) {
-				creationTime := time.Now()
 				fsxSVM := fsxtypes.StorageVirtualMachine{
 					StorageVirtualMachineId: aws.String(testSVMID),
 					Name:                    aws.String(testSVMName),
-					CreationTime:            &creationTime,
+					CreationTime:            new(time.Now()),
 					FileSystemId:            aws.String(testFilesystemID),
 					Lifecycle:               fsxtypes.StorageVirtualMachineLifecycleCreated,
 					ResourceARN:             aws.String("arn:aws:fsx:us-east-1:123456789012:storage-virtual-machine/" + testSVMID),
@@ -921,13 +919,12 @@ func TestConversionFunctions(t *testing.T) {
 		{
 			name: "GetVolumeFromFSxVolume",
 			testFunc: func(t *testing.T) {
-				creationTime := time.Now()
 				volumeSize := int32(1024) // 1GB in megabytes
 
 				fsxVolume := fsxtypes.Volume{
 					VolumeId:     aws.String(testVolumeID),
 					Name:         aws.String("test-volume"),
-					CreationTime: &creationTime,
+					CreationTime: new(time.Now()),
 					Lifecycle:    fsxtypes.VolumeLifecycleAvailable,
 					ResourceARN:  aws.String(testVolumeARN),
 					FileSystemId: aws.String(testFilesystemID),

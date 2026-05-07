@@ -135,15 +135,15 @@ func WriteNodes(nodes []models.NodeExternal) {
 
 func writeNodeTable(nodes []models.NodeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
+	table.Header([]string{"Name"})
 
 	for _, n := range nodes {
-		table.Append([]string{
+		_ = table.Append([]string{
 			n.Name,
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideNodeTable(nodes []models.NodeExternal) {
@@ -156,14 +156,14 @@ func writeWideNodeTable(nodes []models.NodeExternal) {
 		"Services",
 		"State",
 	}
-	table.SetHeader(header)
+	table.Header(header)
 
 	for _, node := range nodes {
 		var services []string
 		if node.HostInfo != nil {
 			services = node.HostInfo.Services
 		}
-		table.Append([]string{
+		_ = table.Append([]string{
 			node.Name,
 			node.IQN,
 			strings.Join(node.IPs, "\n"),
@@ -172,7 +172,7 @@ func writeWideNodeTable(nodes []models.NodeExternal) {
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeNodeNames(nodes []models.NodeExternal) {

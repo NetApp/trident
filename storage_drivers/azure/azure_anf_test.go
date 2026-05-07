@@ -62,12 +62,10 @@ func TestMain(m *testing.M) {
 }
 
 func newTestANFDriver(mockAPI api.Azure) *NASStorageDriver {
-	prefix := "test-"
-
 	config := drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "azure-netapp-files",
-			StoragePrefix:     &prefix,
+			StoragePrefix:     new("test-"),
 			DebugTraceFlags:   debugTraceFlags,
 		},
 		SubscriptionID:      SubscriptionID,
@@ -741,12 +739,10 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 }
 
 func TestInitialize_InvalidStoragePrefix(t *testing.T) {
-	prefix := "&trident"
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
-		StoragePrefix:     &prefix,
+		StoragePrefix:     new("&trident"),
 		BackendName:       "myANFBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
@@ -1319,13 +1315,11 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
-	prefix := "myPrefix"
-
 	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
-			StoragePrefix:   &prefix,
+			StoragePrefix:   new("myPrefix"),
 			LimitVolumeSize: "123456789000",
 		},
 		NfsMountOptions: "nfsvers=4.1",
@@ -1974,7 +1968,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	capacityPool.QosType = api.QOSManual
 	createRequest.UnixPermissions = "0777"
 	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
-	createRequest.MaxThroughput = convert.ToPtr(float32(4))
+	createRequest.MaxThroughput = new(float32(4))
 	filesystem.UnixPermissions = "0777"
 	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
 
@@ -3022,7 +3016,7 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	storagePool := driver.pools["anf_pool"]
 
 	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
-	createRequest.MaxThroughput = convert.ToPtr(float32(4))
+	createRequest.MaxThroughput = new(float32(4))
 
 	capacityPool.QosType = api.QOSManual
 
@@ -4997,13 +4991,11 @@ func TestImport_Managed(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5050,8 +5042,6 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
@@ -5059,7 +5049,7 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5142,8 +5132,6 @@ func TestImport_ManagedWithKerberos5I(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
@@ -5151,7 +5139,7 @@ func TestImport_ManagedWithKerberos5I(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5199,8 +5187,6 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
@@ -5208,7 +5194,7 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5257,15 +5243,13 @@ func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 
 	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess,
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, new("0770"), &snapshotDirAccess,
 		&exportRule).Return(errors.New("Could not import volume, volume modify failed.")).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
@@ -5358,18 +5342,14 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	volConfig.SnapshotDir = "true"
-	snapshotDirAccess := true
-
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), new(true), &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5403,18 +5383,14 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	volConfig.SnapshotDir = "false"
-	snapshotDirAccess := false
-
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), new(false), &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5576,13 +5552,11 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 		storage.ProvisioningLabelTag: "",
 		drivers.TridentLabelTag:      driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0700"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0700"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
@@ -5743,13 +5717,11 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(errFailed).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -5784,13 +5756,11 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	expectedLabels := map[string]string{
 		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
 	}
-	expectedUnixPermissions := "0770"
-
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+		new("0770"), &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout(), api.Import).Return("", errFailed).Times(1)
 
@@ -7713,8 +7683,7 @@ func getVolumesForList() *[]*api.FileSystem {
 func TestList(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	volumes := getVolumesForList()
 
@@ -8046,8 +8015,7 @@ func TestCreatePrepare(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["anf_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -8069,8 +8037,7 @@ func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["anf_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -8084,8 +8051,7 @@ func TestGetInternalVolumeName_CSI(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["anf_pool"]
 	volConfig := &storage.VolumeConfig{Name: "pvc-5e522901-b891-41d8-9e83-5496d2e62e71"}
@@ -8099,8 +8065,7 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	storagePool := driver.pools["anf_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
@@ -8374,8 +8339,7 @@ func TestStoreConfig(t *testing.T) {
 func TestGetVolumeForImport(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	filesystem := &api.FileSystem{
 		Name:              "testvol1",
@@ -8398,8 +8362,7 @@ func TestGetVolumeForImport(t *testing.T) {
 func TestGetVolumeForImport_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -8412,8 +8375,7 @@ func TestGetVolumeForImport_DiscoveryFailed(t *testing.T) {
 func TestGetVolumeForImport_GetFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "testvol1").Return(nil, errFailed).Times(1)
@@ -8427,8 +8389,7 @@ func TestGetVolumeForImport_GetFailed(t *testing.T) {
 func TestGetVolumeExternalWrappers(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	filesystems := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*filesystems))
@@ -8454,8 +8415,7 @@ func TestGetVolumeExternalWrappers(t *testing.T) {
 func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	filesystems := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*filesystems))
@@ -8479,8 +8439,7 @@ func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
 func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
-	storagePrefix := "myPrefix-"
-	driver.Config.StoragePrefix = &storagePrefix
+	driver.Config.StoragePrefix = new("myPrefix-")
 
 	filesystems := getVolumesForList()
 	channel := make(chan *storage.VolumeExternalWrapper, len(*filesystems))
@@ -8570,16 +8529,14 @@ func TestGetUpdateType_WrongDriverType(t *testing.T) {
 
 func TestGetUpdateType_OtherChanges(t *testing.T) {
 	_, oldDriver := newMockANFDriver(t)
-	prefix1 := "prefix1-"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("prefix1-")
 	oldDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret1",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
 	}
 
 	_, newDriver := newMockANFDriver(t)
-	prefix2 := "prefix2-"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("prefix2-")
 	newDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret2",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
@@ -8834,7 +8791,7 @@ func TestUpdate_Success(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true),
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), new(true),
 		gomock.Any()).Return(nil).AnyTimes()
 
 	updateInfo := &models.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
@@ -9032,7 +8989,7 @@ func TestUpdateSnapshotDirectory_DifferentSnapshotDir(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true),
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), new(true),
 		gomock.Any()).Return(nil).AnyTimes()
 
 	allVolumes := map[string]*storage.Volume{
@@ -9094,7 +9051,7 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 	mockAPI.EXPECT().ModifyVolume(
-		ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true), gomock.Any()).Return(
+		ctx, filesystem, gomock.Any(), gomock.Any(), new(true), gomock.Any()).Return(
 		errors.New("mock error")).AnyTimes()
 
 	allVolumes := map[string]*storage.Volume{
@@ -9118,7 +9075,7 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 	mockAPI.EXPECT().ModifyVolume(
-		ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true), gomock.Any()).Return(nil).AnyTimes()
+		ctx, filesystem, gomock.Any(), gomock.Any(), new(true), gomock.Any()).Return(nil).AnyTimes()
 
 	allVolumes = map[string]*storage.Volume{}
 

@@ -159,11 +159,10 @@ func TestStructValidation(t *testing.T) {
 		testFunc func(t *testing.T)
 	}{
 		{"VolumeLogic", func(t *testing.T) {
-			encryptTrue, snapshotDirFalse := true, false
 			vol := Volume{
 				Aggregates:      []string{"aggr1", "aggr2"},
-				Encrypt:         &encryptTrue,
-				SnapshotDir:     &snapshotDirFalse,
+				Encrypt:         new(true),
+				SnapshotDir:     new(false),
 				SnapshotReserve: 5,
 			}
 			require.NotNil(t, vol.Encrypt)
@@ -174,13 +173,12 @@ func TestStructValidation(t *testing.T) {
 			assert.True(t, vol.SnapshotReserve >= 0 && vol.SnapshotReserve <= 100)
 		}},
 		{"SnapmirrorLogic", func(t *testing.T) {
-			endTime := time.Now()
 			sm := Snapmirror{
 				State:              SnapmirrorStateSnapmirrored,
 				RelationshipStatus: SnapmirrorStatusIdle,
 				IsHealthy:          true,
 				UnhealthyReason:    "",
-				EndTransferTime:    &endTime,
+				EndTransferTime:    new(time.Now()),
 			}
 			assert.False(t, sm.State.IsUninitialized())
 			assert.True(t, sm.RelationshipStatus.IsIdle())
@@ -188,12 +186,11 @@ func TestStructValidation(t *testing.T) {
 			require.NotNil(t, sm.EndTransferTime)
 		}},
 		{"LunMappingLogic", func(t *testing.T) {
-			spaceReserved, spaceAllocated := true, false
 			lun := Lun{
 				LunMaps:        []LunMap{{IgroupName: "ig1", LunID: 0}, {IgroupName: "ig2", LunID: 1}},
 				Mapped:         true,
-				SpaceReserved:  &spaceReserved,
-				SpaceAllocated: &spaceAllocated,
+				SpaceReserved:  new(true),
+				SpaceAllocated: new(false),
 			}
 			assert.Equal(t, len(lun.LunMaps) > 0, lun.Mapped)
 			lunIDs := make(map[int]bool)
@@ -220,8 +217,7 @@ func TestStructValidation(t *testing.T) {
 			assert.Empty(t, lun.Name)
 
 			// Test pointer field behavior
-			encrypt := true
-			volume.Encrypt = &encrypt
+			volume.Encrypt = new(true)
 			require.NotNil(t, volume.Encrypt)
 			assert.True(t, *volume.Encrypt)
 

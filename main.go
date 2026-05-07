@@ -283,7 +283,7 @@ func processDockerPluginArgs(ctx context.Context) error {
 		if !strings.HasPrefix(configFile, config.DockerPluginConfigLocation) {
 			configFile = filepath.Join(config.DockerPluginConfigLocation, configEnv)
 		}
-		if _, err := os.Stat(configFile); err != nil {
+		if _, err := os.Stat(configFile); err != nil { // #nosec G703 -- docker plugin config under DockerPluginConfigLocation
 			if os.IsNotExist(err) {
 				return errors.New("config file '" + configFile + "' does not exist")
 			} else {

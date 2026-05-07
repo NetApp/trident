@@ -422,8 +422,7 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	// SF prefix is always empty
-	prefix := ""
-	config.StoragePrefix = &prefix
+	config.StoragePrefix = new("")
 
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
@@ -1895,8 +1894,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	for externalName := range volumes {
 		// Instead of a traditional loop with key, value pair over range, we iterate over keys and get
 		// the value in a unique local variable 'volume', so that its address can be passed over to other methods
-		volume := volumes[externalName]
-		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(externalName, &volume), Error: nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(externalName, new(volumes[externalName])), Error: nil}
 	}
 }
 

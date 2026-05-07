@@ -434,9 +434,8 @@ func (k *KubeClient) deleteDeploymentForeground(name, namespace string) error {
 	logFields := LogFields{"name": name, "namespace": namespace}
 	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of Deployment.")
 
-	propagationPolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
+		PropagationPolicy: new(metav1.DeletePropagationForeground),
 	}
 
 	if err := k.clientset.AppsV1().Deployments(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
@@ -772,9 +771,8 @@ func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
 	logFields := LogFields{"name": name, "namespace": namespace}
 	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of DaemonSet.")
 
-	propagationPolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
+		PropagationPolicy: new(metav1.DeletePropagationForeground),
 	}
 
 	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
@@ -1105,11 +1103,9 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 	logFields := LogFields{"name": name, "namespace": namespace}
 	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of Service Account.")
 
-	propagationPolicy := metav1.DeletePropagationForeground
-	gracePeriodSeconds := int64(10)
 	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy:  &propagationPolicy,
-		GracePeriodSeconds: &gracePeriodSeconds,
+		PropagationPolicy:  new(metav1.DeletePropagationForeground),
+		GracePeriodSeconds: new(int64(10)),
 	}
 
 	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
@@ -2703,9 +2699,8 @@ func (k *KubeClient) getSelectorFromLabel(label string) (string, error) {
 
 // deleteOptions returns a DeleteOptions struct suitable for most DELETE calls to the K8S REST API.
 func (k *KubeClient) deleteOptions() metav1.DeleteOptions {
-	propagationPolicy := metav1.DeletePropagationBackground
 	return metav1.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
+		PropagationPolicy: new(metav1.DeletePropagationBackground),
 	}
 }
 

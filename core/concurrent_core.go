@@ -2203,8 +2203,7 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 		// Get actual pools from backend
 		pools := make(map[string]*storage.Pool)
 		backend.StoragePools().Range(func(k, v interface{}) bool {
-			pool := v.(storage.Pool)
-			pools[k.(string)] = &pool
+			pools[k.(string)] = new(v.(storage.Pool))
 			return true
 		})
 
@@ -2249,7 +2248,7 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 				Op:     storage.AddVolume,
 			}
 			if err = o.storeClient.UpdateVolumeTransaction(ctx, volTxn); err != nil {
-				Logc(ctx).Errorf("Error updating volume transaction; %w", err)
+				Logc(ctx).WithError(err).Error("Error updating volume transaction.")
 				volumeCreateErrors = multierr.Append(volumeCreateErrors, err)
 				break // Exit pool loop and move on to next backend
 			}
@@ -2427,8 +2426,8 @@ func (o *ConcurrentTridentOrchestrator) addVolumeCleanup(
 	if cleanupErr != nil || txErr != nil {
 		err = multierr.Combine(err, cleanupErr, txErr)
 		Logc(ctx).Warnf(
-			"Unable to clean up artifacts of volume creation; w. Repeat creating the volume or restart %v.",
-			err, config.OrchestratorName)
+			"Unable to clean up artifacts of volume creation. Repeat creating the volume or restart %s: %v.",
+			config.OrchestratorName, err)
 	}
 	if unlocker != nil {
 		unlocker()
@@ -2840,7 +2839,7 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 		Op:     storage.AddVolume,
 	}
 	if err = o.storeClient.UpdateVolumeTransaction(ctx, volTxn); err != nil {
-		Logc(ctx).Errorf("Error updating volume transaction; %w", err)
+		Logc(ctx).WithError(err).Error("Error updating volume transaction.")
 		return nil, err
 	}
 

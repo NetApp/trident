@@ -30,8 +30,7 @@ func (r *Requester) getTAGRI(ctx context.Context, volumeID string) (*v1.TridentA
 		// Check specifically for rate limiting (HTTP 429)
 		if k8serrors.IsTooManyRequests(err) {
 			// Extract retry-after duration from the error
-			var statusErr *k8serrors.StatusError
-			if errors.As(err, &statusErr) {
+			if statusErr, ok := errors.AsType[*k8serrors.StatusError](err); ok {
 				if statusErr.Status().Details != nil {
 					if retryAfterSeconds := statusErr.Status().Details.RetryAfterSeconds; retryAfterSeconds > 0 {
 						Logc(ctx).WithFields(LogFields{
@@ -96,8 +95,7 @@ func (r *Requester) createTAGRI(
 		// Check specifically for rate limiting (HTTP 429)
 		if k8serrors.IsTooManyRequests(err) {
 			// Extract retry-after duration from the error
-			var statusErr *k8serrors.StatusError
-			if errors.As(err, &statusErr) {
+			if statusErr, ok := errors.AsType[*k8serrors.StatusError](err); ok {
 				if statusErr.Status().Details != nil {
 					if retryAfterSeconds := statusErr.Status().Details.RetryAfterSeconds; retryAfterSeconds > 0 {
 						Logc(ctx).WithFields(LogFields{
