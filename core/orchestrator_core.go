@@ -2383,7 +2383,7 @@ func (o *TridentOrchestrator) UpdateVolume(
 		for _, v := range updatedVols {
 			err := o.updateVolumeOnPersistentStore(ctx, v)
 			if err != nil {
-				Logc(ctx).WithError(err).Errorf(genericUpdateErr)
+				Logc(ctx).WithError(err).Error(genericUpdateErr)
 				return err
 			}
 		}
@@ -3703,7 +3703,7 @@ func (o *TridentOrchestrator) publishVolume(
 			"OldAccessMode": publication.AccessMode,
 			"NewReadOnly":   publishInfo.ReadOnly,
 			"NewAccessMode": publishInfo.AccessMode,
-		}).Errorf(msg)
+		}).Error(msg)
 		return errors.FoundError("%s", msg)
 	}
 
@@ -3827,7 +3827,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		}
 	} else if publication == nil {
 		msg := "volumePublication is nil"
-		Logc(ctx).WithFields(fields).Errorf(msg)
+		Logc(ctx).WithFields(fields).Error(msg)
 		return errors.New(msg)
 	}
 

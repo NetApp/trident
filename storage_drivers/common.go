@@ -120,8 +120,7 @@ func parseRawStoragePrefix(ctx context.Context, storagePrefixRaw json.RawMessage
 			storagePrefix = nil
 			Logc(ctx).Debugf("Storage prefix is %s, will use default prefix.", rawPrefix)
 		} else if rawPrefix == "\"\"" {
-			empty := ""
-			storagePrefix = &empty
+			storagePrefix = new("")
 			Logc(ctx).Debug("Storage prefix is empty, will use no prefix.")
 		} else if strings.HasPrefix(rawPrefix, "\"") && strings.HasSuffix(rawPrefix, "\"") {
 			prefix := string(storagePrefixRaw[1 : len(storagePrefixRaw)-1])

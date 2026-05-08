@@ -17,7 +17,6 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 )
 
@@ -211,7 +210,7 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: convert.ToPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 		Status: &snapv1.VolumeSnapshotStatus{
@@ -234,11 +233,11 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: convert.ToPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 		Status: &snapv1.VolumeSnapshotStatus{
-			BoundVolumeSnapshotContentName: convert.ToPtr("non-existent-content"),
+			BoundVolumeSnapshotContentName: new("non-existent-content"),
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshots("default").Create(ctx, vsBound, metav1.CreateOptions{})
@@ -262,7 +261,7 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 			},
 		},
 		Status: &snapv1.VolumeSnapshotContentStatus{
-			SnapshotHandle: convert.ToPtr("volume/snapshot"),
+			SnapshotHandle: new("volume/snapshot"),
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshotContents().Create(ctx, vsc, metav1.CreateOptions{})
@@ -275,11 +274,11 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: convert.ToPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 		Status: &snapv1.VolumeSnapshotStatus{
-			BoundVolumeSnapshotContentName: convert.ToPtr("wrong-driver-content"),
+			BoundVolumeSnapshotContentName: new("wrong-driver-content"),
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshots("default").Create(ctx, vsWrongDriver, metav1.CreateOptions{})
@@ -316,11 +315,11 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: convert.ToPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 		Status: &snapv1.VolumeSnapshotStatus{
-			BoundVolumeSnapshotContentName: convert.ToPtr("no-handle-content"),
+			BoundVolumeSnapshotContentName: new("no-handle-content"),
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshots("default").Create(ctx, vsNoHandle, metav1.CreateOptions{})
@@ -355,7 +354,7 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 			},
 		},
 		Status: &snapv1.VolumeSnapshotContentStatus{
-			SnapshotHandle: convert.ToPtr("test-volume/test-snapshot"), // Valid format
+			SnapshotHandle: new("test-volume/test-snapshot"), // Valid format
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshotContents().Create(ctx, vscValid, metav1.CreateOptions{})
@@ -368,11 +367,11 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 		},
 		Spec: snapv1.VolumeSnapshotSpec{
 			Source: snapv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: convert.ToPtr("test-pvc"),
+				PersistentVolumeClaimName: new("test-pvc"),
 			},
 		},
 		Status: &snapv1.VolumeSnapshotStatus{
-			BoundVolumeSnapshotContentName: convert.ToPtr("valid-content"),
+			BoundVolumeSnapshotContentName: new("valid-content"),
 		},
 	}
 	_, err = snapClient.SnapshotV1().VolumeSnapshots("default").Create(ctx, vsValid, metav1.CreateOptions{})

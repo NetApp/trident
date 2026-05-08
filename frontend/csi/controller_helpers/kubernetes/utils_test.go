@@ -93,8 +93,6 @@ func TestValidateKubeVersion(t *testing.T) {
 }
 
 func TestGetStorageClassForPVC(t *testing.T) {
-	class := "gold"
-
 	testCases := []struct {
 		name          string
 		pvc           *v1.PersistentVolumeClaim
@@ -104,7 +102,7 @@ func TestGetStorageClassForPVC(t *testing.T) {
 			name: "StorageClass set",
 			pvc: &v1.PersistentVolumeClaim{
 				Spec: v1.PersistentVolumeClaimSpec{
-					StorageClassName: &class,
+					StorageClassName: new("gold"),
 				},
 			},
 			expectedClass: "gold",
@@ -130,8 +128,6 @@ func TestGetStorageClassForPVC(t *testing.T) {
 
 func TestCheckValidStorageClassReceived(t *testing.T) {
 	ctx := context.Background()
-	class := "standard"
-
 	testCases := []struct {
 		name      string
 		pvc       *v1.PersistentVolumeClaim
@@ -142,7 +138,7 @@ func TestCheckValidStorageClassReceived(t *testing.T) {
 			pvc: &v1.PersistentVolumeClaim{
 				ObjectMeta: metav1.ObjectMeta{Name: "pvc1"},
 				Spec: v1.PersistentVolumeClaimSpec{
-					StorageClassName: &class,
+					StorageClassName: new("standard"),
 				},
 			},
 			assertErr: assert.NoError,

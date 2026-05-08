@@ -208,8 +208,7 @@ func (c *TridentCrdController) updateActionMirrorUpdateCRInProgress(ctx context.
 	actionCR.Status.RemoteVolumeHandle = remoteVolumeHandle
 
 	if previousTransferTime != nil {
-		transferTime := metav1.NewTime(*previousTransferTime)
-		actionCR.Status.PreviousTransferTime = &transferTime
+		actionCR.Status.PreviousTransferTime = new(metav1.NewTime(*previousTransferTime))
 	}
 
 	if snapshotHandle != "" {
@@ -250,8 +249,7 @@ func (c *TridentCrdController) updateActionMirrorUpdateCRComplete(ctx context.Co
 		actionCR.Status.Message = updateError.Error()
 	}
 
-	completionTime := metav1.Now()
-	actionCR.Status.CompletionTime = &completionTime
+	actionCR.Status.CompletionTime = new(metav1.Now())
 
 	_, err = c.crdClientset.TridentV1().TridentActionMirrorUpdates(namespace).Update(ctx, actionCR, updateOpts)
 	if apierrors.IsNotFound(err) {

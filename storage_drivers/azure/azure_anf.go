@@ -650,7 +650,7 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 			credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
 			Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
 
-			credFile, err := os.ReadFile(credFilePath)
+			credFile, err := os.ReadFile(credFilePath) // #nosec G703 -- path from AZURE_CREDENTIAL_FILE (operator env)
 			if err != nil {
 				return fmt.Errorf("error reading from azure config file: %w", err)
 			}
@@ -928,7 +928,7 @@ func (d *NASStorageDriver) Create(
 		if err != nil {
 			return fmt.Errorf("invalid value for maxThroughput: %v", err)
 		}
-		maxThroughputPtr = convert.ToPtr(float32(parsedMaxThroughput))
+		maxThroughputPtr = new(float32(parsedMaxThroughput))
 	}
 
 	// Determine protocol from mount options

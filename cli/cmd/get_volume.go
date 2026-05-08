@@ -181,13 +181,13 @@ func WriteVolumes(volumes []storage.VolumeExternal) {
 
 func writeVolumeTable(volumes []storage.VolumeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "State", "Managed"})
+	table.Header([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "State", "Managed"})
 
 	for _, volume := range volumes {
 
 		volumeSize, _ := strconv.ParseUint(volume.Config.Size, 10, 64)
 
-		table.Append([]string{
+		_ = table.Append([]string{
 			volume.Config.Name,
 			humanize.IBytes(volumeSize),
 			volume.Config.StorageClass,
@@ -198,7 +198,7 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideVolumeTable(volumes []storage.VolumeExternal) {
@@ -215,7 +215,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 		"Managed",
 		"Access Mode",
 	}
-	table.SetHeader(header)
+	table.Header(header)
 
 	for _, volume := range volumes {
 
@@ -226,7 +226,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 			backendName = backend.Name
 		}
 
-		table.Append([]string{
+		_ = table.Append([]string{
 			volume.Config.Name,
 			volume.Config.InternalName,
 			humanize.IBytes(volumeSize),
@@ -240,7 +240,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeVolumeNames(volumes []storage.VolumeExternal) {

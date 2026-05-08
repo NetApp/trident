@@ -154,6 +154,12 @@ func TestZapiRunner_ExecuteUsing_Parallel_MC(t *testing.T) {
 	// Test parallel calls to ExecuteUsing with MC name changes
 	zRunner := CreateTestZapiRunner(1)
 	mockTransport := RoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		// Every outgoing ZAPI request must carry the X-Dot-Client-App header
+		// so ONTAP can track per-app usage (TRID-19776).
+		assert.NotEmpty(t, req.Header.Get(ClientAppHeader),
+			"ZAPI request must include X-Dot-Client-App header")
+		assert.True(t, strings.HasPrefix(req.Header.Get(ClientAppHeader), "Trident"),
+			"X-Dot-Client-App header must start with 'Trident'")
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(strings.NewReader(mockZapiErrorVserverNotFound)),
@@ -176,4 +182,28 @@ func TestZapiRunner_ExecuteUsing_Parallel_MC(t *testing.T) {
 
 	// Check the SVM name, it should be one of the expected values
 	assert.True(t, zRunner.svm == "svm-1-mc" || zRunner.svm == "svm-1")
+}
+
+// TestSendZapiWithContext_SetsClientAppHeader verifies every ZAPI request
+// carries the X-Dot-Client-App header in the expected "Trident/<version>" format.
+func TestSendZapiWithContext_SetsClientAppHeader(t *testing.T) {
+	zRunner := CreateTestZapiRunner(1)
+	var gotHeader string
+	mockTransport := RoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		gotHeader = req.Header.Get(ClientAppHeader)
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(mockZapiErrorVserverNotFound)),
+			Header:     make(http.Header),
+		}, nil
+	})
+	zRunner.httpClient = &http.Client{
+		Transport: drivers.NewLimitedRetryTransport(semaphore.NewWeighted(1), mockTransport, ""),
+	}
+
+	_, _ = zRunner.SendZapi(&VolumeCreateRequest{})
+	assert.True(t, strings.HasPrefix(gotHeader, "Trident/"),
+		"SendZapi must stamp the X-Dot-Client-App header as Trident/<version>, got: %s", gotHeader)
+	assert.NotEqual(t, "Trident/", gotHeader,
+		"X-Dot-Client-App header must include a non-empty version")
 }

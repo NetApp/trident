@@ -17,7 +17,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -100,9 +99,7 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	fsxId := FSX_ID
-
-	driver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, &fsxId)
+	driver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, new(FSX_ID))
 	driver.API = mockAPI
 	return mockAPI, driver
 }
@@ -305,7 +302,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -360,7 +357,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -408,7 +405,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePoo
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -463,7 +460,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -517,7 +514,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	secrets := map[string]string{
@@ -834,7 +831,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	secrets := map[string]string{
@@ -916,7 +913,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON, _ := getOntapStorageDriverConfigJson("true", "volume", "", "none",
@@ -950,7 +947,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 
 	configJSON, _ := getOntapStorageDriverConfigJson("true", "volume", "", "none",
@@ -3774,7 +3771,7 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendPools(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASFlexgroupDriver(t)
-	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
+	driver.Config.StoragePrefix = new("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -4092,8 +4089,7 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType(t *testing.T) {
 	mockAPI, oldDriver := newMockOntapNASFlexgroupDriver(t)
 
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 	oldDriver.Config.Username = "user1"
 	oldDriver.Config.Password = "password1"
 	oldDriver.Config.Credentials = map[string]string{
@@ -4135,15 +4131,13 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType_Failure(t *testing.T) {
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
-	prefix1 := "test_"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("test_")
 
 	// Created a SAN driver
 	newDriver := newTestOntapNASFlexgroupDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
 		"CSI", false, nil)
 	newDriver.API = mockAPI
-	prefix2 := "storage_"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("storage_")
 
 	expectedBitmap := &roaring.Bitmap{}
 	expectedBitmap.Add(storage.InvalidUpdate)
@@ -4374,16 +4368,14 @@ func TestOntapNasFlexgroupStorageDriverGetZAPIVolumeExternal(t *testing.T) {
 		NamePtr: &volumeName,
 	}
 
-	permission := "777"
 	volumeSecurityAttributes := azgo.VolumeSecurityAttributesType{
 		VolumeSecurityUnixAttributesPtr: &azgo.VolumeSecurityUnixAttributesType{
-			PermissionsPtr: &permission,
+			PermissionsPtr: new("777"),
 		},
 	}
 
-	size := 100000000
 	volumeSpaceAttributes := azgo.VolumeSpaceAttributesType{
-		SizePtr: &size,
+		SizePtr: new(100000000),
 	}
 
 	snapshotPolicy := "snapshotPolicy"

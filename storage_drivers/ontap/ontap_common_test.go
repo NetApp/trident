@@ -26,7 +26,6 @@ import (
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/pkg/capacity"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -131,10 +130,10 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
 			var records []*models.Svm
-			records = append(records, &models.Svm{Name: convert.ToPtr(svmName), UUID: convert.ToPtr(svmUUID)})
+			records = append(records, &models.Svm{Name: new(svmName), UUID: new(svmUUID)})
 			result := &svm.SvmCollectionGetOK{
 				Payload: &models.SvmResponse{
-					NumRecords:               convert.ToPtr(int64((len(records)))),
+					NumRecords:               new(int64((len(records)))),
 					SvmResponseInlineRecords: records,
 				},
 			}
@@ -462,7 +461,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
-						{Name: convert.ToPtr("aggr2")},
+						{Name: new("aggr2")},
 					},
 				},
 			}
@@ -489,7 +488,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name:  convert.ToPtr(aggr),
+							Name:  new(aggr),
 							Space: nil,
 						},
 					},
@@ -518,7 +517,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: convert.ToPtr(aggr),
+							Name: new(aggr),
 							Space: &models.AggregateInlineSpace{
 								BlockStorage: nil,
 							},
@@ -549,15 +548,15 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: convert.ToPtr(aggr),
+							Name: new(aggr),
 							Space: &models.AggregateInlineSpace{
-								Footprint: convert.ToPtr(int64(8496407527424)),
+								Footprint: new(int64(8496407527424)),
 								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
-									Size:                                convert.ToPtr(int64(11689104961536)),
-									Used:                                convert.ToPtr(int64(9090249289728)),
-									UsedIncludingSnapshotReserve:        convert.ToPtr(int64(9090249289728)),
-									UsedIncludingSnapshotReservePercent: convert.ToPtr(int64(78)),
-									VolumeFootprintsPercent:             convert.ToPtr(int64(73)),
+									Size:                                new(int64(11689104961536)),
+									Used:                                new(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        new(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: new(int64(78)),
+									VolumeFootprintsPercent:             new(int64(73)),
 								},
 							},
 						},
@@ -587,21 +586,21 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: convert.ToPtr(aggr),
+							Name: new(aggr),
 							Space: &models.AggregateInlineSpace{
-								Footprint: convert.ToPtr(int64(8496407527424)),
+								Footprint: new(int64(8496407527424)),
 								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
-									Size:                                convert.ToPtr(int64(11689104961536)),
-									Used:                                convert.ToPtr(int64(9090249289728)),
-									UsedIncludingSnapshotReserve:        convert.ToPtr(int64(9090249289728)),
-									UsedIncludingSnapshotReservePercent: convert.ToPtr(int64(78)),
-									VolumeFootprintsPercent:             convert.ToPtr(int64(73)),
+									Size:                                new(int64(11689104961536)),
+									Used:                                new(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        new(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: new(int64(78)),
+									VolumeFootprintsPercent:             new(int64(73)),
 								},
 							},
 						},
 						{
 							// extra entry for cloud tier
-							Name: convert.ToPtr(aggr),
+							Name: new(aggr),
 						},
 					},
 				},
@@ -2048,11 +2047,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2085,11 +2084,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2122,11 +2121,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2159,11 +2158,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2196,11 +2195,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2235,11 +2234,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2274,11 +2273,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2313,11 +2312,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2328,7 +2327,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 	info := &models.IPInterface{
 		Location: &models.IPInterfaceInlineLocation{
 			Node: &models.IPInterfaceInlineLocationInlineNode{
-				Name: convert.ToPtr("node1"),
+				Name: new("node1"),
 			},
 		},
 	}
@@ -2362,11 +2361,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: convert.ToPtr(node),
+					Name: new(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: convert.ToPtr(models.IPAddress(ip)),
+				Address: new(models.IPAddress(ip)),
 			},
 		}
 
@@ -2376,7 +2375,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 	// Extra entry but without IP address
 	info = &models.IPInterface{
 		IP: &models.IPInfo{
-			Address: convert.ToPtr(models.IPAddress("1.2.3.4")),
+			Address: new(models.IPAddress("1.2.3.4")),
 		},
 	}
 	infos = append(infos, info)
@@ -6371,11 +6370,10 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	ctx := context.Background()
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
-	storagePrefix := "trident"
 	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -8925,7 +8923,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   convert.ToPtr("storagePrefix_"),
+		StoragePrefix:   new("storagePrefix_"),
 	}
 
 	config := &drivers.OntapStorageDriverConfig{
@@ -9089,7 +9087,7 @@ func TestPopulateASAConfigurationDefaults(t *testing.T) {
 		CommonStorageDriverConfig: commonConfig,
 	}
 	config.Size = "2G"
-	config.StoragePrefix = convert.ToPtr("myPrefix")
+	config.StoragePrefix = new("myPrefix")
 	config.SpaceAllocation = "false"
 	config.SpaceReserve = "volume"
 	config.SnapshotPolicy = "hourly"
@@ -9892,10 +9890,9 @@ func TestConstructLabelsFromConfigs(t *testing.T) {
 
 	pool := storage.NewStoragePool(nil, "dummyPool")
 	volConfig := &storage.VolumeConfig{Name: "testVol"}
-	storagePrefix := "trident"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 
 	_, err := ConstructLabelsFromConfigs(ctx, pool, volConfig, commonConfig, api.MaxNASLabelLength)
@@ -10059,11 +10056,10 @@ func TestGetVolumeNameFromTemplate(t *testing.T) {
 	ctx := context.Background()
 	tridentconfig.UsingPassthroughStore = false
 
-	storagePrefix := "trident"
 	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -10083,11 +10079,10 @@ func TestGetVolumeNameFromTemplate_invalidNameTemplate(t *testing.T) {
 	ctx := context.Background()
 	tridentconfig.UsingPassthroughStore = false
 
-	storagePrefix := "trident"
 	name := "pvc-123456"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -10122,11 +10117,10 @@ func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 	ctx := context.Background()
 	tridentconfig.UsingPassthroughStore = false
 
-	storagePrefix := "trident"
 	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -10156,11 +10150,10 @@ func TestGetVolumeNameFromTemplate_NameStartWithDigit(t *testing.T) {
 	ctx := context.Background()
 	tridentconfig.UsingPassthroughStore = false
 
-	storagePrefix := "trident"
 	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
-		StoragePrefix:   &storagePrefix,
+		StoragePrefix:   new("trident"),
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -11340,7 +11333,7 @@ func TestHealNASPublishEnforcement(t *testing.T) {
 				config := drivers.FakeStorageDriverConfig{
 					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 						StorageDriverName: "fakeDriver",
-						StoragePrefix:     convert.ToPtr("fake_"),
+						StoragePrefix:     new("fake_"),
 					},
 				}
 				return fakeDriver.NewFakeStorageDriver(ctx, config)
@@ -11361,7 +11354,7 @@ func TestHealNASPublishEnforcement(t *testing.T) {
 				config := drivers.FakeStorageDriverConfig{
 					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 						StorageDriverName: "fakeDriver",
-						StoragePrefix:     convert.ToPtr("fake_"),
+						StoragePrefix:     new("fake_"),
 					},
 				}
 				return fakeDriver.NewFakeStorageDriver(ctx, config)
@@ -11382,7 +11375,7 @@ func TestHealNASPublishEnforcement(t *testing.T) {
 				config := drivers.FakeStorageDriverConfig{
 					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 						StorageDriverName: "fakeDriver",
-						StoragePrefix:     convert.ToPtr("fake_"),
+						StoragePrefix:     new("fake_"),
 					},
 				}
 				return fakeDriver.NewFakeStorageDriver(ctx, config)
@@ -11403,7 +11396,7 @@ func TestHealNASPublishEnforcement(t *testing.T) {
 				config := drivers.FakeStorageDriverConfig{
 					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 						StorageDriverName: "fakeDriver",
-						StoragePrefix:     convert.ToPtr("fake_"),
+						StoragePrefix:     new("fake_"),
 					},
 				}
 				return fakeDriver.NewFakeStorageDriver(ctx, config)

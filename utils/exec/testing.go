@@ -45,7 +45,7 @@ func newFakeExecCommand(
 		// G204 is subprocess launched with potential tainted input or cmd args; since
 		// this is needed for generating fake exit errors in other low-level utilities
 		// as well as command_test.go, it must live here in testing.go. Otherwise, it is not visible.
-		cmd := exec.CommandContext(ctx, os.Args[0], cs...) // #nosec G204
+		cmd := exec.CommandContext(ctx, os.Args[0], cs...) //nolint:gosec // test helper subprocess for fake exec (G204/G702)
 
 		returnString := b64.StdEncoding.EncodeToString([]byte(returnValue))
 		envVars := []string{

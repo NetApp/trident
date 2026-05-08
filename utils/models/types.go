@@ -464,7 +464,7 @@ func (n *Node) ConstructExternal() *NodeExternal {
 		TopologyLabels:   node.TopologyLabels,
 		NodePrep:         node.NodePrep,
 		HostInfo:         node.HostInfo,
-		Deleted:          convert.ToPtr(node.Deleted),
+		Deleted:          new(node.Deleted),
 		PublicationState: node.PublicationState,
 		LogLevel:         node.LogLevel,
 		LogWorkflows:     node.LogWorkflows,

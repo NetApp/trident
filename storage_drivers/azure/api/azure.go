@@ -27,7 +27,6 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -679,34 +678,20 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 
 	for _, rule := range exportPolicy.Rules {
 
-		ruleIndex := rule.RuleIndex
-		unixReadOnly := rule.UnixReadOnly
-		unixReadWrite := rule.UnixReadWrite
-		cifs := rule.Cifs
-		nfsv3 := rule.Nfsv3
-		nfsv41 := rule.Nfsv41
-		allowedClients := rule.AllowedClients
-		kerberos5ReadOnly := rule.Kerberos5ReadOnly
-		kerberos5ReadWrite := rule.Kerberos5ReadWrite
-		kerberos5IReadOnly := rule.Kerberos5IReadOnly
-		kerberos5IReadWrite := rule.Kerberos5IReadWrite
-		kerberos5PReadOnly := rule.Kerberos5PReadOnly
-		kerberos5PReadWrite := rule.Kerberos5PReadWrite
-
 		anfRule := netapp.ExportPolicyRule{
-			RuleIndex:           &ruleIndex,
-			UnixReadOnly:        &unixReadOnly,
-			UnixReadWrite:       &unixReadWrite,
-			Cifs:                &cifs,
-			Nfsv3:               &nfsv3,
-			Nfsv41:              &nfsv41,
-			AllowedClients:      &allowedClients,
-			Kerberos5ReadOnly:   &kerberos5ReadOnly,
-			Kerberos5ReadWrite:  &kerberos5ReadWrite,
-			Kerberos5IReadOnly:  &kerberos5IReadOnly,
-			Kerberos5IReadWrite: &kerberos5IReadWrite,
-			Kerberos5PReadOnly:  &kerberos5PReadOnly,
-			Kerberos5PReadWrite: &kerberos5PReadWrite,
+			RuleIndex:           new(rule.RuleIndex),
+			UnixReadOnly:        new(rule.UnixReadOnly),
+			UnixReadWrite:       new(rule.UnixReadWrite),
+			Cifs:                new(rule.Cifs),
+			Nfsv3:               new(rule.Nfsv3),
+			Nfsv41:              new(rule.Nfsv41),
+			AllowedClients:      new(rule.AllowedClients),
+			Kerberos5ReadOnly:   new(rule.Kerberos5ReadOnly),
+			Kerberos5ReadWrite:  new(rule.Kerberos5ReadWrite),
+			Kerberos5IReadOnly:  new(rule.Kerberos5IReadOnly),
+			Kerberos5IReadWrite: new(rule.Kerberos5IReadWrite),
+			Kerberos5PReadOnly:  new(rule.Kerberos5PReadOnly),
+			Kerberos5PReadWrite: new(rule.Kerberos5PReadWrite),
 		}
 
 		anfRules = append(anfRules, &anfRule)
@@ -1133,37 +1118,32 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	volumeFullName := CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, request.Name)
 
 	// Location is required and is derived from the capacity pool
-	location := cPool.Location
-
 	tags := make(map[string]*string)
 	for k, v := range request.Labels {
 		tag := [1]string{v}
 		tags[k] = &tag[0]
 	}
 
-	serviceLevel := netapp.ServiceLevel(cPool.ServiceLevel)
-	networkFeatures := netapp.NetworkFeatures(request.NetworkFeatures)
-
 	newVol := netapp.Volume{
-		Location: &location,
+		Location: new(cPool.Location),
 		Name:     &request.Name,
 		Tags:     tags,
 		Properties: &netapp.VolumeProperties{
 			CreationToken:            &request.CreationToken,
-			ServiceLevel:             &serviceLevel,
+			ServiceLevel:             new(netapp.ServiceLevel(cPool.ServiceLevel)),
 			UsageThreshold:           &request.QuotaInBytes,
 			ExportPolicy:             exportPolicyExport(&request.ExportPolicy),
 			ProtocolTypes:            CreateStringPtrArray(request.ProtocolTypes),
 			SubnetID:                 &request.SubnetID,
 			SnapshotDirectoryVisible: &request.SnapshotDirectory,
-			NetworkFeatures:          &networkFeatures,
+			NetworkFeatures:          new(netapp.NetworkFeatures(request.NetworkFeatures)),
 			KerberosEnabled:          &request.KerberosEnabled,
 		},
 	}
 
 	// Only set the zone if specified
 	if request.Zone != "" {
-		newVol.Zones = []*string{convert.ToPtr(request.Zone)}
+		newVol.Zones = []*string{new(request.Zone)}
 	}
 
 	// Only set the snapshot ID if we are cloning
@@ -1235,8 +1215,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	}
 
 	// The volume doesn't exist yet, so forge the volume ID to enable conversion to a FileSystem struct
-	newVolID := CreateVolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cPoolName, request.Name)
-	newVol.ID = &newVolID
+	newVol.ID = new(CreateVolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cPoolName, request.Name))
 
 	return c.newFileSystemFromVolume(ctx, &newVol)
 }
@@ -1308,8 +1287,7 @@ func (c Client) ModifyVolume(
 	}
 
 	// Clear out ReadOnly and other fields that we don't want to change when merely relabeling.
-	serviceLevel := netapp.ServiceLevel("")
-	anfVolume.Properties.ServiceLevel = &serviceLevel
+	anfVolume.Properties.ServiceLevel = new(netapp.ServiceLevel(""))
 	anfVolume.Properties.ProvisioningState = nil
 	anfVolume.Properties.MountTargets = nil
 	anfVolume.Properties.ThroughputMibps = nil
@@ -1629,9 +1607,8 @@ func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name
 	Logc(ctx).WithFields(logFields).Info("Snapshot create request issued.")
 
 	// The snapshot doesn't exist yet, so forge the snapshot ID to enable conversion to a Snapshot struct
-	newSnapshotID := CreateSnapshotID(c.config.SubscriptionID, filesystem.ResourceGroup,
-		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, name)
-	anfSnapshot.ID = &newSnapshotID
+	anfSnapshot.ID = new(CreateSnapshotID(c.config.SubscriptionID, filesystem.ResourceGroup,
+		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, name))
 
 	anfSnapshot.Properties = &netapp.SnapshotProperties{}
 
@@ -1650,7 +1627,7 @@ func (c Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, sna
 	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	revertBody := netapp.VolumeRevert{
-		SnapshotID: convert.ToPtr(snapshot.ID),
+		SnapshotID: new(snapshot.ID),
 	}
 
 	_, err := c.sdkClient.VolumesClient.BeginRevert(responseCtx,
@@ -1874,8 +1851,7 @@ func CreateStringPtrArray(in []string) []*string {
 	out := make([]*string, 0)
 	if in != nil {
 		for index := range in {
-			s := in[index]
-			out = append(out, &s)
+			out = append(out, new(in[index]))
 		}
 	}
 	return out

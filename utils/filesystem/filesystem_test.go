@@ -172,10 +172,8 @@ func TestWriteJSONFile_FailsOnReadOnlyFs(t *testing.T) {
 func TestWriteJSONFile_FailsWritingNotMarshallableData(t *testing.T) {
 	osFs := afero.NewMemMapFs()
 
-	pubInfo := make(chan int)
-
 	jsonReaderWriter := NewJSONReaderWriter(osFs)
-	err := jsonReaderWriter.WriteJSONFile(context.Background(), &pubInfo, "foo.json", "")
+	err := jsonReaderWriter.WriteJSONFile(context.Background(), new(make(chan int)), "foo.json", "")
 	assert.Error(t, err, "expected error trying to write something that can't be marshalled to JSON")
 }
 
@@ -447,7 +445,7 @@ func TestRepairVolume(t *testing.T) {
 				).Return(nil, newExitErrorForCode(t, 42)).Times(1)
 			},
 			logLevel: log.ErrorLevel,
-			exitCode: func() *int { v := 42; return &v }(),
+			exitCode: new(42),
 			reason:   "fsck_unexpected_exit_code",
 		},
 	}

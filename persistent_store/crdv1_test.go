@@ -825,11 +825,10 @@ func TestGetAutogrowPolicies_SkipDeleting(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a policy with deletion timestamp
-	now := metav1.Now()
 	deletingPolicy := &netappv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "deleting-policy",
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 		Spec: netappv1.TridentAutogrowPolicySpec{
 			UsedThreshold: "90%",

@@ -47,8 +47,7 @@ func (c *Config) Copy() types.Config {
 	copied, err := deep.Copy(c)
 	if err != nil {
 		// Fallback to simple struct copy if deep copy fails
-		cfgCopy := *c
-		return &cfgCopy
+		return new(*c)
 	}
 	return copied
 }
@@ -162,8 +161,7 @@ func (m *MultiPoolConfig) Copy() types.Config {
 	copied, err := deep.Copy(m)
 	if err != nil {
 		// Fallback to simple struct copy if deep copy fails
-		cfgCopy := *m
-		return &cfgCopy
+		return new(*m)
 	}
 	return copied
 }

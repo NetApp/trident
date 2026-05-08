@@ -152,24 +152,24 @@ func WriteVolumePublications(pubs []models.VolumePublicationExternal) {
 
 func writeVolumePublicationTable(pubs []models.VolumePublicationExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Node", "Volume"})
+	table.Header([]string{"Node", "Volume"})
 
 	for _, pub := range pubs {
-		table.Append([]string{
+		_ = table.Append([]string{
 			pub.NodeName,
 			pub.VolumeName,
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeWideVolumePublicationTable(pubs []models.VolumePublicationExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Node", "Volume", "ReadOnly", "Dirty", "AccessMode"})
+	table.Header([]string{"Name", "Node", "Volume", "ReadOnly", "Dirty", "AccessMode"})
 
 	for _, pub := range pubs {
-		table.Append([]string{
+		_ = table.Append([]string{
 			pub.Name,
 			pub.NodeName,
 			pub.VolumeName,
@@ -178,7 +178,7 @@ func writeWideVolumePublicationTable(pubs []models.VolumePublicationExternal) {
 		})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeVolumePublicationNames(pubs []models.VolumePublicationExternal) {

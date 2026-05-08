@@ -736,13 +736,11 @@ func TestHandleTVPEvent(t *testing.T) {
 				tvpName := "test-tvp-deleting"
 				pvName := "pv-789"
 				namespace := "trident"
-				now := metav1.Now()
-
 				tvp := &v1.TridentVolumePublication{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              tvpName,
 						Namespace:         namespace,
-						DeletionTimestamp: &now, // Being deleted
+						DeletionTimestamp: new(metav1.Now()), // Being deleted
 					},
 					VolumeID:       pvName,
 					AutogrowPolicy: "some-policy",
@@ -839,8 +837,6 @@ func TestHandleTVPEvent(t *testing.T) {
 				tvpPolicy := "tvp-policy"
 				scName := "deleting-sc"
 				namespace := "trident"
-				now := metav1.Now()
-
 				tvp := &v1.TridentVolumePublication{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      tvpName,
@@ -854,7 +850,7 @@ func TestHandleTVPEvent(t *testing.T) {
 				sc := &storagev1.StorageClass{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              scName,
-						DeletionTimestamp: &now, // Being deleted
+						DeletionTimestamp: new(metav1.Now()), // Being deleted
 						Annotations: map[string]string{
 							kubernetes.AnnAutogrowPolicy: "sc-policy", // Should be ignored
 						},
@@ -1147,12 +1143,10 @@ func TestHandleStorageClassEvent(t *testing.T) {
 			setup: func(ctrl *gomock.Controller) (*Scheduler, context.Context, string, []string) {
 				scName := "deleting-sc"
 				namespace := "trident"
-				now := metav1.Now()
-
 				sc := &storagev1.StorageClass{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              scName,
-						DeletionTimestamp: &now, // Being deleted
+						DeletionTimestamp: new(metav1.Now()), // Being deleted
 						Annotations: map[string]string{
 							kubernetes.AnnAutogrowPolicy: "sc-policy", // Should be ignored
 						},
@@ -1269,8 +1263,6 @@ func TestHandleStorageClassEvent(t *testing.T) {
 			setup: func(ctrl *gomock.Controller) (*Scheduler, context.Context, string, []string) {
 				scName := "test-sc"
 				namespace := "trident"
-				now := metav1.Now()
-
 				sc := &storagev1.StorageClass{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: scName,
@@ -1282,7 +1274,7 @@ func TestHandleStorageClassEvent(t *testing.T) {
 
 				tvp1 := createTestTVP("tvp1", namespace, "vol1", scName)
 				tvp1.AutogrowPolicy = "tvp-policy"
-				tvp1.ObjectMeta.DeletionTimestamp = &now // Being deleted
+				tvp1.ObjectMeta.DeletionTimestamp = new(metav1.Now()) // Being deleted
 
 				scLister, tvpLister, _ := setupTestListers(t, []*storagev1.StorageClass{sc}, []*v1.TridentVolumePublication{tvp1})
 				autogrowCache := getTestAutogrowCache()

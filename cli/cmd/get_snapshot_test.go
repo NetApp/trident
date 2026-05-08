@@ -682,7 +682,7 @@ func TestWriteWideSnapshotTable(t *testing.T) {
 	assert.Contains(t, outputStr, "SIZE")
 	assert.Contains(t, outputStr, "STATE")
 	assert.Contains(t, outputStr, "MANAGED")
-	assert.Contains(t, outputStr, "GROUPSNAPSHOT")
+	assert.Contains(t, outputStr, "GROUP SNAPSHOT")
 }
 
 func TestWriteSnapshotIDs(t *testing.T) {

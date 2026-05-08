@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package errors
 
@@ -1245,8 +1245,7 @@ func TestStateError(t *testing.T) {
 
 		// Caller pattern: check if it's a state error, then extract state
 		if IsStateError(wrappedErr) {
-			var stateErr *StateError
-			if errors.As(wrappedErr, &stateErr) {
+			if stateErr, ok := errors.AsType[*StateError](wrappedErr); ok {
 				// This is the pattern used in trident_autogrow_policies.go
 				switch stateErr.State {
 				case "Starting", "Stopping":

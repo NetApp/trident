@@ -830,8 +830,7 @@ func getVolumeConfig(
 
 	volumeMode := pvc.Spec.VolumeMode
 	if volumeMode == nil {
-		volumeModeVal := v1.PersistentVolumeFilesystem
-		volumeMode = &volumeModeVal
+		volumeMode = new(v1.PersistentVolumeFilesystem)
 	}
 
 	// If snapshotDir annotation is provided, ensure it is lower case

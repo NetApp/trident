@@ -1345,10 +1345,9 @@ func TestZAPI_Priority1_CoreInfrastructure(t *testing.T) {
 		assert.NoError(t, err, "expected no error creating QoS policy")
 
 		// Test with all parameters
-		encrypt := true
 		volResult, err := client.VolumeCreate(ctx, "test-vol", "aggr1", "1g", "none",
 			"default", "755", "default", "unix", "none", "test comment",
-			qosPolicy, &encrypt, 20, false)
+			qosPolicy, new(true), 20, false)
 		assert.NoError(t, err, "expected no error creating volume with fake server")
 		assert.NotNil(t, volResult, "volume result should not be nil when creation succeeds")
 
@@ -1378,8 +1377,7 @@ func TestZAPI_Priority1_CoreInfrastructure(t *testing.T) {
 		assert.NoError(t, err) // Fake server supports this operation
 
 		// Test with specific attributes
-		exportPolicy := true
-		_, err = client.VolumeListByAttrs("test-vol", "aggr1", "unix", "default", "RW", &exportPolicy, nil, 50)
+		_, err = client.VolumeListByAttrs("test-vol", "aggr1", "unix", "default", "RW", new(true), nil, 50)
 		assert.NoError(t, err) // Fake server supports this operation
 	})
 
@@ -1403,9 +1401,8 @@ func TestZAPI_Priority1_FlexGroupOperations(t *testing.T) {
 		qosPolicy, _ := NewQosPolicyGroup("test-qos", "")
 
 		// Test with all parameters (fixed signature)
-		encrypt := true
 		_, err := client.FlexGroupCreate(ctx, "test-flexgroup", 2, aggrList, "none",
-			"default", "755", "default", "unix", "none", "test comment", qosPolicy, &encrypt, 20)
+			"default", "755", "default", "unix", "none", "test comment", qosPolicy, new(true), 20)
 		assert.NoError(t, err) // Fake server supports this operation
 
 		// Test with adaptive QoS (fixed signature)

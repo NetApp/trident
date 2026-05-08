@@ -96,8 +96,7 @@ func TestMain_processCommandLineArgs_TagriTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			customTimeout := time.Duration(tt.tagriTimeoutSecs) * time.Second
-			tagriTimeout = &customTimeout
+			tagriTimeout = new(time.Duration(tt.tagriTimeoutSecs) * time.Second)
 			csiEndpoint = pointer.String("true")
 			useInMemory = pointer.Bool(true)
 			k8sApiQPS = pointer.Float64(config.DefaultK8sAPIQPS)

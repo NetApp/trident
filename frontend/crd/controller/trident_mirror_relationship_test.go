@@ -497,8 +497,7 @@ func TestHandleTridentMirrorRelationship_EdgeCases(t *testing.T) {
 
 		ctx := context.Background()
 		tmr := createTestTMR("test-tmr", "default")
-		now := metav1.Now()
-		tmr.DeletionTimestamp = &now // Mark for deletion
+		tmr.DeletionTimestamp = new(metav1.Now()) // Mark for deletion
 
 		// Create the TMR
 		_, err := controller.crdClientset.TridentV1().TridentMirrorRelationships("default").Create(ctx, tmr, metav1.CreateOptions{})

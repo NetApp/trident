@@ -55,7 +55,7 @@ func PtrToString[T any](v *T) string {
 func ToSlicePtrs[T any](slice []T) []*T {
 	var result []*T
 	for _, s := range slice {
-		result = append(result, ToPtr(s))
+		result = append(result, new(s))
 	}
 	return result
 }

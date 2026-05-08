@@ -430,11 +430,6 @@ func TestContainerResourceDeepCopy(t *testing.T) {
 }
 
 func TestResourceRequirementsDeepCopy(t *testing.T) {
-	cpu100m := resource.MustParse("100m")
-	cpu200m := resource.MustParse("200m")
-	mem128Mi := resource.MustParse("128Mi")
-	mem256Mi := resource.MustParse("256Mi")
-
 	tests := []struct {
 		name     string
 		input    *ResourceRequirements
@@ -459,7 +454,7 @@ func TestResourceRequirementsDeepCopy(t *testing.T) {
 		{
 			name: "ResourceRequirements with CPU only",
 			input: &ResourceRequirements{
-				CPU: &cpu100m,
+				CPU: new(resource.MustParse("100m")),
 			},
 			validate: func(t *testing.T, original, copied *ResourceRequirements) {
 				assert.NotNil(t, copied)
@@ -472,7 +467,7 @@ func TestResourceRequirementsDeepCopy(t *testing.T) {
 		{
 			name: "ResourceRequirements with Memory only",
 			input: &ResourceRequirements{
-				Memory: &mem128Mi,
+				Memory: new(resource.MustParse("128Mi")),
 			},
 			validate: func(t *testing.T, original, copied *ResourceRequirements) {
 				assert.NotNil(t, copied)
@@ -485,8 +480,8 @@ func TestResourceRequirementsDeepCopy(t *testing.T) {
 		{
 			name: "ResourceRequirements with both CPU and Memory",
 			input: &ResourceRequirements{
-				CPU:    &cpu200m,
-				Memory: &mem256Mi,
+				CPU:    new(resource.MustParse("200m")),
+				Memory: new(resource.MustParse("256Mi")),
 			},
 			validate: func(t *testing.T, original, copied *ResourceRequirements) {
 				assert.NotNil(t, copied)

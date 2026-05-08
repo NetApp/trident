@@ -25,7 +25,6 @@ import (
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockk8scontrollerhelper "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/errors"
@@ -390,8 +389,8 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 
 	// Setup values to return from mocked calls.
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		OrchestratorReady:  convert.ToPtr(true),
-		AdministratorReady: convert.ToPtr(true),
+		OrchestratorReady:  new(true),
+		AdministratorReady: new(true),
 		ProvisionerReady:   nil,
 	}
 
@@ -445,7 +444,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		// Ensure this request occurs after first request.
 		time.Sleep(20 * time.Millisecond)
 
-		nodeState := models.NodePublicationStateFlags{ProvisionerReady: convert.ToPtr(true)}
+		nodeState := models.NodePublicationStateFlags{ProvisionerReady: new(true)}
 		data, err := json.Marshal(nodeState)
 		if err != nil {
 			t.Error("could not create request body")

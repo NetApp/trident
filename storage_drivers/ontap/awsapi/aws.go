@@ -23,7 +23,6 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -135,15 +134,15 @@ func (d *Client) CreateSecret(ctx context.Context, request *SecretCreateRequest)
 	tags := make([]secretmanagertypes.Tag, 0)
 	for k, v := range request.Tags {
 		tags = append(tags, secretmanagertypes.Tag{
-			Key:   convert.ToPtr(k),
-			Value: convert.ToPtr(v),
+			Key:   new(k),
+			Value: new(v),
 		})
 	}
 
 	input := &secretsmanager.CreateSecretInput{
-		Name:         convert.ToPtr(request.Name),
-		Description:  convert.ToPtr(request.Description),
-		SecretString: convert.ToPtr(string(secretBytes)),
+		Name:         new(request.Name),
+		Description:  new(request.Description),
+		SecretString: new(string(secretBytes)),
 		Tags:         tags,
 	}
 
@@ -163,8 +162,8 @@ func (d *Client) CreateSecret(ctx context.Context, request *SecretCreateRequest)
 
 func (d *Client) GetSecret(ctx context.Context, secretARN string) (*Secret, error) {
 	input := &secretsmanager.GetSecretValueInput{
-		SecretId:     convert.ToPtr(secretARN),
-		VersionStage: convert.ToPtr("AWSCURRENT"),
+		SecretId:     new(secretARN),
+		VersionStage: new("AWSCURRENT"),
 	}
 
 	secretData, err := d.secretsClient.GetSecretValue(ctx, input)
@@ -194,8 +193,8 @@ func (d *Client) DeleteSecret(ctx context.Context, secretARN string) error {
 		"secretARN": secretARN,
 	}
 	deleteSecretInput := &secretsmanager.DeleteSecretInput{
-		SecretId:                   convert.ToPtr(secretARN),
-		ForceDeleteWithoutRecovery: convert.ToPtr(true),
+		SecretId:                   new(secretARN),
+		ForceDeleteWithoutRecovery: new(true),
 	}
 	if _, err := d.secretsClient.DeleteSecret(ctx, deleteSecretInput); err != nil {
 		logFields["requestID"] = GetRequestIDFromError(err)
@@ -345,9 +344,9 @@ func (d *Client) CreateSVM(ctx context.Context, request *SVMCreateRequest) (*SVM
 		return nil, fmt.Errorf("error getting secret; %w", err)
 	}
 	input := &fsx.CreateStorageVirtualMachineInput{
-		FileSystemId:     convert.ToPtr(d.config.FilesystemID),
-		Name:             convert.ToPtr(request.Name),
-		SvmAdminPassword: convert.ToPtr(secret.SecretMap["password"]),
+		FileSystemId:     new(d.config.FilesystemID),
+		Name:             new(request.Name),
+		SvmAdminPassword: new(secret.SecretMap["password"]),
 	}
 
 	output, err := d.fsxClient.CreateStorageVirtualMachine(ctx, input)
@@ -756,7 +755,7 @@ func (d *Client) WaitForVolumeStates(
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			Logc(ctx).Errorf("Volume reached terminal state; %w", terminalStateErr)
+			Logc(ctx).WithError(terminalStateErr).Error("Volume reached terminal state.")
 		} else {
 			Logc(ctx).Errorf("Volume state was not any of %s after %3.2f seconds.",
 				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
@@ -776,12 +775,12 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 	}
 
 	ontapConfig := &fsxtypes.CreateOntapVolumeConfiguration{
-		SizeInMegabytes:          convert.ToPtr(int32(request.SizeBytes / 1048576)),
-		StorageVirtualMachineId:  convert.ToPtr(request.SVMID),
-		JunctionPath:             convert.ToPtr("/" + request.Name),
+		SizeInMegabytes:          new(int32(request.SizeBytes / 1048576)),
+		StorageVirtualMachineId:  new(request.SVMID),
+		JunctionPath:             new("/" + request.Name),
 		SecurityStyle:            fsxtypes.SecurityStyleUnix,
-		SnapshotPolicy:           convert.ToPtr(request.SnapshotPolicy),
-		StorageEfficiencyEnabled: convert.ToPtr(true),
+		SnapshotPolicy:           new(request.SnapshotPolicy),
+		StorageEfficiencyEnabled: new(true),
 		TieringPolicy: &fsxtypes.TieringPolicy{
 			Name: fsxtypes.TieringPolicyNameNone,
 		},
@@ -790,13 +789,13 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 	tags := make([]fsxtypes.Tag, 0)
 	for k, v := range request.Labels {
 		tags = append(tags, fsxtypes.Tag{
-			Key:   convert.ToPtr(k),
-			Value: convert.ToPtr(v),
+			Key:   new(k),
+			Value: new(v),
 		})
 	}
 
 	input := &fsx.CreateVolumeInput{
-		Name:               convert.ToPtr(request.Name),
+		Name:               new(request.Name),
 		VolumeType:         fsxtypes.VolumeTypeOntap,
 		OntapConfiguration: ontapConfig,
 		Tags:               tags,
@@ -828,13 +827,13 @@ func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels map[s
 	tags := make([]fsxtypes.Tag, 0)
 	for k, v := range labels {
 		tags = append(tags, fsxtypes.Tag{
-			Key:   convert.ToPtr(k),
-			Value: convert.ToPtr(v),
+			Key:   new(k),
+			Value: new(v),
 		})
 	}
 
 	input := &fsx.TagResourceInput{
-		ResourceARN: convert.ToPtr(volume.ARN),
+		ResourceARN: new(volume.ARN),
 		Tags:        tags,
 	}
 
@@ -859,11 +858,11 @@ func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes 
 	}
 
 	ontapConfig := &fsxtypes.UpdateOntapVolumeConfiguration{
-		SizeInMegabytes: convert.ToPtr(int32(newSizeBytes / 1048576)),
+		SizeInMegabytes: new(int32(newSizeBytes / 1048576)),
 	}
 
 	input := &fsx.UpdateVolumeInput{
-		VolumeId:           convert.ToPtr(volume.ID),
+		VolumeId:           new(volume.ID),
 		OntapConfiguration: ontapConfig,
 	}
 
@@ -889,11 +888,11 @@ func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 	}
 
 	ontapConfig := &fsxtypes.DeleteVolumeOntapConfiguration{
-		SkipFinalBackup: convert.ToPtr(true),
+		SkipFinalBackup: new(true),
 	}
 
 	input := &fsx.DeleteVolumeInput{
-		VolumeId:           convert.ToPtr(volume.ID),
+		VolumeId:           new(volume.ID),
 		OntapConfiguration: ontapConfig,
 	}
 

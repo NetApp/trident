@@ -947,7 +947,7 @@ func (d *SANStorageDriver) CreateClone(
 		CapacityPool:    sourceVolume.CapacityPool,
 		SizeBytes:       cloneSizeBytes,
 		Labels:          labels,
-		SnapshotReserve: convert.ToPtr(sourceVolume.SnapshotReserve),
+		SnapshotReserve: new(sourceVolume.SnapshotReserve),
 		SnapshotID:      sourceSnapshot.FullName,
 		ProtocolTypes:   []string{api.ProtocolTypeISCSI},
 		OSType:          api.OSTypeLinux,

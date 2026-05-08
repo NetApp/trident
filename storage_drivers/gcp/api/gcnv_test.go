@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/netapp/trident/pkg/collection"
@@ -441,7 +440,7 @@ func TestNewVolumeFromGCNVVolume_WithBlockDevices(t *testing.T) {
 				Identifier: "lun-serial-12345",
 				HostGroups: []string{"projects/123456789/locations/fake-location/hostGroups/hg1"},
 				OsType:     netapppb.OsType_LINUX,
-				Name:       proto.String("lun-0"),
+				Name:       new("lun-0"),
 			},
 		},
 		MountOptions: []*netapppb.MountOption{
@@ -483,7 +482,6 @@ func TestNewVolumeFromGCNVVolumeTieringEnabled(t *testing.T) {
 	sdk := getFakeSDK()
 
 	coolingDays := int32(30)
-	tierAction := netapppb.TieringPolicy_ENABLED
 	volume := &netapppb.Volume{
 		Name:        "projects/123456789/locations/fake-location/volumes/myVolume",
 		ShareName:   "myVolume",
@@ -492,7 +490,7 @@ func TestNewVolumeFromGCNVVolumeTieringEnabled(t *testing.T) {
 		Protocols:   []netapppb.Protocols{netapppb.Protocols_NFSV3},
 		CapacityGib: 100,
 		TieringPolicy: &netapppb.TieringPolicy{
-			TierAction:           &tierAction,
+			TierAction:           new(netapppb.TieringPolicy_ENABLED),
 			CoolingThresholdDays: &coolingDays,
 		},
 	}
@@ -535,7 +533,7 @@ func TestNewVolumeFromGCNVVolume_BlockDevicesWithoutMountOptions(t *testing.T) {
 			{
 				Identifier: "serial-abc123",
 				OsType:     netapppb.OsType_WINDOWS,
-				Name:       proto.String("lun-1"),
+				Name:       new("lun-1"),
 			},
 		},
 		MountOptions: []*netapppb.MountOption{}, // No mount options
@@ -565,8 +563,6 @@ func TestNewVolumeFromGCNVVolume_BlockDevicesWithoutMountOptions(t *testing.T) {
 func TestNewVolumeFromGCNVVolumeTieringPaused(t *testing.T) {
 	sdk := getFakeSDK()
 
-	coolingDays := int32(30)
-	tierAction := netapppb.TieringPolicy_PAUSED
 	volume := &netapppb.Volume{
 		Name:        "projects/123456789/locations/fake-location/volumes/myVolume",
 		ShareName:   "myVolume",
@@ -575,8 +571,8 @@ func TestNewVolumeFromGCNVVolumeTieringPaused(t *testing.T) {
 		Protocols:   []netapppb.Protocols{netapppb.Protocols_NFSV3},
 		CapacityGib: 100,
 		TieringPolicy: &netapppb.TieringPolicy{
-			TierAction:           &tierAction,
-			CoolingThresholdDays: &coolingDays,
+			TierAction:           new(netapppb.TieringPolicy_PAUSED),
+			CoolingThresholdDays: new(int32(30)),
 		},
 	}
 
@@ -901,7 +897,6 @@ func TestCreateVolume_TieringPolicyAuto_PoolDoesNotSupportTiering(t *testing.T) 
 	}
 	addCapacityPool(sdk, pool)
 
-	coolingDays := int32(7)
 	request := &VolumeCreateRequest{
 		Name:                      "test-volume",
 		CreationToken:             "test-volume",
@@ -909,7 +904,7 @@ func TestCreateVolume_TieringPolicyAuto_PoolDoesNotSupportTiering(t *testing.T) 
 		SizeBytes:                 107374182400,
 		ProtocolTypes:             []string{"NFSv3"},
 		TieringPolicy:             drivers.TieringPolicyAuto,
-		TieringMinimumCoolingDays: &coolingDays,
+		TieringMinimumCoolingDays: new(int32(7)),
 	}
 
 	_, err := sdk.CreateVolume(ctx, request)
@@ -945,20 +940,15 @@ func TestIsGCNVTimeoutError(t *testing.T) {
 }
 
 func TestDerefString(t *testing.T) {
-	str := "test"
-	strwithnil := ""
-
-	deferString := DerefString(&str)
-	deferStringNil := DerefString(&strwithnil)
+	deferString := DerefString(new("test"))
+	deferStringNil := DerefString(new(""))
 
 	assert.Equal(t, "", deferStringNil)
 	assert.Equal(t, "test", deferString)
 }
 
 func TestDerefBool(t *testing.T) {
-	b := true
-
-	deferBool := DerefBool(&b)
+	deferBool := DerefBool(new(true))
 	deferBoolNil := DerefBool(nil)
 
 	assert.Equal(t, false, deferBoolNil)
@@ -1287,8 +1277,7 @@ func TestFindAllLocationsFromCapacityPool_WithoutFlexPools(t *testing.T) {
 
 // TestDerefString_WithValue tests DerefString with non-nil pointer
 func TestDerefString_WithValue(t *testing.T) {
-	value := "test-string"
-	result := DerefString(&value)
+	result := DerefString(new("test-string"))
 	assert.Equal(t, "test-string", result)
 }
 
@@ -1674,18 +1663,13 @@ func TestExportPolicyImport_EmptyRules(t *testing.T) {
 
 func TestExportPolicyImport_SingleRule(t *testing.T) {
 	sdk := getFakeSDK()
-	allowedClients := "10.0.0.0/8"
-	nfsv3 := true
-	nfsv4 := false
-	accessType := netapppb.AccessType_READ_WRITE
-
 	gcnvPolicy := &netapppb.ExportPolicy{
 		Rules: []*netapppb.SimpleExportPolicyRule{
 			{
-				AllowedClients: &allowedClients,
-				Nfsv3:          &nfsv3,
-				Nfsv4:          &nfsv4,
-				AccessType:     &accessType,
+				AllowedClients: new("10.0.0.0/8"),
+				Nfsv3:          new(true),
+				Nfsv4:          new(false),
+				AccessType:     new(netapppb.AccessType_READ_WRITE),
 			},
 		},
 	}
@@ -1702,26 +1686,21 @@ func TestExportPolicyImport_SingleRule(t *testing.T) {
 
 func TestExportPolicyImport_MultipleRules(t *testing.T) {
 	sdk := getFakeSDK()
-	allowedClients1 := "10.0.0.0/8"
-	allowedClients2 := "192.168.0.0/16"
 	nfsv3 := true
 	nfsv4 := true
-	accessType1 := netapppb.AccessType_READ_ONLY
-	accessType2 := netapppb.AccessType_READ_WRITE
-
 	gcnvPolicy := &netapppb.ExportPolicy{
 		Rules: []*netapppb.SimpleExportPolicyRule{
 			{
-				AllowedClients: &allowedClients1,
+				AllowedClients: new("10.0.0.0/8"),
 				Nfsv3:          &nfsv3,
 				Nfsv4:          &nfsv4,
-				AccessType:     &accessType1,
+				AccessType:     new(netapppb.AccessType_READ_ONLY),
 			},
 			{
-				AllowedClients: &allowedClients2,
+				AllowedClients: new("192.168.0.0/16"),
 				Nfsv3:          &nfsv3,
 				Nfsv4:          &nfsv4,
-				AccessType:     &accessType2,
+				AccessType:     new(netapppb.AccessType_READ_WRITE),
 			},
 		},
 	}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
@@ -40,7 +39,7 @@ func TestConvertUnixPermissions(t *testing.T) {
 }
 
 func TestHasNextLink(t *testing.T) {
-	////////////////////////////////////////////
+	// //////////////////////////////////////////
 	// negative tests
 	assert.False(t,
 		HasNextLink(nil),
@@ -56,14 +55,14 @@ func TestHasNextLink(t *testing.T) {
 		}),
 		"Should NOT have a next link")
 
-	////////////////////////////////////////////
+	// //////////////////////////////////////////
 	// positive tests
 	assert.True(t,
 		HasNextLink(
 			&models.VolumeResponse{
 				Links: &models.VolumeResponseInlineLinks{
 					Next: &models.Href{
-						Href: convert.ToPtr("/api/storage/volumes?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM"),
+						Href: new("/api/storage/volumes?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM"),
 					},
 				},
 			}),
@@ -74,7 +73,7 @@ func TestHasNextLink(t *testing.T) {
 			&models.SnapshotResponse{
 				Links: &models.SnapshotResponseInlineLinks{
 					Next: &models.Href{
-						Href: convert.ToPtr("/api/storage/snapshot?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM"),
+						Href: new("/api/storage/snapshot?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM"),
 					},
 				},
 			}),
@@ -308,7 +307,7 @@ func TestHasNextLinkEdgeCases(t *testing.T) {
 			HasNextLink(&models.VolumeResponse{
 				Links: &models.VolumeResponseInlineLinks{
 					Next: &models.Href{
-						Href: convert.ToPtr(""),
+						Href: new(""),
 					},
 				},
 			}),

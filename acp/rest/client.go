@@ -125,7 +125,7 @@ func (c *Client) newRequest(ctx context.Context, method, url string, data []byte
 // It returns the http response, the response body or an error if one occurs.
 func (c *Client) invokeAPI(req *http.Request) (*http.Response, []byte, error) {
 	// Make the request.
-	res, err := c.httpClient.Do(req)
+	res, err := c.httpClient.Do(req) //nolint:gosec // request URL is built by this ACP client, not user taint
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to invoke Trident-ACP REST API: [%s]; %v", req.URL.String(), err)
 	}

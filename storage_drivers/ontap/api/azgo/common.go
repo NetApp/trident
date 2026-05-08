@@ -29,6 +29,10 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+// ClientAppHeader is the HTTP header name ONTAP uses to identify the calling
+// application. Mirrored from the parent api package to avoid an import cycle.
+const ClientAppHeader = "X-Dot-Client-App"
+
 type ZAPIRequest interface {
 	ToXML() (string, error)
 }
@@ -242,6 +246,7 @@ func (o *ZapiRunner) SendZapiWithContext(ctx context.Context, r ZAPIRequest) (*h
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/xml")
+	req.Header.Set(ClientAppHeader, "Trident/"+tridentconfig.OrchestratorVersion.ShortString())
 	if o.ClientCertificate == "" || o.ClientPrivateKey == "" {
 		req.SetBasicAuth(o.Username, o.Password)
 	}

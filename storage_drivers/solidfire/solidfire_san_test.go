@@ -799,8 +799,7 @@ func TestValidate(t *testing.T) {
 			setupDriver: func() *SANStorageDriver {
 				driver := newTestSolidfireSANDriver()
 				// Ensure storage prefix is empty for valid config
-				emptyPrefix := ""
-				driver.Config.StoragePrefix = &emptyPrefix
+				driver.Config.StoragePrefix = new("")
 				return driver
 			},
 			expectError: false,
@@ -839,8 +838,7 @@ func TestValidate(t *testing.T) {
 			name: "non-empty StoragePrefix - should fail",
 			setupDriver: func() *SANStorageDriver {
 				driver := newTestSolidfireSANDriver()
-				nonEmpty := "test_prefix"
-				driver.Config.StoragePrefix = &nonEmpty
+				driver.Config.StoragePrefix = new("test_prefix")
 				return driver
 			},
 			expectError: true,
@@ -1593,14 +1591,12 @@ func TestGetUpdateType(t *testing.T) {
 			name: "different storage prefix - prefix change",
 			setupOrigDriver: func() *SANStorageDriver {
 				driver := newTestSolidfireSANDriver()
-				oldPrefix := "old_"
-				driver.Config.StoragePrefix = &oldPrefix
+				driver.Config.StoragePrefix = new("old_")
 				return driver
 			},
 			setupNewDriver: func() *SANStorageDriver {
 				driver := newTestSolidfireSANDriver()
-				newPrefix := "new_"
-				driver.Config.StoragePrefix = &newPrefix
+				driver.Config.StoragePrefix = new("new_")
 				return driver
 			},
 			expectedUpdates: []uint32{storage.PrefixChange},

@@ -281,12 +281,11 @@ func TestController_updateConfigurator_DeletionTimestamp(t *testing.T) {
 	controller, mockCtrl, _ := createMockController(t)
 	defer mockCtrl.Finish()
 
-	now := metav1.Now()
 	tconfCR := &netappv1.TridentConfigurator{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              TestName,
 			Namespace:         TestName,
-			DeletionTimestamp: &now,
+			DeletionTimestamp: new(metav1.Now()),
 		},
 	}
 

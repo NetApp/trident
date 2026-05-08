@@ -44,8 +44,6 @@ func TestValidateCommonSettings(t *testing.T) {
 	// Need to escape quotes because the raw storage prefix will be converted to a string.
 	prefix := "\"trident_\""
 	storagePrefixRaw := json.RawMessage(prefix)
-	storagePrefix := string(storagePrefixRaw[1 : len(storagePrefixRaw)-1])
-
 	tests := map[string]test{
 		"fails to unmarshal the config when JSON field is wrong type": {
 			configJSON: `{
@@ -148,7 +146,7 @@ func TestValidateCommonSettings(t *testing.T) {
 					Debug:             true,
 					DisableDelete:     true,
 					StoragePrefixRaw:  storagePrefixRaw,
-					StoragePrefix:     &storagePrefix,
+					StoragePrefix:     new(string(storagePrefixRaw[1 : len(storagePrefixRaw)-1])),
 					Credentials: map[string]string{
 						"name": "secret1",
 						"type": "secret",
@@ -175,9 +173,6 @@ func TestValidateCommonSettings(t *testing.T) {
 }
 
 func TestParseRawStoragePrefix(t *testing.T) {
-	validStoragePrefix := "trident_"
-	emptyStoragePrefix := ""
-
 	type test struct {
 		storagePrefixRaw json.RawMessage
 		expectedPrefix   *string
@@ -197,12 +192,12 @@ func TestParseRawStoragePrefix(t *testing.T) {
 		},
 		"returns pointer to empty string with empty but valid storagePrefixRaw string": {
 			storagePrefixRaw: json.RawMessage("\"\""),
-			expectedPrefix:   &emptyStoragePrefix, // Use the address of an uninitialized string will default to "".
+			expectedPrefix:   new(""), // Use the address of an uninitialized string will default to "".
 			errorExpected:    false,
 		},
 		"returns storage prefix specified in storagePrefixRaw string": {
 			storagePrefixRaw: json.RawMessage("\"trident_\""),
-			expectedPrefix:   &validStoragePrefix,
+			expectedPrefix:   new("trident_"),
 			errorExpected:    false,
 		},
 		"returns nil pointer with error": {

@@ -155,10 +155,12 @@ func TestGroupSnapshot(t *testing.T) {
 	// Ensure created is equivalent.
 	assert.Equal(t, groupsnapshot.GetCreated(), clone.GetCreated())
 
-	// Get the external representations of the snapshots and ensure they are different.
-	externalSnaps := groupsnapshot.GetSnapshotIDs()
-	clonedSnapshots := clone.GetSnapshotIDs()
-	assert.NotSame(t, &externalSnaps, &clonedSnapshots)
+	// Clone must use an independent SnapshotIDs backing array (mutate clone only).
+	assert.Len(t, clone.SnapshotIDs, 2)
+	origFirst := groupsnapshot.SnapshotIDs[0]
+	clone.SnapshotIDs[0] = "mutated-on-purpose"
+	assert.Equal(t, origFirst, groupsnapshot.SnapshotIDs[0],
+		"mutating clone SnapshotIDs must not alias the original")
 
 	persistent := groupsnapshot.ConstructPersistent()
 	assert.NotNil(t, persistent)

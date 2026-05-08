@@ -1394,8 +1394,7 @@ func mustParseQuantity(value string) resource.Quantity {
 
 // Helper function to create pointer to resource quantity
 func mustParseQuantityPtr(value string) *resource.Quantity {
-	qty := mustParseQuantity(value)
-	return &qty
+	return new(mustParseQuantity(value))
 }
 
 // Helper function to create container resource specification
@@ -1622,10 +1621,9 @@ func TestSetInstallationParams(t *testing.T) {
 	t.Run("test probe port and kubelet dir settings", func(t *testing.T) {
 		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
 
-		probePortValue := int64(9990)
 		cr := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
-				ProbePort:  &probePortValue,
+				ProbePort:  new(int64(9990)),
 				KubeletDir: "/custom/kubelet/dir",
 			},
 		}
@@ -1636,9 +1634,6 @@ func TestSetInstallationParams(t *testing.T) {
 
 	t.Run("test disable audit log configurations", func(t *testing.T) {
 		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
-
-		disableTrue := true
-		disableFalse := false
 
 		// Test with nil (default true)
 		cr1 := netappv1.TridentOrchestrator{
@@ -1652,7 +1647,7 @@ func TestSetInstallationParams(t *testing.T) {
 		// Test with explicit true
 		cr2 := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
-				DisableAuditLog: &disableTrue,
+				DisableAuditLog: new(true),
 			},
 		}
 		_, _, _, err = installer.setInstallationParams(cr2, "")
@@ -1661,7 +1656,7 @@ func TestSetInstallationParams(t *testing.T) {
 		// Test with explicit false
 		cr3 := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
-				DisableAuditLog: &disableFalse,
+				DisableAuditLog: new(false),
 			},
 		}
 		_, _, _, err = installer.setInstallationParams(cr3, "")
@@ -1685,9 +1680,6 @@ func TestSetInstallationParams(t *testing.T) {
 	t.Run("test ExcludeAutosupport pointer handling", func(t *testing.T) {
 		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
 
-		excludeTrue := true
-		excludeFalse := false
-
 		// Test with nil
 		cr1 := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
@@ -1700,7 +1692,7 @@ func TestSetInstallationParams(t *testing.T) {
 		// Test with true
 		cr2 := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
-				ExcludeAutosupport: &excludeTrue,
+				ExcludeAutosupport: new(true),
 			},
 		}
 		_, _, _, err = installer.setInstallationParams(cr2, "")
@@ -1709,7 +1701,7 @@ func TestSetInstallationParams(t *testing.T) {
 		// Test with false
 		cr3 := netappv1.TridentOrchestrator{
 			Spec: netappv1.TridentOrchestratorSpec{
-				ExcludeAutosupport: &excludeFalse,
+				ExcludeAutosupport: new(false),
 			},
 		}
 		_, _, _, err = installer.setInstallationParams(cr3, "")
@@ -4707,14 +4699,11 @@ func TestValidateNonNegativeQuantity(t *testing.T) {
 	// Test different quantity types - coverage comes from calling the function
 	assert.NoError(t, ValidateNonNegativeQuantity(nil))
 
-	positive := resource.MustParse("100m")
-	assert.NoError(t, ValidateNonNegativeQuantity(&positive))
+	assert.NoError(t, ValidateNonNegativeQuantity(new(resource.MustParse("100m"))))
 
-	zero := resource.MustParse("0")
-	assert.NoError(t, ValidateNonNegativeQuantity(&zero))
+	assert.NoError(t, ValidateNonNegativeQuantity(new(resource.MustParse("0"))))
 
-	negative := resource.MustParse("-100m")
-	assert.Error(t, ValidateNonNegativeQuantity(&negative))
+	assert.Error(t, ValidateNonNegativeQuantity(new(resource.MustParse("-100m"))))
 }
 
 // TestDeleteTridentNodeRemediationResources tests the actual implementation

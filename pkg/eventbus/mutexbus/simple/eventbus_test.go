@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/workerpool"
 	"github.com/netapp/trident/pkg/workerpool/ants"
 	workerpooltypes "github.com/netapp/trident/pkg/workerpool/types"
@@ -131,10 +130,9 @@ func TestNewEventBus(t *testing.T) {
 		{
 			name: "NoHooks explicitly enabled",
 			config: func() Config {
-				noHooks := true
 				return Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(true),
 				}
 			}(),
 			validate: func(t *testing.T, bus *EventBus[string], err error) {
@@ -159,10 +157,9 @@ func TestNewEventBus(t *testing.T) {
 		{
 			name: "NoHooks explicitly disabled",
 			config: func() Config {
-				noHooks := false
 				return Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 			}(),
 			validate: func(t *testing.T, bus *EventBus[string], err error) {
@@ -279,11 +276,10 @@ func TestNewEventBus(t *testing.T) {
 				require.NoError(t, err)
 				require.NoError(t, pool.Start(ctx))
 
-				noHooks := true
 				return Config{
 					PreAllocHandlers: 32,
 					WorkerPool:       pool,
-					NoHooks:          &noHooks,
+					NoHooks:          new(true),
 				}
 			},
 			cleanupFunc: func(t *testing.T, cfg Config) {
@@ -329,10 +325,9 @@ func TestNewEventBus(t *testing.T) {
 		{
 			name: "all options combined",
 			config: func() Config {
-				noHooks := false
 				return Config{
 					PreAllocHandlers: 50,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 					DefaultTimeout:   10 * time.Second,
 				}
 			}(),
@@ -835,10 +830,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with Serial and all options combined",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -1004,10 +998,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with before hooks",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -1035,10 +1028,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with after hooks",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -1066,10 +1058,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with error hooks",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -1097,10 +1088,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with multiple hooks of same type",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -1126,10 +1116,9 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "subscription with all hook types",
 			setupBus: func(t *testing.T) *EventBus[string] {
-				noHooks := false
 				cfg := Config{
 					PreAllocHandlers: 16,
-					NoHooks:          &noHooks,
+					NoHooks:          new(false),
 				}
 				bus, err := NewEventBus[string](ctx, &cfg)
 				require.NoError(t, err)
@@ -2553,7 +2542,7 @@ func TestPublish(t *testing.T) {
 		{
 			name: "publish with NoHooks enabled (fast path)",
 			config: Config{
-				NoHooks: convert.ToPtr(true),
+				NoHooks: new(true),
 			},
 			setupFunc: func(t *testing.T, bus *EventBus[string]) {
 				receivedCount := 0
@@ -2887,7 +2876,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "no handlers - return early",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -2906,7 +2895,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "single sync handler",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -2937,7 +2926,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "single async handler",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -2969,7 +2958,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "multiple sync handlers",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3000,7 +2989,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "multiple async handlers",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3032,7 +3021,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "mixed sync and async handlers",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3078,7 +3067,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "multiple publishes reuse pools",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3108,7 +3097,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "handlers receive correct event data",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3144,7 +3133,7 @@ func TestPublishNoHooks(t *testing.T) {
 			name: "hook pools should not be used",
 			setupFunc: func(t *testing.T) *EventBus[string] {
 				config := DefaultConfig()
-				config.NoHooks = convert.ToPtr(true)
+				config.NoHooks = new(true)
 				bus, err := NewEventBus[string](ctx, config)
 				require.NoError(t, err)
 				require.True(t, bus.noHooks)
@@ -3188,7 +3177,7 @@ func TestPublishNoHooks(t *testing.T) {
 func TestPublishNoHooks_ConcurrentPublish(t *testing.T) {
 	ctx := context.Background()
 	config := DefaultConfig()
-	config.NoHooks = convert.ToPtr(true)
+	config.NoHooks = new(true)
 	bus, err := NewEventBus[int](ctx, config)
 	require.NoError(t, err)
 	defer bus.Close(ctx)
@@ -3232,7 +3221,7 @@ func TestPublishNoHooks_DifferentTypes(t *testing.T) {
 
 	t.Run("int type", func(t *testing.T) {
 		config := DefaultConfig()
-		config.NoHooks = convert.ToPtr(true)
+		config.NoHooks = new(true)
 		bus, err := NewEventBus[int](ctx, config)
 		require.NoError(t, err)
 		defer bus.Close(ctx)
@@ -3254,7 +3243,7 @@ func TestPublishNoHooks_DifferentTypes(t *testing.T) {
 			Name string
 		}
 		config := DefaultConfig()
-		config.NoHooks = convert.ToPtr(true)
+		config.NoHooks = new(true)
 		bus, err := NewEventBus[Event](ctx, config)
 		require.NoError(t, err)
 		defer bus.Close(ctx)
@@ -3275,7 +3264,7 @@ func TestPublishNoHooks_DifferentTypes(t *testing.T) {
 			ID int
 		}
 		config := DefaultConfig()
-		config.NoHooks = convert.ToPtr(true)
+		config.NoHooks = new(true)
 		bus, err := NewEventBus[*Event](ctx, config)
 		require.NoError(t, err)
 		defer bus.Close(ctx)

@@ -48,12 +48,10 @@ const (
 )
 
 func newTestSANDriver(mockAPI api.GCNV) *SANStorageDriver {
-	prefix := "test-"
-
 	config := drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "google-cloud-netapp-volumes-san",
-			StoragePrefix:     &prefix,
+			StoragePrefix:     new("test-"),
 			DebugTraceFlags:   debugTraceFlags,
 		},
 		ProjectNumber: api.ProjectNumber,
@@ -315,11 +313,10 @@ func TestSANDriver_Initialize_ValidationError(t *testing.T) {
 	_, driver := newMockSANDriver(t)
 
 	// Use an invalid storage prefix (starts with digit) to trigger validation error
-	invalidPrefix := "123-invalid-prefix"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: tridentconfig.GCNVSANStorageDriverName,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     &invalidPrefix,
+		StoragePrefix:     new("123-invalid-prefix"),
 	}
 
 	configJSON := `{
@@ -710,16 +707,14 @@ func TestSANDriver_GetUpdateType_WrongDriverType(t *testing.T) {
 
 func TestSANDriver_GetUpdateType_OtherChanges(t *testing.T) {
 	_, oldDriver := newMockSANDriver(t)
-	prefix1 := "prefix1-"
-	oldDriver.Config.StoragePrefix = &prefix1
+	oldDriver.Config.StoragePrefix = new("prefix1-")
 	oldDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret1",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
 	}
 
 	_, newDriver := newMockSANDriver(t)
-	prefix2 := "prefix2-"
-	newDriver.Config.StoragePrefix = &prefix2
+	newDriver.Config.StoragePrefix = new("prefix2-")
 	newDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret2",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),
@@ -1860,11 +1855,10 @@ func TestSANDriver_populateConfigurationDefaults_AllDefaults(t *testing.T) {
 func TestSANDriver_populateConfigurationDefaults_PreservesExistingValues(t *testing.T) {
 	_, driver := newMockSANDriver(t)
 
-	prefix := "custom-"
 	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: tridentconfig.GCNVSANStorageDriverName,
-			StoragePrefix:     &prefix,
+			StoragePrefix:     new("custom-"),
 			DebugTraceFlags:   debugTraceFlags,
 			LimitVolumeSize:   "500Gi",
 		},

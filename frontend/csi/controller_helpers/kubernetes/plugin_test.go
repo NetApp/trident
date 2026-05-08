@@ -38,7 +38,6 @@ import (
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentfake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -523,14 +522,14 @@ func TestUpdateNode(t *testing.T) {
 			key:           "nodeNotReady",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionFalse,
-			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 			error:         nil,
 		},
 		{
 			key:           "nodeUnknown",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionUnknown,
-			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 			error:         errors.New("failed"),
 		},
 	}
@@ -616,7 +615,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			noTaint,
 			nil,
 			nodeReadyConditionTrue,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(true), AdministratorReady: new(true)},
 			nil,
 		},
 		{
@@ -624,7 +623,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			nodeOutOfServiceTaint,
 			nil,
 			nodeReadyConditionTrue,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(true), AdministratorReady: new(false)},
 			nil,
 		},
 		{
@@ -632,7 +631,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			noTaint,
 			nil,
 			nodeReadyConditionUnknown,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(true)},
 			nil,
 		},
 		{
@@ -640,7 +639,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			nodeOutOfServiceTaint,
 			nil,
 			nodeReadyConditionUnknown,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 			nil,
 		},
 		{
@@ -648,7 +647,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			noTaint,
 			nil,
 			nodeReadyConditionFalse,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(true)},
 			nil,
 		},
 		{
@@ -656,7 +655,7 @@ func TestGetNodePublicationState(t *testing.T) {
 			nodeOutOfServiceTaint,
 			nil,
 			nodeReadyConditionFalse,
-			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: new(false), AdministratorReady: new(false)},
 			nil,
 		},
 	}

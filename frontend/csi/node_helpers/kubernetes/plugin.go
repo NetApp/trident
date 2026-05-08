@@ -244,7 +244,7 @@ func (h *helper) discoverPVCsToPublishedPathsFilesystemVolumes(ctx context.Conte
 	pods, err := afero.ReadDir(osFs, h.podsPath)
 	if err != nil {
 		fields := LogFields{"helperPodsPath": h.podsPath}
-		Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %w", err)
+		Logc(ctx).WithFields(fields).WithError(err).Error("Error reading pods path.")
 		return nil, err
 	}
 
@@ -254,7 +254,7 @@ func (h *helper) discoverPVCsToPublishedPathsFilesystemVolumes(ctx context.Conte
 		Logc(ctx).WithFields(fields).Debug("Current pod UUID path.")
 		volumes, err := afero.ReadDir(osFs, podUUIDPath)
 		if err != nil && !os.IsNotExist(err) {
-			Logc(ctx).WithFields(fields).Errorf("Error reading pod UUID directory; %w", err)
+			Logc(ctx).WithFields(fields).WithError(err).Error("Error reading pod UUID directory.")
 			return mapping, err
 		}
 
@@ -290,7 +290,7 @@ func (h *helper) discoverPVCsToPublishedPathsRawDevices(ctx context.Context, map
 
 	volumes, err := afero.ReadDir(osFs, publishedRawDevicePath)
 	if err != nil && !os.IsNotExist(err) {
-		Logc(ctx).WithFields(fields).Errorf("Error reading raw device directory; %w", err)
+		Logc(ctx).WithFields(fields).WithError(err).Error("Error reading raw device directory.")
 		return err
 	}
 
@@ -307,7 +307,7 @@ func (h *helper) discoverPVCsToPublishedPathsRawDevices(ctx context.Context, map
 		fields = LogFields{"volumePath": volumePath}
 		podUUIDs, err := afero.ReadDir(osFs, volumePath)
 		if err != nil && !os.IsNotExist(err) {
-			Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %w", err)
+			Logc(ctx).WithFields(fields).WithError(err).Error("Error reading pods path.")
 			return err
 		}
 

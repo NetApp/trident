@@ -1444,15 +1444,15 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 	)
 	switch {
 	case p.Config.OntapConfig != nil:
-		bytes, err = json.Marshal(p.Config.OntapConfig)
+		bytes, err = json.Marshal(p.Config.OntapConfig) //nolint:gosec // intentional persisted backend config
 	case p.Config.SolidfireConfig != nil:
 		bytes, err = json.Marshal(p.Config.SolidfireConfig)
 	case p.Config.AzureConfig != nil:
-		bytes, err = json.Marshal(p.Config.AzureConfig)
+		bytes, err = json.Marshal(p.Config.AzureConfig) //nolint:gosec // intentional persisted backend config
 	case p.Config.GCNVConfig != nil:
 		bytes, err = json.Marshal(p.Config.GCNVConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
-		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
+		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig) //nolint:gosec // intentional persisted backend config
 	default:
 		return "", fmt.Errorf("no recognized config found for backend %s", p.Name)
 	}
@@ -1678,13 +1678,11 @@ func (b *StorageBackend) HealVolumePublishEnforcement(
 // SmartCopy implements a shallow copy of StorageBackend because it satisfies interior mutability. This means the volume
 // and pool maps, and the driver, are shared between all copies of the StorageBackend.
 func (b *StorageBackend) SmartCopy() interface{} {
-	cpy := *b
-	return &cpy
+	return new(*b)
 }
 
 func (b *StorageBackend) DeepCopyType() Backend {
-	cpy := *b
-	return &cpy
+	return new(*b)
 }
 
 func (b *StorageBackend) GetUniqueKey() string {

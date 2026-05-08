@@ -16,7 +16,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
-	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
@@ -59,7 +58,7 @@ func TestEnsureIGroupAdded(t *testing.T) {
 	assert.NoError(t, err)
 
 	// positive test case
-	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: convert.ToPtr(initiator)}}}
+	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: new(initiator)}}}
 	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(igroup, nil)
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.NoError(t, err)
@@ -75,14 +74,14 @@ func TestEnsureLunMapped(t *testing.T) {
 
 	initiatorGroup := "initiatorGroup"
 	lunPath := "/dev/sda"
-	number := convert.ToPtr(int64(100))
+	number := new(int64(100))
 	lunPayload := &models.LunMapResponse{
-		NumRecords: convert.ToPtr(int64(1)),
+		NumRecords: new(int64(1)),
 		LunMapResponseInlineRecords: []*models.LunMap{
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: convert.ToPtr(initiatorGroup),
+					Name: new(initiatorGroup),
 				},
 			},
 		},
@@ -138,7 +137,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 
 	// If lun not already mapped OR incorrectly mapped
-	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = convert.ToPtr("tmp")
+	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = new("tmp")
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
@@ -277,29 +276,24 @@ func TestNVMeNamespaceExists(t *testing.T) {
 	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
 	assert.NoError(t, err)
 	Name := "fakeNS"
-	UUID := "fakeUUID"
-	OsType := "fakeOS"
 	Location := &models.NvmeNamespaceInlineLocation{
 		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
 			Name: &Name,
 		},
 	}
-	Size := int64(99999)
-	BlockSize := int64(4096)
-	State := "fakeState"
 	Space := &models.NvmeNamespaceInlineSpace{
-		BlockSize: &BlockSize,
-		Size:      &Size,
+		BlockSize: new(int64(4096)),
+		Size:      new(int64(99999)),
 	}
 
 	Status := &models.NvmeNamespaceInlineStatus{
-		State: &State,
+		State: new("fakeState"),
 	}
 
 	ns := &models.NvmeNamespace{
 		Name:     &Name,
-		UUID:     &UUID,
-		OsType:   &OsType,
+		UUID:     new("fakeUUID"),
+		OsType:   new("fakeOS"),
 		Location: Location,
 		Space:    Space,
 		Status:   Status,
@@ -346,28 +340,24 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	assert.NoError(t, err)
 	Name := "fakeNS"
 	UUID := "fakeUUID"
-	OsType := "fakeOS"
 	Location := &models.NvmeNamespaceInlineLocation{
 		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
 			Name: &Name,
 		},
 	}
-	Size := int64(99999)
-	BlockSize := int64(4096)
-	State := "fakeState"
 	Space := &models.NvmeNamespaceInlineSpace{
-		BlockSize: &BlockSize,
-		Size:      &Size,
+		BlockSize: new(int64(4096)),
+		Size:      new(int64(99999)),
 	}
 
 	Status := &models.NvmeNamespaceInlineStatus{
-		State: &State,
+		State: new("fakeState"),
 	}
 
 	ns := &models.NvmeNamespace{
 		Name:     &Name,
 		UUID:     &UUID,
-		OsType:   &OsType,
+		OsType:   new("fakeOS"),
 		Location: Location,
 		Space:    Space,
 		Status:   Status,
@@ -405,29 +395,24 @@ func TestNVMeNamespaceList(t *testing.T) {
 	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
 	assert.NoError(t, err)
 	Name := "fakeNS"
-	UUID := "fakeUUID"
-	OsType := "fakeOS"
 	Location := &models.NvmeNamespaceInlineLocation{
 		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
 			Name: &Name,
 		},
 	}
-	Size := int64(99999)
-	BlockSize := int64(4096)
-	State := "fakeState"
 	Space := &models.NvmeNamespaceInlineSpace{
-		BlockSize: &BlockSize,
-		Size:      &Size,
+		BlockSize: new(int64(4096)),
+		Size:      new(int64(99999)),
 	}
 
 	Status := &models.NvmeNamespaceInlineStatus{
-		State: &State,
+		State: new("fakeState"),
 	}
 
 	ns := &models.NvmeNamespace{
 		Name:     &Name,
-		UUID:     &UUID,
-		OsType:   &OsType,
+		UUID:     new("fakeUUID"),
+		OsType:   new("fakeOS"),
 		Location: Location,
 		Space:    Space,
 		Status:   Status,
@@ -476,28 +461,24 @@ func TestNVMeNamespaceDelete(t *testing.T) {
 	assert.NoError(t, err)
 	Name := "fakeNS"
 	UUID := "fakeUUID"
-	OsType := "fakeOS"
 	Location := &models.NvmeNamespaceInlineLocation{
 		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
 			Name: &Name,
 		},
 	}
-	Size := int64(99999)
-	BlockSize := int64(4096)
-	State := "fakeState"
 	Space := &models.NvmeNamespaceInlineSpace{
-		BlockSize: &BlockSize,
-		Size:      &Size,
+		BlockSize: new(int64(4096)),
+		Size:      new(int64(99999)),
 	}
 
 	Status := &models.NvmeNamespaceInlineStatus{
-		State: &State,
+		State: new("fakeState"),
 	}
 
 	ns := &models.NvmeNamespace{
 		Name:     &Name,
 		UUID:     &UUID,
-		OsType:   &OsType,
+		OsType:   new("fakeOS"),
 		Location: Location,
 		Space:    Space,
 		Status:   Status,
@@ -708,8 +689,7 @@ func TestNVMeRemoveHostFromSubsystem(t *testing.T) {
 	assert.Error(t, err)
 
 	// case 2 : host not found
-	Nqn := "wrongNQN"
-	host1.Nqn = &Nqn
+	host1.Nqn = new("wrongNQN")
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
@@ -803,8 +783,8 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mockErr := &nvme.NvmeSubsystemCreateDefault{
 		Payload: &models.ErrorResponse{
 			Error: &models.ReturnedError{
-				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
-				Message: convert.ToPtr("NVMe subsystem already exists"),
+				Code:    new(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: new("NVMe subsystem already exists"),
 			},
 		},
 	}
@@ -821,8 +801,8 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mockErr = &nvme.NvmeSubsystemCreateDefault{
 		Payload: &models.ErrorResponse{
 			Error: &models.ReturnedError{
-				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
-				Message: convert.ToPtr("NVMe subsystem already exists"),
+				Code:    new(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: new("NVMe subsystem already exists"),
 			},
 		},
 	}
@@ -941,10 +921,9 @@ func TestVolumeWaitForStates(t *testing.T) {
 	volName := "fakeVolName"
 	desiredStates := []string{"online"}
 	abortStates := []string{""}
-	onlineState := "online"
 	errorState := "error"
 	volume := &models.Volume{
-		State: &onlineState,
+		State: new("online"),
 	}
 	maxElapsedTime := 2 * time.Second
 
@@ -1112,16 +1091,14 @@ func TestIgroupList(t *testing.T) {
 	oapi, mock := newMockOntapAPIREST(t)
 
 	igroupName := "igroup1"
-	subsysUUID := "fakeUUID"
 	igroup := models.Igroup{
 		Name: &igroupName,
-		UUID: &subsysUUID,
+		UUID: new("fakeUUID"),
 	}
 	igroupList := []*models.Igroup{&igroup}
-	numRecords := int64(1)
 	igroupResponse := &models.IgroupResponse{
 		IgroupResponseInlineRecords: igroupList,
-		NumRecords:                  &numRecords,
+		NumRecords:                  new(int64(1)),
 	}
 	igroupResponseOK := s_a_n.IgroupCollectionGetOK{Payload: igroupResponse}
 
@@ -1201,8 +1178,6 @@ func TestIgroupGetByName(t *testing.T) {
 
 	oapi, mock := newMockOntapAPIREST(t)
 
-	igroupName := "igroup1"
-	subsysUUID := "fakeUUID"
 	igroupList1 := models.IgroupInlineInitiatorsInlineArrayItem{
 		Name: &initiator1,
 	}
@@ -1211,8 +1186,8 @@ func TestIgroupGetByName(t *testing.T) {
 	}
 	igroupResponse := []*models.IgroupInlineInitiatorsInlineArrayItem{&igroupList1, &igroupList2}
 	igroup := models.Igroup{
-		Name:                   &igroupName,
-		UUID:                   &subsysUUID,
+		Name:                   new("igroup1"),
+		UUID:                   new("fakeUUID"),
 		IgroupInlineInitiators: igroupResponse,
 	}
 
@@ -1236,18 +1211,14 @@ func TestIgroupGetByName(t *testing.T) {
 }
 
 func TestGetSLMDataLifs(t *testing.T) {
-	nodeName := "node1"
-	ipAddress := models.IPAddress("1.1.1.1")
-	ipFamily := models.IPAddressFamily("ipv4")
-
 	oapi, mock := newMockOntapAPIREST(t)
 
 	node := models.IPInterfaceInlineLocationInlineNode{
-		Name: &nodeName,
+		Name: new("node1"),
 	}
 
 	location := models.IPInterfaceInlineLocation{Node: &node}
-	ip := models.IPInfo{Address: &ipAddress, Family: &ipFamily}
+	ip := models.IPInfo{Address: new(models.IPAddress("1.1.1.1")), Family: new(models.IPAddressFamily("ipv4"))}
 	ipInterface := models.IPInterface{Location: &location, IP: &ip}
 	ipInterfaceResponse := models.IPInterfaceResponse{
 		IPInterfaceResponseInlineRecords: []*models.IPInterface{&ipInterface},
@@ -1411,8 +1382,7 @@ func TestNewOntapAPIREST(t *testing.T) {
 }
 
 func TestSuccess(t *testing.T) {
-	success := "success"
-	payload := models.Job{State: &success}
+	payload := models.Job{State: new("success")}
 
 	restErr := api.NewRestErrorFromPayload(&payload)
 
@@ -1421,8 +1391,7 @@ func TestSuccess(t *testing.T) {
 }
 
 func TestFailure(t *testing.T) {
-	success := "failure"
-	payload := models.Job{State: &success}
+	payload := models.Job{State: new("failure")}
 
 	restErr := api.NewRestErrorFromPayload(&payload)
 
@@ -1449,22 +1418,14 @@ func TestError(t *testing.T) {
 }
 
 func TestRestError(t *testing.T) {
-	uuid := strfmt.UUID("12345")
-	description := "rest error"
-	state := "success"
-	message := ""
-	code := int64(1638555)
-	startTime := strfmt.NewDateTime()
-	endTime := strfmt.NewDateTime()
-
 	payload := models.Job{
-		UUID:        &uuid,
-		Description: &description,
-		State:       &state,
-		Message:     &message,
-		Code:        &code,
-		StartTime:   &startTime,
-		EndTime:     &endTime,
+		UUID:        new(strfmt.UUID("12345")),
+		Description: new("rest error"),
+		State:       new("success"),
+		Message:     new(""),
+		Code:        new(int64(1638555)),
+		StartTime:   new(strfmt.NewDateTime()),
+		EndTime:     new(strfmt.NewDateTime()),
 	}
 
 	restErr := api.NewRestErrorFromPayload(&payload)
@@ -1492,7 +1453,6 @@ func TestSVMName(t *testing.T) {
 }
 
 func TestVolumeCreate(t *testing.T) {
-	encrypt := false
 	volume := api.Volume{
 		Name:            "vol1",
 		Aggregates:      []string{"aggr1"},
@@ -1506,7 +1466,7 @@ func TestVolumeCreate(t *testing.T) {
 		SnapshotReserve: 10,
 		Comment:         "",
 		DPVolume:        true,
-		Encrypt:         &encrypt,
+		Encrypt:         new(false),
 		Qos:             api.QosPolicyGroup{},
 	}
 	oapi, rsi := newMockOntapAPIREST(t)
@@ -1650,7 +1610,6 @@ func TestFlexgroupExists(t *testing.T) {
 }
 
 func TestFlexgroupCreate(t *testing.T) {
-	encrypt := false
 	volume := api.Volume{
 		Name:            "vol1",
 		Aggregates:      []string{"aggr1"},
@@ -1664,7 +1623,7 @@ func TestFlexgroupCreate(t *testing.T) {
 		SnapshotReserve: 10,
 		Comment:         "",
 		DPVolume:        true,
-		Encrypt:         &encrypt,
+		Encrypt:         new(false),
 		Qos:             api.QosPolicyGroup{},
 	}
 	oapi, rsi := newMockOntapAPIREST(t)
@@ -1781,53 +1740,37 @@ func TestFlexgroupSetQosPolicyGroupName(t *testing.T) {
 }
 
 func getVolumeInfo() *models.Volume {
-	volumeName := "fakeVolume"
-	volumeUUID := "fakeUUID"
-	volumeType := "rw"
-	aggregates := "fakeAggr"
-	comment := ""
-	path := "fakePath"
-	unixPermission := int64(777)
-	exportPolicy := "fakeExportPolicy"
-	size := int64(1073741824)
-	guarantee := "none"
-	snapshotPolicy := "fakeSnapshotPolicy"
-	snapshotReservePercent := int64(20)
-	snapshotUsed := int64(1073741810)
-	snapshotDir := false
-	quotaState := "on"
+	volumeGuarantee := models.VolumeInlineGuarantee{Type: new("none")}
 
-	volumeGuarantee := models.VolumeInlineGuarantee{Type: &guarantee}
-
-	volumeInlineAggr := models.VolumeInlineAggregatesInlineArrayItem{Name: &aggregates}
+	volumeInlineAggr := models.VolumeInlineAggregatesInlineArrayItem{Name: new("fakeAggr")}
 	volumeInlineAggrList := []*models.VolumeInlineAggregatesInlineArrayItem{&volumeInlineAggr}
 
-	volumeInlineExportPolicy := models.VolumeInlineNasInlineExportPolicy{Name: &exportPolicy}
+	volumeInlineExportPolicy := models.VolumeInlineNasInlineExportPolicy{Name: new("fakeExportPolicy")}
 	VolumeInlineNas := models.VolumeInlineNas{
-		Path: &path, UnixPermissions: &unixPermission,
+		Path: new("fakePath"), UnixPermissions: new(int64(777)),
 		ExportPolicy: &volumeInlineExportPolicy,
 	}
 
-	volumeSnapshotPolicy := models.VolumeInlineSnapshotPolicy{Name: &snapshotPolicy}
+	volumeSnapshotPolicy := models.VolumeInlineSnapshotPolicy{Name: new("fakeSnapshotPolicy")}
 	volumeSpaceShanpshot := models.VolumeInlineSpaceInlineSnapshot{
-		ReservePercent: &snapshotReservePercent,
-		Used:           &snapshotUsed,
+		ReservePercent: new(int64(20)),
+		Used:           new(int64(1073741810)),
 	}
 	volumeSpace := models.VolumeInlineSpace{Snapshot: &volumeSpaceShanpshot}
-	volumeQuota := models.VolumeInlineQuota{State: &quotaState}
+	volumeQuota := models.VolumeInlineQuota{State: new("on")}
 
 	volume := models.Volume{
-		Name:                           &volumeName,
-		UUID:                           &volumeUUID,
-		Type:                           &volumeType,
+		Name:                           new("fakeVolume"),
+		UUID:                           new("fakeUUID"),
+		Type:                           new("rw"),
 		VolumeInlineAggregates:         volumeInlineAggrList,
-		Comment:                        &comment,
+		Comment:                        new(""),
 		Nas:                            &VolumeInlineNas,
-		Size:                           &size,
+		Size:                           new(int64(1073741824)),
 		Guarantee:                      &volumeGuarantee,
 		SnapshotPolicy:                 &volumeSnapshotPolicy,
 		Space:                          &volumeSpace,
-		SnapshotDirectoryAccessEnabled: &snapshotDir,
+		SnapshotDirectoryAccessEnabled: new(false),
 		Quota:                          &volumeQuota,
 	}
 	return &volume
@@ -1862,16 +1805,13 @@ func TestFlexgroupSnapshotCreate(t *testing.T) {
 }
 
 func TestFlexgroupSnapshotList(t *testing.T) {
-	snapshotName1 := "snapvol1"
-	snapshotName2 := "snapvol2"
 	createTime1 := strfmt.NewDateTime()
-	createTime2 := strfmt.NewDateTime()
 	volume := getVolumeInfo()
 	volumeUUID := *volume.UUID
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	snap1 := models.Snapshot{Name: &snapshotName1, CreateTime: &createTime1}
-	snap2 := models.Snapshot{Name: &snapshotName2, CreateTime: &createTime2}
+	snap1 := models.Snapshot{Name: new("snapvol1"), CreateTime: &createTime1}
+	snap2 := models.Snapshot{Name: new("snapvol2"), CreateTime: new(strfmt.NewDateTime())}
 	snapshotResponse := models.SnapshotResponse{SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2}}
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
@@ -2305,8 +2245,7 @@ func TestVolumeMount(t *testing.T) {
 	err = oapi.VolumeMount(ctx, "vol1", "/vol1")
 	assert.Error(t, err, "no error returned mounting a volume")
 
-	code := int64(917536)
-	job := models.Job{Code: &code}
+	job := models.Job{Code: new(int64(917536))}
 	restErr := api.NewRestErrorFromPayload(&job)
 
 	// case 3: Volume mount returned error
@@ -2339,8 +2278,7 @@ func TestVolumeSetComment(t *testing.T) {
 }
 
 func TestExportPolicyCreate(t *testing.T) {
-	exportPolicyName := "fake-exportPolicy"
-	exportPolicy := models.ExportPolicy{Name: &exportPolicyName}
+	exportPolicy := models.ExportPolicy{Name: new("fake-exportPolicy")}
 	exportPolicyList := []*models.ExportPolicy{&exportPolicy}
 	exportPolicyResponse := models.ExportPolicyResponse{ExportPolicyResponseInlineRecords: exportPolicyList}
 	exportPolicyCreated := nas.ExportPolicyCreateCreated{Payload: &exportPolicyResponse}
@@ -2550,8 +2488,7 @@ func TestVolumeModifyExportPolicy(t *testing.T) {
 }
 
 func TestExportPolicyExists(t *testing.T) {
-	exportPolicyName := "fake-exportPolicy"
-	exportPolicy := models.ExportPolicy{Name: &exportPolicyName}
+	exportPolicy := models.ExportPolicy{Name: new("fake-exportPolicy")}
 
 	oapi, rsi := newMockOntapAPIREST(t)
 
@@ -2587,15 +2524,15 @@ func TestExportRuleList_NoDuplicateRules(t *testing.T) {
 	exportRule := models.ExportRuleResponse{
 		ExportRuleResponseInlineRecords: []*models.ExportRule{
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
-				Index:                   convert.ToPtr(int64(1)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.1")}},
+				Index:                   new(int64(1)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(2)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(2)),
 			},
 		},
-		NumRecords: convert.ToPtr(int64(2)),
+		NumRecords: new(int64(2)),
 	}
 
 	exportRuleResponse := nas.ExportRuleCollectionGetOK{
@@ -2624,27 +2561,27 @@ func TestExportRuleList_DuplicateRules(t *testing.T) {
 	exportRule := models.ExportRuleResponse{
 		ExportRuleResponseInlineRecords: []*models.ExportRule{
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
-				Index:                   convert.ToPtr(int64(1)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.1")}},
+				Index:                   new(int64(1)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(2)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(2)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(3)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(3)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(4)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(4)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
-				Index:                   convert.ToPtr(int64(5)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.1")}},
+				Index:                   new(int64(5)),
 			},
 		},
-		NumRecords: convert.ToPtr(int64(5)),
+		NumRecords: new(int64(5)),
 	}
 
 	exportRuleResponse := nas.ExportRuleCollectionGetOK{
@@ -2674,30 +2611,30 @@ func TestExportRuleList_MultiIPRule(t *testing.T) {
 		ExportRuleResponseInlineRecords: []*models.ExportRule{
 			{
 				ExportRuleInlineClients: []*models.ExportClients{
-					{Match: convert.ToPtr("192.168.1.1")},
-					{Match: convert.ToPtr("10.2.2.1")},
-					{Match: convert.ToPtr("10.0.0.1")},
+					{Match: new("192.168.1.1")},
+					{Match: new("10.2.2.1")},
+					{Match: new("10.0.0.1")},
 				},
-				Index: convert.ToPtr(int64(1)),
+				Index: new(int64(1)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(2)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(2)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(3)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(3)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
-				Index:                   convert.ToPtr(int64(4)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.2")}},
+				Index:                   new(int64(4)),
 			},
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
-				Index:                   convert.ToPtr(int64(5)),
+				ExportRuleInlineClients: []*models.ExportClients{{Match: new("192.168.1.1")}},
+				Index:                   new(int64(5)),
 			},
 		},
-		NumRecords: convert.ToPtr(int64(5)),
+		NumRecords: new(int64(5)),
 	}
 
 	exportRuleResponse := nas.ExportRuleCollectionGetOK{
@@ -2729,7 +2666,7 @@ func TestExportRuleList_NoRecords(t *testing.T) {
 
 	exportRule := models.ExportRuleResponse{
 		ExportRuleResponseInlineRecords: []*models.ExportRule{},
-		NumRecords:                      convert.ToPtr(int64(0)),
+		NumRecords:                      new(int64(0)),
 	}
 	exportRuleResponse := nas.ExportRuleCollectionGetOK{
 		Payload: &exportRule,
@@ -2835,21 +2772,14 @@ func TestQtreeListByPrefix(t *testing.T) {
 }
 
 func getQtree() models.Qtree {
-	name := "qtree_vol1"
-	securityStyle := models.SecurityStyleUnix
-	unixPermission := int64(777)
-	exportPolicy := "fake-export-policy"
-	volumeName := "vol1"
-	svm := "svm1"
-
-	qtreeExportPolicy := models.QtreeInlineExportPolicy{Name: &exportPolicy}
-	qtreeSVM := models.QtreeInlineSvm{Name: &svm}
-	qtreeVolume := models.QtreeInlineVolume{Name: &volumeName}
+	qtreeExportPolicy := models.QtreeInlineExportPolicy{Name: new("fake-export-policy")}
+	qtreeSVM := models.QtreeInlineSvm{Name: new("svm1")}
+	qtreeVolume := models.QtreeInlineVolume{Name: new("vol1")}
 
 	return models.Qtree{
-		Name:            &name,
-		SecurityStyle:   &securityStyle,
-		UnixPermissions: &unixPermission,
+		Name:            new("qtree_vol1"),
+		SecurityStyle:   new(models.SecurityStyleUnix),
+		UnixPermissions: new(int64(777)),
 		ExportPolicy:    &qtreeExportPolicy,
 		Svm:             &qtreeSVM,
 		Volume:          &qtreeVolume,
@@ -2876,14 +2806,11 @@ func TestQtreeGetByName(t *testing.T) {
 
 func TestQuotaEntryList(t *testing.T) {
 	quotaVolumeName := "quotaVolume"
-	quotaQtreeName := "quotaQtree"
-	hardLimit := int64(1073741810)
-
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	quotaVolume := models.QuotaRuleInlineVolume{Name: &quotaVolumeName}
-	quotaQtree := models.QuotaRuleInlineQtree{Name: &quotaQtreeName}
-	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: &hardLimit}
+	quotaQtree := models.QuotaRuleInlineQtree{Name: new("quotaQtree")}
+	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: new(int64(1073741810))}
 	quotaRule := models.QuotaRule{Volume: &quotaVolume, Qtree: &quotaQtree, Space: &quotaSpace}
 	quotaRuleResponseInlineRecords := []*models.QuotaRule{&quotaRule}
 	quotaRuleResponse := models.QuotaRuleResponse{QuotaRuleResponseInlineRecords: quotaRuleResponseInlineRecords}
@@ -3003,14 +2930,13 @@ func TestQuotaSetEntry(t *testing.T) {
 func TestQuotaGetEntry(t *testing.T) {
 	quotaVolumeName := "quotaVolume"
 	quotaQtreeName := "quotaQtree"
-	hardLimit := int64(1073741810)
 	quotaType := "user"
 
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	quotaVolume := models.QuotaRuleInlineVolume{Name: &quotaVolumeName}
 	quotaQtree := models.QuotaRuleInlineQtree{Name: &quotaQtreeName}
-	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: &hardLimit}
+	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: new(int64(1073741810))}
 	quotaRule := models.QuotaRule{Volume: &quotaVolume, Qtree: &quotaQtree, Space: &quotaSpace}
 
 	// case 1: Get Quota entry
@@ -3028,11 +2954,7 @@ func TestQuotaGetEntry(t *testing.T) {
 }
 
 func getSnapshot() *models.Snapshot {
-	snapshotName := "fake-snapshot"
-	snapshotUUID := "fake-snapshotUUID"
-	createTime1 := strfmt.NewDateTime()
-
-	snapshot := models.Snapshot{Name: &snapshotName, CreateTime: &createTime1, UUID: &snapshotUUID}
+	snapshot := models.Snapshot{Name: new("fake-snapshot"), CreateTime: new(strfmt.NewDateTime()), UUID: new("fake-snapshotUUID")}
 	return &snapshot
 }
 
@@ -3076,16 +2998,13 @@ func TestVolumeCloneCreate(t *testing.T) {
 }
 
 func TestVolumeSnapshotList(t *testing.T) {
-	snapshotName1 := "snapvol1"
-	snapshotName2 := "snapvol2"
 	createTime1 := strfmt.NewDateTime()
-	createTime2 := strfmt.NewDateTime()
 	volume := getVolumeInfo()
 	volumeUUID := *volume.UUID
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	snap1 := models.Snapshot{Name: &snapshotName1, CreateTime: &createTime1}
-	snap2 := models.Snapshot{Name: &snapshotName2, CreateTime: &createTime2}
+	snap1 := models.Snapshot{Name: new("snapvol1"), CreateTime: &createTime1}
+	snap2 := models.Snapshot{Name: new("snapvol2"), CreateTime: new(strfmt.NewDateTime())}
 	snapshotResponse := models.SnapshotResponse{SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2}}
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
@@ -3179,8 +3098,7 @@ func TestSnapshotRestoreFlexgroup(t *testing.T) {
 
 func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	snapshot := getSnapshot()
-	jobId := strfmt.UUID("1234")
-	jobLink := models.JobLink{UUID: &jobId}
+	jobLink := models.JobLink{UUID: new(strfmt.UUID("1234"))}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
 	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
 	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
@@ -3223,9 +3141,7 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	assert.Error(t, err, "no error returned while deleting a snapshot by name")
 
 	// case 7:  Poll job status returned rest error.
-	success := "success"
-	code := int64(1638555)
-	payload := models.Job{State: &success, Code: &code}
+	payload := models.Job{State: new("success"), Code: new(int64(1638555))}
 	restErr := api.NewRestErrorFromPayload(&payload)
 
 	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
@@ -3237,11 +3153,9 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 
 func TestFlexgroupSnapshotDelete(t *testing.T) {
 	volume := getVolumeInfo()
-	volumeUUID := "fake-volumeUUID"
-	volume.UUID = &volumeUUID
+	volume.UUID = new("fake-volumeUUID")
 	snapshot := getSnapshot()
-	jobId := strfmt.UUID("1234")
-	jobLink := models.JobLink{UUID: &jobId}
+	jobLink := models.JobLink{UUID: new(strfmt.UUID("1234"))}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
 	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
 	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
@@ -3268,11 +3182,9 @@ func TestFlexgroupSnapshotDelete(t *testing.T) {
 
 func TestVolumeSnapshotDelete(t *testing.T) {
 	volume := getVolumeInfo()
-	volumeUUID := "fake-volumeUUID"
-	volume.UUID = &volumeUUID
+	volume.UUID = new("fake-volumeUUID")
 	snapshot := getSnapshot()
-	jobId := strfmt.UUID("1234")
-	jobLink := models.JobLink{UUID: &jobId}
+	jobLink := models.JobLink{UUID: new(strfmt.UUID("1234"))}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
 	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
 	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
@@ -3368,27 +3280,21 @@ func TestSnapmirrorCreate(t *testing.T) {
 }
 
 func TestSnapMirrorGet(t *testing.T) {
-	state := "in_sync"
 	lastTransferType := "resync"
-	stateTransfer := "success"
-	endTime := strfmt.NewDateTime()
-	healthy := false
 	snapMirrorErrMsg := "Destination is running out of disk space"
 	policyName := "Asynchronous"
-	transferScheduleName := "weekly"
-
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Get SnapMirror
 	policy := models.SnapmirrorRelationshipInlinePolicy{Name: &policyName}
 	snapMirrorError := models.SnapmirrorError{Message: &snapMirrorErrMsg}
 	snapMirrorErrorList := []*models.SnapmirrorError{&snapMirrorError}
-	transfer := models.SnapmirrorRelationshipInlineTransfer{State: &stateTransfer, EndTime: &endTime}
-	transferSchedule := models.SnapmirrorRelationshipInlineTransferSchedule{Name: &transferScheduleName}
+	transfer := models.SnapmirrorRelationshipInlineTransfer{State: new("success"), EndTime: new(strfmt.NewDateTime())}
+	transferSchedule := models.SnapmirrorRelationshipInlineTransferSchedule{Name: new("weekly")}
 	snapmirrorRelationship := models.SnapmirrorRelationship{
-		Healthy:          &healthy,
+		Healthy:          new(false),
 		LastTransferType: &lastTransferType,
-		State:            &state,
+		State:            new("in_sync"),
 		Transfer:         &transfer,
 		SnapmirrorRelationshipInlineUnhealthyReason: snapMirrorErrorList,
 		Policy:           &policy,
@@ -3409,10 +3315,7 @@ func TestSnapMirrorGet(t *testing.T) {
 }
 
 func TestSnapmirrorInitialize(t *testing.T) {
-	success := "failure"
-	code := int64(13303812)
-	message := "snapshot busy"
-	payload := models.Job{State: &success, Code: &code, Message: &message}
+	payload := models.Job{State: new("failure"), Code: new(int64(13303812)), Message: new("snapshot busy")}
 
 	restErr := api.NewRestErrorFromPayload(&payload)
 
@@ -3483,14 +3386,12 @@ func TestSnapmirrorResync(t *testing.T) {
 func TestSnapmirrorPolicyGet(t *testing.T) {
 	policyName := ""
 	policyType := "sync"
-	policySyncType := "sync_mirror"
-	copyAllSourceSnapshots := false
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Get SnapMirror policy
 	snapMirroePolicy := models.SnapmirrorPolicy{
-		Name: &policyName, CopyAllSourceSnapshots: &copyAllSourceSnapshots,
-		SyncType: &policySyncType, Type: &policyType,
+		Name: &policyName, CopyAllSourceSnapshots: new(false),
+		SyncType: new("sync_mirror"), Type: &policyType,
 	}
 	snapmirrorPolicyRecords := []*models.SnapmirrorPolicy{&snapMirroePolicy}
 	snapmirrorPolicyResponse := models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
@@ -3648,43 +3549,29 @@ func TestGetSVMPeers(t *testing.T) {
 }
 
 func getLunInfo() *models.Lun {
-	comment := "lun for flexvol"
-	igroup1 := "igroup1"
-	logicalUnitNumber := int64(12345)
-	size := int64(2147483648)
-	qosPolicyName := "fake-qosPolicy"
-	mapStatus := true
-	volumeName := "fake-volume"
-	createTime1 := strfmt.NewDateTime()
-	enabled := false
-	lunName := "fake-lunName"
-	lunUUID := "fake-lunUUID"
-	lunSerialNumber := "fake-serialNumber"
-	lunState := "online"
-
-	igroup := models.LunInlineLunMapsInlineArrayItemInlineIgroup{Name: &igroup1}
+	igroup := models.LunInlineLunMapsInlineArrayItemInlineIgroup{Name: new("igroup1")}
 	lunMap := []*models.LunInlineLunMapsInlineArrayItem{
-		{Igroup: &igroup, LogicalUnitNumber: &logicalUnitNumber},
+		{Igroup: &igroup, LogicalUnitNumber: new(int64(12345))},
 	}
 
-	space := models.LunInlineSpace{Size: &size}
-	qosPolicy := models.LunInlineQosPolicy{Name: &qosPolicyName}
-	status := models.LunInlineStatus{Mapped: &mapStatus, State: &lunState}
+	space := models.LunInlineSpace{Size: new(int64(2147483648))}
+	qosPolicy := models.LunInlineQosPolicy{Name: new("fake-qosPolicy")}
+	status := models.LunInlineStatus{Mapped: new(true), State: new("online")}
 	location := &models.LunInlineLocation{
 		Volume: &models.LunInlineLocationInlineVolume{
-			Name: &volumeName,
+			Name: new("fake-volume"),
 		},
 	}
 
 	lun := models.Lun{
-		Name:             &lunName,
-		UUID:             &lunUUID,
-		SerialNumber:     &lunSerialNumber,
+		Name:             new("fake-lunName"),
+		UUID:             new("fake-lunUUID"),
+		SerialNumber:     new("fake-serialNumber"),
 		Status:           &status,
-		Enabled:          &enabled,
-		Comment:          &comment,
+		Enabled:          new(false),
+		Comment:          new("lun for flexvol"),
 		Space:            &space,
-		CreateTime:       &createTime1,
+		CreateTime:       new(strfmt.NewDateTime()),
 		Location:         location,
 		QosPolicy:        &qosPolicy,
 		LunInlineLunMaps: lunMap,
@@ -4019,15 +3906,12 @@ func TestLunUnmap(t *testing.T) {
 
 func TestLunListIgroupsMapped(t *testing.T) {
 	igroupName := "igroup"
-	lunName := "lun0"
-	logicalUnitNumber := int64(1234)
-
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	lunMap := models.LunMap{
 		Igroup:            &models.LunMapInlineIgroup{Name: &igroupName},
-		LogicalUnitNumber: &logicalUnitNumber,
-		Lun:               &models.LunMapInlineLun{Name: &lunName},
+		LogicalUnitNumber: new(int64(1234)),
+		Lun:               &models.LunMapInlineLun{Name: new("lun0")},
 	}
 	lunMapResponse := models.LunMapResponse{LunMapResponseInlineRecords: []*models.LunMap{&lunMap}}
 	lunMapResponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
@@ -4045,15 +3929,12 @@ func TestLunListIgroupsMapped(t *testing.T) {
 }
 
 func TestIgroupListLUNsMapped(t *testing.T) {
-	igroupName := "igroup"
 	lunName := "lun0"
-	logicalUnitNumber := int64(1234)
-
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	lunMap := models.LunMap{
-		Igroup:            &models.LunMapInlineIgroup{Name: &igroupName},
-		LogicalUnitNumber: &logicalUnitNumber,
+		Igroup:            &models.LunMapInlineIgroup{Name: new("igroup")},
+		LogicalUnitNumber: new(int64(1234)),
 		Lun:               &models.LunMapInlineLun{Name: &lunName},
 	}
 	lunMapResponse := models.LunMapResponse{LunMapResponseInlineRecords: []*models.LunMap{&lunMap}}
@@ -4125,19 +4006,17 @@ func TestLunSetSize(t *testing.T) {
 }
 
 func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
-	svmName := "fake-svm"
 	chapUser := "admin"
 	chapPassword := "********"
-	initiator := "iqn.1998-01.com.corp.iscsi:name1"
 	authType := "chap"
 
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	svm := models.IscsiCredentialsInlineSvm{Name: &svmName}
+	svm := models.IscsiCredentialsInlineSvm{Name: new("fake-svm")}
 	inbound := models.IscsiCredentialsInlineChapInlineInbound{User: &chapUser, Password: (*strfmt.Password)(&chapPassword)}
 	outbound := models.IscsiCredentialsInlineChapInlineOutbound{User: &chapUser, Password: (*strfmt.Password)(&chapPassword)}
 	chap := models.IscsiCredentialsInlineChap{Inbound: &inbound, Outbound: &outbound}
-	iscsiCred := models.IscsiCredentials{Chap: &chap, Initiator: &initiator, AuthenticationType: &authType, Svm: &svm}
+	iscsiCred := models.IscsiCredentials{Chap: &chap, Initiator: new("iqn.1998-01.com.corp.iscsi:name1"), AuthenticationType: &authType, Svm: &svm}
 	iscsiCredResponse := s_a_n.IscsiCredentialsCollectionGetOK{
 		Payload: &models.IscsiCredentialsResponse{
 			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
@@ -4156,11 +4035,10 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
 	// case 3: iSCSI initiator response has too many records
-	numRecords := int64(2)
 	iscsiCredResponse1 := s_a_n.IscsiCredentialsCollectionGetOK{
 		Payload: &models.IscsiCredentialsResponse{
 			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
-			NumRecords:                            &numRecords,
+			NumRecords:                            new(int64(2)),
 		},
 	}
 	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse1, nil)
@@ -4168,11 +4046,10 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
 	// case 4: iSCSI initiator response has no records
-	numRecords2 := int64(0)
 	iscsiCredResponse2 := s_a_n.IscsiCredentialsCollectionGetOK{
 		Payload: &models.IscsiCredentialsResponse{
 			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
-			NumRecords:                            &numRecords2,
+			NumRecords:                            new(int64(0)),
 		},
 	}
 	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse2, nil)
@@ -4223,12 +4100,11 @@ func TestIscsiInitiatorSetDefaultAuth(t *testing.T) {
 
 func TestIscsiInterfaceGet(t *testing.T) {
 	svmName := "svm1"
-	enabled := true
 	targetName := "iqn.1992-08.com.netapp:sn.574caf71890911e8a6b7005056b4ea79"
 
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	iscsiService := models.IscsiService{Enabled: &enabled, Target: &models.IscsiServiceInlineTarget{Name: &targetName}}
+	iscsiService := models.IscsiService{Enabled: new(true), Target: &models.IscsiServiceInlineTarget{Name: &targetName}}
 	iscsiServiceResponse := s_a_n.IscsiServiceCollectionGetOK{
 		Payload: &models.IscsiServiceResponse{IscsiServiceResponseInlineRecords: []*models.
 			IscsiService{&iscsiService}},
@@ -4315,25 +4191,21 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 
 func TestIgroupCreate(t *testing.T) {
 	initiator1 := "initiator1"
-	initiator2 := "initiator2"
 	initiatorGroup := "initiatorGroup"
 
 	oapi, rsi := newMockOntapAPIREST(t)
-
-	igroupName := "igroup1"
-	subsysUUID := "fakeUUID"
 
 	igroupInlineInitiatorsResponse := []*models.IgroupInlineInitiatorsInlineArrayItem{
 		{
 			Name: &initiator1,
 		},
 		{
-			Name: &initiator2,
+			Name: new("initiator2"),
 		},
 	}
 	igroup := models.Igroup{
-		Name:                   &igroupName,
-		UUID:                   &subsysUUID,
+		Name:                   new("igroup1"),
+		UUID:                   new("fakeUUID"),
 		IgroupInlineInitiators: igroupInlineInitiatorsResponse,
 	}
 
@@ -4634,9 +4506,9 @@ func TestStorageUnitSnapshotCreate(t *testing.T) {
 	suName := "testStorageUnit"
 	suUUID := "testUUID"
 	mockSU := &models.StorageUnit{
-		UUID: convert.ToPtr(suUUID),
+		UUID: new(suUUID),
 		Space: &models.StorageUnitInlineSpace{
-			Size: convert.ToPtr(int64(100)),
+			Size: new(int64(100)),
 		},
 	}
 
@@ -4874,9 +4746,9 @@ func TestRestError_Methods(t *testing.T) {
 		{
 			name: "Valid error payload",
 			payload: &models.Job{
-				Code:        convert.ToPtr(int64(12345)),
-				Description: convert.ToPtr("Test error message"),
-				State:       convert.ToPtr("failure"),
+				Code:        new(int64(12345)),
+				Description: new("Test error message"),
+				State:       new("failure"),
 			},
 			hasError: true,
 		},
@@ -4888,7 +4760,7 @@ func TestRestError_Methods(t *testing.T) {
 		{
 			name: "Success payload",
 			payload: &models.Job{
-				State: convert.ToPtr("success"),
+				State: new("success"),
 			},
 			hasError: false,
 		},
@@ -4956,15 +4828,15 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			snapshotName: "snap1",
 			sourceVolume: "vol1",
 			mockVolumeInfo: &models.Volume{
-				Name: convert.ToPtr("vol1"),
-				UUID: convert.ToPtr("volume-uuid-123"),
+				Name: new("vol1"),
+				UUID: new("volume-uuid-123"),
 			},
 			mockVolumeErr: nil,
 			mockSnapshots: []*models.Snapshot{
 				{
-					Name:       convert.ToPtr("snap1"),
+					Name:       new("snap1"),
 					CreateTime: &strfmt.DateTime{},
-					UUID:       convert.ToPtr("snap-uuid-123"),
+					UUID:       new("snap-uuid-123"),
 				},
 			},
 			mockSnapErr:  nil,
@@ -4992,8 +4864,8 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			snapshotName: "snap1",
 			sourceVolume: "vol1",
 			mockVolumeInfo: &models.Volume{
-				Name: convert.ToPtr("vol1"),
-				UUID: convert.ToPtr("volume-uuid-123"),
+				Name: new("vol1"),
+				UUID: new("volume-uuid-123"),
 			},
 			mockVolumeErr: nil,
 			mockSnapshots: []*models.Snapshot{},
@@ -5005,20 +4877,20 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			snapshotName: "snap1",
 			sourceVolume: "vol1",
 			mockVolumeInfo: &models.Volume{
-				Name: convert.ToPtr("vol1"),
-				UUID: convert.ToPtr("volume-uuid-123"),
+				Name: new("vol1"),
+				UUID: new("volume-uuid-123"),
 			},
 			mockVolumeErr: nil,
 			mockSnapshots: []*models.Snapshot{
 				{
-					Name:       convert.ToPtr("snap1"),
+					Name:       new("snap1"),
 					CreateTime: &strfmt.DateTime{},
-					UUID:       convert.ToPtr("snap-uuid-123"),
+					UUID:       new("snap-uuid-123"),
 				},
 				{
-					Name:       convert.ToPtr("snap1"),
+					Name:       new("snap1"),
 					CreateTime: &strfmt.DateTime{},
-					UUID:       convert.ToPtr("snap-uuid-456"),
+					UUID:       new("snap-uuid-456"),
 				},
 			},
 			mockSnapErr: nil,
@@ -5029,15 +4901,15 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			snapshotName: "snap1",
 			sourceVolume: "vol1",
 			mockVolumeInfo: &models.Volume{
-				Name: convert.ToPtr("vol1"),
-				UUID: convert.ToPtr("volume-uuid-123"),
+				Name: new("vol1"),
+				UUID: new("volume-uuid-123"),
 			},
 			mockVolumeErr: nil,
 			mockSnapshots: []*models.Snapshot{
 				{
 					Name:       nil, // Nil name should cause error
 					CreateTime: &strfmt.DateTime{},
-					UUID:       convert.ToPtr("snap-uuid-123"),
+					UUID:       new("snap-uuid-123"),
 				},
 			},
 			mockSnapErr: nil,
@@ -5048,8 +4920,8 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			snapshotName: "snap1",
 			sourceVolume: "vol1",
 			mockVolumeInfo: &models.Volume{
-				Name: convert.ToPtr("vol1"),
-				UUID: convert.ToPtr("volume-uuid-123"),
+				Name: new("vol1"),
+				UUID: new("volume-uuid-123"),
 			},
 			mockVolumeErr: nil,
 			mockSnapErr:   fmt.Errorf("API call failed"),
@@ -5115,21 +4987,21 @@ func TestFcpInterfaceGet(t *testing.T) {
 			svm:  "svm1",
 			mockInterfaces: []*models.FcpService{
 				{
-					Enabled: convert.ToPtr(true),
+					Enabled: new(true),
 					Target: &models.FcpServiceInlineTarget{
-						Name: convert.ToPtr("20:00:00:50:56:bb:bb:01"),
+						Name: new("20:00:00:50:56:bb:bb:01"),
 					},
 				},
 				{
-					Enabled: convert.ToPtr(true),
+					Enabled: new(true),
 					Target: &models.FcpServiceInlineTarget{
-						Name: convert.ToPtr("20:00:00:50:56:bb:bb:02"),
+						Name: new("20:00:00:50:56:bb:bb:02"),
 					},
 				},
 				{
-					Enabled: convert.ToPtr(false), // Should be filtered out
+					Enabled: new(false), // Should be filtered out
 					Target: &models.FcpServiceInlineTarget{
-						Name: convert.ToPtr("20:00:00:50:56:bb:bb:03"),
+						Name: new("20:00:00:50:56:bb:bb:03"),
 					},
 				},
 			},
@@ -5142,9 +5014,9 @@ func TestFcpInterfaceGet(t *testing.T) {
 			svm:  "svm1",
 			mockInterfaces: []*models.FcpService{
 				{
-					Enabled: convert.ToPtr(false),
+					Enabled: new(false),
 					Target: &models.FcpServiceInlineTarget{
-						Name: convert.ToPtr("20:00:00:50:56:bb:bb:01"),
+						Name: new("20:00:00:50:56:bb:bb:01"),
 					},
 				},
 			},
@@ -5171,7 +5043,7 @@ func TestFcpInterfaceGet(t *testing.T) {
 			svm:  "svm1",
 			mockInterfaces: []*models.FcpService{
 				{
-					Enabled: convert.ToPtr(true),
+					Enabled: new(true),
 					Target:  nil, // Should be handled gracefully
 				},
 			},
@@ -5184,7 +5056,7 @@ func TestFcpInterfaceGet(t *testing.T) {
 			svm:  "svm1",
 			mockInterfaces: []*models.FcpService{
 				{
-					Enabled: convert.ToPtr(true),
+					Enabled: new(true),
 					Target: &models.FcpServiceInlineTarget{
 						Name: nil, // Should be handled gracefully
 					},
@@ -5234,28 +5106,28 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 		{
 			name: "Complete volume information",
 			volume: models.Volume{
-				Name: convert.ToPtr("test_volume"),
-				UUID: convert.ToPtr("volume-uuid-123"),
-				Size: convert.ToPtr(int64(1073741824)),
+				Name: new("test_volume"),
+				UUID: new("volume-uuid-123"),
+				Size: new(int64(1073741824)),
 				Space: &models.VolumeInlineSpace{
-					Used: convert.ToPtr(int64(536870912)),
+					Used: new(int64(536870912)),
 				},
-				State: convert.ToPtr("online"),
-				Type:  convert.ToPtr("rw"),
-				Style: convert.ToPtr("flexvol"),
+				State: new("online"),
+				Type:  new("rw"),
+				Style: new("flexvol"),
 				Nas: &models.VolumeInlineNas{
-					Path:            convert.ToPtr("/test_volume"),
-					SecurityStyle:   convert.ToPtr("unix"),
-					UnixPermissions: convert.ToPtr(int64(755)),
+					Path:            new("/test_volume"),
+					SecurityStyle:   new("unix"),
+					UnixPermissions: new(int64(755)),
 				},
-				Comment: convert.ToPtr("Test volume comment"),
+				Comment: new("Test volume comment"),
 			},
 			expected: &api.Volume{
 				Name:           "test_volume",
 				Aggregates:     []string{},
-				Encrypt:        convert.ToPtr(false),
+				Encrypt:        new(false),
 				TieringPolicy:  "none",
-				SnapshotDir:    convert.ToPtr(false),
+				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
 			},
@@ -5264,15 +5136,15 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 		{
 			name: "Volume with minimal information",
 			volume: models.Volume{
-				Name: convert.ToPtr("minimal_volume"),
-				UUID: convert.ToPtr("volume-uuid-456"),
+				Name: new("minimal_volume"),
+				UUID: new("volume-uuid-456"),
 			},
 			expected: &api.Volume{
 				Name:           "minimal_volume",
 				Aggregates:     []string{},
-				Encrypt:        convert.ToPtr(false),
+				Encrypt:        new(false),
 				TieringPolicy:  "none",
-				SnapshotDir:    convert.ToPtr(false),
+				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
 			},
@@ -5282,14 +5154,14 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 			name: "Volume with nil name",
 			volume: models.Volume{
 				Name: nil,
-				UUID: convert.ToPtr("volume-uuid-789"),
+				UUID: new("volume-uuid-789"),
 			},
 			expected: &api.Volume{
 				Name:           "", // Name will be empty when nil
 				Aggregates:     []string{},
-				Encrypt:        convert.ToPtr(false),
+				Encrypt:        new(false),
 				TieringPolicy:  "none",
-				SnapshotDir:    convert.ToPtr(false),
+				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
 			},
@@ -5298,15 +5170,15 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 		{
 			name: "Volume with nil UUID",
 			volume: models.Volume{
-				Name: convert.ToPtr("test_volume"),
+				Name: new("test_volume"),
 				UUID: nil,
 			},
 			expected: &api.Volume{
 				Name:           "test_volume",
 				Aggregates:     []string{},
-				Encrypt:        convert.ToPtr(false),
+				Encrypt:        new(false),
 				TieringPolicy:  "none",
-				SnapshotDir:    convert.ToPtr(false),
+				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
 			},
@@ -5315,20 +5187,20 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 		{
 			name: "Volume with space information",
 			volume: models.Volume{
-				Name: convert.ToPtr("space_volume"),
-				UUID: convert.ToPtr("volume-uuid-space"),
-				Size: convert.ToPtr(int64(2147483648)),
+				Name: new("space_volume"),
+				UUID: new("volume-uuid-space"),
+				Size: new(int64(2147483648)),
 				Space: &models.VolumeInlineSpace{
-					Used:      convert.ToPtr(int64(1073741824)),
-					Available: convert.ToPtr(int64(1073741824)),
+					Used:      new(int64(1073741824)),
+					Available: new(int64(1073741824)),
 				},
 			},
 			expected: &api.Volume{
 				Name:           "space_volume",
 				Aggregates:     []string{},
-				Encrypt:        convert.ToPtr(false),
+				Encrypt:        new(false),
 				TieringPolicy:  "none",
-				SnapshotDir:    convert.ToPtr(false),
+				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
 			},
@@ -5405,8 +5277,8 @@ func TestVolumeListByAttrs_Additional(t *testing.T) {
 				Payload: &models.VolumeResponse{
 					VolumeResponseInlineRecords: []*models.Volume{
 						{
-							Name: convert.ToPtr("test-volume"), // Valid name to avoid error
-							UUID: convert.ToPtr("test-uuid"),
+							Name: new("test-volume"), // Valid name to avoid error
+							UUID: new("test-uuid"),
 						},
 					},
 				},

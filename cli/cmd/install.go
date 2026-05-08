@@ -1501,7 +1501,7 @@ func validateCRDs(crdMap map[string]string) error {
 
 	if len(errMessages) > 0 {
 		errMsg := strings.Join(errMessages, "; ")
-		Log().Errorf(errMsg)
+		Log().Error(errMsg)
 		return fmt.Errorf("CRD validation failed; %v", errMsg)
 	}
 

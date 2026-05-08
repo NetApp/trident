@@ -18,7 +18,6 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/pkg/capacity"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -32,18 +31,16 @@ import (
 var mockIPs = []string{"0.0.0.0", "1.1.1.1"}
 
 func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId *string) *NVMeStorageDriver {
-	sPrefix := "test_"
-
 	config := &drivers.OntapStorageDriverConfig{}
 	config.ManagementLIF = ONTAPTEST_LOCALHOST
 	config.SVM = "svm"
 	config.Aggregate = "data"
 	config.Username = "ontap-san-user"
 	config.Password = "password1!"
-	config.UseREST = func() *bool { b := true; return &b }()
+	config.UseREST = func() *bool { return new(true) }()
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     &sPrefix,
+		StoragePrefix:     new("test_"),
 		StorageDriverName: "ontap-san",
 	}
 
@@ -72,12 +69,10 @@ func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockap
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
-	fsxId := FSX_ID
-
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
-	return newNVMeDriver(mockAPI, mockAWSAPI, &fsxId), mockAPI, mockAWSAPI
+	return newNVMeDriver(mockAPI, mockAWSAPI, new(FSX_ID)), mockAPI, mockAWSAPI
 }
 
 func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI) {
@@ -191,11 +186,10 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	d.Config.CommonStorageDriverConfig = nil
-	badStoragePrefix := "abc&$#"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
-		StoragePrefix:     &badStoragePrefix,
+		StoragePrefix:     new("abc&$#"),
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
@@ -244,7 +238,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -281,7 +275,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -326,7 +320,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
-		StoragePrefix:     convert.ToPtr("storagePrefix_"),
+		StoragePrefix:     new("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -650,12 +644,11 @@ func TestNVMeGetUpdateType_OtherUpdates(t *testing.T) {
 	d1 := newNVMeDriver(nil, nil, nil)
 	d2 := newNVMeDriver(nil, nil, nil)
 
-	sPrefix := "diff"
 	d2.Config.DataLIF = "1.1.1.1"
 	d2.Config.Password = "diff-password"
 	d2.Config.Username = "diff-username"
 	d2.Config.Credentials = map[string]string{"diff": "diff"}
-	d2.Config.StoragePrefix = &sPrefix
+	d2.Config.StoragePrefix = new("diff")
 
 	bMap := d1.GetUpdateType(ctx, d2)
 
@@ -1437,8 +1430,7 @@ func TestNVMeDestroy_SnapMirrorAPIError(t *testing.T) {
 			if params.configureMockOntapAPI != nil {
 				params.configureMockOntapAPI(mockAPI)
 			}
-			volConfig := params.getVolumeConfig(d)
-			err := d.Destroy(ctx, &volConfig)
+			err := d.Destroy(ctx, new(params.getVolumeConfig(d)))
 
 			assert.ErrorContains(t, err, "snap mirror api call failed")
 		})
@@ -1623,8 +1615,7 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 			if params.configureMockOntapAPI != nil {
 				params.configureMockOntapAPI(mockAPI)
 			}
-			volConfig := params.getVolumeConfig(d)
-			err := d.Destroy(ctx, &volConfig)
+			err := d.Destroy(ctx, new(params.getVolumeConfig(d)))
 
 			if params.expectError {
 				assert.Error(t, err)
@@ -1835,7 +1826,7 @@ func TestPublish(t *testing.T) {
 	flexVol.AccessType = VolTypeRW
 	d.Config.DriverContext = tridentconfig.ContextDocker
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
-	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
+	d.Config.StoragePrefix = new("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, errors.New("Error getting namespace by name")).Times(1)
@@ -1845,7 +1836,7 @@ func TestPublish(t *testing.T) {
 	// Test case 4: Docker context - namespace is nil
 	d.Config.DriverContext = tridentconfig.ContextDocker
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
-	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
+	d.Config.StoragePrefix = new("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, nil).Times(1)
@@ -1855,7 +1846,7 @@ func TestPublish(t *testing.T) {
 	// Test case 5: Docker context - subsystem creation fails
 	d.Config.DriverContext = tridentconfig.ContextDocker
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
-	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
+	d.Config.StoragePrefix = new("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(namespace, nil).Times(1)
@@ -1866,7 +1857,7 @@ func TestPublish(t *testing.T) {
 	// Test case 6: Docker context - success path
 	d.Config.DriverContext = tridentconfig.ContextDocker
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
-	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
+	d.Config.StoragePrefix = new("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	publishInfo.MountOptions = ""
 	volConfig.FileSystem = ""
@@ -3061,8 +3052,7 @@ func TestGetBackendState(t *testing.T) {
 
 func TestEnablePublishEnforcement(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
-	config := getVolumeConfig()
-	vol := storage.Volume{Config: &config}
+	vol := storage.Volume{Config: new(getVolumeConfig())}
 
 	assert.True(t, d.CanEnablePublishEnforcement(), "Cannot enable publish enforcement.")
 

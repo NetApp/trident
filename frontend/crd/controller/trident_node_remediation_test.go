@@ -230,7 +230,7 @@ func TestHandleTridentNodeRemediation_RemediatingStateDirtyNodeWithPublications(
 		Spec: storagev1.VolumeAttachmentSpec{
 			NodeName: nodeName,
 			Source: storagev1.VolumeAttachmentSource{
-				PersistentVolumeName: func() *string { s := "vol-0"; return &s }(),
+				PersistentVolumeName: new("vol-0"),
 			},
 		},
 	}

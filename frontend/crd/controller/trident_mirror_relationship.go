@@ -423,7 +423,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		statusCondition.Message = fmt.Sprintf(
 			"Could not find volume at volume handle: %v", localPV.Spec.CSI.VolumeHandle,
 		)
-		Logx(ctx).WithFields(logFields).Debugf(statusCondition.Message)
+		Logx(ctx).WithFields(logFields).Debug(statusCondition.Message)
 		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message)
 		return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}

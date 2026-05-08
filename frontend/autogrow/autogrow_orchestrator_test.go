@@ -152,32 +152,28 @@ func TestState_Get(t *testing.T) {
 		{
 			name: "Success_GetsStopped",
 			setup: func() *State {
-				s := StateStopped
-				return &s
+				return new(StateStopped)
 			},
 			expectedState: StateStopped,
 		},
 		{
 			name: "Success_GetsStarting",
 			setup: func() *State {
-				s := StateStarting
-				return &s
+				return new(StateStarting)
 			},
 			expectedState: StateStarting,
 		},
 		{
 			name: "Success_GetsRunning",
 			setup: func() *State {
-				s := StateRunning
-				return &s
+				return new(StateRunning)
 			},
 			expectedState: StateRunning,
 		},
 		{
 			name: "Success_GetsStopping",
 			setup: func() *State {
-				s := StateStopping
-				return &s
+				return new(StateStopping)
 			},
 			expectedState: StateStopping,
 		},
@@ -203,8 +199,7 @@ func TestState_Set(t *testing.T) {
 		{
 			name: "Success_SetsRunning",
 			setup: func() (*State, State) {
-				s := StateStopped
-				return &s, StateRunning
+				return new(StateStopped), StateRunning
 			},
 			verify: func(t *testing.T, s *State) {
 				assert.Equal(t, StateRunning, s.get())
@@ -213,8 +208,7 @@ func TestState_Set(t *testing.T) {
 		{
 			name: "Success_SetsStopped",
 			setup: func() (*State, State) {
-				s := StateRunning
-				return &s, StateStopped
+				return new(StateRunning), StateStopped
 			},
 			verify: func(t *testing.T, s *State) {
 				assert.Equal(t, StateStopped, s.get())
@@ -223,8 +217,7 @@ func TestState_Set(t *testing.T) {
 		{
 			name: "Success_SetsStarting",
 			setup: func() (*State, State) {
-				s := StateStopped
-				return &s, StateStarting
+				return new(StateStopped), StateStarting
 			},
 			verify: func(t *testing.T, s *State) {
 				assert.Equal(t, StateStarting, s.get())
@@ -233,8 +226,7 @@ func TestState_Set(t *testing.T) {
 		{
 			name: "Success_SetsStopping",
 			setup: func() (*State, State) {
-				s := StateRunning
-				return &s, StateStopping
+				return new(StateRunning), StateStopping
 			},
 			verify: func(t *testing.T, s *State) {
 				assert.Equal(t, StateStopping, s.get())
@@ -262,8 +254,7 @@ func TestState_CompareAndSwap(t *testing.T) {
 		{
 			name: "Success_SwapSucceeds_OldStateMatches",
 			setup: func() (*State, State, State) {
-				s := StateStopped
-				return &s, StateStopped, StateStarting
+				return new(StateStopped), StateStopped, StateStarting
 			},
 			verify: func(t *testing.T, s *State, swapped bool) {
 				assert.True(t, swapped, "swap should succeed")
@@ -273,8 +264,7 @@ func TestState_CompareAndSwap(t *testing.T) {
 		{
 			name: "Success_SwapFails_OldStateDoesNotMatch",
 			setup: func() (*State, State, State) {
-				s := StateRunning
-				return &s, StateStopped, StateStarting
+				return new(StateRunning), StateStopped, StateStarting
 			},
 			verify: func(t *testing.T, s *State, swapped bool) {
 				assert.False(t, swapped, "swap should fail")
@@ -284,8 +274,7 @@ func TestState_CompareAndSwap(t *testing.T) {
 		{
 			name: "Success_SwapRunningToStopping",
 			setup: func() (*State, State, State) {
-				s := StateRunning
-				return &s, StateRunning, StateStopping
+				return new(StateRunning), StateRunning, StateStopping
 			},
 			verify: func(t *testing.T, s *State, swapped bool) {
 				assert.True(t, swapped)

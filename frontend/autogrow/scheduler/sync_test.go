@@ -440,12 +440,10 @@ func TestProcessTVPsForSync(t *testing.T) {
 			name: "PartialSuccess_SCBeingDeleted_IgnoresSCAnnotation_CacheDeleteFails",
 			setup: func(ctrl *gomock.Controller) (*Scheduler, []*v1.TridentVolumePublication, []string) {
 				namespace := "trident"
-				now := metav1.Now()
-
 				sc := &storagev1.StorageClass{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "deleting-sc",
-						DeletionTimestamp: &now,
+						DeletionTimestamp: new(metav1.Now()),
 						Annotations: map[string]string{
 							kubernetes.AnnAutogrowPolicy: "sc-policy", // Should be ignored
 						},
@@ -554,11 +552,9 @@ func TestProcessTVPsForSync(t *testing.T) {
 			name: "PartialSuccess_TVPBeingDeleted_RemovedFromCache_SCLookupFails",
 			setup: func(ctrl *gomock.Controller) (*Scheduler, []*v1.TridentVolumePublication, []string) {
 				namespace := "trident"
-				now := metav1.Now()
-
 				tvp1 := createTestTVP("tvp1", namespace, "vol1", "test-sc")
 				tvp1.AutogrowPolicy = "tvp-policy"
-				tvp1.ObjectMeta.DeletionTimestamp = &now // Being deleted
+				tvp1.ObjectMeta.DeletionTimestamp = new(metav1.Now()) // Being deleted
 
 				scLister, tvpLister, _ := setupTestListers(t, nil, []*v1.TridentVolumePublication{tvp1})
 				autogrowCache := getTestAutogrowCache()
@@ -659,8 +655,6 @@ func TestProcessTVPsForSync(t *testing.T) {
 			name: "PartialSuccess_MixedScenarios_HandlesAllCorrectly_SomeCacheDeletesFail",
 			setup: func(ctrl *gomock.Controller) (*Scheduler, []*v1.TridentVolumePublication, []string) {
 				namespace := "trident"
-				now := metav1.Now()
-
 				sc := &storagev1.StorageClass{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "test-sc",
@@ -681,7 +675,7 @@ func TestProcessTVPsForSync(t *testing.T) {
 				// TVP being deleted
 				tvp3 := createTestTVP("tvp3", namespace, "vol3", "test-sc")
 				tvp3.AutogrowPolicy = "tvp-policy"
-				tvp3.ObjectMeta.DeletionTimestamp = &now
+				tvp3.ObjectMeta.DeletionTimestamp = new(metav1.Now())
 
 				// TVP with no policy at all
 				tvp4 := createTestTVP("tvp4", namespace, "vol4", "")

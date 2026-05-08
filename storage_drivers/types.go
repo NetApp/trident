@@ -230,7 +230,7 @@ func (d OntapStorageDriverConfig) GoString() string {
 
 func (d *OntapStorageDriverConfig) Marshal() ([]byte, error) {
 	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
-	bytes, err := json.Marshal(d)
+	bytes, err := json.Marshal(d) //nolint:gosec // intentional driver config serialization
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal OntapStorageDriverConfig: %v", err)
 	}
@@ -553,7 +553,7 @@ func (d AzureNASStorageDriverConfig) GoString() string {
 
 func (d *AzureNASStorageDriverConfig) Marshal() ([]byte, error) {
 	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
-	bytes, err := json.Marshal(d)
+	bytes, err := json.Marshal(d) //nolint:gosec // intentional driver config serialization
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal AzureNASStorageDriverConfig: %v", err)
 	}
@@ -829,7 +829,7 @@ func (d FakeStorageDriverConfig) GoString() string {
 
 func (d *FakeStorageDriverConfig) Marshal() ([]byte, error) {
 	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
-	bytes, err := json.Marshal(d)
+	bytes, err := json.Marshal(d) //nolint:gosec // intentional driver config serialization
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal FakeStorageDriverConfig: %v", err)
 	}

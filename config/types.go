@@ -143,13 +143,11 @@ func (in *ResourceRequirements) DeepCopyInto(out *ResourceRequirements) {
 	*out = *in
 	if in.CPU != nil {
 		in, out := &in.CPU, &out.CPU
-		x := (*in).DeepCopy()
-		*out = &x
+		*out = new((*in).DeepCopy())
 	}
 	if in.Memory != nil {
 		in, out := &in.Memory, &out.Memory
-		x := (*in).DeepCopy()
-		*out = &x
+		*out = new((*in).DeepCopy())
 	}
 }
 

@@ -23,7 +23,6 @@ import (
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/collection"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -1035,10 +1034,9 @@ func TestBootstrapVolumesConcurrentCore(t *testing.T) {
 
 				volumes := []*storage.VolumeExternal{volume.ConstructExternal()}
 				volumes[0].BackendUUID = "backend-uuid"
-				now := time.Now()
 				volumes[0].AutogrowStatus = &models.VolumeAutogrowStatus{
 					LastAutogrowPolicyUsed:  "policy1",
-					LastAutogrowAttemptedAt: &now,
+					LastAutogrowAttemptedAt: new(time.Now()),
 					TotalAutogrowAttempted:  1,
 					TotalSuccessfulAutogrow: 1,
 				}
@@ -11209,9 +11207,9 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(true),
-				AdministratorReady: convert.ToPtr(true),
-				ProvisionerReady:   convert.ToPtr(true),
+				OrchestratorReady:  new(true),
+				AdministratorReady: new(true),
+				ProvisionerReady:   new(true),
 			},
 			node: &models.Node{
 				Name:             "node1",
@@ -11232,8 +11230,8 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(false),
-				AdministratorReady: convert.ToPtr(false),
+				OrchestratorReady:  new(false),
+				AdministratorReady: new(false),
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
@@ -11254,9 +11252,9 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(true),
-				AdministratorReady: convert.ToPtr(true),
-				ProvisionerReady:   convert.ToPtr(true),
+				OrchestratorReady:  new(true),
+				AdministratorReady: new(true),
+				ProvisionerReady:   new(true),
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
@@ -11277,8 +11275,8 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(false),
-				AdministratorReady: convert.ToPtr(false),
+				OrchestratorReady:  new(false),
+				AdministratorReady: new(false),
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
@@ -11299,8 +11297,8 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(true),
-				AdministratorReady: convert.ToPtr(true),
+				OrchestratorReady:  new(true),
+				AdministratorReady: new(true),
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
@@ -11321,8 +11319,8 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				return mockStoreClient
 			},
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  convert.ToPtr(true),
-				AdministratorReady: convert.ToPtr(true),
+				OrchestratorReady:  new(true),
+				AdministratorReady: new(true),
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()

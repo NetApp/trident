@@ -127,40 +127,40 @@ func writeStatus(status cliapi.OperatorStatus) {
 
 func writeStatusTable(status cliapi.OperatorStatus) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Type", "Status"})
+	table.Header([]string{"Name", "Type", "Status"})
 	if status.ErrorMessage != "" {
-		table.SetFooter([]string{"Overall Status", status.Status, status.ErrorMessage})
+		table.Footer([]string{"Overall Status", status.Status, status.ErrorMessage})
 	} else {
-		table.SetFooter([]string{"Overall Status", status.Status, ""})
+		table.Footer([]string{"Overall Status", status.Status, ""})
 	}
 
 	for torcName, torcStatus := range status.TorcStatus {
-		table.Append([]string{torcName, "TridentOrchestratorCR", torcStatus.Status})
+		_ = table.Append([]string{torcName, "TridentOrchestratorCR", torcStatus.Status})
 	}
 
 	for tconfName, tconfStatus := range status.TconfStatus {
-		table.Append([]string{tconfName, "TridentConfiguratorCR", tconfStatus.Status})
+		_ = table.Append([]string{tconfName, "TridentConfiguratorCR", tconfStatus.Status})
 	}
 
-	table.Render()
+	_ = table.Render()
 }
 
 func writeStatusTableWide(status cliapi.OperatorStatus) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Type", "Status", "Message"})
+	table.Header([]string{"Name", "Type", "Status", "Message"})
 	if status.ErrorMessage != "" {
-		table.SetFooter([]string{"Overall Status", status.Status, status.ErrorMessage, ""})
+		table.Footer([]string{"Overall Status", status.Status, status.ErrorMessage, ""})
 	} else {
-		table.SetFooter([]string{"Overall Status", status.Status, "", ""})
+		table.Footer([]string{"Overall Status", status.Status, "", ""})
 	}
 
 	for torcName, torcStatus := range status.TorcStatus {
-		table.Append([]string{torcName, "TridentOrchestratorCR", torcStatus.Status, torcStatus.Message})
+		_ = table.Append([]string{torcName, "TridentOrchestratorCR", torcStatus.Status, torcStatus.Message})
 	}
 
 	for tconfName, tconfStatus := range status.TconfStatus {
-		table.Append([]string{tconfName, "TridentConfiguratorCR", tconfStatus.Status, tconfStatus.Message})
+		_ = table.Append([]string{tconfName, "TridentConfiguratorCR", tconfStatus.Status, tconfStatus.Message})
 	}
 
-	table.Render()
+	_ = table.Render()
 }

@@ -13,7 +13,6 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -45,13 +44,13 @@ var updateNodeCmd = &cobra.Command{
 		var ready, adminReady, cleaned *bool
 		var err error
 		if cmd.Flags().Changed("orchestratorReady") {
-			ready = convert.ToPtr(orchestratorReady)
+			ready = new(orchestratorReady)
 		}
 		if cmd.Flags().Changed("administratorReady") {
-			adminReady = convert.ToPtr(administratorReady)
+			adminReady = new(administratorReady)
 		}
 		if cmd.Flags().Changed("provisionerReady") {
-			cleaned = convert.ToPtr(provisionerReady)
+			cleaned = new(provisionerReady)
 		}
 
 		if OperatingMode == ModeTunnel {

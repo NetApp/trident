@@ -117,7 +117,7 @@ func findBinaries(prefix string) []string {
 }
 
 func isExecutable(file string) bool {
-	info, err := os.Stat(file)
+	info, err := os.Stat(file) // #nosec G703 -- path from filepath.Glob under PATH directory entries
 	if err != nil {
 		return false
 	}

@@ -214,7 +214,7 @@ func (c *Controller) processNextWorkItem() bool {
 
 				c.workqueue.Forget(keyItem)
 
-				Log().Errorf(errMessage)
+				Log().Error(errMessage)
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
@@ -225,7 +225,7 @@ func (c *Controller) processNextWorkItem() bool {
 
 				c.workqueue.Forget(keyItem)
 
-				Log().Errorf(errMessage)
+				Log().Error(errMessage)
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
@@ -237,7 +237,7 @@ func (c *Controller) processNextWorkItem() bool {
 			}
 
 			errMessage := fmt.Sprintf("error syncing tconf '%s': %s, requeuing", keyItem, err.Error())
-			Log().Errorf(errMessage)
+			Log().Error(errMessage)
 			Log().Info("-------------------------------------------------")
 			Log().Info("-------------------------------------------------")
 
