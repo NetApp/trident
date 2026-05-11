@@ -728,6 +728,29 @@ func (d *SANEconomyStorageDriver) Create(
 				break                  // Try next aggregate
 			}
 
+			if _, waitErr := api.WaitForLunToExist(ctx, d.API, lunPathEco); waitErr != nil {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN-ECONOMY pool %s/%s; LUN %s/%s not visible after create: %v",
+					storagePool.Name(), aggregate, bucketVol, name, waitErr,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, errors.New(errMessage))
+				if err := d.API.LunDestroy(ctx, lunPathEco); err != nil {
+					Logc(ctx).WithField("LUN", lunPathEco).WithError(err).Error("Could not clean up LUN.")
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after wait error.")
+				}
+				if newVol {
+					if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
+						Logc(ctx).WithField("volume", bucketVol).WithError(err).Error("Could not clean up volume.")
+					} else {
+						Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN wait error.")
+					}
+				}
+				lockedFlexvol.Unlock()
+				break
+			}
+
 			// LUN created successfully
 			lunCreated = true
 		}
@@ -891,6 +914,9 @@ func (d *SANEconomyStorageDriver) cloneLUNFromSnapshot(
 	if err := d.API.LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qosPolicyGroup); err != nil {
 		return "", err
 	}
+	if _, err := api.WaitForLunToExist(ctx, d.API, GetLUNPathEconomy(bucketVolume, lunName)); err != nil {
+		return "", err
+	}
 	internalID := d.CreateLUNInternalID(d.Config.SVM, bucketVolume, lunName)
 
 	// Grow or shrink the FlexVol as needed (lock is still held)
@@ -977,6 +1003,10 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 		return "", err
 	}
 
+	if _, err = api.WaitForLunToExist(ctx, client, GetLUNPathEconomy(flexvol, lunName)); err != nil {
+		return "", err
+	}
+
 	internalID := d.CreateLUNInternalID(config.SVM, flexvol, lunName)
 
 	// Grow or shrink the Flexvol as needed (lock is still held)
@@ -1027,12 +1057,10 @@ func (d *SANEconomyStorageDriver) Import(
 		volConfig.LUKSEncryption = d.Config.LUKSEncryption
 	}
 
-	// Ensure LUN found.
-	extantLUN, err := d.API.LunGetByName(ctx, "/vol/"+originalFlexvolName+"/"+originalLUNName)
+	// Ensure LUN found (retry REST read-after-not-found when the LUN is briefly invisible).
+	extantLUN, err := api.WaitForLunToExist(ctx, d.API, "/vol/"+originalFlexvolName+"/"+originalLUNName)
 	if err != nil {
 		return err
-	} else if extantLUN == nil {
-		return errors.NotFoundError("LUN %s not found in volume %s", originalLUNName, originalFlexvolName)
 	}
 	Logc(ctx).WithField("LUN", extantLUN.Name).Trace("Import - LUN found.")
 
@@ -2037,7 +2065,7 @@ func (d *SANEconomyStorageDriver) ProcessGroupSnapshot(
 		// Pull the size directly from the cloned LUN.
 		lunClonePath := GetLUNPathEconomy(bucketVol, lunCloneName)
 		fields["lunClonePath"] = lunClonePath
-		lunInfo, err := d.API.LunGetByName(ctx, lunClonePath)
+		lunInfo, err := api.WaitForLunToExist(ctx, d.API, lunClonePath)
 		if err != nil {
 			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to find LUN clone from snapshot.")
 			errs = errors.Join(errs, err)
@@ -2523,7 +2551,7 @@ func (d *SANEconomyStorageDriver) GetVolumeForImport(
 	}
 
 	ecoLUNPath := GetLUNPathEconomy(originalFlexvolName, originalLUNName)
-	extantLUN, err := d.API.LunGetByName(ctx, ecoLUNPath)
+	extantLUN, err := api.WaitForLunToExist(ctx, d.API, ecoLUNPath)
 	if err != nil {
 		return nil, err
 	}

@@ -608,6 +608,26 @@ func (d *SANStorageDriver) Create(
 				continue
 			}
 
+			if _, err = api.WaitForLunToExist(ctx, d.API, lunPath); err != nil {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN pool %s/%s; LUN %s not visible after create: %v",
+					storagePool.Name(), aggregate, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, errors.New(errMessage))
+				if err := d.API.LunDestroy(ctx, lunPath); err != nil {
+					Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after wait error.")
+				}
+				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
+					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN wait error.")
+				}
+				continue
+			}
+
 			// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
 			// move on to the next pool.
 			// Save the context, fstype, LUKS value, and pool name in LUN comment
@@ -777,12 +797,10 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		volConfig.LUKSEncryption = d.Config.LUKSEncryption
 	}
 
-	// Ensure the volume has only one LUN
-	lunInfo, err := d.API.LunGetByName(ctx, "/vol/"+originalName+"/*")
+	// Ensure the volume has only one LUN (retry REST read-after-not-found when the LUN was just created).
+	lunInfo, err := api.WaitForLunToExist(ctx, d.API, "/vol/"+originalName+"/*")
 	if err != nil {
 		return err
-	} else if lunInfo == nil {
-		return fmt.Errorf("lun not found in volume %s", originalName)
 	}
 	targetPath := "/vol/" + originalName + "/lun0"
 
@@ -1394,7 +1412,7 @@ func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 	}
 
 	lunPath := fmt.Sprintf("/vol/%v/*", volumeID)
-	lunAttrs, err := d.API.LunGetByName(ctx, lunPath)
+	lunAttrs, err := api.WaitForLunToExist(ctx, d.API, lunPath)
 	if err != nil {
 		return nil, err
 	}

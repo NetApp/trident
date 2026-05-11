@@ -272,6 +272,8 @@ func TestSANEco_CloneLUN_ConcurrentSameSource(t *testing.T) {
 		},
 	).Times(numClones)
 
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "1073741824"}, nil).AnyTimes()
+
 	// Mock: VolumeInfo for resize checks (called after each clone)
 	mockAPI.EXPECT().VolumeInfo(ctx, bucketName).Return(&api.Volume{
 		Size:       "1073741824", // 1GB
@@ -350,6 +352,8 @@ func TestSANEco_CloneLUN_ConcurrentDifferentBuckets(t *testing.T) {
 		},
 	).Times(numBuckets)
 
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "1073741824"}, nil).AnyTimes()
+
 	// Mock: VolumeInfo for each bucket
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{
 		Size:       "1073741824",
@@ -425,6 +429,8 @@ func TestSANEco_CloneLUN_ConcurrentSameBucket(t *testing.T) {
 			return nil
 		},
 	).Times(numClones)
+
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "1073741824"}, nil).AnyTimes()
 
 	// Mock: VolumeInfo for resize
 	mockAPI.EXPECT().VolumeInfo(ctx, bucketName).Return(&api.Volume{

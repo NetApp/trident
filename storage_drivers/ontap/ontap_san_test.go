@@ -334,6 +334,12 @@ func expectLunAndVolumeCreateSequence(mockAPI *mockapi.MockOntapAPI, fsType, luk
 		},
 	).MaxTimes(1)
 
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, lunPath string) (*api.Lun, error) {
+			return &api.Lun{Name: lunPath, Size: "1073741824", State: "online"}, nil
+		},
+	).MaxTimes(10)
+
 	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions, poolName string) error {
 			return nil
@@ -1345,6 +1351,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
@@ -1360,6 +1367,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(errors.New("LUN destroy failed"))
@@ -1375,6 +1383,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
@@ -1430,6 +1439,7 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).Return(false, nil).MaxTimes(1)
 	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
 	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
