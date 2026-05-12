@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
@@ -66,6 +67,16 @@ type SANStorageDriver struct {
 	iscsiClient      iscsi.Client
 
 	virtualPools map[string]storage.Pool
+
+	// mutex serializes mutating storage.Driver entrypoints (Create, Clone, Destroy,
+	// Publish, Resize, snapshot ops, etc.) and any method that issues SolidFire API
+	// calls. It is the former TridentOrchestrator.mutex pushed down into the driver.
+	//
+	// Read-only accessors that only touch fields written once during Initialize
+	// (Name, GetConfig, GetProtocol, GetInternalVolumeName, etc.) intentionally do
+	// not take the lock. Given SolidFire's maintenance status, fine-grained locking
+	// is not warranted.
+	mutex sync.Mutex
 }
 
 type Telemetry struct {
@@ -101,12 +112,12 @@ func parseType(ctx context.Context, vTypes []api.VolType, typeName string) (qos 
 	return qos, err
 }
 
-func (d SANStorageDriver) getTelemetry() *Telemetry {
+func (d *SANStorageDriver) getTelemetry() *Telemetry {
 	return d.telemetry
 }
 
 // Name is for returning the name of this driver
-func (d SANStorageDriver) Name() string {
+func (d *SANStorageDriver) Name() string {
 	return tridentconfig.SolidfireSANStorageDriverName
 }
 
@@ -140,6 +151,9 @@ func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	fields := LogFields{"Method": "Initialize", "Type": "SANStorageDriver"}
 	Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
@@ -335,6 +349,9 @@ func (d *SANStorageDriver) Initialized() bool {
 }
 
 func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	fields := LogFields{"Method": "Terminate", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
@@ -795,6 +812,9 @@ func (d *SANStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 	volAttributes map[string]sa.Request,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -944,6 +964,9 @@ func (d *SANStorageDriver) Create(
 func (d *SANStorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := cloneVolConfig.InternalName
 	sourceName := cloneVolConfig.CloneSourceVolumeInternal
 	snapshotName := cloneVolConfig.CloneSourceSnapshotInternal
@@ -1087,6 +1110,9 @@ func (d *SANStorageDriver) CreateClone(
 }
 
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	fields := LogFields{
 		"Method":       "Import",
 		"Type":         "SANStorageDriver",
@@ -1153,6 +1179,9 @@ func (d *SANStorageDriver) detachVolume(ctx context.Context, v api.Volume) error
 
 // Destroy the requested docker volume
 func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -1206,6 +1235,9 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *SANStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -1268,6 +1300,9 @@ func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCon
 func (d *SANStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1324,6 +1359,9 @@ func (d *SANStorageDriver) GetSnapshot(
 func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	internalVolName := volConfig.InternalName
 
 	fields := LogFields{
@@ -1378,6 +1416,9 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 func (d *SANStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1426,6 +1467,9 @@ func (d *SANStorageDriver) CreateSnapshot(
 func (d *SANStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1469,6 +1513,9 @@ func (d *SANStorageDriver) RestoreSnapshot(
 func (d *SANStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1501,6 +1548,9 @@ func (d *SANStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *SANStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
@@ -1605,6 +1655,9 @@ func (d *SANStorageDriver) VolumeExists(ctx context.Context, name string) (bool,
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	backend.SetName(d.BackendName())
 
 	virtual := len(d.virtualPools) > 0
@@ -1674,6 +1727,9 @@ func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 }
 
 func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	fields := LogFields{
 		"Method":       "CreateFollowup",
 		"Type":         "SANStorageDriver",
@@ -1842,7 +1898,13 @@ func (d *SANStorageDriver) AddMissingVolumesToVag(ctx context.Context, vagID int
 	req.StartVAGID = vagID
 	req.Limit = 1
 
-	vags, _ := d.Client.ListVolumeAccessGroups(ctx, &req)
+	vags, err := d.Client.ListVolumeAccessGroups(ctx, &req)
+	if err != nil {
+		return fmt.Errorf("failed to list volume access groups: %v", err)
+	}
+	if len(vags) == 0 {
+		return fmt.Errorf("volume access group %d not found", vagID)
+	}
 	missingVolIDs := diffSlices(vags[0].Volumes, vols)
 
 	var addReq api.AddVolumesToVolumeAccessGroupRequest
@@ -1857,6 +1919,9 @@ func (d *SANStorageDriver) AddMissingVolumesToVag(ctx context.Context, vagID int
 // representation of the volume.  For this driver, volumeID is the name of the
 // LUN on the storage system.
 func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	volume, err := d.GetVolume(ctx, volumeID)
 	if err != nil {
 		return nil, err
@@ -1866,12 +1931,12 @@ func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 }
 
 // String implements stringer interface for the SANStorageDriver driver
-func (d SANStorageDriver) String() string {
-	return convert.ToStringRedacted(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
+func (d *SANStorageDriver) String() string {
+	return convert.ToStringRedacted(d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the SANStorageDriver driver
-func (d SANStorageDriver) GoString() string {
+func (d *SANStorageDriver) GoString() string {
 	return d.String()
 }
 
@@ -1880,6 +1945,9 @@ func (d SANStorageDriver) GoString() string {
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
 func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -1962,6 +2030,9 @@ func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 
 // Resize expands the volume size.
 func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	name := volConfig.InternalName
 	fields := LogFields{
 		"Method":    "Resize",
@@ -2042,6 +2113,9 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 func (d *SANStorageDriver) ReconcileNodeAccess(
 	ctx context.Context, nodes []*models.Node, _, _ string,
 ) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
@@ -2059,6 +2133,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(
 }
 
 func (d *SANStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "SANStorageDriver",
@@ -2070,6 +2147,6 @@ func (d *SANStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *sto
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d *SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }

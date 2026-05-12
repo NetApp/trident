@@ -444,6 +444,7 @@ var (
 		"google-cloud-netapp-volumes",
 		"ontap-nas-economy",
 		"ontap-san-economy",
+		"solidfire-san",
 	}
 
 	// Absolute max age for ANY TAGRI (safety net to prevent stuck states) before forced deletion

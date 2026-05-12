@@ -90,20 +90,20 @@ func newTestSolidfireSANDriver() *SANStorageDriver {
 	return sanDriver
 }
 
-func callString(s SANStorageDriver) string {
+func callString(s *SANStorageDriver) string {
 	return s.String()
 }
 
-func callGoString(s SANStorageDriver) string {
+func callGoString(s *SANStorageDriver) string {
 	return s.GoString()
 }
 
 func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
-	solidfireSANDrivers := []SANStorageDriver{
-		*newTestSolidfireSANDriver(),
+	solidfireSANDrivers := []*SANStorageDriver{
+		newTestSolidfireSANDriver(),
 	}
 
-	for _, toString := range []func(SANStorageDriver) string{callString, callGoString} {
+	for _, toString := range []func(*SANStorageDriver) string{callString, callGoString} {
 		for _, solidfireSANDriver := range solidfireSANDrivers {
 			assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
 				"Solidfire driver does not contain <REDACTED>")
