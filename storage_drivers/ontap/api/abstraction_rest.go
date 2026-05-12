@@ -1341,14 +1341,19 @@ func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 	}
 	qtrees := Qtrees{}
 	for _, qtree := range qtreeList.GetPayload().QtreeResponseInlineRecords {
-		newQtree := d.convertQtree(qtree)
-		qtrees = append(qtrees, newQtree)
+		if newQtree := d.convertQtree(qtree); newQtree != nil {
+			qtrees = append(qtrees, newQtree)
+		}
 	}
 
 	return qtrees, nil
 }
 
 func (d OntapAPIREST) convertQtree(qtree *models.Qtree) *Qtree {
+	if qtree == nil {
+		return nil
+	}
+
 	newQtree := &Qtree{}
 
 	if qtree.Name != nil {
@@ -1379,7 +1384,11 @@ func (d OntapAPIREST) QtreeGetByName(ctx context.Context, name, volumePrefix str
 		Logc(ctx).WithError(err).Error(msg)
 		return nil, errors.New(msg)
 	}
-	return d.convertQtree(qtree), nil
+	converted := d.convertQtree(qtree)
+	if converted == nil {
+		return nil, errors.NotFoundError("qtree %q not found", name)
+	}
+	return converted, nil
 }
 
 func (d OntapAPIREST) QuotaEntryList(ctx context.Context, volumeName string) (QuotaEntries, error) {
@@ -1390,7 +1399,9 @@ func (d OntapAPIREST) QuotaEntryList(ctx context.Context, volumeName string) (Qu
 	entries := QuotaEntries{}
 	if response != nil && response.Payload != nil {
 		for _, entry := range response.Payload.QuotaRuleResponseInlineRecords {
-			entries = append(entries, d.convertQuota(entry))
+			if converted := d.convertQuota(entry); converted != nil {
+				entries = append(entries, converted)
+			}
 		}
 	}
 	return entries, nil
@@ -1458,12 +1469,19 @@ func (d OntapAPIREST) QuotaGetEntry(ctx context.Context, volumeName, qtreeName, 
 	quota, err := d.api.QuotaGetEntry(ctx, volumeName, qtreeName, quotaType)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("error getting quota rule")
+		return nil, err
 	}
 	quotaEntry := d.convertQuota(quota)
+	if quotaEntry == nil {
+		return nil, errors.NotFoundError("quota rule for volume %q qtree %q not found", volumeName, qtreeName)
+	}
 	return quotaEntry, nil
 }
 
 func (d OntapAPIREST) convertQuota(quota *models.QuotaRule) *QuotaEntry {
+	if quota == nil {
+		return nil
+	}
 	diskLimit := int64(-1)
 	if quota.Space != nil && quota.Space.HardLimit != nil {
 		diskLimit = *quota.Space.HardLimit
@@ -1471,7 +1489,7 @@ func (d OntapAPIREST) convertQuota(quota *models.QuotaRule) *QuotaEntry {
 	quotaEntry := &QuotaEntry{
 		DiskLimitBytes: diskLimit,
 	}
-	if quota != nil && quota.Volume != nil && quota.Volume.Name != nil && *quota.Volume.Name != "" {
+	if quota.Volume != nil && quota.Volume.Name != nil && *quota.Volume.Name != "" {
 		quotaEntry.Target = fmt.Sprintf("/vol/%s", *quota.Volume.Name)
 
 		if quota.Qtree != nil && quota.Qtree.Name != nil && *quota.Qtree.Name != "" {
@@ -1558,10 +1576,15 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 		}
 
 		if vol == nil {
+			volumeState = ""
 			return fmt.Errorf("volume %v not found", volumeName)
 		}
 
-		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, *vol.State)
+		if vol.State == nil {
+			volumeState = ""
+			return fmt.Errorf("volume %v state not yet populated", volumeName)
+		}
+
 		volumeState = *vol.State
 
 		if collection.ContainsString(desiredStates, volumeState) {
@@ -1966,7 +1989,7 @@ func (d OntapAPIREST) SnapmirrorGet(
 		snapmirror.IsHealthy = *snapmirrorResponse.Healthy
 		if !snapmirror.IsHealthy {
 			unhealthyReason := snapmirrorResponse.SnapmirrorRelationshipInlineUnhealthyReason
-			if len(unhealthyReason) > 0 {
+			if len(unhealthyReason) > 0 && unhealthyReason[0] != nil && unhealthyReason[0].Message != nil {
 				snapmirror.UnhealthyReason = *unhealthyReason[0].Message
 			}
 		}
@@ -2138,8 +2161,10 @@ func (d OntapAPIREST) SnapmirrorBreak(
 func (d OntapAPIREST) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
 	err := d.api.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
 	if err != nil {
-		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
-			return errors.New(*restErr.Error.Message)
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr != nil && restErr.Error != nil && restErr.Error.Message != nil {
+				return errors.New(*restErr.Error.Message)
+			}
 		}
 		return err
 	}
@@ -3508,6 +3533,9 @@ func (d OntapAPIREST) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsy
 	}
 
 	for _, host := range hosts {
+		if host == nil || host.Nqn == nil {
+			continue
+		}
 		if *host.Nqn == hostNQN {
 			// Host already part of the subsystem, no need to add it again
 			return nil
@@ -3537,7 +3565,7 @@ func (d OntapAPIREST) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, 
 
 	hostFound := false
 	for _, host := range hosts {
-		if host != nil && *host.Nqn == hostNQN {
+		if host != nil && host.Nqn != nil && *host.Nqn == hostNQN {
 			hostFound = true
 			break
 		}
@@ -3589,6 +3617,9 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName, co
 						return nil, err
 					}
 					if subsystem != nil {
+						if subsystem.UUID == nil || subsystem.Name == nil || subsystem.TargetNqn == nil {
+							return nil, fmt.Errorf("subsystem %v returned with missing fields", subsystemName)
+						}
 						return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
 					}
 					return nil, fmt.Errorf("unable to create subsystem %v", subsystemName)
@@ -3601,6 +3632,10 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName, co
 		if subsystem == nil {
 			return nil, fmt.Errorf("Unable to create subsystem %v", subsystemName)
 		}
+	}
+
+	if subsystem.UUID == nil || subsystem.Name == nil || subsystem.TargetNqn == nil {
+		return nil, fmt.Errorf("subsystem %v returned with missing fields", subsystemName)
 	}
 
 	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", *subsystem.Name, *subsystem.TargetNqn)

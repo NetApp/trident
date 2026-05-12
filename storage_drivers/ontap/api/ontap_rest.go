@@ -1302,7 +1302,7 @@ func (c *RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, vol
 		}
 		if vol.Clone != nil {
 			if vol.Clone.ParentSnapshot != nil && vol.Clone.ParentSnapshot.Name != nil && *vol.Clone.ParentSnapshot.Name == snapshotName &&
-				vol.Clone.ParentVolume != nil && *vol.Clone.ParentVolume.Name == volumeName {
+				vol.Clone.ParentVolume != nil && vol.Clone.ParentVolume.Name != nil && *vol.Clone.ParentVolume.Name == volumeName {
 				volumeNames = append(volumeNames, *vol.Name)
 			}
 		}
@@ -5429,7 +5429,7 @@ func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, q
 		return c.QuotaAddEntry(ctx, volumeName, qtreeName, quotaType, diskLimit)
 	}
 
-	if quotaRule.UUID == nil {
+	if quotaRule == nil || quotaRule.UUID == nil {
 		return fmt.Errorf("unexpected response from quota entry lookup")
 	}
 
@@ -6169,7 +6169,10 @@ func (c *RestClient) SnapmirrorDeleteViaDestination(
 	if err != nil {
 		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST {
-				return errors.New(*restErr.Error.Message)
+				if restErr.Error.Message != nil {
+					return errors.New(*restErr.Error.Message)
+				}
+				return fmt.Errorf("snapmirror destination delete failed with error code %v", *restErr.Error.Code)
 			}
 		} else {
 			return err

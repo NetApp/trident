@@ -1041,6 +1041,31 @@ func TestVolumeWaitForStates(t *testing.T) {
 	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
+
+	// Test8: Error - Volume returned with nil State (transient ONTAP response during clone init);
+	// must retry and eventually time out without panicking (TRID-19789).
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+	nilStateDesiredStates := []string{"online"}
+	nilStateAbortStates := []string{}
+	nilStateVolume := &models.Volume{State: nil}
+	nilStateMaxElapsedTime := 2 * time.Second
+
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	// MinTimes(2) asserts the nil-State error is treated as transient: the closure
+	// must be retried at least once before the backoff window elapses. This guards
+	// against a future change accidentally wrapping the error in backoff.Permanent,
+	// which would silently bypass the retry semantic the TRID-19789 fix relies on.
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(nilStateVolume, nil).MinTimes(2)
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", nilStateDesiredStates, nilStateAbortStates, nilStateMaxElapsedTime)
+
+	assert.Error(t, err, "expected timeout error when volume state is perpetually nil")
+	assert.Equal(t, "", currentState, "volume state should be empty when state was never populated")
+
+	ctrl.Finish()
 }
 
 func newMockOntapAPIREST(t *testing.T) (api.OntapAPIREST, *mockapi.MockRestClientInterface) {
@@ -2946,11 +2971,19 @@ func TestQuotaGetEntry(t *testing.T) {
 	assert.Equal(t, "/vol/quotaVolume/quotaQtree", quotaEntries.Target)
 	assert.Equal(t, int64(1073741810), quotaEntries.DiskLimitBytes)
 
-	// case 2: Quota get entry failed. Backend returned an error
+	// case 2: Quota get entry failed. Backend returned an error - it must be propagated.
 	rsi.EXPECT().QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType).Return(
-		&quotaRule, errors.New("error getting quota rule"))
-	_, err = oapi.QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType)
-	assert.NoError(t, err, "no error returned while getting a quota")
+		nil, errors.New("error getting quota rule"))
+	quotaEntries, err = oapi.QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType)
+	assert.Error(t, err, "expected error to be propagated when backend returns one")
+	assert.Nil(t, quotaEntries, "expected nil quota entry on backend error")
+
+	// case 3: Backend returned (nil, nil) - the quota rule was not found.
+	rsi.EXPECT().QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType).Return(nil, nil)
+	quotaEntries, err = oapi.QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType)
+	assert.Error(t, err, "expected NotFoundError when underlying call returns no quota rule")
+	assert.True(t, errors.IsNotFoundError(err), "expected error to be a NotFoundError")
+	assert.Nil(t, quotaEntries, "expected nil quota entry when not found")
 }
 
 func getSnapshot() *models.Snapshot {
