@@ -62,16 +62,18 @@ func (n *NodeClient) GetInfo(ctx context.Context) (*NodeInfo, error) {
 		return nil, err
 	}
 
+	packageManager := n.getPkgMgr()
+
 	Log().WithFields(LogFields{
-		"HostSystem": hostSystem,
-		"OS":         hostSystem.OS,
-		"distro":     hostSystem.OS.Distro,
-	}).Info("Host system information")
+		"OS":             hostSystem.OS,
+		"distro":         hostSystem.OS.Distro,
+		"packageManager": packageManager,
+	}).Info("Node information")
 
 	distro := checkDistro(hostSystem.OS.Distro)
 
 	nodeType := &NodeInfo{
-		PkgMgr:     n.getPkgMgr(),
+		PkgMgr:     packageManager,
 		HostSystem: *hostSystem,
 		Distro:     distro,
 	}

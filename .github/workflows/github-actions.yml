@@ -24,12 +24,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Check base ref
+        # Validates the latest commit on the PR base branch (e.g. master), not PR commits.
+        # Use subject only: full bodies often use markdown bullets (* item), which would
+        # false-positive the "squash style" rule below.
         # Case-insensitive matches for:
         # 1. Jira references (trid-12345)
         # 2. PR numbers (#1234)
         # 3. Squashed commit messages (* message)
         run: |
-          git log --format=%B -n 1 | \
+          git log --format=%s -n 1 | \
           perl -ne 'die "Base ref has invalid commit message" if (/(?:trid|astractl)(?: |-)\d+/ig || /#\d+/ig || /\* \w/ig)'
   golangci:
     name: linters
