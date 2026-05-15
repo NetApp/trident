@@ -30,10 +30,10 @@ jobs:
         # Case-insensitive matches for:
         # 1. Jira references (trid-12345)
         # 2. PR numbers (#1234)
-        # 3. Squashed commit messages (* message)
+        # 3. GitHub squash-merge footer lines: "* ... (7-40 hex sha)" — not plain bullets like "* First pass"
         run: |
-          git log --format=%s -n 1 | \
-          perl -ne 'die "Base ref has invalid commit message" if (/(?:trid|astractl)(?: |-)\d+/ig || /#\d+/ig || /\* \w/ig)'
+          git log --format=%B -n 1 | \
+          perl -ne 'die "Base ref has invalid commit message" if (/(?:trid|astractl)(?: |-)\d+/ig || /#\d+/ig || /^\* .*\([0-9a-f]{7,40}\)\s*$/i)'
   golangci:
     name: linters
     runs-on: ubuntu-latest
@@ -97,6 +97,19 @@ jobs:
           mkdir ${{ runner.temp }}\${{ runner.os }}-coverage-binary.out
           go test -v ./... -covermode=count -- -test.gocoverdir=${{ runner.temp }}\${{ runner.os }}-coverage-binary.out
           go tool covdata textfmt -i=${{ runner.temp }}\${{ runner.os }}-coverage-binary.out -o ${{ runner.os }}-coverage.out
+      - if: runner.os == 'Linux'
+        name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
       - if: runner.os != 'Windows'
         name: Run the tests (not on Windows)
         run: |
@@ -199,6 +212,54 @@ jobs:
             indicators: false
             output: both
             thresholds: '75 100'
+
+        - name: Ensure coverage report is writable
+          run: |
+            if [[ -f code-coverage-results.md ]] && [[ ! -w code-coverage-results.md ]]; then
+              sudo chown "$(id -un):$(id -gn)" code-coverage-results.md
+            fi
+
+        - name: Wrap full coverage report in collapsible <details>
+          run: |
+            set -euo pipefail
+            if [[ ! -f code-coverage-results.md ]]; then
+              echo "::error::code-coverage-results.md not found; cannot wrap coverage output."
+              exit 1
+            fi
+            python3 << 'PY'
+            import html
+            import re
+            from pathlib import Path
+
+            path = Path("code-coverage-results.md")
+            text = path.read_text(encoding="utf-8").rstrip()
+
+            def line_rate_pct(src: str):
+                m = re.search(r"Code%20Coverage-(\d+(?:\.\d+)?)%25", src)
+                if m:
+                    return m.group(1) + "%"
+                m = re.search(
+                    r"\*\*Summary\*\*\s*\|\s*\*\*(\d+(?:\.\d+)?)%", src, re.I
+                )
+                if m:
+                    return m.group(1) + "%"
+                return None
+
+            pct = line_rate_pct(text)
+            if pct:
+                summary = f"Code coverage report ({pct} line rate) - click to expand"
+            else:
+                summary = "Code coverage report - click to expand"
+
+            wrapped = (
+                "<details>\n<summary>"
+                + html.escape(summary)
+                + "</summary>\n\n"
+                + text
+                + "\n</details>\n"
+            )
+            path.write_text(wrapped, encoding="utf-8")
+            PY
 
         - name: Add coverage PR comment
           uses: marocchino/sticky-pull-request-comment@v2

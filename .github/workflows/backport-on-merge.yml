@@ -1,0 +1,302 @@
+# When a PR is merged into master, open backport PRs for each matching label.
+#
+# Labels must be named backport-yy.mm: two-digit year and two-digit month (date-based
+# release line), for example backport-26.02 -> stable/v26.02 (February 2026 line).
+# Tertiary / patch releases are tags from that stable line, not separate stable branch names.
+#
+# Multiple backport-* labels create one backport PR per target branch.
+# The new PR is assigned to the merged PR author (PR opener).
+name: Backport on merge to master
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: backport-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Resolve backport targets
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    outputs:
+      targets: ${{ steps.resolve.outputs.targets }}
+      merge_sha: ${{ github.event.pull_request.merge_commit_sha }}
+      pr_number: ${{ github.event.pull_request.number }}
+      pr_url: ${{ github.event.pull_request.html_url }}
+      assignee: ${{ github.event.pull_request.user.login }}
+    steps:
+      - name: Collect stable branches from labels
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          pr="${{ github.event.pull_request.number }}"
+
+          mapfile -t labels < <(gh api "repos/${repo}/pulls/${pr}" --jq '.labels[].name')
+          branches=()
+          for label in "${labels[@]}"; do
+            if [[ "$label" =~ ^backport- ]]; then
+              if [[ "$label" =~ ^backport-([0-9]{2}\.(0[1-9]|1[0-2]))$ ]]; then
+                ver="${BASH_REMATCH[1]}"
+                branches+=("stable/v${ver}")
+              else
+                echo "::error::Invalid backport label '${label}'. Use backport-yy.mm (yy=two-digit year, mm=01-12), e.g. backport-26.02 -> stable/v26.02."
+                exit 1
+              fi
+            fi
+          done
+
+          if [[ ${#branches[@]} -eq 0 ]]; then
+            echo "No backport-* labels; skipping."
+            echo 'targets=[]' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Deduplicate while preserving order
+          declare -A seen
+          unique=()
+          for b in "${branches[@]}"; do
+            if [[ -z "${seen[$b]:-}" ]]; then
+              seen[$b]=1
+              unique+=("$b")
+            fi
+          done
+
+          printf 'targets=%s\n' "$(printf '%s\n' "${unique[@]}" | jq -R . | jq -s -c .)" >> "$GITHUB_OUTPUT"
+
+  backport:
+    name: Backport to ${{ matrix.stable_branch }}
+    needs: prepare
+    if: needs.prepare.outputs.targets != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stable_branch: ${{ fromJson(needs.prepare.outputs.targets) }}
+    steps:
+      - name: Skip if backport PR already exists
+        id: skip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          orig="${{ needs.prepare.outputs.pr_number }}"
+          base="${{ matrix.stable_branch }}"
+          head_branch="backport/pr-${orig}/${base}"
+
+          any_n=$(gh pr list --repo "$repo" --head "$head_branch" --base "$base" --state all --json number --jq 'length')
+
+          if [[ "$any_n" -gt 0 ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::A PR already exists for head \`${head_branch}\` into \`${base}\` (any state, count=${any_n}); skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify target branch exists
+        id: verify
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          branch="${{ matrix.stable_branch }}"
+          enc_branch=$(printf '%s' "$branch" | sed 's|/|%2F|g')
+          if ! gh api "repos/${repo}/branches/${enc_branch}" --silent 2>/dev/null; then
+            echo "::error::Branch '${branch}' does not exist on ${repo}. Create it or fix the backport-yy.mm label (e.g. backport-26.02 -> stable/v26.02)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != 'true'
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Configure git author for cherry-picks
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Cherry-pick merged change onto stable branch
+        id: cherry
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ needs.prepare.outputs.merge_sha }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          stable="${{ matrix.stable_branch }}"
+          head_branch="backport/pr-${PR_NUMBER}/${stable}"
+
+          # Full history + merge tip so ancestry checks and cherry-picks have the objects they need.
+          git fetch origin master
+          git fetch origin "$MERGE_SHA" || true
+          git fetch origin "$stable"
+          git checkout -B "$head_branch" "origin/${stable}"
+
+          # Two parents => true merge commit on master. Pick the first parent as mainline (-m 1).
+          parents=$(git show --no-patch --format=%P "$MERGE_SHA")
+          set -- $parents
+          if [[ $# -ge 2 ]]; then
+            echo "Merge commit detected; cherry-picking with mainline parent (-m 1)."
+            git cherry-pick -m 1 "$MERGE_SHA"
+          else
+            # Single parent: only "squash" or "rebase" style merges (no merge commit).
+            # Never use github.event.pull_request.base.sha for commit ranges on pull_request closed:
+            # base.sha is the base branch HEAD in the webhook, often post-merge, so ranges go empty or wrong.
+            # Never infer rebase chains with MERGE_SHA~N..MERGE_SHA using only PR commit count: after squash,
+            # the API still lists many pre-squash commits but master has one new commit; MERGE~N would grab
+            # N unrelated commits on master.
+
+            # PR commit OIDs from the API: since 2020-07, GitHub lists commits in chronological order along the
+            # head branch (oldest first). Cherry-pick must replay in that same order; do not reverse.
+            # api_n counts commits GitHub lists on the PR (pre-squash branch history), not "commits on master after squash".
+            if ! commits_json=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json commits); then
+              echo "::error::Could not list commits for PR #${PR_NUMBER} from GitHub API."
+              exit 1
+            fi
+            oids_raw=$(jq -r '.commits[].oid' <<<"$commits_json")
+            # Command substitution + mapfile on an empty string would yield one spurious empty element;
+            # empty jq output is valid (treat as no PR commits from API).
+            if [[ -n "$oids_raw" ]]; then
+              mapfile -t oids <<< "$oids_raw"
+            else
+              oids=()
+            fi
+            # Ensure each OID exists locally (some PR SHAs are not reachable from master until fetched).
+            for oid in "${oids[@]}"; do
+              git fetch origin "$oid" 2>/dev/null || true
+            done
+            # How many commit OIDs GitHub returned (length of oids); drives the branches below.
+            api_n=${#oids[@]}
+            # Empty commits list from the API: treat like unknown; replay MERGE_SHA (GitHub's recorded merge result).
+            if [[ "$api_n" -eq 0 ]]; then
+              echo "::notice::No PR commits from API; cherry-picking merge commit only."
+              git cherry-pick "$MERGE_SHA"
+            # Exactly one PR commit in the API: no multi-commit ancestry decision needed; MERGE_SHA is the
+            # replay unit for both squash and single-commit rebase (the single result commit on master).
+            elif [[ "$api_n" -eq 1 ]]; then
+              echo "Single-parent merge with one PR commit; cherry-picking merge commit onto ${stable}."
+              git cherry-pick "$MERGE_SHA"
+            else
+              # Multi-commit PR: decide squash vs rebase using git ancestry, not api_n alone.
+              anc=()
+              for oid in "${oids[@]}"; do
+                # Squash: old PR OIDs are not ancestors of MERGE_SHA. Rebase: rebased OIDs on master are.
+                if git cat-file -e "${oid}^{commit}" 2>/dev/null && git merge-base --is-ancestor "$oid" "$MERGE_SHA" 2>/dev/null; then
+                  anc+=("$oid")
+                fi
+              done
+              if [[ ${#anc[@]} -eq 0 ]]; then
+                # Typical squash merge, or objects missing: one cherry-pick of the squashed result is correct/safe.
+                echo "::notice::No PR commit SHAs are ancestors of ${MERGE_SHA} (squash merge or commits not in fetched history). Cherry-picking merge commit only."
+                git cherry-pick "$MERGE_SHA"
+              elif [[ ${#anc[@]} -eq "$api_n" ]]; then
+                # Every listed PR commit is on the history to MERGE_SHA: replay them in order (rebase-and-merge).
+                echo "All ${api_n} PR commit(s) are ancestors of ${MERGE_SHA}; cherry-picking in chronological order."
+                for oid in "${oids[@]}"; do
+                  git cherry-pick "$oid"
+                done
+              else
+                # Partial ancestry (odd API vs repo state): do not guess; pick merge SHA only.
+                echo "::notice::Only ${#anc[@]} of ${api_n} PR commits are ancestors of ${MERGE_SHA}; ambiguous. Cherry-picking merge commit only."
+                git cherry-pick "$MERGE_SHA"
+              fi
+            fi
+          fi
+
+      - name: Push backport branch
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          head_branch="backport/pr-${{ needs.prepare.outputs.pr_number }}/${{ matrix.stable_branch }}"
+          remote_ref="refs/heads/${head_branch}"
+          remote_sha="$(git ls-remote --heads origin "$head_branch" | awk '{print $1}')"
+
+          if [[ -n "$remote_sha" ]]; then
+            echo "Remote branch ${head_branch} already exists at ${remote_sha}; updating with --force-with-lease."
+            git push --force-with-lease="${remote_ref}:${remote_sha}" -u origin "HEAD:${remote_ref}"
+          else
+            git push -u origin "HEAD:${remote_ref}"
+          fi
+
+      - name: Open backport pull request
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          orig="${{ needs.prepare.outputs.pr_number }}"
+          title=$(gh pr view "$orig" --repo "$repo" --json title --jq .title)
+          url="${{ needs.prepare.outputs.pr_url }}"
+          assignee="${{ needs.prepare.outputs.assignee }}"
+          base="${{ matrix.stable_branch }}"
+          head_branch="backport/pr-${orig}/${base}"
+          merge_sha="${{ needs.prepare.outputs.merge_sha }}"
+
+          body_file=$(mktemp)
+          {
+            printf '%s\n\n' "Automated backport of ${url}."
+            printf '%s\n' "- **Original PR:** #${orig}"
+            printf '%s\n' "- **Merge commit:** \`${merge_sha}\`"
+            printf '%s\n' "- **Target:** \`${base}\`"
+            printf '\n%s\n' "If this cherry-pick needs manual fixes, push to \`${head_branch}\`."
+          } >"$body_file"
+
+          # gh pr create does not support --json/--jq (cli/cli#12622); parse number from URL.
+          pr_url=$(gh pr create \
+            --repo "$repo" \
+            --base "$base" \
+            --head "$head_branch" \
+            --title "[Backport ${base}] ${title}" \
+            --body-file "$body_file")
+          pr_url="${pr_url//$'\r'/}"
+          pr_url="${pr_url//$'\n'/}"
+          if [[ "$pr_url" =~ /pull/([0-9]+) ]]; then
+            new_num="${BASH_REMATCH[1]}"
+          else
+            echo "::error::Could not parse PR number from gh pr create output: ${pr_url}" >&2
+            exit 1
+          fi
+
+          echo "Opened backport PR #${new_num}"
+          if ! gh pr edit "$new_num" --repo "$repo" --add-assignee "$assignee" 2>/dev/null; then
+            echo "::notice::Could not assign @${assignee}; add them manually on the backport PR."
+          fi
+
+      - name: Comment on original PR when cherry-pick fails
+        if: failure() && steps.skip.outputs.skip != 'true' && steps.cherry.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          orig="${{ needs.prepare.outputs.pr_number }}"
+          base="${{ matrix.stable_branch }}"
+          head_branch="backport/pr-${orig}/${base}"
+          body=$(printf '%s\n\n%s\n\n%s' \
+            ":warning: **Backport bot failed** for \`${base}\` (cherry-pick conflict or error)." \
+            "The backport branch is usually **not** pushed until the cherry-pick succeeds; there may be no remote branch yet." \
+            "Create branch \`${head_branch}\` from \`${base}\`, cherry-pick the merge commit, and open a PR—or resolve conflicts and run git push -u origin ${head_branch} if that branch already exists on the remote.")
+          gh pr comment "$orig" --repo "$repo" --body "$body"
