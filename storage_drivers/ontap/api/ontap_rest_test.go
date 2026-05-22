@@ -5928,6 +5928,60 @@ func TestOntapREST_VolumeListByAttrs(t *testing.T) {
 	server.Close()
 }
 
+func TestOntapREST_VolumeListByAttrs_PolicyFilters(t *testing.T) {
+	tests := []struct {
+		name         string
+		volume       Volume
+		wantSnapshot string
+	}{
+		{
+			name: "snapshot policy expanded in query",
+			volume: Volume{
+				SnapshotPolicy: "default",
+			},
+			wantSnapshot: "default|default-DR",
+		},
+		{
+			name: "DR suffix snapshot policy expanded in query",
+			volume: Volume{
+				SnapshotPolicy: "default-DR",
+			},
+			wantSnapshot: "default-DR|default",
+		},
+		{
+			name:         "empty snapshot policy uses wildcard filter",
+			volume:       Volume{},
+			wantSnapshot: "*",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotSnapshot string
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodGet && r.URL.Path == "/api/storage/volumes" {
+					gotSnapshot = r.URL.Query().Get("snapshot_policy.name")
+
+					setHTTPResponseHeader(w, http.StatusOK)
+					_ = json.NewEncoder(w).Encode(models.VolumeResponse{
+						NumRecords:                  new(int64(0)),
+						VolumeResponseInlineRecords: []*models.Volume{},
+					})
+					return
+				}
+				mockGetVolumeResponse(w, r)
+			}))
+			defer server.Close()
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			_, err := rs.VolumeListByAttrs(ctx, &tt.volume, []string{""})
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantSnapshot, gotSnapshot)
+		})
+	}
+}
+
 func getQtree() models.Qtree {
 	qtreeExportPolicy := models.QtreeInlineExportPolicy{Name: new("fake-export-policy")}
 	qtreeSVM := models.QtreeInlineSvm{Name: new("svm1")}

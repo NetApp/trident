@@ -4,11 +4,16 @@ package api
 
 import (
 	"context"
+	"encoding/xml"
+	"io"
 	"net"
+	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
@@ -1718,4 +1723,94 @@ func TestZAPI_Priority2_AggregateCommitmentMethods(t *testing.T) {
 		result3 := ac3.Percent()
 		assert.Equal(t, 200.0, result3) // 200% over-committed
 	})
+}
+
+func TestZAPI_VolumeListByAttrs_PolicyFilters(t *testing.T) {
+	tests := []struct {
+		name           string
+		snapshotPolicy string
+		wantSnapshot   string
+	}{
+		{
+			name:           "snapshot policy expanded in ZAPI query",
+			snapshotPolicy: "default",
+			wantSnapshot:   "default|default-DR",
+		},
+		{
+			name:           "DR suffix snapshot policy expanded in ZAPI query",
+			snapshotPolicy: "default-DR",
+			wantSnapshot:   "default-DR|default",
+		},
+		{
+			name: "empty snapshot policy unchanged in ZAPI query",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotSnapshot string
+
+			mux := http.NewServeMux()
+			server := httptest.NewUnstartedServer(mux)
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			require.NoError(t, err)
+			server.Listener = listener
+
+			host, port, err := net.SplitHostPort(listener.Addr().String())
+			require.NoError(t, err)
+
+			mux.HandleFunc("/servlets/", func(w http.ResponseWriter, r *http.Request) {
+				body, readErr := io.ReadAll(r.Body)
+				require.NoError(t, readErr)
+
+				req, parseErr := volumeGetIterRequestFromBody(body)
+				require.NoError(t, parseErr)
+				require.NotNil(t, req.QueryPtr)
+				require.NotNil(t, req.QueryPtr.VolumeAttributesPtr)
+
+				volAttrs := req.QueryPtr.VolumeAttributes()
+				if volAttrs.VolumeSnapshotAttributesPtr != nil &&
+					volAttrs.VolumeSnapshotAttributesPtr.SnapshotPolicyPtr != nil {
+					gotSnapshot = *volAttrs.VolumeSnapshotAttributesPtr.SnapshotPolicyPtr
+				}
+
+				response, responseErr := xml.MarshalIndent(
+					newFakeGetDefaultZAPIResponse(host, port), "  ", "    ")
+				require.NoError(t, responseErr)
+				_, writeErr := w.Write(response)
+				require.NoError(t, writeErr)
+			})
+
+			server.StartTLS()
+			defer server.Close()
+
+			config := ClientConfig{
+				ManagementLIF: host + ":" + port,
+				Username:      "admin",
+				Password:      "password",
+			}
+			client, err := NewClient(config, "datavserver", "trident")
+			require.NoError(t, err)
+
+			_, err = client.VolumeListByAttrs(
+				"trident_*", "aggr1", "none", tt.snapshotPolicy, "", nil, nil, -1)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantSnapshot, gotSnapshot)
+		})
+	}
+}
+
+func volumeGetIterRequestFromBody(body []byte) (*azgo.VolumeGetIterRequest, error) {
+	fragment := string(body)
+	if idx := strings.Index(fragment, "<netapp"); idx >= 0 {
+		fragment = strings.Split(fragment[idx:], "<netapp")[1]
+		fragment = strings.SplitN(fragment, ">", 2)[1]
+		fragment = strings.Split(fragment, "</netapp>")[0]
+	}
+
+	var req azgo.VolumeGetIterRequest
+	if err := xml.Unmarshal([]byte(fragment), &req); err != nil {
+		return nil, err
+	}
+	return &req, nil
 }

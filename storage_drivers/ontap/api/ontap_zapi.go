@@ -1634,7 +1634,8 @@ func (c Client) VolumeListByAttrs(
 	if snapReserve >= 0 {
 		queryVolSpaceAttrs.SetPercentageSnapshotReserve(snapReserve)
 	}
-	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().SetSnapshotPolicy(snapshotPolicy)
+	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().
+		SetSnapshotPolicy(expandPolicyForVolumeListQuery(snapshotPolicy))
 	if snapshotDir != nil {
 		queryVolSnapshotAttrs.SetSnapdirAccessEnabled(*snapshotDir)
 	}

@@ -1535,7 +1535,7 @@ func (c *RestClient) VolumeListByAttrs(
 	}
 
 	if volumeAttrs.SnapshotPolicy != "" {
-		params.SetSnapshotPolicyName(new(volumeAttrs.SnapshotPolicy))
+		params.SetSnapshotPolicyName(new(expandPolicyForVolumeListQuery(volumeAttrs.SnapshotPolicy)))
 	} else {
 		params.SetSnapshotPolicyName(wildcard)
 	}
