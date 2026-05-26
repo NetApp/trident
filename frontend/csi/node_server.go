@@ -1353,6 +1353,7 @@ func (p *Plugin) nodeStageFCPVolume(
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.FCTargetWWNN = req.PublishContext["fcTargetWWNN"]
 	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 	publishInfo.FCPLunNumber = lunID
 	publishInfo.FCPLunSerial = req.PublishContext["fcpLunSerial"]
 	publishInfo.FCPIgroup = req.PublishContext["fcpIgroup"]
@@ -1808,6 +1809,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 
 	if useCHAP {
 		publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
@@ -3063,6 +3065,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 
 	err := p.nvmeHandler.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
 	if err != nil {

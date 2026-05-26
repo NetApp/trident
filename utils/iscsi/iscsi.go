@@ -361,7 +361,8 @@ func (client *Client) findLUNBySerial(
 // It may be assumed that this method always runs on the host to which the volume will be attached.
 // If multipath device size is found to be inconsistent with device size, then the correct size is returned.
 func (client *Client) AttachVolume(
-	ctx context.Context, publishInfo *models.VolumePublishInfo) (int64, error) {
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachVolume")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachVolume")
 
@@ -1463,7 +1464,7 @@ func (client *Client) sessionExists(ctx context.Context, portal string) (bool, e
 
 // sessionExistsForTarget checks if a session exists to the specified portal AND target IQN.
 // This is more specific than sessionExists, which only checks the portal.
-func (client *Client) sessionExistsForTarget(ctx context.Context, portal string, targetIQN string) (bool, error) {
+func (client *Client) sessionExistsForTarget(ctx context.Context, portal, targetIQN string) (bool, error) {
 	Logc(ctx).WithFields(LogFields{
 		"portal":    portal,
 		"targetIQN": targetIQN,
@@ -3129,10 +3130,6 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 		return errors.New("device should be a LUKS device but is not LUKS formatted")
 	}
 
-	if publishInfo.FilesystemType == filesystem.Raw {
-		return nil
-	}
-
 	var existingFstype string
 	if isLUKSDevice && safeToFsFormat {
 		existingFstype = ""
@@ -3141,6 +3138,17 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 		if err != nil {
 			return err
 		}
+	}
+
+	fstype, err := filesystem.DetermineFSType(publishInfo.FilesystemType, existingFstype, publishInfo.VolumeMode)
+	if err != nil {
+		return fmt.Errorf("LUN %s, device %s is formatted with unknown filesystem type", name, devicePath)
+	}
+	publishInfo.FilesystemType = fstype
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return nil
 	}
 
 	if existingFstype == "" {

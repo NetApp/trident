@@ -6635,7 +6635,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
-	err := PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
+	err := PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, publishVolCfg("xfs", ""))
 
 	assert.NoError(t, err)
 
@@ -6648,7 +6648,7 @@ func TestPublishLun(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test 3 - LunGetFSType returns error
+	// Test 3 - LunGetFSType returns error, fstype will fall back to fstype in vol config
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", errors.New("LunGetFSType returned error"))
@@ -6662,7 +6662,7 @@ func TestPublishLun(t *testing.T) {
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
-	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
+	assert.Equal(t, "", publishInfo.FilesystemType)
 
 	// Test 4 - LunGetAttribute returns error (fstype still from LUN)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
@@ -6812,7 +6812,7 @@ func TestPublishLun(t *testing.T) {
 	assert.Equal(t, volFmtOpts, publishInfo.FormatOptions)
 	assert.Contains(t, publishInfo.MountOptions, "nouuid")
 
-	// Test 12 - volume fstype empty, LunGetFSType returns empty string with no error, use default
+	// Test 12 - volume fstype empty, LunGetFSType returns empty string with no error, expect empty
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
@@ -6833,9 +6833,9 @@ func TestPublishLun(t *testing.T) {
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
-	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
+	assert.Equal(t, "", publishInfo.FilesystemType)
 
-	// Test 13 - volume fstype empty, LunGetFSType returns error, use default
+	// Test 13 - volume fstype empty, LunGetFSType returns error, will be empty
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
@@ -6856,7 +6856,7 @@ func TestPublishLun(t *testing.T) {
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
-	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
+	assert.Equal(t, "", publishInfo.FilesystemType)
 
 	// Test 14 - volConfig "raw", LUN attribute returns "ext4": LUN attribute wins.
 	// Surfaces the real on-disk fstype so the node-side mismatch guard can fire.
