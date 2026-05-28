@@ -35,10 +35,6 @@ import (
 	"github.com/netapp/trident/utils/nvme"
 )
 
-// NVMeNamespaceRegExp RegExp to match the namespace path either empty string or
-// string of the form /vol/<flexVolName>/<Namespacename>
-var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
-
 var (
 	beforeNQNRemovalFromSubsystem     = fiji.Register("beforeNQNRemovalFromSubsystem", "ontap_san_nvme")
 	beforeNamespaceUnmapFromSubsystem = fiji.Register("beforeNamespaceUnmapFromSubsystem", "ontap_san_nvme")
@@ -302,7 +298,12 @@ func (d *NVMeStorageDriver) cleanupIncompleteNamespace(
 	nsName := extractNamespaceName(volConfig.InternalID)
 	nsPath := createNamespacePath(name, nsName)
 
-	ns, nsErr := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+	lookupID := volConfig.InternalID
+	if lookupID == "" {
+		lookupID = nsPath
+	}
+	// Single lookup without retry: cleanup only needs current visibility, not post-create backoff.
+	ns, nsErr := d.API.NVMeNamespaceGetByName(ctx, lookupID)
 	if nsErr != nil && !errors.IsNotFoundError(nsErr) {
 		return fmt.Errorf("error checking for existing namespace %s: %v", nsPath, nsErr)
 	}
@@ -312,11 +313,11 @@ func (d *NVMeStorageDriver) cleanupIncompleteNamespace(
 	if ns != nil && volConfig.FileSystem != "" {
 		Logc(ctx).WithFields(LogFields{
 			"volume":    name,
-			"namespace": nsPath,
+			"namespace": ns.Name,
 			"uuid":      ns.UUID,
 		}).Debug("Found existing volume and namespace.")
 		volConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
-		volConfig.InternalID = nsPath
+		volConfig.InternalID = ns.Name
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -337,48 +338,6 @@ func (d *NVMeStorageDriver) cleanupIncompleteNamespace(
 		return fmt.Errorf("could not clean up incomplete volume %s: %v", name, err)
 	}
 	return nil
-}
-
-// getNamespaceWithRetry retrieves a namespace by path, retrying with linear backoff to handle
-// ONTAP eventual consistency where a namespace may not be visible immediately after creation.
-func (d *NVMeStorageDriver) getNamespaceWithRetry(
-	ctx context.Context, nsPath string,
-) (*api.NVMeNamespace, error) {
-	const maxRetries = 3
-	var ns *api.NVMeNamespace
-	var err error
-
-	for attempt := 1; attempt <= maxRetries; attempt++ {
-		ns, err = d.API.NVMeNamespaceGetByName(ctx, nsPath)
-		if err == nil && ns != nil {
-			return ns, nil
-		}
-
-		if attempt < maxRetries {
-			Logc(ctx).WithFields(LogFields{
-				"namespace": nsPath,
-				"attempt":   attempt,
-				"error":     err,
-			}).Trace("Namespace not yet visible after creation, retrying.")
-
-			select {
-			case <-time.After(time.Duration(attempt) * time.Second):
-			case <-ctx.Done():
-				return nil, fmt.Errorf("context cancelled while waiting for namespace visibility: %v", ctx.Err())
-			}
-		} else {
-			Logc(ctx).WithFields(LogFields{
-				"namespace": nsPath,
-				"attempt":   attempt,
-				"error":     err,
-			}).Error("Namespace not visible after all retries.")
-		}
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving namespace %s after creation: %v", nsPath, err)
-	}
-	return nil, fmt.Errorf("newly created namespace %s not found", nsPath)
 }
 
 func (d *NVMeStorageDriver) Create(
@@ -652,9 +611,12 @@ func (d *NVMeStorageDriver) Create(
 				continue
 			}
 
-			newNamespace, err := d.getNamespaceWithRetry(ctx, nsPath)
+			newNamespace, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, nsPath, true)
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving namespace %s after creation: %v", nsPath, err)
+			}
+			if newNamespace == nil {
+				return fmt.Errorf("newly created namespace %s not found", nsPath)
 			}
 
 			volConfig.AccessInfo.NVMeNamespaceUUID = newNamespace.UUID
@@ -765,7 +727,7 @@ func (d *NVMeStorageDriver) CreateClone(
 	cloneNamespaceName := extractNamespaceName(volConfig.InternalID)
 	nsPath := createNamespacePath(cloneFlexVolName, cloneNamespaceName)
 
-	ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+	ns, err := d.nvmeNamespaceLookup(ctx, cloneFlexVolName, nsPath)
 	if err != nil {
 		return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
 	}
@@ -816,7 +778,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// Get the namespace info from the volume
-	nsInfo, err := d.API.NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*")
+	nsInfo, err := d.nvmeNamespaceLookup(ctx, originalName, volConfig.InternalID)
 	if err != nil {
 		return err
 	} else if nsInfo == nil {
@@ -1015,7 +977,7 @@ func (d *NVMeStorageDriver) Publish(
 	if volConfig.IsMirrorDestination {
 		// In this case, InternalID and NVMeNamespaceUUID would be empty
 		volConfig.InternalID = createNamespacePath(volConfig.InternalName, extractNamespaceName(""))
-		ns, err := d.API.NVMeNamespaceGetByName(ctx, volConfig.InternalID)
+		ns, err := d.nvmeNamespaceLookup(ctx, volConfig.InternalName, volConfig.InternalID)
 		if err != nil {
 			return fmt.Errorf("problem fetching namespace %v. Error:%v", volConfig.InternalID, err)
 		}
@@ -1029,7 +991,7 @@ func (d *NVMeStorageDriver) Publish(
 	// For docker context, some of the attributes like fsType, luks needs to be
 	// fetched from namespace where they were stored while creating the namespace.
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+		ns, err := d.nvmeNamespaceLookup(ctx, volConfig.InternalName, nsPath)
 		if err != nil {
 			return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
 		}
@@ -1219,7 +1181,7 @@ func (d *NVMeStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCo
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *NVMeStorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	fields := LogFields{
 		"method":       "GetSnapshot",
@@ -1230,7 +1192,7 @@ func (d *NVMeStorageDriver) GetSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSize)
+	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSizeGetter(volConfig))
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume.
@@ -1245,12 +1207,12 @@ func (d *NVMeStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
-	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, d.namespaceSize)
+	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, d.namespaceSizeGetter(volConfig))
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *NVMeStorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	fields := LogFields{
 		"method":       "CreateSnapshot",
@@ -1261,7 +1223,7 @@ func (d *NVMeStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSize)
+	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSizeGetter(volConfig))
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1350,7 +1312,7 @@ func (d *NVMeStorageDriver) ProcessGroupSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
 
-	return ProcessGroupSnapshot(ctx, config, volConfigs, &d.Config, d.API, d.namespaceSize)
+	return ProcessGroupSnapshot(ctx, config, volConfigs, &d.Config, d.API, d.namespaceSizeGetterForVolumes(volConfigs))
 }
 
 func (d *NVMeStorageDriver) ConstructGroupSnapshot(
@@ -1519,7 +1481,7 @@ func (d *NVMeStorageDriver) GetVolumeForImport(ctx context.Context, volumeID str
 		return nil, err
 	}
 
-	nsAttrs, err := d.API.NVMeNamespaceGetByName(ctx, "/vol/"+volumeID+"/*")
+	nsAttrs, err := d.nvmeNamespaceLookup(ctx, volumeID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1688,8 +1650,7 @@ func (d *NVMeStorageDriver) Resize(
 		return fmt.Errorf("error occurred when checking volume size")
 	}
 
-	nsPath := volConfig.InternalID
-	ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+	ns, err := d.nvmeNamespaceLookup(ctx, name, volConfig.InternalID)
 	if err != nil {
 		return fmt.Errorf("error while checking namespace size, %v", err)
 	}
@@ -2035,9 +1996,11 @@ func getNamespaceSpecificSubsystemName(name, pvName string) string {
 	return (fmt.Sprintf("%s_%s", subSystemPrefix, name))
 }
 
-// extractNamespaceName extracts the namespace name from the given string if nsStr is set
-// if nsStr is not set, return default namespace name "namespace0"
-// if nsStr has malformed namespacePath, return "MalformedNamespace"
+// NVMeNamespaceRegExp matches the namespace path: empty string or /vol/<flexVolName>/<namespaceName>.
+var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
+
+// extractNamespaceName extracts the namespace name from nsStr when set; otherwise returns
+// "namespace0". Returns "MalformedNamespace" when nsStr is not a valid namespace path.
 func extractNamespaceName(nsStr string) string {
 	if nsStr == "" {
 		return "namespace0"
@@ -2047,27 +2010,87 @@ func extractNamespaceName(nsStr string) string {
 			return namespaceName[3]
 		}
 	}
-	// If we end up here, the namespace Path in nsStr is malformed.
-	// return a string that will cause the operation to fail
 	return "MalformedNamespace"
 }
 
-// createNamespacePath returns the namespace path in a FlexVol.
+// createNamespacePath returns the ONTAP REST namespace path for a flexvol and namespace name.
 func createNamespacePath(flexvolName, namespaceName string) string {
-	return ("/vol/" + flexvolName + "/" + namespaceName)
+	return "/vol/" + flexvolName + "/" + namespaceName
 }
 
-func (d *NVMeStorageDriver) namespaceSize(ctx context.Context, name string) (int, error) {
-	fields := LogFields{
-		"Method": "namespaceSize",
-		"Type":   "NVMeStorageDriver",
-		"name":   name,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> namespaceSize")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< namespaceSize")
+// namespaceWildcardPath returns the ONTAP REST name filter for the sole namespace on a flexvol
+// (for example "/vol/myflex/*"). Used only when the namespace path is not already known.
+func namespaceWildcardPath(flexvolName string) string {
+	return "/vol/" + flexvolName + "/*"
+}
 
-	nsPath := "/vol/" + name + "/*"
-	return d.API.NVMeNamespaceGetSize(ctx, nsPath)
+// nvmeNamespaceLookup returns the NVMe namespace on flexvolName via api.WaitForNVMeNamespaceToExist.
+// When internalID is the full namespace path (VolumeConfig.InternalID or a computed path), only that
+// path is queried (with empty-result retry). When internalID is empty, namespaceWildcardPath is used
+// for import and discovery paths.
+func (d *NVMeStorageDriver) nvmeNamespaceLookup(
+	ctx context.Context, flexvolName, internalID string,
+) (*api.NVMeNamespace, error) {
+	if internalID != "" {
+		return api.WaitForNVMeNamespaceToExist(ctx, d.API, internalID, true)
+	}
+	return api.WaitForNVMeNamespaceToExist(ctx, d.API, namespaceWildcardPath(flexvolName), false)
+}
+
+// nvmeNamespaceGetSize returns the namespace size in bytes for flexvolName via
+// api.WaitForNVMeNamespaceSize. When internalID is set, size is read from that exact path;
+// otherwise from the flexvol wildcard filter.
+func (d *NVMeStorageDriver) nvmeNamespaceGetSize(
+	ctx context.Context, flexvolName, internalID string,
+) (int, error) {
+	if internalID != "" {
+		return api.WaitForNVMeNamespaceSize(ctx, d.API, internalID)
+	}
+	return api.WaitForNVMeNamespaceSize(ctx, d.API, namespaceWildcardPath(flexvolName))
+}
+
+// namespaceSizeGetter returns a sizeGetter for a single volume, using volConfig.InternalID for
+// exact-path lookup when set. Passed to getVolumeSnapshot and createFlexvolSnapshot so snapshot
+// operations do not rely on wildcard namespace queries when Trident already knows the path.
+func (d *NVMeStorageDriver) namespaceSizeGetter(volConfig *storage.VolumeConfig) func(context.Context, string) (int, error) {
+	byFlexvol := map[string]string{}
+	if volConfig != nil && volConfig.InternalName != "" {
+		byFlexvol[volConfig.InternalName] = volConfig.InternalID
+	}
+	return d.namespaceSizeGetterForPaths(byFlexvol)
+}
+
+// namespaceSizeGetterForVolumes returns a sizeGetter that maps each volume's InternalName to
+// its InternalID, for snapshot list operations over multiple volumes.
+func (d *NVMeStorageDriver) namespaceSizeGetterForVolumes(
+	volConfigs []*storage.VolumeConfig,
+) func(context.Context, string) (int, error) {
+	byFlexvol := make(map[string]string, len(volConfigs))
+	for _, volConfig := range volConfigs {
+		if volConfig == nil || volConfig.InternalName == "" {
+			continue
+		}
+		byFlexvol[volConfig.InternalName] = volConfig.InternalID
+	}
+	return d.namespaceSizeGetterForPaths(byFlexvol)
+}
+
+// namespaceSizeGetterForPaths returns a sizeGetter keyed by flexvol name. Values are namespace
+// paths (InternalID) when known, or empty to select wildcard lookup for that flexvol.
+func (d *NVMeStorageDriver) namespaceSizeGetterForPaths(
+	namespacePathByFlexvol map[string]string,
+) func(context.Context, string) (int, error) {
+	return func(ctx context.Context, flexvolName string) (int, error) {
+		fields := LogFields{
+			"Method": "namespaceSize",
+			"Type":   "NVMeStorageDriver",
+			"name":   flexvolName,
+		}
+		Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> namespaceSize")
+		defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< namespaceSize")
+
+		return d.nvmeNamespaceGetSize(ctx, flexvolName, namespacePathByFlexvol[flexvolName])
+	}
 }
 
 // EnablePublishEnforcement sets the publishEnforcement on older NVMe volumes.

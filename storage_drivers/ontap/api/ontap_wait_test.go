@@ -114,3 +114,108 @@ func TestWaitForLunToExist_ContextCancelledBeforeRetry(t *testing.T) {
 	assert.ErrorIs(t, err, context.Canceled)
 	assert.Nil(t, lun)
 }
+
+type seqNVMeNamespaceGetter struct {
+	responses []struct {
+		ns  *NVMeNamespace
+		err error
+	}
+	i int
+}
+
+func (s *seqNVMeNamespaceGetter) NVMeNamespaceGetByName(
+	ctx context.Context, name string,
+) (*NVMeNamespace, error) {
+	if s.i >= len(s.responses) {
+		return nil, terr.NotFoundError("stub exhausted")
+	}
+	r := s.responses[s.i]
+	s.i++
+	return r.ns, r.err
+}
+
+type seqNVMeNamespaceSizeGetter struct {
+	responses []struct {
+		size int
+		err  error
+	}
+	i int
+}
+
+func (s *seqNVMeNamespaceSizeGetter) NVMeNamespaceGetSize(
+	ctx context.Context, name string,
+) (int, error) {
+	if s.i >= len(s.responses) {
+		return 0, terr.NotFoundError("stub exhausted")
+	}
+	r := s.responses[s.i]
+	s.i++
+	return r.size, r.err
+}
+
+func TestWaitForNVMeNamespaceToExist_RetriesNotFoundThenSucceeds(t *testing.T) {
+	g := &seqNVMeNamespaceGetter{
+		responses: []struct {
+			ns  *NVMeNamespace
+			err error
+		}{
+			{nil, terr.NotFoundError("not found")},
+			{&NVMeNamespace{Name: "/vol/flex/namespace0", UUID: "uuid-1"}, nil},
+		},
+	}
+	ctx := context.Background()
+	ns, err := WaitForNVMeNamespaceToExist(ctx, g, "/vol/flex/namespace0", false)
+	assert.NoError(t, err)
+	assert.NotNil(t, ns)
+	assert.Equal(t, 2, g.i)
+}
+
+func TestWaitForNVMeNamespaceToExist_RetriesEmptyResultWhenEnabled(t *testing.T) {
+	g := &seqNVMeNamespaceGetter{
+		responses: []struct {
+			ns  *NVMeNamespace
+			err error
+		}{
+			{nil, nil},
+			{&NVMeNamespace{Name: "/vol/flex/namespace0", UUID: "uuid-1"}, nil},
+		},
+	}
+	ctx := context.Background()
+	ns, err := WaitForNVMeNamespaceToExist(ctx, g, "/vol/flex/namespace0", true)
+	assert.NoError(t, err)
+	assert.NotNil(t, ns)
+	assert.Equal(t, 2, g.i)
+}
+
+func TestWaitForNVMeNamespaceToExist_NonNotFoundFailsImmediately(t *testing.T) {
+	g := &seqNVMeNamespaceGetter{
+		responses: []struct {
+			ns  *NVMeNamespace
+			err error
+		}{
+			{nil, errors.New("permission denied")},
+		},
+	}
+	ctx := context.Background()
+	ns, err := WaitForNVMeNamespaceToExist(ctx, g, "/vol/flex/namespace0", false)
+	assert.Error(t, err)
+	assert.Nil(t, ns)
+	assert.Equal(t, 1, g.i)
+}
+
+func TestWaitForNVMeNamespaceSize_RetriesNotFoundThenSucceeds(t *testing.T) {
+	g := &seqNVMeNamespaceSizeGetter{
+		responses: []struct {
+			size int
+			err  error
+		}{
+			{0, terr.NotFoundError("not found")},
+			{1024, nil},
+		},
+	}
+	ctx := context.Background()
+	size, err := WaitForNVMeNamespaceSize(ctx, g, "/vol/flex/*")
+	assert.NoError(t, err)
+	assert.Equal(t, 1024, size)
+	assert.Equal(t, 2, g.i)
+}

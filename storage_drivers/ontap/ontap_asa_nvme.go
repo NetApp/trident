@@ -397,13 +397,13 @@ func (d *ASANVMeStorageDriver) Create(
 	}
 
 	// Get the newly created namespace and save the UUID
-	newNamespace, err := d.API.NVMeNamespaceGetByName(ctx, name)
+	newNamespace, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, name, true)
 	if err != nil {
 		return fmt.Errorf("failure fetching newly created NVMe namespace %v: %w", name, err)
 	}
 
 	if newNamespace == nil {
-		return fmt.Errorf("newly create NVMe namespace %s not found", name)
+		return fmt.Errorf("newly created NVMe namespace %s not found", name)
 	}
 
 	// Store the Namespace UUID and Namespace Path for future operations.
@@ -451,7 +451,8 @@ func (d *ASANVMeStorageDriver) CreateClone(
 	var storagePoolSplitOnCloneVal string
 
 	// Ensure that the source NVMe namespace exists
-	sourceNamespace, err := d.API.NVMeNamespaceGetByName(ctx, cloneVolConfig.CloneSourceVolumeInternal)
+	sourceNamespace, err := api.WaitForNVMeNamespaceToExist(
+		ctx, d.API, cloneVolConfig.CloneSourceVolumeInternal, false)
 	if err != nil {
 		return err
 	} else if sourceNamespace == nil {
@@ -509,7 +510,7 @@ func (d *ASANVMeStorageDriver) CreateClone(
 	}
 
 	// Get the cloned namespace
-	ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
+	ns, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, name, true)
 	if err != nil {
 		return fmt.Errorf("error fetching namespace %v; error:%v", name, err)
 	}
@@ -535,7 +536,7 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	// Ensure that the Namespace exists
-	nsInfo, err := d.API.NVMeNamespaceGetByName(ctx, originalName)
+	nsInfo, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, originalName, false)
 	if err != nil {
 		return err
 	} else if nsInfo == nil {
@@ -749,7 +750,7 @@ func (d *ASANVMeStorageDriver) Rename(ctx context.Context, name, newName string)
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	// Get the NVMe namespace
-	ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
+	ns, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, name, false)
 	if err != nil {
 		return fmt.Errorf("error getting ASA NVMe namespace %s: %w", name, err)
 	}
@@ -846,7 +847,7 @@ func (d *ASANVMeStorageDriver) Publish(
 
 	// For Docker context fetch the metadata fields from the NVMe namespace comment
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
+		ns, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, name, false)
 		if err != nil {
 			return fmt.Errorf("problem fetching ASA NVMe namespace %v; %w", name, err)
 		}
@@ -1244,7 +1245,7 @@ func (d *ASANVMeStorageDriver) GetVolumeForImport(ctx context.Context, volumeID 
 	}
 
 	nsName := volumeID
-	nsAttrs, err := d.API.NVMeNamespaceGetByName(ctx, nsName)
+	nsAttrs, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, nsName, false)
 	if err != nil {
 		return nil, err
 	}
@@ -1391,7 +1392,7 @@ func (d *ASANVMeStorageDriver) Resize(
 	}
 
 	// Get the NVMe namespace
-	ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
+	ns, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, name, false)
 	if err != nil {
 		Logc(ctx).WithField("name", name).WithError(err).Error("Error checking for existing ASA NVMe namespace.")
 		return fmt.Errorf("error checking for existing ASA NVMe namespace %v: %w", name, err)

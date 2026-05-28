@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -833,7 +834,7 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 	volConfig.FileSystem = "ext4"
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: expectedUUID}, nil)
+		&api.NVMeNamespace{Name: nsPath, UUID: expectedUUID}, nil)
 
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -841,7 +842,7 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 	assert.Equal(t, expectedUUID, volConfig.AccessInfo.NVMeNamespaceUUID,
 		"Namespace UUID should be populated when volume+namespace already exist")
 	assert.Equal(t, nsPath, volConfig.InternalID,
-		"InternalID should be populated when volume+namespace already exist")
+		"InternalID should be the ONTAP namespace path when volume+namespace already exist")
 }
 
 func TestNVMeCreate_CleanupIncompleteNamespace_OrphanedVolumeCleaned(t *testing.T) {
@@ -1209,17 +1210,17 @@ func TestNVMeCreate_NamespaceGetByNameRetriesOnError(t *testing.T) {
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 
-	// First call returns error (ONTAP eventual consistency), second call succeeds
+	// First call returns NotFound (ONTAP eventual consistency), second call succeeds
 	gomock.InOrder(
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			nil, fmt.Errorf("could not find namespace with name %s", nsPath)),
+			nil, errors.NotFoundError("could not find namespace with name %s", nsPath)),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
 	)
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.NoError(t, err, "Create should succeed after retrying NVMeNamespaceGetByName.")
+	assert.NoError(t, err, "Create should succeed after retrying NVMeNamespaceGetByName on NotFound.")
 }
 
 func TestNVMeCreate_NamespaceGetByNameRetriesOnNil(t *testing.T) {
@@ -1250,16 +1251,18 @@ func TestNVMeCreate_NamespaceGetByNameAllRetriesFail(t *testing.T) {
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
+	testCtx, cancel := context.WithTimeout(ctx, 250*time.Millisecond)
+	defer cancel()
 
-	// All 3 retry attempts return error
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		nil, fmt.Errorf("could not find namespace with name %s", nsPath)).Times(3)
+	mAPI.EXPECT().TieringPolicyValue(testCtx).Return("TPolicy")
+	mAPI.EXPECT().VolumeExists(testCtx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(testCtx, gomock.Any()).Return(nil)
+	// Backoff retries NotFound until budget is exhausted (see api/ontap_wait.go).
+	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(
+		nil, errors.NotFoundError("could not find namespace with name %s", nsPath)).AnyTimes()
 
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
+	err := d.Create(testCtx, volConfig, pool1, volAttrs)
 
 	assert.Error(t, err, "Create should fail when all NVMeNamespaceGetByName retries fail.")
 	assert.ErrorContains(t, err, "error retrieving namespace")
@@ -1270,21 +1273,23 @@ func TestNVMeCreate_NamespaceGetByNameAllRetriesReturnNil(t *testing.T) {
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
+	testCtx, cancel := context.WithTimeout(ctx, 250*time.Millisecond)
+	defer cancel()
 
-	// All 3 retry attempts return nil namespace with no error
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil).Times(3)
+	mAPI.EXPECT().TieringPolicyValue(testCtx).Return("TPolicy")
+	mAPI.EXPECT().VolumeExists(testCtx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(testCtx, gomock.Any()).Return(nil)
+	// Backoff retries empty results until budget is exhausted (see api/ontap_wait.go).
+	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(nil, nil).AnyTimes()
 
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
+	err := d.Create(testCtx, volConfig, pool1, volAttrs)
 
 	assert.Error(t, err, "Create should fail when namespace is nil after all retries.")
 	assert.ErrorContains(t, err, "not found")
 }
 
-func TestNVMeCreate_NamespaceGetByNameRetriesMixedErrorThenNil(t *testing.T) {
+func TestNVMeCreate_NamespaceGetByNameFailsImmediatelyOnNonNotFound(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
@@ -1293,19 +1298,12 @@ func TestNVMeCreate_NamespaceGetByNameRetriesMixedErrorThenNil(t *testing.T) {
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// Attempt 1: API error, attempt 2: nil namespace (no error), attempt 3: success
-	gomock.InOrder(
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			nil, fmt.Errorf("transient API error")),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-	)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, fmt.Errorf("transient API error"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.NoError(t, err, "Create should succeed after mixed error/nil retries.")
+	assert.Error(t, err)
+	assert.ErrorContains(t, err, "transient API error")
 }
 
 func TestNVMeCreate_CleanupIncompleteNamespace_NamespaceLookupError(t *testing.T) {
@@ -2772,7 +2770,7 @@ func TestImport(t *testing.T) {
 
 	// Test4: Error - Error getting namespace
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(nil,
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(nil,
 		errors.New("error getting namespace info"))
 	vol.AccessType = "rw"
 
@@ -2782,7 +2780,7 @@ func TestImport(t *testing.T) {
 
 	// Test5: Error - Failed to get namespace
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(nil, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(nil, nil)
 
 	err = d.Import(ctx, volConfig, originalName)
 
@@ -2790,7 +2788,7 @@ func TestImport(t *testing.T) {
 
 	// Test6: Error - Namespace not online
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	ns.State = "offline"
 
 	err = d.Import(ctx, volConfig, originalName)
@@ -2799,7 +2797,7 @@ func TestImport(t *testing.T) {
 
 	// Test7: Error - Namespace mapped to subsystem
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(true, nil)
 	ns.State = "online"
 
@@ -2809,7 +2807,7 @@ func TestImport(t *testing.T) {
 
 	// Test8: Error - Checking if namespace is mapped returns error
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false,
 		errors.New("error while checking namespace mapped"))
 
@@ -2820,7 +2818,7 @@ func TestImport(t *testing.T) {
 	// Test9: Error - while renaming the volume
 	volConfig.ImportNotManaged = false
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName,
 		volConfig.InternalName).Return(errors.New("error renaming volume"))
@@ -2832,7 +2830,7 @@ func TestImport(t *testing.T) {
 	// Test10: Success
 	vol.Comment = "fakeComment"
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
 
@@ -2863,7 +2861,7 @@ func TestImport_NoRename(t *testing.T) {
 
 	// Test successful import with --no-rename (VolumeRename should NOT be called)
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	// With --no-rename, VolumeRename should NOT be called
 	// Only label updates should happen (VolumeSetComment is called in the label update logic)
@@ -2891,7 +2889,7 @@ func TestImport_LUKSNamespace(t *testing.T) {
 	volConfig.ImportNotManaged = true
 	volConfig.Size = "20GB"
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 
 	beforeLUKSOverheadBytesStr, err := capacity.ToBytes(volConfig.Size)
@@ -2937,7 +2935,7 @@ func TestImport_NameTemplate(t *testing.T) {
 
 	vol.Comment = "{\"provisioning\": {\"storageDriverName\": \"ontap-san\", \"backendName\": \"customBackendName\"}}"
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
 	mAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
@@ -2985,7 +2983,7 @@ func TestImport_LongLabelError(t *testing.T) {
 
 	vol.Comment = "{\"provisioning\": {\"storageDriverName\": \"ontap-san\", \"backendName\": \"customBackendName\"}}"
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
 
@@ -3136,6 +3134,120 @@ func TestNVMeCanSnapshot(t *testing.T) {
 	assert.NoError(t, err, "Should support snapshots")
 }
 
+func TestNamespaceWildcardPath(t *testing.T) {
+	assert.Equal(t, "/vol/flex/*", namespaceWildcardPath("flex"))
+}
+
+func TestNVMeNamespaceLookup_KnownInternalIDUsesExactOnly(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	ns := &api.NVMeNamespace{Name: "/vol/flex/namespace0", UUID: "uuid-1"}
+
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/flex/namespace0").Return(ns, nil)
+
+	got, err := d.nvmeNamespaceLookup(ctx, "flex", "/vol/flex/namespace0")
+	assert.NoError(t, err)
+	assert.Equal(t, ns, got)
+}
+
+func TestNVMeNamespaceLookup_ExactPathFailsImmediatelyOnNonNotFound(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	apiErr := errors.New("permission denied")
+
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/flex/namespace0").Return(nil, apiErr)
+
+	got, err := d.nvmeNamespaceLookup(ctx, "flex", "/vol/flex/namespace0")
+	assert.ErrorIs(t, err, apiErr)
+	assert.Nil(t, got)
+}
+
+func TestNVMeNamespaceLookup_UnknownInternalIDUsesWildcard(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	ns := &api.NVMeNamespace{Name: "/vol/flex/namespace0", UUID: "uuid-1"}
+
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/flex/*").Return(ns, nil)
+
+	got, err := d.nvmeNamespaceLookup(ctx, "flex", "")
+	assert.NoError(t, err)
+	assert.Equal(t, ns, got)
+}
+
+func TestNVMeNamespaceLookup_UnknownInternalIDRetriesWildcardOnNotFound(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	ns := &api.NVMeNamespace{Name: "/vol/flex/namespace0", UUID: "uuid-1"}
+
+	gomock.InOrder(
+		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/flex/*").Return(nil, errors.NotFoundError("not found")),
+		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/flex/*").Return(ns, nil),
+	)
+
+	got, err := d.nvmeNamespaceLookup(ctx, "flex", "")
+	assert.NoError(t, err)
+	assert.Equal(t, ns, got)
+}
+
+func TestNVMeNamespaceGetSize_UnknownInternalIDRetriesWildcardOnNotFound(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+
+	gomock.InOrder(
+		mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/flex/*").Return(0, errors.NotFoundError("not found")),
+		mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/flex/*").Return(1024, nil),
+	)
+
+	size, err := d.nvmeNamespaceGetSize(ctx, "flex", "")
+	assert.NoError(t, err)
+	assert.Equal(t, 1024, size)
+}
+
+func TestNVMeNamespaceGetSize_KnownInternalIDRetriesExact(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+
+	gomock.InOrder(
+		mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/flex/namespace0").Return(0, errors.NotFoundError("not found")),
+		mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/flex/namespace0").Return(1024, nil),
+	)
+
+	size, err := d.nvmeNamespaceGetSize(ctx, "flex", "/vol/flex/namespace0")
+	assert.NoError(t, err)
+	assert.Equal(t, 1024, size)
+}
+
+func expectNVMeNamespaceGetSizeWildcard(
+	m *mockapi.MockOntapAPI, ctx context.Context, flexvol string,
+) *gomock.Call {
+	return m.EXPECT().NVMeNamespaceGetSize(ctx, namespaceWildcardPath(flexvol))
+}
+
+func expectNVMeNamespaceGetByNameWildcard(
+	m *mockapi.MockOntapAPI, ctx context.Context, flexvol string,
+) *gomock.Call {
+	return m.EXPECT().NVMeNamespaceGetByName(ctx, namespaceWildcardPath(flexvol))
+}
+
+func TestNVMeGetSnapshot_UsesInternalID(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "test-snap",
+		VolumeInternalName: "test-vol",
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: "test-vol",
+		InternalID:   "/vol/test-vol/namespace0",
+	}
+
+	apiSnapshot := api.Snapshot{
+		Name:       "test-snap",
+		CreateTime: "2023-01-01T12:00:00Z",
+	}
+
+	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/namespace0").Return(1024, nil)
+	mAPI.EXPECT().VolumeSnapshotInfo(ctx, "test-snap", "test-vol").Return(apiSnapshot, nil)
+
+	snapshot, err := d.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, snapshot)
+}
+
 func TestNVMeGetSnapshot_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	snapConfig := &storage.SnapshotConfig{
@@ -3149,7 +3261,7 @@ func TestNVMeGetSnapshot_Success(t *testing.T) {
 		CreateTime: "2023-01-01T12:00:00Z",
 	}
 
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotInfo(ctx, "test-snap", "test-vol").Return(apiSnapshot, nil)
 
 	snapshot, err := d.GetSnapshot(ctx, snapConfig, volConfig)
@@ -3168,7 +3280,7 @@ func TestNVMeGetSnapshot_NotFound(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "test-vol"}
 
 	var emptySnapshot api.Snapshot
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotInfo(ctx, "missing-snap", "test-vol").Return(emptySnapshot, errors.NotFoundError("not found"))
 
 	snapshot, err := d.GetSnapshot(ctx, snapConfig, volConfig)
@@ -3186,7 +3298,7 @@ func TestNVMeGetSnapshot_APIError(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "test-vol"}
 
 	var emptySnapshot api.Snapshot
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotInfo(ctx, "test-snap", "test-vol").Return(emptySnapshot, errors.New("API error"))
 
 	snapshot, err := d.GetSnapshot(ctx, snapConfig, volConfig)
@@ -3204,7 +3316,7 @@ func TestNVMeGetSnapshots_Success(t *testing.T) {
 		{Name: "snap2", CreateTime: "2023-01-02T12:00:00Z"},
 	}
 
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotList(ctx, "test-vol").Return(apiSnapshots, nil)
 
 	snapshots, err := d.GetSnapshots(ctx, volConfig)
@@ -3219,7 +3331,7 @@ func TestNVMeGetSnapshots_ListError(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "test-vol"}
 
 	var emptySnapshots api.Snapshots
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotList(ctx, "test-vol").Return(emptySnapshots, errors.New("API error"))
 
 	snapshots, err := d.GetSnapshots(ctx, volConfig)
@@ -3237,7 +3349,7 @@ func TestNVMeCreateSnapshot_Success(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "test-vol"}
 
 	mAPI.EXPECT().VolumeExists(ctx, "test-vol").Return(true, nil)
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotCreate(ctx, "new-snap", "test-vol").Return(nil)
 	mAPI.EXPECT().VolumeSnapshotInfo(ctx, "new-snap", "test-vol").Return(api.Snapshot{
 		Name:       "new-snap",
@@ -3260,7 +3372,7 @@ func TestNVMeCreateSnapshot_CreateError(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "test-vol"}
 
 	mAPI.EXPECT().VolumeExists(ctx, "test-vol").Return(true, nil)
-	mAPI.EXPECT().NVMeNamespaceGetSize(ctx, "/vol/test-vol/*").Return(1024, nil)
+	expectNVMeNamespaceGetSizeWildcard(mAPI, ctx, "test-vol").Return(1024, nil)
 	mAPI.EXPECT().VolumeSnapshotCreate(ctx, "new-snap", "test-vol").Return(errors.New("create error"))
 
 	snapshot, err := d.CreateSnapshot(ctx, snapConfig, volConfig)
