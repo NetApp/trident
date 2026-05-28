@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package fcp
 
@@ -519,6 +519,17 @@ func (client *Client) AttachVolume(
 		if err != nil {
 			return mpathSize, err
 		}
+	}
+
+	fstype, err := filesystem.DetermineFSType(publishInfo.FilesystemType, existingFstype, publishInfo.VolumeMode)
+	if err != nil {
+		return mpathSize, fmt.Errorf("LUN %s, device %s is formatted with unknown filesystem type", name, devicePath)
+	}
+	publishInfo.FilesystemType = fstype
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return mpathSize, nil
 	}
 
 	if existingFstype == "" {

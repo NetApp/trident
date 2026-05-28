@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -408,6 +408,7 @@ func (p *Plugin) ControllerPublishVolume(
 	case tridentconfig.Block:
 		publishInfo["LUKSEncryption"] = volumePublishInfo.LUKSEncryption
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
+		publishInfo["volumeMode"] = string(volume.Config.VolumeMode)
 
 		if volumePublishInfo.SANType == sa.NVMe {
 			// fill in only NVMe specific fields in publishInfo

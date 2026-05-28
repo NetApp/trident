@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -1323,6 +1323,7 @@ func (p *Plugin) nodeStageFCPVolume(
 	publishInfo.FCPLunSerial = req.PublishContext["fcpLunSerial"]
 	publishInfo.FCPIgroup = req.PublishContext["fcpIgroup"]
 	publishInfo.SANType = req.PublishContext["SANType"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
@@ -1760,6 +1761,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 
 	if useCHAP {
 		publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
@@ -2959,6 +2961,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
+	publishInfo.VolumeMode = req.PublishContext["volumeMode"]
 
 	err := p.nvmeHandler.AttachNVMeVolumeRetry(
 		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), nvme.NVMeAttachTimeout,

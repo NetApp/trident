@@ -169,6 +169,7 @@ func TestControllerPublishVolume_iSCSIProtocol(t *testing.T) {
 		"SANType":                sa.ISCSI,
 		"sharedTarget":           "false",
 		"useCHAP":                "false",
+		"volumeMode":             "",
 	}
 	assert.Equal(t, expectedPublishContext, publishContext)
 }
@@ -210,6 +211,7 @@ func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
 		"SANType":           sa.NVMe,
 		"sharedTarget":      "false",
 		"nvmeTargetIPs":     "",
+		"volumeMode":        "",
 	}
 	assert.Equal(t, expectedPublishContext, publishContext)
 }

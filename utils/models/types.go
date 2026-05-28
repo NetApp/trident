@@ -216,6 +216,7 @@ type VolumePublishInfo struct {
 	TridentUUID       string              `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
 	LUKSEncryption    string              `json:"LUKSEncryption,omitempty"`
 	SANType           string              `json:"SANType,omitempty"`
+	VolumeMode        string              `json:"volumeMode,omitempty"`
 	VolumeAccessInfo
 }
 
