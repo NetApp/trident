@@ -94,6 +94,19 @@ jobs:
           mkdir ${{ runner.temp }}\${{ runner.os }}-coverage-binary.out
           go test -v ./... -covermode=count -- -test.gocoverdir=${{ runner.temp }}\${{ runner.os }}-coverage-binary.out
           go tool covdata textfmt -i=${{ runner.temp }}\${{ runner.os }}-coverage-binary.out -o ${{ runner.os }}-coverage.out
+      - if: runner.os == 'Linux'
+        name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
       - if: runner.os != 'Windows'
         name: Run the tests (not on Windows)
         run: |

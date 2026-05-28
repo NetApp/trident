@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package nvme
 
@@ -377,6 +377,17 @@ func (nh *NVMeHandler) NVMeMountVolume(
 		if err != nil {
 			return err
 		}
+	}
+
+	fstype, err := filesystem.DetermineFSType(publishInfo.FilesystemType, existingFstype, publishInfo.VolumeMode)
+	if err != nil {
+		return fmt.Errorf("LUN %s, device %s is formatted with unknown filesystem type", name, devicePath)
+	}
+	publishInfo.FilesystemType = fstype
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return nil
 	}
 
 	if existingFstype == "" {

@@ -434,6 +434,7 @@ func (client *Client) AttachVolume(
 		return mpathSize, errors.New("device should be a LUKS device but is not LUKS formatted")
 	}
 
+	// No filesystem work is required for raw block; return early.
 	if publishInfo.FilesystemType == filesystem.Raw {
 		return mpathSize, nil
 	}
@@ -446,6 +447,17 @@ func (client *Client) AttachVolume(
 		if err != nil {
 			return mpathSize, err
 		}
+	}
+
+	fstype, err := filesystem.DetermineFSType(publishInfo.FilesystemType, existingFstype, publishInfo.VolumeMode)
+	if err != nil {
+		return mpathSize, fmt.Errorf("LUN %s, device %s is formatted with unknown filesystem type", name, devicePath)
+	}
+	publishInfo.FilesystemType = fstype
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return mpathSize, nil
 	}
 
 	if existingFstype == "" {
