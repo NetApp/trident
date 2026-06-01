@@ -18,17 +18,14 @@ spec:
         - name: Phase
           type: string
           description: The backend config phase
-          priority: 0
           jsonPath: .status.phase
         - name: Status
           type: string
           description: The result of the last operation
-          priority: 0
           jsonPath: .status.lastOperationStatus
         - name: Cloud Provider
           type: string
           description: The name of cloud provider
-          priority: 0
           jsonPath: .status.cloudProvider
         - name: Storage Driver
           type: string

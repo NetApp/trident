@@ -205,7 +205,6 @@ spec:
     - name: Version
       type: string
       description: The Trident version
-      priority: 0
       jsonPath: .trident_version
   scope: Namespaced
   names:

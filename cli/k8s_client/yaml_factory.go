@@ -2167,7 +2167,6 @@ spec:
       - name: Version
         type: string
         description: The Trident version
-        priority: 0
         jsonPath: .trident_version
   scope: Namespaced
   names:
@@ -2200,12 +2199,10 @@ spec:
       - name: Backend
         type: string
         description: The backend name
-        priority: 0
         jsonPath: .backendName
       - name: Backend UUID
         type: string
         description: The backend UUID
-        priority: 0
         jsonPath: .backendUUID
   scope: Namespaced
   names:
@@ -2345,17 +2342,14 @@ spec:
           jsonPath: .metadata.namespace
           name: Namespace
           type: string
-          priority: 0
         - description: State
           jsonPath: .status.state
           name: State
           type: string
-          priority: 0
         - description: CompletionTime
           jsonPath: .status.completionTime
           name: CompletionTime
           type: date
-          priority: 0
         - description: Message
           jsonPath: .status.message
           name: Message
@@ -2422,7 +2416,6 @@ spec:
         - name: Snapshot Handle
           type: string
           description: VolumeSnapshotContent Handle
-          priority: 0
           jsonPath: .status.snapshotHandle
   scope: Namespaced
   names:
@@ -2460,22 +2453,18 @@ spec:
       - name: Backend Name
         type: string
         description: The backend name
-        priority: 0
         jsonPath: .status.backendInfo.backendName
       - name: Backend UUID
         type: string
         description: The backend UUID
-        priority: 0
         jsonPath: .status.backendInfo.backendUUID
       - name: Phase
         type: string
         description: The backend config phase
-        priority: 0
         jsonPath: .status.phase
       - name: Status
         type: string
         description: The result of the last operation
-        priority: 0
         jsonPath: .status.lastOperationStatus
       - name: Storage Driver
         type: string
@@ -2522,17 +2511,14 @@ spec:
       - name: Phase
         type: string
         description: The backend config phase
-        priority: 0
         jsonPath: .status.phase
       - name: Status
         type: string
         description: The result of the last operation
-        priority: 0
         jsonPath: .status.lastOperationStatus
       - name: Cloud Provider
         type: string
         description: The name of cloud provider
-        priority: 0
         jsonPath: .status.cloudProvider
       - name: Storage Driver
         type: string
@@ -2602,7 +2588,6 @@ spec:
       additionalPrinterColumns:
       - name: Age
         type: date
-        priority: 0
         jsonPath: .metadata.creationTimestamp
       - name: Size
         type: string
@@ -2693,12 +2678,10 @@ spec:
         - name: Volume
           type: string
           description: Volume ID
-          priority: 0
           jsonPath: .volumeID
         - name: Node
           type: string
           description: Node ID
-          priority: 0
           jsonPath: .nodeID
         - name: AutogrowPolicy
           type: string
@@ -2949,27 +2932,22 @@ spec:
         jsonPath: .metadata.namespace
         name: Namespace
         type: string
-        priority: 0
       - description: PVC
         jsonPath: .spec.pvcName
         name: PVC
         type: string
-        priority: 0
       - description: Snapshot
         jsonPath: .spec.volumeSnapshotName
         name: Snapshot
         type: string
-        priority: 0
       - description: State
         jsonPath: .status.state
         name: State
         type: string
-        priority: 0
       - description: CompletionTime
         jsonPath: .status.completionTime
         name: CompletionTime
         type: date
-        priority: 0
       - description: Message
         jsonPath: .status.message
         name: Message
@@ -3170,12 +3148,10 @@ spec:
         - name: Used Threshold
           type: string
           description: Usage threshold for autogrow
-          priority: 0
           jsonPath: .spec.usedThreshold
         - name: Growth Amount
           type: string
           description: Amount to grow by
-          priority: 0
           jsonPath: .spec.growthAmount
         - name: Max Size
           type: string
@@ -3185,7 +3161,6 @@ spec:
         - name: State
           type: string
           description: The policy state
-          priority: 0
           jsonPath: .status.state
         - name: Message
           type: string
@@ -3307,37 +3282,30 @@ spec:
         - name: Volume
           type: string
           description: PersistentVolume to be expanded
-          priority: 0
           jsonPath: .spec.volume
         - name: Autogrow Policy
           type: string
           description: Policy applied for this request
-          priority: 0
           jsonPath: .spec.autogrowPolicyRef.name
         - name: Observed Used%
           type: string
           description: Volume usage percent when request was created
-          priority: 0
           jsonPath: .spec.observedUsedPercent
         - name: Observed Capacity
           type: string
           description: Observed capacity at request time
-          priority: 0
           jsonPath: .spec.observedCapacityBytes
         - name: Final Size
           type: string
           description: Target capacity after resize
-          priority: 0
           jsonPath: .status.finalCapacityBytes
         - name: Phase
           type: string
           description: Current phase (Pending/InProgress/Completed/Rejected/Failed)
-          priority: 0
           jsonPath: .status.phase
         - name: Age
           type: date
           description: Time since creation
-          priority: 0
           jsonPath: .metadata.creationTimestamp
         # Wide view only: adds Observed Used Bytes, Node Name, Breached At
         - name: Observed Used Bytes
