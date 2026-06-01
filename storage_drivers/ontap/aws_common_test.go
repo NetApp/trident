@@ -1,6 +1,7 @@
 package ontap
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -240,19 +241,32 @@ func TestInitializeAWSDriver(t *testing.T) {
 	config.AWSConfig = &drivers.AWSConfig{}
 	config.AWSConfig.FSxFilesystemID = fsxId
 	tests := []struct {
-		name       string
-		secretName string
-		secretType string
-		userName   string
-		error      string
+		name                    string
+		secretName              string
+		secretType              string
+		userName                string
+		error                   string
+		mockSecretsManagerError bool
 	}{
-		{"Invalid secret ARN value", "secret-manager-arn-value", "awsarn", "", "secret ARN secret-manager-arn-value is invalid"},
-		{"Invalid secret ARN value - use username and password", "", "awsarn", "arn:aws:secretsmanager:region", "secret ARN arn:aws:secretsmanager:region is invalid"},
-		{"Invalid awsarn secret", secretArn, "awsarn", "", "could not retrieve credentials from AWS Secrets Manager"},
-		{"valid aws secret", "", "secret", "", ""},
+		{"Invalid secret ARN value", "secret-manager-arn-value", "awsarn", "", "secret ARN secret-manager-arn-value is invalid", false},
+		{"Invalid secret ARN value - use username and password", "", "awsarn", "arn:aws:secretsmanager:region", "secret ARN arn:aws:secretsmanager:region is invalid", false},
+		{"Invalid awsarn secret", secretArn, "awsarn", "", "could not retrieve credentials from AWS Secrets Manager", true},
+		{"valid aws secret", "", "secret", "", "", false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			if test.mockSecretsManagerError {
+				mockCtrl := gomock.NewController(t)
+				mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+				mockAWSAPI.EXPECT().GetSecret(gomock.Any(), SECRET_MANAGER_ARN).Return(
+					nil, fmt.Errorf("could not retrieve credentials from AWS Secrets Manager"))
+				oldClientFactory := awsapiNewClient
+				awsapiNewClient = func(_ context.Context, _ awsapi.ClientConfig) (awsapi.AWSAPI, error) {
+					return mockAWSAPI, nil
+				}
+				t.Cleanup(func() { awsapiNewClient = oldClientFactory })
+			}
+
 			config.Username = test.userName
 			if test.secretName == "" {
 				config.Credentials = map[string]string{}

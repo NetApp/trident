@@ -6399,7 +6399,7 @@ func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
 
 	// Configure exponential backoff for rate limiter waits
 	rateLimiterBackoff := backoff.NewExponentialBackOff()
-	rateLimiterBackoff.InitialInterval = 500 * time.Millisecond
+	rateLimiterBackoff.InitialInterval = vpSyncRateLimiterBackoffInitial
 	rateLimiterBackoff.Multiplier = 1.5
 	rateLimiterBackoff.MaxInterval = 2 * time.Second // Cap at 2s for rate limiting
 	rateLimiterBackoff.RandomizationFactor = 0.2
@@ -6407,9 +6407,9 @@ func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
 
 	// Configure exponential backoff for store update retries
 	vpStoreBackoff := backoff.NewExponentialBackOff()
-	vpStoreBackoff.InitialInterval = 1 * time.Second
+	vpStoreBackoff.InitialInterval = vpStoreBackoffInitialInterval
 	vpStoreBackoff.Multiplier = 2.0
-	vpStoreBackoff.MaxInterval = 30 * time.Second
+	vpStoreBackoff.MaxInterval = vpStoreBackoffMaxInterval
 	vpStoreBackoff.RandomizationFactor = 0.2
 	vpStoreBackoff.MaxElapsedTime = 0 // Retry indefinitely
 
@@ -6419,6 +6419,9 @@ func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
 
 		// Wait for rate limiter token WITHOUT holding lock to avoid blocking other operations
 		for !vpSyncRateLimiter.Allow() {
+			if ctx.Err() != nil {
+				return
+			}
 			waitDuration := rateLimiterBackoff.NextBackOff()
 			Logc(ctx).WithFields(LogFields{
 				"volumeName":  vpsToBeSynced[i].VolumeName,
@@ -6427,7 +6430,11 @@ func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
 			}).Debug("Rate limiter throttling VP sync, backing off before retry")
 
 			// Sleep with exponential backoff to give rate limiter time to refill
-			time.Sleep(waitDuration)
+			select {
+			case <-time.After(waitDuration):
+			case <-ctx.Done():
+				return
+			}
 		}
 
 		// Reset store update backoff for this VP
@@ -6457,8 +6464,11 @@ func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
 
 		// Persist the VP to the store with exponential backoff retry
 		// The backoff sleep happens WITHOUT holding the lock
-		// Will retry indefinitely until success or VP is deleted from cache
-		if err := backoff.RetryNotify(vpStoreUpdateAttempt, vpStoreBackoff, nil); err != nil {
+		// Will retry indefinitely until success, VP is deleted from cache, or ctx is cancelled
+		if err := backoff.RetryNotify(vpStoreUpdateAttempt, backoff.WithContext(vpStoreBackoff, ctx), nil); err != nil {
+			if ctx.Err() != nil {
+				return
+			}
 			Logc(ctx).WithFields(LogFields{
 				"volumeName": vpsToBeSynced[i].VolumeName,
 				"nodeName":   vpsToBeSynced[i].NodeName,
@@ -6489,7 +6499,7 @@ func (o *ConcurrentTridentOrchestrator) syncVolumePublication(
 	defer Logc(ctx).Debug("<<<<<< syncVolumePublication")
 
 	// Fetch the latest VP from cache using concurrent core's locking pattern
-	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ReadVolumePublication(vp.VolumeName, vp.NodeName)))
 	defer unlocker()
 
 	if err != nil {
@@ -6507,7 +6517,7 @@ func (o *ConcurrentTridentOrchestrator) syncVolumePublication(
 			"volumeName": vp.VolumeName,
 			"nodeName":   vp.NodeName,
 		}).Debug("VP not found in cache, skipping update (may have been deleted)")
-		return err
+		return nil
 	}
 
 	// Persist the vp to the store

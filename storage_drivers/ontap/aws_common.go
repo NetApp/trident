@@ -15,6 +15,11 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+// awsapiNewClient creates the AWS API client (overridden in unit tests for speed).
+var awsapiNewClient = func(ctx context.Context, config awsapi.ClientConfig) (awsapi.AWSAPI, error) {
+	return awsapi.NewClient(ctx, config)
+}
+
 // SetSvmCredentials Pull SVM credentials out of AWS secret store and enter them into the config.
 func SetSvmCredentials(ctx context.Context, secretARN string, api awsapi.AWSAPI, config *drivers.OntapStorageDriverConfig) (err error) {
 	secret, secretErr := api.GetSecret(ctx, secretARN)
@@ -94,7 +99,7 @@ func initializeAWSAPI(
 		}
 	}
 
-	api, err := awsapi.NewClient(ctx, awsapi.ClientConfig{
+	api, err := awsapiNewClient(ctx, awsapi.ClientConfig{
 		APIRegion:           config.AWSConfig.APIRegion,
 		APIKey:              config.AWSConfig.APIKey,
 		SecretKey:           config.AWSConfig.SecretKey,

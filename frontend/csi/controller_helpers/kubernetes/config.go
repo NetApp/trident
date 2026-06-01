@@ -15,10 +15,16 @@ import (
 
 const (
 	CacheSyncPeriod         = 60 * time.Second
+	ImportPVCacheWaitPeriod = 180 * time.Second
+)
+
+// Variables (not const) so unit tests can assign shorter wait durations.
+var (
 	PreSyncCacheWaitPeriod  = 10 * time.Second
 	PostSyncCacheWaitPeriod = 30 * time.Second
-	ImportPVCacheWaitPeriod = 180 * time.Second
+)
 
+const (
 	CacheBackoffInitialInterval     = 1 * time.Second
 	CacheBackoffRandomizationFactor = 0.1
 	CacheBackoffMultiplier          = 1.414

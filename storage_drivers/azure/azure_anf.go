@@ -664,15 +664,20 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
+	if err := api.ValidateClientConfig(clientConfig); err != nil {
+		return err
+	}
+
+	// Unit tests inject a mock api.Azure; skip real SDK construction (and credential/network I/O).
+	if d.SDK != nil {
+		return d.SDK.Init(ctx, d.pools)
+	}
+
 	client, err := api.NewDriver(clientConfig)
 	if err != nil {
 		return err
 	}
-
-	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
-	if d.SDK == nil {
-		d.SDK = client
-	}
+	d.SDK = client
 
 	// The storage pools should already be set up by this point. We register the pools with the
 	// API layer to enable matching of storage pools with discovered ANF resources.

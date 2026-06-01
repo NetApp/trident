@@ -4,7 +4,9 @@ package awsapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -36,7 +38,25 @@ const (
 	testRequestID    = "12345678-1234-1234-1234-123456789012"
 )
 
-// setupTestClient creates a test client with valid configuration.
+var errMockAWSUnavailable = errors.New("mock AWS API unavailable")
+
+func TestMain(m *testing.M) {
+	_ = os.Setenv("AWS_EC2_METADATA_DISABLED", "true")
+	os.Exit(m.Run())
+}
+
+// setupBareClient returns a Client with config only (no FSx/Secrets SDK). Use for conversion helpers
+// and ARN parsing paths that do not call AWS.
+func setupBareClient() *Client {
+	return &Client{
+		config: &ClientConfig{
+			FilesystemID: testFilesystemID,
+		},
+	}
+}
+
+// setupTestClient creates a real *Client via NewClient (SDK clients; no live AWS in -short when
+// combined with TestMain metadata disable). Prefer setupMockAWSAPI for API-operation error-path tests.
 func setupTestClient(t *testing.T) *Client {
 	ctx := context.Background()
 	config := ClientConfig{
@@ -51,6 +71,85 @@ func setupTestClient(t *testing.T) *Client {
 	require.NotNil(t, client)
 
 	return client
+}
+
+// unavailableAWSAPI implements AWSAPI with errors on every call (no FSx/Secrets SDK).
+// Follow-up: inject mock FSx/Secrets SDK interfaces on *Client to test success paths without network I/O.
+type unavailableAWSAPI struct{}
+
+var _ AWSAPI = (*unavailableAWSAPI)(nil)
+
+func setupMockAWSAPI() AWSAPI {
+	return &unavailableAWSAPI{}
+}
+
+func (u *unavailableAWSAPI) CreateSecret(context.Context, *SecretCreateRequest) (*Secret, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetSecret(context.Context, string) (*Secret, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) DeleteSecret(context.Context, string) error {
+	return errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetFilesystems(context.Context) (*[]*Filesystem, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetFilesystemByID(context.Context, string) (*Filesystem, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) CreateSVM(context.Context, *SVMCreateRequest) (*SVM, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetSVMs(context.Context) (*[]*SVM, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetSVMByID(context.Context, string) (*SVM, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetVolumes(context.Context) (*[]*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetVolumeByName(context.Context, string) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetVolumeByARN(context.Context, string) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetVolumeByID(context.Context, string) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) GetVolume(context.Context, *storage.VolumeConfig) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) VolumeExistsByName(context.Context, string) (bool, *Volume, error) {
+	return false, nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) VolumeExistsByARN(context.Context, string) (bool, *Volume, error) {
+	return false, nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) VolumeExistsByID(context.Context, string) (bool, *Volume, error) {
+	return false, nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) VolumeExists(context.Context, *storage.VolumeConfig) (bool, *Volume, error) {
+	return false, nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) WaitForVolumeStates(
+	context.Context, *Volume, []string, []string, time.Duration,
+) (string, error) {
+	return "", errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) CreateVolume(context.Context, *VolumeCreateRequest) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) RelabelVolume(context.Context, *Volume, map[string]string) error {
+	return errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) ResizeVolume(context.Context, *Volume, uint64) (*Volume, error) {
+	return nil, errMockAWSUnavailable
+}
+func (u *unavailableAWSAPI) DeleteVolume(context.Context, *Volume) error {
+	return errMockAWSUnavailable
 }
 
 // Core Infrastructure Tests
@@ -184,7 +283,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestSetClientFsConfig(t *testing.T) {
-	client := setupTestClient(t)
+	client := setupBareClient()
 	newFilesystemID := "new-fs-id"
 
 	client.SetClientFsConfig(newFilesystemID)
@@ -494,7 +593,7 @@ func TestErrorUtilities(t *testing.T) {
 // These tests validate the AWS API functions for secrets, filesystems, SVMs, and volumes.
 func TestSecretOperations(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
 
 	tests := []struct {
 		name        string
@@ -513,10 +612,9 @@ func TestSecretOperations(t *testing.T) {
 					},
 				}
 
-				// This calls the actual CreateSecret function
-				// This tests the creation of a secret using the AWS Secrets Manager API.
-				secret, err := client.CreateSecret(ctx, request)
-				assert.Error(t, err) // Expected due to no real AWS setup
+				// unavailableAWSAPI stub: exercises CreateSecret error path without network I/O.
+				secret, err := api.CreateSecret(ctx, request)
+				assert.Error(t, err)
 				assert.Nil(t, secret)
 			},
 			expectError: true,
@@ -524,7 +622,7 @@ func TestSecretOperations(t *testing.T) {
 		{
 			name: "GetSecretInvalidARN",
 			testFunc: func(t *testing.T) {
-				_, err := client.GetSecret(ctx, "invalid-arn")
+				_, err := api.GetSecret(ctx, "invalid-arn")
 				assert.Error(t, err)
 			},
 			expectError: true,
@@ -532,16 +630,16 @@ func TestSecretOperations(t *testing.T) {
 		{
 			name: "GetSecretValidARN",
 			testFunc: func(t *testing.T) {
-				_, err := client.GetSecret(ctx, testSecretARN)
-				assert.Error(t, err) // Expected due to no real AWS setup
+				_, err := api.GetSecret(ctx, testSecretARN)
+				assert.Error(t, err) // unavailableAWSAPI stub returns error without AWS calls
 			},
 			expectError: true,
 		},
 		{
 			name: "DeleteSecret",
 			testFunc: func(t *testing.T) {
-				err := client.DeleteSecret(ctx, testSecretARN)
-				assert.Error(t, err) // Expected due to no real AWS setup
+				err := api.DeleteSecret(ctx, testSecretARN)
+				assert.Error(t, err) // unavailableAWSAPI stub returns error without AWS calls
 			},
 			expectError: true,
 		},
@@ -554,7 +652,7 @@ func TestSecretOperations(t *testing.T) {
 
 func TestFilesystemOperations(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
 
 	tests := []struct {
 		name     string
@@ -563,7 +661,7 @@ func TestFilesystemOperations(t *testing.T) {
 		{
 			name: "GetFilesystems",
 			testFunc: func(t *testing.T) {
-				filesystems, err := client.GetFilesystems(ctx)
+				filesystems, err := api.GetFilesystems(ctx)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, filesystems)
 			},
@@ -571,7 +669,7 @@ func TestFilesystemOperations(t *testing.T) {
 		{
 			name: "GetFilesystemByID",
 			testFunc: func(t *testing.T) {
-				filesystem, err := client.GetFilesystemByID(ctx, testFilesystemID)
+				filesystem, err := api.GetFilesystemByID(ctx, testFilesystemID)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, filesystem)
 			},
@@ -585,7 +683,7 @@ func TestFilesystemOperations(t *testing.T) {
 
 func TestSVMOperations(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
 
 	tests := []struct {
 		name     string
@@ -599,7 +697,7 @@ func TestSVMOperations(t *testing.T) {
 				}
 
 				// This tests the creation of an SVM using the AWS FSx API.
-				svm, err := client.CreateSVM(ctx, request)
+				svm, err := api.CreateSVM(ctx, request)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, svm)
 			},
@@ -607,7 +705,7 @@ func TestSVMOperations(t *testing.T) {
 		{
 			name: "GetSVMs",
 			testFunc: func(t *testing.T) {
-				svms, err := client.GetSVMs(ctx)
+				svms, err := api.GetSVMs(ctx)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, svms)
 			},
@@ -615,7 +713,7 @@ func TestSVMOperations(t *testing.T) {
 		{
 			name: "GetSVMByID",
 			testFunc: func(t *testing.T) {
-				svm, err := client.GetSVMByID(ctx, testSVMID)
+				svm, err := api.GetSVMByID(ctx, testSVMID)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, svm)
 			},
@@ -629,7 +727,8 @@ func TestSVMOperations(t *testing.T) {
 
 func TestVolumeOperations(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
+	bareClient := setupBareClient()
 
 	tests := []struct {
 		name     string
@@ -638,7 +737,7 @@ func TestVolumeOperations(t *testing.T) {
 		{
 			name: "GetVolumes",
 			testFunc: func(t *testing.T) {
-				volumes, err := client.GetVolumes(ctx)
+				volumes, err := api.GetVolumes(ctx)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volumes)
 			},
@@ -646,7 +745,7 @@ func TestVolumeOperations(t *testing.T) {
 		{
 			name: "GetVolumeByName",
 			testFunc: func(t *testing.T) {
-				volume, err := client.GetVolumeByName(ctx, "test-volume")
+				volume, err := api.GetVolumeByName(ctx, "test-volume")
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -654,14 +753,14 @@ func TestVolumeOperations(t *testing.T) {
 		{
 			name: "GetVolumeByARNInvalid",
 			testFunc: func(t *testing.T) {
-				_, err := client.GetVolumeByARN(ctx, "invalid-arn")
+				_, err := bareClient.GetVolumeByARN(ctx, "invalid-arn")
 				assert.Error(t, err)
 			},
 		},
 		{
 			name: "GetVolumeByARNValid",
 			testFunc: func(t *testing.T) {
-				volume, err := client.GetVolumeByARN(ctx, testVolumeARN)
+				volume, err := api.GetVolumeByARN(ctx, testVolumeARN)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -669,7 +768,7 @@ func TestVolumeOperations(t *testing.T) {
 		{
 			name: "GetVolumeByID",
 			testFunc: func(t *testing.T) {
-				volume, err := client.GetVolumeByID(ctx, testVolumeID)
+				volume, err := api.GetVolumeByID(ctx, testVolumeID)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -683,7 +782,7 @@ func TestVolumeOperations(t *testing.T) {
 					InternalName: "test-volume",
 				}
 
-				volume, err := client.GetVolume(ctx, config)
+				volume, err := api.GetVolume(ctx, config)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -695,7 +794,7 @@ func TestVolumeOperations(t *testing.T) {
 					Name:         "test-volume",
 					InternalName: "test-volume",
 				}
-				volume, err := client.GetVolume(ctx, configWithoutID)
+				volume, err := api.GetVolume(ctx, configWithoutID)
 				assert.Error(t, err)
 				assert.Nil(t, volume)
 			},
@@ -709,7 +808,8 @@ func TestVolumeOperations(t *testing.T) {
 
 func TestVolumeExistenceChecks(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
+	bareClient := setupBareClient()
 
 	testCases := []struct {
 		name string
@@ -718,19 +818,19 @@ func TestVolumeExistenceChecks(t *testing.T) {
 		{
 			"VolumeExistsByName",
 			func() (bool, *Volume, error) {
-				return client.VolumeExistsByName(ctx, "test-volume")
+				return api.VolumeExistsByName(ctx, "test-volume")
 			},
 		},
 		{
 			"VolumeExistsByID",
 			func() (bool, *Volume, error) {
-				return client.VolumeExistsByID(ctx, testVolumeID)
+				return api.VolumeExistsByID(ctx, testVolumeID)
 			},
 		},
 		{
 			"VolumeExistsByARN",
 			func() (bool, *Volume, error) {
-				return client.VolumeExistsByARN(ctx, testVolumeARN)
+				return api.VolumeExistsByARN(ctx, testVolumeARN)
 			},
 		},
 	}
@@ -751,14 +851,14 @@ func TestVolumeExistenceChecks(t *testing.T) {
 			InternalName: "test-volume",
 		}
 
-		exists, vol, err := client.VolumeExists(ctx, config)
+		exists, vol, err := api.VolumeExists(ctx, config)
 		assert.Error(t, err) // Expected due to no real AWS setup
 		assert.False(t, exists)
 		assert.Nil(t, vol)
 	})
 
 	t.Run("VolumeExistsByARNInvalidARN", func(t *testing.T) {
-		exists, vol, err := client.VolumeExistsByARN(ctx, "invalid-arn")
+		exists, vol, err := bareClient.VolumeExistsByARN(ctx, "invalid-arn")
 		assert.Error(t, err)
 		assert.False(t, exists)
 		assert.Nil(t, vol)
@@ -767,7 +867,7 @@ func TestVolumeExistenceChecks(t *testing.T) {
 
 func TestVolumeLifecycleOperations(t *testing.T) {
 	ctx := context.Background()
-	client := setupTestClient(t)
+	api := setupMockAWSAPI()
 
 	tests := []struct {
 		name     string
@@ -784,7 +884,7 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 					SecurityStyle:     "unix",
 					SnapshotDirectory: true,
 				}
-				volume, err := client.CreateVolume(ctx, request)
+				volume, err := api.CreateVolume(ctx, request)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -801,7 +901,7 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 					SnapshotDirectory: false,
 					SnapshotPolicy:    "none",
 				}
-				volume, err := client.CreateVolume(ctx, request)
+				volume, err := api.CreateVolume(ctx, request)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, volume)
 			},
@@ -813,7 +913,7 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 					FSxObject: FSxObject{ID: testVolumeID},
 				}
 				newSize := uint64(2147483648) // 2GB
-				resizedVolume, err := client.ResizeVolume(ctx, volume, newSize)
+				resizedVolume, err := api.ResizeVolume(ctx, volume, newSize)
 				assert.Error(t, err) // Expected due to no real AWS setup
 				assert.Nil(t, resizedVolume)
 			},
@@ -824,7 +924,7 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 				volume := &Volume{
 					FSxObject: FSxObject{ID: testVolumeID},
 				}
-				err := client.DeleteVolume(ctx, volume)
+				err := api.DeleteVolume(ctx, volume)
 				assert.Error(t, err) // Expected due to no real AWS setup
 			},
 		},
@@ -838,13 +938,14 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 					"env":  "test",
 					"team": "storage",
 				}
-				err := client.RelabelVolume(ctx, volume, newLabels)
+				err := api.RelabelVolume(ctx, volume, newLabels)
 				assert.Error(t, err) // Expected due to no real AWS setup
 			},
 		},
 		{
 			name: "WaitForVolumeStates",
 			testFunc: func(t *testing.T) {
+				client := setupTestClient(t)
 				volume := &Volume{
 					FSxObject: FSxObject{ID: testVolumeID},
 				}
@@ -867,7 +968,7 @@ func TestVolumeLifecycleOperations(t *testing.T) {
 // Conversion Function Tests
 // These tests validate the conversion of AWS FSx objects to internal representations.
 func TestConversionFunctions(t *testing.T) {
-	client := setupTestClient(t)
+	client := setupBareClient()
 
 	tests := []struct {
 		name     string

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -41,6 +42,10 @@ func TestMain(m *testing.M) {
 	// Disable any standard log output
 	InitLogOutput(io.Discard)
 	_ = InitLogLevel("Trace")
+
+	// Speed up remediation and integration-test polling in this package.
+	failoverDetachPostDeleteDelay = 1 * time.Millisecond
+	testCrdPollInterval = 1 * time.Millisecond
 
 	// Run all tests
 	code := m.Run()

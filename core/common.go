@@ -21,15 +21,20 @@ const (
 	NodeAccessReconcilePeriod      = time.Second * 30
 	NodeRegistrationCooldownPeriod = time.Second * 30
 	AttachISCSIVolumeTimeoutLong   = time.Second * 90
-
-	// VP sync rate limiter constants
-	// Limits VP field propagation to 1 QPS with burst of 2
-	vpUpdateRateLimit = 1
-	vpUpdateBurst     = 2
 )
 
 var (
+	// VP sync rate limiter tuning (overridden in unit tests for speed).
+	// Production limits VP field propagation to 1 QPS with burst of 2.
+	vpUpdateRateLimit = rate.Limit(1)
+	vpUpdateBurst     = 2
+
 	vpSyncRateLimiter *rate.Limiter // Rate limiter for VP field updates
+
+	// VP sync backoff tuning (overridden in unit tests for speed).
+	vpSyncRateLimiterBackoffInitial = 500 * time.Millisecond
+	vpStoreBackoffInitialInterval   = 1 * time.Second
+	vpStoreBackoffMaxInterval       = 30 * time.Second
 
 	FlagConcurrent = "concurrent"
 )

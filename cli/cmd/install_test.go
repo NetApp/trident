@@ -1351,8 +1351,13 @@ func getMockK8sClient(t *testing.T) (*mockK8sClient.MockKubernetesClient, *fakeK
 
 func TestWaitForTridentPod(t *testing.T) {
 	originalTimeout := k8sTimeout
-	k8sTimeout = 20 * time.Second
-	defer func() { k8sTimeout = originalTimeout }()
+	originalMaxInterval := waitForTridentPodMaxInterval
+	k8sTimeout = 200 * time.Millisecond
+	waitForTridentPodMaxInterval = 20 * time.Millisecond
+	defer func() {
+		k8sTimeout = originalTimeout
+		waitForTridentPodMaxInterval = originalMaxInterval
+	}()
 
 	tests := []struct {
 		name                  string

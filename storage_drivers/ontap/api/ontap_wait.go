@@ -16,12 +16,24 @@ import (
 
 // Shared exponential backoff defaults for ONTAP read-after-write waits (see newOntapBackOff).
 const (
+	waitForOntapMultiplier    = 2
+	waitForOntapRandomization = 0.2
+)
+
+var (
+	// ONTAP read-after-write retry tuning (overridden in unit tests for speed).
 	waitForOntapInitialInterval = 100 * time.Millisecond
 	waitForOntapMaxInterval     = 2 * time.Second
 	waitForOntapMaxElapsed      = 30 * time.Second
-	waitForOntapMultiplier      = 2
-	waitForOntapRandomization   = 0.2
 )
+
+// ConfigureWaitForOntapBackoffForTests shortens read-after-write retry timing for unit tests.
+// Call from TestMain in packages that exercise WaitFor* helpers through production code.
+func ConfigureWaitForOntapBackoffForTests() {
+	waitForOntapInitialInterval = 10 * time.Millisecond
+	waitForOntapMaxInterval = 50 * time.Millisecond
+	waitForOntapMaxElapsed = 30 * time.Second
+}
 
 // LunGetter is the minimal surface needed for WaitForLunToExist. OntapAPI satisfies it.
 type LunGetter interface {
@@ -38,7 +50,7 @@ type NVMeNamespaceSizeGetter interface {
 	NVMeNamespaceGetSize(context.Context, string) (int, error)
 }
 
-// newOntapBackOff returns exponential backoff using the waitForOntap* constants, with
+// newOntapBackOff returns exponential backoff using the waitForOntap* vars, with
 // MaxElapsedTime shortened when ctx carries a sooner deadline.
 func newOntapBackOff(ctx context.Context) *backoff.ExponentialBackOff {
 	bo := backoff.NewExponentialBackOff()

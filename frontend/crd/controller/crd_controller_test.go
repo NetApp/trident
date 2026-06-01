@@ -62,8 +62,11 @@ func GetTestCrdClientset() *Clientset {
 	return NewFakeClientset()
 }
 
+// testCrdPollInterval is the delay used by delaySeconds() (overridden in TestMain for speed).
+var testCrdPollInterval = 1 * time.Second
+
 func delaySeconds(n time.Duration) {
-	time.Sleep(n * time.Second)
+	time.Sleep(n * testCrdPollInterval)
 }
 
 func newFakeStorageDriverConfigJSON(name string) (string, error) {
@@ -1046,7 +1049,7 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 
 	// Wait until the snapshot disappears, which can only happen if the CRD controller removes the finalizers.
 	for i := 0; i < 5; i++ {
-		time.Sleep(1 * time.Second)
+		time.Sleep(testCrdPollInterval)
 
 		// Get the latest version of the CRD
 		s, getErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).Get(ctx(), "vol1-snap1", getOpts)
@@ -1077,7 +1080,7 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 
 	// Wait until the volume disappears, which can only happen if the CRD controller removes the finalizers.
 	for i := 0; i < 5; i++ {
-		time.Sleep(1 * time.Second)
+		time.Sleep(testCrdPollInterval)
 
 		// Get the latest version of the CRD
 		v, getErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).Get(ctx(), "vol1", getOpts)
@@ -1189,7 +1192,7 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 	}
 
 	Logc(ctx()).Debug("Created transaction.")
-	time.Sleep(1 * time.Second)
+	time.Sleep(testCrdPollInterval)
 
 	// Get the CRD
 	savedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
@@ -1220,7 +1223,7 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 
 	// Wait until the CRD disappears, which can only happen if the CRD controller removes the finalizers.
 	for i := 0; i < 5; i++ {
-		time.Sleep(1 * time.Second)
+		time.Sleep(testCrdPollInterval)
 
 		// Get the latest version of the CRD
 		updatedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)

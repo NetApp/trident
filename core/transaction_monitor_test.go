@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	period = 1 * time.Second
-	maxAge = 3 * time.Second
+	period = 100 * time.Millisecond
+	maxAge = 500 * time.Millisecond
 )
 
 func init() {
@@ -35,7 +35,7 @@ func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
 		if o.bootstrapped {
 			break
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
@@ -117,8 +117,8 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 	volumeTransation := volTxns[0]
 	assert.Equal(t, volName, volumeTransation.VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 
-	// Allow time to check for expired transaction and to reap the transaction
-	time.Sleep(maxAge + (2 * time.Second))
+	// Allow time for the transaction to age past maxAge before the monitor reaps it
+	time.Sleep(maxAge + (100 * time.Millisecond))
 
 	// now restart the transaction monitor with a helper method with lesser tick
 	// interval for running the check that cleans up long running transactions
@@ -318,5 +318,5 @@ func restartTransactionMonitor(o *TridentOrchestrator) {
 	// transaction monitor as part of the bootstrap
 	o.StopTransactionMonitor()
 	o.StartTransactionMonitor(ctx(), period, maxAge)
-	time.Sleep(1 * time.Second)
+	time.Sleep(50 * time.Millisecond)
 }

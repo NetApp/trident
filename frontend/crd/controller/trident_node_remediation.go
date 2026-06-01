@@ -21,6 +21,9 @@ const (
 	listLimit = 100
 )
 
+// failoverDetachPostDeleteDelay waits after pod/VA deletes so Kubernetes can reconcile (shortened in unit tests).
+var failoverDetachPostDeleteDelay = 5 * time.Second
+
 // handleNodeRemediation handles the node remediation action and keeps the CR up to date
 func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (remediationErr error) {
 	key := keyItem.key
@@ -363,7 +366,7 @@ func (c *TridentCrdController) failoverDetach(
 	}
 
 	// Give Kubernetes time to process the deletions
-	time.Sleep(5 * time.Second)
+	time.Sleep(failoverDetachPostDeleteDelay)
 
 	return nil
 }

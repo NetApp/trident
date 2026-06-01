@@ -4,6 +4,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -11,13 +12,17 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
-var versionTestMutex sync.RWMutex
+var (
+	versionTestMutex sync.Mutex // serializes package-level version test globals
+	versionIOMutex   sync.Mutex // serializes os.Stdout/os.Stderr swapping
+)
 
 const (
 	testVersionValue = "1.0.0"
@@ -47,19 +52,64 @@ func withVersionTestMode(clientOnlyVal bool, operatingMode, outputFormat string,
 	fn()
 }
 
-func captureVersionOutput(fn func()) string {
+func captureVersionOutput(t *testing.T, fn func()) string {
+	t.Helper()
+	versionIOMutex.Lock()
+	defer versionIOMutex.Unlock()
+
 	oldStdout := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
 	os.Stdout = w
+	defer r.Close()
+	defer func() { os.Stdout = oldStdout }()
+	defer func() { _ = w.Close() }()
 
 	fn()
 
-	w.Close()
+	// Close write end and restore stdout before ReadAll (pipe EOF); defers cover panic in fn().
+	_ = w.Close()
 	os.Stdout = oldStdout
 
-	output := make([]byte, 1024)
-	n, _ := r.Read(output)
-	return string(output[:n])
+	output, err := io.ReadAll(r)
+	require.NoError(t, err)
+	return string(output)
+}
+
+// callGetVersionFromTunnel runs getVersionFromTunnel with package globals isolated from
+// parallel tests (Debug flag, os.Stderr/os.Stdout).
+func callGetVersionFromTunnel() (rest.GetVersionResponse, error) {
+	versionIOMutex.Lock()
+	defer versionIOMutex.Unlock()
+
+	oldStderr := os.Stderr
+	oldStdout := os.Stdout
+	stderrR, stderrW, err := os.Pipe()
+	if err != nil {
+		return rest.GetVersionResponse{}, err
+	}
+	stdoutR, stdoutW, err := os.Pipe()
+	if err != nil {
+		_ = stderrW.Close()
+		_ = stderrR.Close()
+		os.Stderr = oldStderr
+		os.Stdout = oldStdout
+		return rest.GetVersionResponse{}, err
+	}
+	os.Stderr = stderrW
+	os.Stdout = stdoutW
+	defer func() {
+		_ = stderrW.Close()
+		_ = stdoutW.Close()
+		os.Stderr = oldStderr
+		os.Stdout = oldStdout
+		_, _ = io.Copy(io.Discard, stderrR)
+		_, _ = io.Copy(io.Discard, stdoutR)
+		_ = stderrR.Close()
+		_ = stdoutR.Close()
+	}()
+
+	return getVersionFromTunnel()
 }
 
 func TestVersionCmd(t *testing.T) {
@@ -331,7 +381,7 @@ func TestGetVersionFromTunnel(t *testing.T) {
 			setupMocks: func() func() {
 				originalTunnelCommand := TunnelCommandRaw
 				originalDebug := Debug
-				Debug = true // Test the Debug path
+				Debug = true // Test the Debug path; stderr/stdout captured by callGetVersionFromTunnel.
 				TunnelCommandRaw = func(command []string) ([]byte, []byte, error) {
 					response := api.VersionResponse{
 						Server: &api.Version{
@@ -361,7 +411,7 @@ func TestGetVersionFromTunnel(t *testing.T) {
 				defer cleanup()
 			}
 
-			_, err := getVersionFromTunnel()
+			_, err := callGetVersionFromTunnel()
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -456,7 +506,7 @@ func TestWriteVersionFormats(t *testing.T) {
 			}
 
 			withVersionTestMode(false, "", tc.outputFormat, func() {
-				output := captureVersionOutput(func() {
+				output := captureVersionOutput(t, func() {
 					writeVersion(version)
 				})
 
@@ -521,7 +571,7 @@ func TestWriteVersionsFormats(t *testing.T) {
 			}
 
 			withVersionTestMode(false, "", tc.outputFormat, func() {
-				output := captureVersionOutput(func() {
+				output := captureVersionOutput(t, func() {
 					writeVersions(versions)
 				})
 
@@ -604,7 +654,7 @@ func TestTableOutputFunctions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			output := captureVersionOutput(tc.testFunc)
+			output := captureVersionOutput(t, tc.testFunc)
 			assert.NotEmpty(t, output)
 			for _, expected := range tc.expected {
 				assert.Contains(t, strings.ToUpper(output), strings.ToUpper(expected))

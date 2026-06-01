@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/brunoga/deep"
 	"github.com/distribution/reference"
@@ -4145,6 +4146,14 @@ func TestCreateOrPatchTridentServiceAccounts(t *testing.T) {
 func TestWaitForTridentPod(t *testing.T) {
 	mockK8sClient := newMockKubeClient(t)
 	installer := newTestInstaller(mockK8sClient)
+	originalAppLabel := appLabel
+	originalTimeout := k8sTimeout
+	appLabel = TridentCSILabel
+	k8sTimeout = 200 * time.Millisecond
+	defer func() {
+		appLabel = originalAppLabel
+		k8sTimeout = originalTimeout
+	}()
 
 	t.Run("success when pod is running immediately", func(t *testing.T) {
 		// Create a running pod - this should return quickly without retries
@@ -4339,12 +4348,13 @@ func TestNewInstaller(t *testing.T) {
 	t.Run("successful creation with valid config", func(t *testing.T) {
 		// Create a mock config that will pass basic validation
 		config := &rest.Config{
-			Host: "https://kubernetes.default.svc.cluster.local:443",
+			Host:    "https://kubernetes.default.svc.cluster.local:443",
+			Timeout: 500 * time.Millisecond,
 		}
 
 		// This will still fail at the actual K8s client creation since we don't have
 		// a real cluster, but it will test the NewInstaller function logic
-		_, err := NewInstaller(config, "test-namespace", 120)
+		_, err := NewInstaller(config, "test-namespace", 1)
 
 		// We expect this to fail during K8s client initialization, not during timeout validation
 		assert.Error(t, err, "expected error when initializing Kubernetes client with invalid config")
@@ -4353,26 +4363,31 @@ func TestNewInstaller(t *testing.T) {
 
 	t.Run("timeout validation with zero timeout", func(t *testing.T) {
 		config := &rest.Config{
-			Host: "https://kubernetes.default.svc.cluster.local:443",
+			Host:    "https://kubernetes.default.svc.cluster.local:443",
+			Timeout: 500 * time.Millisecond,
 		}
 
-		// Test timeout <= 0 logic (should default to DefaultTimeout)
-		_, err := NewInstaller(config, "test-namespace", 0)
+		originalK8sTimeout := k8sTimeout
+		defer func() { k8sTimeout = originalK8sTimeout }()
 
-		// Should fail at K8s client creation, not timeout validation
+		// Exercise timeout <= 0 defaulting before K8s client creation fails.
+		_, err := NewInstaller(config, "test-namespace", 0)
+		assert.Equal(t, time.Duration(DefaultTimeout)*time.Second, k8sTimeout)
 		assert.Error(t, err, "expected error when initializing Kubernetes client with zero timeout")
 		assert.Contains(t, err.Error(), "failed to initialize Kubernetes client")
 	})
 
 	t.Run("timeout validation with negative timeout", func(t *testing.T) {
 		config := &rest.Config{
-			Host: "https://kubernetes.default.svc.cluster.local:443",
+			Host:    "https://kubernetes.default.svc.cluster.local:443",
+			Timeout: 500 * time.Millisecond,
 		}
 
-		// Test negative timeout (should default to DefaultTimeout)
-		_, err := NewInstaller(config, "test-namespace", -10)
+		originalK8sTimeout := k8sTimeout
+		defer func() { k8sTimeout = originalK8sTimeout }()
 
-		// Should fail at K8s client creation, not timeout validation
+		_, err := NewInstaller(config, "test-namespace", -10)
+		assert.Equal(t, time.Duration(DefaultTimeout)*time.Second, k8sTimeout)
 		assert.Error(t, err, "expected error when initializing Kubernetes client with negative timeout")
 		assert.Contains(t, err.Error(), "failed to initialize Kubernetes client")
 	})

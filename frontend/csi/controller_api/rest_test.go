@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -588,17 +589,18 @@ func TestCreateTLSRestClient(t *testing.T) {
 	certFile := os.Getenv("CERT")
 	keyFile := os.Getenv("KEY")
 
-	fileHandler, e := os.Create("data.txt")
-	assert.NoError(t, e)
+	caFile := filepath.Join(t.TempDir(), "data.txt")
+	assert.NoError(t, os.WriteFile(caFile, []byte("ca"), 0o600))
+
 	tests := []struct {
 		caFileName      string
 		certFileName    string
 		keyfileName     string
 		isErrorExpected bool
 	}{
-		{caFileName: fileHandler.Name(), certFileName: certFile, keyfileName: keyFile, isErrorExpected: false},
+		{caFileName: caFile, certFileName: certFile, keyfileName: keyFile, isErrorExpected: false},
 		{caFileName: "", certFileName: certFile, keyfileName: keyFile, isErrorExpected: false},
-		{caFileName: fileHandler.Name(), certFileName: fileHandler.Name(), keyfileName: fileHandler.Name(), isErrorExpected: true},
+		{caFileName: caFile, certFileName: caFile, keyfileName: caFile, isErrorExpected: true},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("CreateNode: %d", i), func(t *testing.T) {
@@ -613,9 +615,6 @@ func TestCreateTLSRestClient(t *testing.T) {
 			}
 		})
 	}
-	fileHandler.Close()
-	e = os.Remove("data.txt")
-	assert.NoError(t, e)
 }
 
 func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {

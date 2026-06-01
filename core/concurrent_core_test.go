@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"golang.org/x/time/rate"
 
 	"github.com/netapp/trident/config"
 	db "github.com/netapp/trident/core/concurrent_cache"
@@ -133,6 +134,18 @@ func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePu
 		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(publication.VolumeName, publication.NodeName)))
 		require.NoError(t, err)
 		results[0].VolumePublication.Upsert(publication)
+		unlocker()
+	}
+}
+
+func removeVolumePublicationsFromCache(t *testing.T, publications ...*models.VolumePublication) {
+	t.Helper()
+	for _, publication := range publications {
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolumePublication(publication.VolumeName, publication.NodeName)))
+		require.NoError(t, err)
+		if results[0].VolumePublication.Delete != nil {
+			results[0].VolumePublication.Delete()
+		}
 		unlocker()
 	}
 }
@@ -19832,6 +19845,27 @@ func TestConcurrent_UpdateVolumeAutogrowPolicy(t *testing.T) {
 // VP Propagation Tests
 // ============================================================================
 
+func TestVolumePublicationDelete_RemovedFromCache(t *testing.T) {
+	db.Initialize()
+	vp := &models.VolumePublication{
+		Name:       "pvc-456-node2",
+		VolumeName: "pvc-456",
+		NodeName:   "node2",
+	}
+	addVolumePublicationsToCache(t, vp)
+	removeVolumePublicationsFromCache(t, vp)
+
+	readResults, readUnlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(vp.VolumeName, vp.NodeName)))
+	require.NoError(t, err)
+	require.Nil(t, readResults[0].VolumePublication.Read)
+	readUnlocker()
+
+	upsertResults, upsertUnlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+	require.NoError(t, err)
+	require.Nil(t, upsertResults[0].VolumePublication.Read)
+	upsertUnlocker()
+}
+
 func TestConcurrent_syncVolumePublication(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -19921,6 +19955,10 @@ func TestConcurrent_syncVolumePublication(t *testing.T) {
 }
 
 func TestConcurrent_SyncVolumePublications(t *testing.T) {
+	originalLimiter := vpSyncRateLimiter
+	defer func() { vpSyncRateLimiter = originalLimiter }()
+	vpSyncRateLimiter = rate.NewLimiter(vpUpdateRateLimit, vpUpdateBurst)
+
 	tests := []struct {
 		name       string
 		setupMocks func(*gomock.Controller, *ConcurrentTridentOrchestrator) []*models.VolumePublication
@@ -19933,7 +19971,7 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 				o.storeClient = mockStore
 				return []*models.VolumePublication{}
 			},
-			timeout: 1 * time.Second,
+			timeout: 200 * time.Millisecond,
 		},
 		{
 			name: "SingleVP",
@@ -19951,7 +19989,7 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 
 				return []*models.VolumePublication{vp}
 			},
-			timeout: 5 * time.Second,
+			timeout: 500 * time.Millisecond,
 		},
 		{
 			name: "MultipleVPs",
@@ -19979,7 +20017,7 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 
 				return []*models.VolumePublication{vp1, vp2, vp3}
 			},
-			timeout: 10 * time.Second,
+			timeout: 2 * time.Second,
 		},
 		{
 			name: "PartialFailure",
@@ -19998,20 +20036,27 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 
 				storeErr := errors.New("store update failed")
 				mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
-				// First VP succeeds
-				mockStore.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				// Second VP fails continuously
-				mockStore.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(storeErr).AnyTimes()
+				mockStore.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(_ context.Context, pub *models.VolumePublication) error {
+						if pub.VolumeName == vp1.VolumeName {
+							return nil
+						}
+						return storeErr
+					},
+				).AnyTimes()
 				o.storeClient = mockStore
 
 				return []*models.VolumePublication{vp1, vp2}
 			},
-			timeout: 5 * time.Second,
+			timeout: 500 * time.Millisecond,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// High limit so subtests are not throttled by vpSyncRateLimiter.
+			vpSyncRateLimiter = rate.NewLimiter(rate.Limit(1000), 1000)
+
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
@@ -20023,21 +20068,36 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 				vpList = tt.setupMocks(mockCtrl, o)
 			}
 
-			// Run the function with timeout for tests that may retry indefinitely
-			done := make(chan bool, 1)
+			syncCtx, cancelSync := context.WithCancel(testCtx)
+			defer cancelSync()
+
+			done := make(chan struct{})
 			go func() {
-				o.SyncVolumePublications(testCtx, vpList)
-				done <- true
+				o.SyncVolumePublications(syncCtx, vpList)
+				close(done)
 			}()
 
-			select {
-			case <-done:
-				// Completed successfully
-			case <-time.After(tt.timeout):
-				// For PartialFailure test, timeout is expected as it retries indefinitely
-				if tt.name == "PartialFailure" {
+			if tt.name == "PartialFailure" {
+				select {
+				case <-done:
+					t.Fatal("SyncVolumePublications should keep retrying failed VP")
+				case <-time.After(tt.timeout):
 					t.Log("SyncVolumePublications still retrying failed VP as expected")
-				} else {
+				}
+				removeVolumePublicationsFromCache(t, vpList...)
+				cancelSync()
+				assert.Eventually(t, func() bool {
+					select {
+					case <-done:
+						return true
+					default:
+						return false
+					}
+				}, 2*time.Second, 10*time.Millisecond, "background SyncVolumePublications should return")
+			} else {
+				select {
+				case <-done:
+				case <-time.After(tt.timeout):
 					t.Fatalf("Test timed out after %v", tt.timeout)
 				}
 			}

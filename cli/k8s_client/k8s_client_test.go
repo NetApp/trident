@@ -46,6 +46,9 @@ import (
 
 var mockError = errors.New("mock error")
 
+// testKubeClientTimeout keeps unit-test error paths fast; production uses 30s (client_factory.k8sTimeout).
+const testKubeClientTimeout = 2 * time.Second
+
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	InitLogOutput(io.Discard)
@@ -351,7 +354,7 @@ func TestNewKubeClient(t *testing.T) {
 		}
 	}()
 
-	client, err := NewKubeClient(nil, "test-namespace", 30*time.Second)
+	client, err := NewKubeClient(nil, "test-namespace", testKubeClientTimeout)
 	if err != nil {
 		assert.Error(t, err, "NewKubeClient should return error when config is nil")
 		assert.Nil(t, client)
@@ -820,7 +823,7 @@ func TestAdvancedServiceOperations(t *testing.T) {
 		versionInfo:  &version.Info{Major: "1", Minor: "20", GitVersion: "v1.20.0"},
 		cli:          CLIKubernetes,
 		flavor:       FlavorKubernetes,
-		timeout:      30 * time.Second,
+		timeout:      testKubeClientTimeout,
 		apiResources: make(map[string]*metav1.APIResourceList),
 	}
 
@@ -1189,7 +1192,7 @@ func TestExecWithMockServer(t *testing.T) {
 		versionInfo:  &version.Info{Major: "1", Minor: "20", GitVersion: "v1.20.0"},
 		cli:          CLIKubernetes,
 		flavor:       FlavorKubernetes,
-		timeout:      30 * time.Second,
+		timeout:      testKubeClientTimeout,
 		apiResources: make(map[string]*metav1.APIResourceList),
 	}
 
@@ -1669,7 +1672,7 @@ func TestAdvancedDeploymentOperations(t *testing.T) {
 		versionInfo:  &version.Info{Major: "1", Minor: "20", GitVersion: "v1.20.0"},
 		cli:          CLIKubernetes,
 		flavor:       FlavorKubernetes,
-		timeout:      30 * time.Second,
+		timeout:      testKubeClientTimeout,
 		apiResources: make(map[string]*metav1.APIResourceList),
 	}
 
@@ -2922,7 +2925,7 @@ func TestCRDOperations(t *testing.T) {
 	}
 
 	// Create KubeClient with mock server
-	client, err := NewKubeClient(config, "default", 30*time.Second)
+	client, err := NewKubeClient(config, "default", testKubeClientTimeout)
 	require.NoError(t, err)
 
 	t.Run("AddFinalizerToCRD_NewFinalizer", func(t *testing.T) {
@@ -3206,8 +3209,8 @@ spec:
 		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
 	}
 
-	// Create KubeClient with mock server
-	client, err := NewKubeClient(config, "default", 30*time.Second)
+	// Create KubeClient with mock server (short timeout: negative paths should fail fast)
+	client, err := NewKubeClient(config, "default", testKubeClientTimeout)
 	require.NoError(t, err)
 
 	t.Run("CreateObjectByYAML_Deployment", func(t *testing.T) {
@@ -3358,7 +3361,7 @@ func TestOpenShiftSCCOperations(t *testing.T) {
 	}
 
 	// Create KubeClient with mock server
-	client, err := NewKubeClient(config, "default", 30*time.Second)
+	client, err := NewKubeClient(config, "default", testKubeClientTimeout)
 	require.NoError(t, err)
 
 	t.Run("GetOpenShiftSCCByName_Success", func(t *testing.T) {
@@ -3467,7 +3470,7 @@ func TestAdvancedYAMLOperations(t *testing.T) {
 	}
 
 	// Create KubeClient with mock server
-	client, err := NewKubeClient(config, "default", 30*time.Second)
+	client, err := NewKubeClient(config, "default", testKubeClientTimeout)
 	require.NoError(t, err)
 
 	t.Run("PatchOpenShiftSCC_Success", func(t *testing.T) {
@@ -3531,7 +3534,7 @@ func setupK8sClientTest(t *testing.T) *k8sClientTestSuite {
 		versionInfo:  &version.Info{Major: "1", Minor: "20", GitVersion: "v1.20.0"},
 		cli:          CLIKubernetes,
 		flavor:       FlavorKubernetes,
-		timeout:      30 * time.Second,
+		timeout:      testKubeClientTimeout,
 		apiResources: make(map[string]*metav1.APIResourceList),
 	}
 
@@ -3670,7 +3673,7 @@ func TestFinalizerFunctionsWithHTTPMock(t *testing.T) {
 	}
 
 	// Create KubeClient
-	client, err := NewKubeClient(config, "default", 30*time.Second)
+	client, err := NewKubeClient(config, "default", testKubeClientTimeout)
 	require.NoError(t, err)
 
 	// Test AddFinalizerToCRD with different scenarios

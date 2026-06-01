@@ -30,6 +30,10 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+// snapshotErrorRetryDelay slows CSI snapshotter retries for Unsupported/MaxLimitReached errors.
+// Unit tests set this to zero.
+var snapshotErrorRetryDelay = 10 * time.Second
+
 func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
 ) (res *csi.CreateVolumeResponse, err error) {
@@ -737,11 +741,11 @@ func (p *Plugin) CreateSnapshot(
 			return nil, status.Error(codes.NotFound, err.Error())
 		} else if errors.IsUnsupportedError(err) {
 			// CSI snapshotter has no exponential backoff for retries, so slow it down here
-			time.Sleep(10 * time.Second)
+			time.Sleep(snapshotErrorRetryDelay)
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		} else if errors.IsMaxLimitReachedError(err) {
 			// CSI snapshotter has no exponential backoff for retries, so slow it down here
-			time.Sleep(10 * time.Second)
+			time.Sleep(snapshotErrorRetryDelay)
 			return nil, status.Error(codes.ResourceExhausted, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())

@@ -20,6 +20,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"golang.org/x/time/rate"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core/cache"
@@ -40,6 +41,12 @@ import (
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	logging.InitLogOutput(io.Discard)
+
+	// Speed up VP sync backoff/retry paths exercised by orchestrator tests.
+	vpSyncRateLimiterBackoffInitial = 10 * time.Millisecond
+	vpStoreBackoffInitialInterval = 10 * time.Millisecond
+	vpStoreBackoffMaxInterval = 50 * time.Millisecond
+
 	os.Exit(m.Run())
 }
 
@@ -4099,9 +4106,14 @@ func TestSyncVolumePublications_StoreError(t *testing.T) {
 		VolumeName: "vol1",
 	}
 
-	// Simulate store error - with exponential backoff retry, it will retry multiple times
-	// Allow multiple calls since retry logic will keep trying
-	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(fmt.Errorf("store error")).MinTimes(1).MaxTimes(5)
+	// Simulate store error - retry logic keeps calling until VP is removed from cache.
+	updateCallCount := 0
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).DoAndReturn(
+		func(ctx context.Context, pub *models.VolumePublication) error {
+			updateCallCount++
+			return fmt.Errorf("store error")
+		},
+	).MinTimes(1)
 
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
@@ -4112,26 +4124,29 @@ func TestSyncVolumePublications_StoreError(t *testing.T) {
 	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
 	assert.NoError(t, err)
 
-	// Propagate in goroutine since it will retry indefinitely
-	done := make(chan bool)
+	// Run sync in the background; it retries until the VP is gone from the cache.
+	syncCtx, cancelSync := context.WithCancel(context.Background())
+	defer cancelSync()
+
+	done := make(chan struct{})
 	go func() {
-		orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
-		done <- true
+		orchestrator.SyncVolumePublications(syncCtx, []*models.VolumePublication{vp})
+		close(done)
 	}()
 
-	// Let it retry a few times
-	time.Sleep(5 * time.Second)
+	assert.Eventually(t, func() bool {
+		return updateCallCount >= 1
+	}, 200*time.Millisecond, 5*time.Millisecond, "SyncVolumePublications should attempt at least one store update")
 
-	// Delete VP from cache to stop retries
 	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
 
-	// Wait a bit more for it to detect deletion and stop
 	select {
 	case <-done:
-		// Completed
-	case <-time.After(3 * time.Second):
-		// Timed out, which is okay - the goroutine will eventually stop
+	case <-time.After(2 * time.Second):
+		t.Fatal("background SyncVolumePublications should return after VP is removed from cache")
 	}
+
+	assert.GreaterOrEqual(t, updateCallCount, 1)
 
 	// VP should no longer be in cache
 	cachedVP := orchestrator.volumePublications.Get(vp.VolumeName, vp.NodeName)
@@ -4200,9 +4215,8 @@ func TestSyncVolumePublications_StoreRetryWithBackoff(t *testing.T) {
 	orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
 	duration := time.Since(startTime)
 
-	// Verify it took some time (backoff delays)
-	// With initial 1s and 2x multiplier: 1s + 2s = 3s minimum
-	assert.GreaterOrEqual(t, duration.Seconds(), 2.0, "Expected backoff delays")
+	// Verify it took some time (backoff delays; test intervals are ms-scale via TestMain)
+	assert.GreaterOrEqual(t, duration.Seconds(), 0.02, "Expected backoff delays")
 
 	// Verify it was called 3 times (2 failures + 1 success)
 	assert.Equal(t, 3, callCount, "Expected 3 store update attempts")
@@ -4230,6 +4244,11 @@ func TestSyncVolumePublications_RateLimiterBackoff(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
+
+	// Raise VP sync rate limit after NewTridentOrchestrator; production 1 QPS dominates runtime.
+	origLimiter := vpSyncRateLimiter
+	vpSyncRateLimiter = rate.NewLimiter(rate.Limit(1000), 1000)
+	t.Cleanup(func() { vpSyncRateLimiter = origLimiter })
 
 	// Add all VPs to cache
 	for _, vp := range vps {
@@ -4288,14 +4307,22 @@ func TestSyncVolumePublications_VPDeletedDuringRetry(t *testing.T) {
 	// Start propagation in goroutine
 	go orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
 
-	// Wait a bit for first attempt to fail
-	time.Sleep(500 * time.Millisecond)
+	// Wait for at least one persist attempt before deleting from cache.
+	assert.Eventually(t, func() bool {
+		return callCount >= 1
+	}, 200*time.Millisecond, 5*time.Millisecond, "Expected an initial persist attempt")
 
 	// Delete VP from cache (simulates deletion during retry)
 	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
 
-	// Wait for retry attempts to complete
-	time.Sleep(3 * time.Second)
+	// Ensure retries stop quickly once the cache entry is removed.
+	lastCount := callCount
+	assert.Eventually(t, func() bool {
+		current := callCount
+		stable := current == lastCount
+		lastCount = current
+		return stable
+	}, 300*time.Millisecond, 10*time.Millisecond, "Expected retries to stop after VP deletion")
 
 	// Should have attempted at least once, but stopped retrying after VP was deleted
 	assert.GreaterOrEqual(t, callCount, 1, "Expected at least one attempt")

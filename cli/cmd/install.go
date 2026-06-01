@@ -104,45 +104,46 @@ const (
 
 var (
 	// CLI flags
-	generateYAML             bool
-	useYAML                  bool
-	silent                   bool
-	useIPv6                  bool
-	silenceAutosupport       bool
-	excludeAutosupport       bool
-	nodePrep                 []string
-	skipK8sVersionCheck      bool
-	windows                  bool
-	enableForceDetach        bool
-	disableAuditLog          bool
-	tridentImage             string
-	autosupportImage         string
-	autosupportProxy         string
-	autosupportInsecure      bool
-	autosupportCustomURL     string
-	autosupportSerialNumber  string
-	autosupportHostname      string
-	kubeletDir               string
-	imageRegistry            string
-	logFormat                string
-	imagePullPolicy          string
-	imagePullSecrets         []string
-	logWorkflows             string
-	logLayers                string
-	probePort                int64
-	k8sTimeout               time.Duration
-	httpRequestTimeout       time.Duration
-	acpImage                 string // TODO: Remove after 26.04.
-	enableACP                bool   // TODO: Remove after 26.04.
-	httpsMetrics             bool
-	cloudProvider            string
-	cloudIdentity            string
-	iscsiSelfHealingInterval time.Duration
-	iscsiSelfHealingWaitTime time.Duration
-	k8sAPIQPS                int
-	fsGroupPolicy            string
-	enableConcurrency        bool
-	hostNetwork              bool
+	generateYAML                 bool
+	useYAML                      bool
+	silent                       bool
+	useIPv6                      bool
+	silenceAutosupport           bool
+	excludeAutosupport           bool
+	nodePrep                     []string
+	skipK8sVersionCheck          bool
+	windows                      bool
+	enableForceDetach            bool
+	disableAuditLog              bool
+	tridentImage                 string
+	autosupportImage             string
+	autosupportProxy             string
+	autosupportInsecure          bool
+	autosupportCustomURL         string
+	autosupportSerialNumber      string
+	autosupportHostname          string
+	kubeletDir                   string
+	imageRegistry                string
+	logFormat                    string
+	imagePullPolicy              string
+	imagePullSecrets             []string
+	logWorkflows                 string
+	logLayers                    string
+	probePort                    int64
+	k8sTimeout                   time.Duration
+	waitForTridentPodMaxInterval = 15 * time.Second
+	httpRequestTimeout           time.Duration
+	acpImage                     string // TODO: Remove after 26.04.
+	enableACP                    bool   // TODO: Remove after 26.04.
+	httpsMetrics                 bool
+	cloudProvider                string
+	cloudIdentity                string
+	iscsiSelfHealingInterval     time.Duration
+	iscsiSelfHealingWaitTime     time.Duration
+	k8sAPIQPS                    int
+	fsGroupPolicy                string
+	enableConcurrency            bool
+	hostNetwork                  bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -2124,7 +2125,7 @@ func waitForTridentPod() (*v1.Pod, error) {
 		}).Debugf("Trident pod not yet running, waiting.")
 	}
 	podBackoff := backoff.NewExponentialBackOff()
-	podBackoff.MaxInterval = 15 * time.Second
+	podBackoff.MaxInterval = waitForTridentPodMaxInterval
 	podBackoff.MaxElapsedTime = k8sTimeout
 
 	Log().Info("Waiting for Trident pod to start.")

@@ -1508,12 +1508,19 @@ func isNotFoundError(err error) bool {
 // crDeleter deletes a custom resource
 type crDeleter func(context.Context, string, metav1.DeleteOptions) error
 
+// deleteWithRetry backoff tuning (overridden in unit tests for speed).
+var (
+	deleteWithRetryMaxElapsedTime  = 10 * time.Second
+	deleteWithRetryInitialInterval = 1 * time.Second
+	deleteWithRetryMaxInterval     = 5 * time.Second
+)
+
 func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, deleteOptions *metav1.DeleteOptions) error {
 	if deleteOptions == nil {
 		deleteOptions = &deleteOpts
 	}
 
-	timeout := 10 * time.Second
+	timeout := deleteWithRetryMaxElapsedTime
 	retries := 0
 
 	doDelete := func() error {
@@ -1535,10 +1542,10 @@ func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, delet
 	}
 
 	deleteBackoff := backoff.NewExponentialBackOff()
-	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.InitialInterval = deleteWithRetryInitialInterval
 	deleteBackoff.RandomizationFactor = 0.1
 	deleteBackoff.Multiplier = 1.414
-	deleteBackoff.MaxInterval = 5 * time.Second
+	deleteBackoff.MaxInterval = deleteWithRetryMaxInterval
 	deleteBackoff.MaxElapsedTime = timeout
 
 	Log().WithField("name", name).Trace("Waiting for object to be deleted.")
@@ -1578,10 +1585,10 @@ func waitForCRDDeletion(name string, timeout time.Duration) error {
 	}
 
 	deleteBackoff := backoff.NewExponentialBackOff()
-	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.InitialInterval = deleteWithRetryInitialInterval
 	deleteBackoff.RandomizationFactor = 0.1
 	deleteBackoff.Multiplier = 1.414
-	deleteBackoff.MaxInterval = 5 * time.Second
+	deleteBackoff.MaxInterval = deleteWithRetryMaxInterval
 	deleteBackoff.MaxElapsedTime = timeout
 
 	Log().WithField("CRD", name).Trace("Waiting for CRD to be deleted.")

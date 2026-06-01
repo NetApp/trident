@@ -7031,7 +7031,7 @@ func (o *TridentOrchestrator) SyncVolumePublications(
 
 	// Configure exponential backoff for rate limiter waits
 	rateLimiterBackoff := backoff.NewExponentialBackOff()
-	rateLimiterBackoff.InitialInterval = 500 * time.Millisecond
+	rateLimiterBackoff.InitialInterval = vpSyncRateLimiterBackoffInitial
 	rateLimiterBackoff.Multiplier = 1.5
 	rateLimiterBackoff.MaxInterval = 2 * time.Second
 	rateLimiterBackoff.RandomizationFactor = 0.2
@@ -7039,9 +7039,9 @@ func (o *TridentOrchestrator) SyncVolumePublications(
 
 	// Configure exponential backoff for store update retries
 	vpStoreBackoff := backoff.NewExponentialBackOff()
-	vpStoreBackoff.InitialInterval = 1 * time.Second
+	vpStoreBackoff.InitialInterval = vpStoreBackoffInitialInterval
 	vpStoreBackoff.Multiplier = 2.0
-	vpStoreBackoff.MaxInterval = 30 * time.Second
+	vpStoreBackoff.MaxInterval = vpStoreBackoffMaxInterval
 	vpStoreBackoff.RandomizationFactor = 0.2
 	vpStoreBackoff.MaxElapsedTime = 0 // Retry indefinitely
 
@@ -7051,6 +7051,9 @@ func (o *TridentOrchestrator) SyncVolumePublications(
 
 		// Wait for rate limiter token WITHOUT holding lock to avoid blocking other operations
 		for !vpSyncRateLimiter.Allow() {
+			if ctx.Err() != nil {
+				return
+			}
 			waitDuration := rateLimiterBackoff.NextBackOff()
 			Logc(ctx).WithFields(LogFields{
 				"volumeName":  vpsToBeSynced[i].VolumeName,
@@ -7059,7 +7062,11 @@ func (o *TridentOrchestrator) SyncVolumePublications(
 			}).Debug("Rate limiter throttling VP sync, backing off before retry")
 
 			// Sleep with exponential backoff to give rate limiter time to refill
-			time.Sleep(waitDuration)
+			select {
+			case <-time.After(waitDuration):
+			case <-ctx.Done():
+				return
+			}
 		}
 
 		// Reset store update backoff for this VP
@@ -7093,8 +7100,11 @@ func (o *TridentOrchestrator) SyncVolumePublications(
 
 		// Persist the VP to the store with exponential backoff retry
 		// The backoff sleep happens WITHOUT holding the lock
-		// Will retry indefinitely until success or VP is deleted from cache
-		if err := backoff.RetryNotify(vpStoreUpdateAttempt, vpStoreBackoff, nil); err != nil {
+		// Will retry indefinitely until success, VP is deleted from cache, or ctx is cancelled
+		if err := backoff.RetryNotify(vpStoreUpdateAttempt, backoff.WithContext(vpStoreBackoff, ctx), nil); err != nil {
+			if ctx.Err() != nil {
+				return
+			}
 			Logc(ctx).WithFields(LogFields{
 				"volumeName": vpsToBeSynced[i].VolumeName,
 				"nodeName":   vpsToBeSynced[i].NodeName,

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -212,9 +213,9 @@ func TestANF_Validate_AMIUnmarshalFileError(t *testing.T) {
 	anf.ClientSecret = ""
 	anf.AMIEnabled = true
 
-	configFile, _ := os.Getwd()
+	azureCredFile := filepath.Join(t.TempDir(), "azure.json")
 	envVariable := map[string]string{
-		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+		"AZURE_CREDENTIAL_FILE": azureCredFile,
 	}
 
 	// Set required environment variables for testing
@@ -228,7 +229,7 @@ func TestANF_Validate_AMIUnmarshalFileError(t *testing.T) {
 	  "aadClientId": 111,
 	}`
 
-	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+	assert.NoError(t, os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm))
 
 	err := anf.Validate()
 
@@ -250,9 +251,9 @@ func TestANF_Validate_AMIDiscoveryError(t *testing.T) {
 	anf.ClientSecret = ""
 	anf.AMIEnabled = true
 
-	configFile, _ := os.Getwd()
+	azureCredFile := filepath.Join(t.TempDir(), "azure.json")
 	envVariable := map[string]string{
-		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+		"AZURE_CREDENTIAL_FILE": azureCredFile,
 	}
 
 	// Set required environment variables for testing
@@ -273,7 +274,7 @@ func TestANF_Validate_AMIDiscoveryError(t *testing.T) {
 	  "userAssignedIdentityID": "deadbeef-173f-4bf4-b5b8-7cba6f53a227"
 	}`
 
-	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+	assert.NoError(t, os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm))
 
 	mAzure.EXPECT().DiscoverAzureResources(ctx).Return(fmt.Errorf("failed to discover resources"))
 

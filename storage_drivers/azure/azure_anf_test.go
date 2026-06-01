@@ -58,6 +58,10 @@ var (
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	InitLogOutput(io.Discard)
+	// Fallback for tests that construct a real api.Azure client (most driver tests inject a mock).
+	_ = os.Setenv("AZURE_CLIENT_ID", "00000000-0000-0000-0000-000000000001")
+	_ = os.Setenv("AZURE_TENANT_ID", "00000000-0000-0000-0000-000000000002")
+	_ = os.Setenv("AZURE_CLIENT_SECRET", "fake-secret-for-unit-tests")
 	os.Exit(m.Run())
 }
 
@@ -692,8 +696,8 @@ func TestInitialize_SDKInitError(t *testing.T) {
 	    "subnet": "RG1/VN1/SN1"
     }`
 
-	_, driver := newMockANFDriver(t)
-	driver.SDK = nil
+	mockAPI, driver := newMockANFDriver(t)
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(errFailed).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
 		BackendUUID)

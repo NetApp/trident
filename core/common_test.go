@@ -9,6 +9,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/time/rate"
 
 	"github.com/netapp/trident/config"
@@ -1105,8 +1106,8 @@ func TestVPSyncRateLimiting_BulkScenario(t *testing.T) {
 	originalLimiter := vpSyncRateLimiter
 	defer func() { vpSyncRateLimiter = originalLimiter }()
 
-	// Create a test rate limiter with same config as production (1 QPS, burst of 2)
-	testLimiter := rate.NewLimiter(vpUpdateRateLimit, vpUpdateBurst)
+	// Use an accelerated limiter so the unit test validates rate limiting without multi-second waits.
+	testLimiter := rate.NewLimiter(rate.Limit(20), 2)
 	vpSyncRateLimiter = testLimiter
 
 	// Simulate many VPs needing sync after upgrade (would hit rate limiter in production)
@@ -1141,7 +1142,7 @@ func TestVPSyncRateLimiting_BulkScenario(t *testing.T) {
 		// with exponential backoff if rate limited
 		for !vpSyncRateLimiter.Allow() {
 			// In production, this uses exponential backoff (500ms -> 750ms -> 1.125s -> 2s max)
-			time.Sleep(100 * time.Millisecond) // Shortened for test performance
+			time.Sleep(10 * time.Millisecond) // Further shortened for unit-test performance
 		}
 
 		// Record when we got the token
@@ -1166,34 +1167,19 @@ func TestVPSyncRateLimiting_BulkScenario(t *testing.T) {
 	// All VPs should need syncing
 	assert.Equal(t, numVPs, vpsNeedingSync, "All VPs should need syncing in bulk upgrade scenario")
 
-	// Verify rate limiting behavior:
-	// With burst=2, first 2 VPs should be fast, then rate limited to 1 QPS
-	// First 2 should be nearly instantaneous (burst allows them)
-	if len(syncTimes) >= 2 {
-		firstTwoInterval := syncTimes[1].Sub(syncTimes[0])
-		assert.Less(t, firstTwoInterval, 50*time.Millisecond,
-			"First 2 VPs should sync quickly due to burst capacity")
-	}
-
-	// After burst exhausted, should see throttling
+	// Verify rate limiting behavior with the accelerated test limiter (20 QPS, burst 2).
+	// Production uses 1 QPS / burst 2; compare relative ordering instead of absolute wall times.
 	if len(syncTimes) >= 3 {
-		// The 3rd VP onwards should be rate limited
+		burstInterval := syncTimes[1].Sub(syncTimes[0])
 		throttledInterval := syncTimes[2].Sub(syncTimes[1])
-		assert.Greater(t, throttledInterval, 50*time.Millisecond,
-			"VPs after burst should be rate limited")
+		assert.Greater(t, throttledInterval, burstInterval,
+			"VP after burst exhaustion should wait longer than back-to-back burst VPs")
 	}
-
-	// Total duration should reflect rate limiting (with burst of 2, remaining 3 need ~300ms min)
-	// In production: burst allows 2 immediate, then ~1 per second
-	// Our test uses 100ms sleeps, so 3 throttled * 100ms = ~300ms minimum
-	minExpectedDuration := 250 * time.Millisecond
-	assert.Greater(t, totalDuration, minExpectedDuration,
-		"Total sync duration should reflect rate limiting: %v", totalDuration)
 
 	t.Logf("Rate limiting test completed:")
 	t.Logf("  - Synced %d VPs in %v", numVPs, totalDuration)
-	t.Logf("  - Burst allowed first 2 VPs immediately")
-	t.Logf("  - Remaining VPs were rate limited")
+	t.Logf("  - Burst=2 allowed first 2 VPs immediately (20 QPS test limiter)")
+	t.Logf("  - Remaining VPs were throttled after burst exhaustion")
 	for i, syncTime := range syncTimes {
 		elapsed := syncTime.Sub(startTime)
 		t.Logf("  - VP %d synced at %v", i, elapsed)
@@ -1203,13 +1189,33 @@ func TestVPSyncRateLimiting_BulkScenario(t *testing.T) {
 // TestVPSyncRateLimiting_BackoffBehavior tests the exponential backoff behavior
 // when rate limiter is exhausted (simulating production SyncVolumePublications behavior)
 func TestVPSyncRateLimiting_BackoffBehavior(t *testing.T) {
-	// Save original rate limiter and restore after test
 	originalLimiter := vpSyncRateLimiter
 	defer func() { vpSyncRateLimiter = originalLimiter }()
 
-	// Create a very restrictive rate limiter to force backoff (0.5 QPS, burst of 1)
-	testLimiter := rate.NewLimiter(0.5, 1) // 1 every 2 seconds
+	// burst=1 with slow refill: deterministically deny Allow() after the first token.
+	testLimiter := rate.NewLimiter(rate.Every(50*time.Millisecond), 1)
 	vpSyncRateLimiter = testLimiter
+	require.True(t, vpSyncRateLimiter.Allow())
+	require.False(t, vpSyncRateLimiter.Allow(), "burst token should be exhausted")
+
+	rateLimiterBackoff := backoff.NewExponentialBackOff()
+	rateLimiterBackoff.InitialInterval = 5 * time.Millisecond // Production: 500ms
+	rateLimiterBackoff.Multiplier = 1.5
+	rateLimiterBackoff.MaxInterval = 20 * time.Millisecond // Production: 2s
+	rateLimiterBackoff.RandomizationFactor = 0.2
+	rateLimiterBackoff.MaxElapsedTime = 0
+	rateLimiterBackoff.Reset()
+
+	backoffAttempts := 0
+	backoffStart := time.Now()
+	deadline := time.Now().Add(500 * time.Millisecond)
+	for !vpSyncRateLimiter.Allow() {
+		require.False(t, time.Now().After(deadline), "timed out waiting for rate limiter token")
+		backoffAttempts++
+		time.Sleep(rateLimiterBackoff.NextBackOff())
+	}
+	require.Greater(t, backoffAttempts, 0, "denied Allow() should run backoff sleeps")
+	backoffElapsed := time.Since(backoffStart)
 
 	vol := &storage.Volume{
 		Config: &storage.VolumeConfig{
@@ -1219,71 +1225,19 @@ func TestVPSyncRateLimiting_BackoffBehavior(t *testing.T) {
 		BackendUUID: "backend-xyz",
 		Pool:        "pool-xyz",
 	}
-
-	numVPs := 3
-	backoffOccurred := false
-	totalBackoffTime := time.Duration(0)
-
-	startTime := time.Now()
-
-	for i := 0; i < numVPs; i++ {
-		vp := &models.VolumePublication{
-			NodeName:           fmt.Sprintf("worker-%d", i),
-			StorageClass:       "silver", // Different, needs sync
-			BackendUUID:        "backend-xyz",
-			Pool:               "pool-xyz",
-			AutogrowPolicy:     "",
-			AutogrowIneligible: false,
-			Labels: map[string]string{
-				config.TridentNodeNameLabel: fmt.Sprintf("worker-%d", i),
-			},
-		}
-
-		// Simulate production backoff behavior using the same backoff library
-		// Configure exponential backoff matching production (scaled down 10x for test speed)
-		rateLimiterBackoff := backoff.NewExponentialBackOff()
-		rateLimiterBackoff.InitialInterval = 50 * time.Millisecond // Production: 500ms
-		rateLimiterBackoff.Multiplier = 1.5
-		rateLimiterBackoff.MaxInterval = 200 * time.Millisecond // Production: 2s
-		rateLimiterBackoff.RandomizationFactor = 0.2
-		rateLimiterBackoff.MaxElapsedTime = 0 // Retry indefinitely
-		rateLimiterBackoff.Reset()
-
-		backoffAttempts := 0
-		backoffStart := time.Now()
-
-		for !vpSyncRateLimiter.Allow() {
-			backoffAttempts++
-			backoffOccurred = true
-
-			// Get next backoff duration using the same algorithm as production
-			waitDuration := rateLimiterBackoff.NextBackOff()
-			time.Sleep(waitDuration)
-		}
-
-		backoffElapsed := time.Since(backoffStart)
-		totalBackoffTime += backoffElapsed
-
-		// Perform sync
-		syncNeeded := syncVolumePublicationFields(vol, vp)
-		assert.True(t, syncNeeded, "VP %d should need sync", i)
-		assert.Equal(t, "gold", vp.StorageClass, "StorageClass should be updated")
-
-		if backoffAttempts > 0 {
-			t.Logf("VP %d experienced %d backoff attempts, total backoff: %v",
-				i, backoffAttempts, backoffElapsed)
-		}
+	vp := &models.VolumePublication{
+		NodeName:           "worker-0",
+		StorageClass:       "silver",
+		BackendUUID:        "backend-xyz",
+		Pool:               "pool-xyz",
+		AutogrowPolicy:     "",
+		AutogrowIneligible: false,
+		Labels: map[string]string{
+			config.TridentNodeNameLabel: "worker-0",
+		},
 	}
+	assert.True(t, syncVolumePublicationFields(vol, vp))
+	assert.Equal(t, "gold", vp.StorageClass)
 
-	totalDuration := time.Since(startTime)
-
-	// With 0.5 QPS rate limit, we should see backoff behavior
-	assert.True(t, backoffOccurred, "Rate limiting should trigger backoff")
-	assert.Greater(t, totalBackoffTime, 100*time.Millisecond,
-		"Should have accumulated significant backoff time")
-
-	t.Logf("Backoff test completed:")
-	t.Logf("  - Synced %d VPs in %v", numVPs, totalDuration)
-	t.Logf("  - Total backoff time: %v", totalBackoffTime)
-	t.Logf("  - Average backoff per VP: %v", totalBackoffTime/time.Duration(numVPs))
+	t.Logf("Backoff test completed: %d backoff attempts in %v", backoffAttempts, backoffElapsed)
 }

@@ -1813,6 +1813,10 @@ func TestControllerGetListSnapshots_DoesNotExceedMaxEntries(t *testing.T) {
 }
 
 func TestCreateSnapshot(t *testing.T) {
+	originalSnapshotErrorRetryDelay := snapshotErrorRetryDelay
+	snapshotErrorRetryDelay = 0
+	defer func() { snapshotErrorRetryDelay = originalSnapshotErrorRetryDelay }()
+
 	testCases := []struct {
 		name                                 string
 		req                                  *csi.CreateSnapshotRequest

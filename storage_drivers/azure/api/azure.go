@@ -324,13 +324,21 @@ func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configu
 	return customConfig, nil
 }
 
+// ValidateClientConfig checks driver configuration without creating SDK clients or credentials.
+func ValidateClientConfig(config ClientConfig) error {
+	if config.Location == "" {
+		return errors.New("location must be specified in the config")
+	}
+	if _, err := ValidateCloudConfiguration(config.CloudConfig); err != nil {
+		return fmt.Errorf("invalid cloud configuration: %v", err)
+	}
+	return nil
+}
+
 // NewDriver is a factory method for creating a new SDK interface.
 func NewDriver(config ClientConfig) (Azure, error) {
-	var err error
-
-	// Ensure we got a location
-	if config.Location == "" {
-		return nil, errors.New("location must be specified in the config")
+	if err := ValidateClientConfig(config); err != nil {
+		return nil, err
 	}
 
 	// Validate and get cloud configuration

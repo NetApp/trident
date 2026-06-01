@@ -176,6 +176,11 @@ var (
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	log.SetOutput(io.Discard)
+
+	// Use short cache waits in unit tests; production defaults are set in config.go init.
+	PreSyncCacheWaitPeriod = 50 * time.Millisecond
+	PostSyncCacheWaitPeriod = 50 * time.Millisecond
+
 	os.Exit(m.Run())
 }
 

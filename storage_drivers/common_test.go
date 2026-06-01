@@ -727,13 +727,21 @@ func (t TestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func TestLimitedRetryTransport(t *testing.T) {
+	newFastTransport := func(base TestTransport, target ContextRequestTarget) *LimitedRetryTransport {
+		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), base, target)
+		tr.b.InitialInterval = 20 * time.Millisecond
+		tr.b.MaxInterval = 150 * time.Millisecond
+		tr.b.Multiplier = 1.2
+		tr.b.RandomizationFactor = 0
+		return tr
+	}
+
 	t.Run("canceled context", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				return nil, nil
-			}), "")
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, nil
+		}), "")
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", nil)
 		assert.NoError(t, err)
 		_, err = tr.RoundTrip(req)
@@ -741,12 +749,11 @@ func TestLimitedRetryTransport(t *testing.T) {
 		assert.ErrorContains(t, err, "context canceled")
 	})
 	t.Run("times out with EOF", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				return nil, io.EOF
-			}), "")
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, io.EOF
+		}), "")
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", nil)
 		assert.NoError(t, err)
 		_, err = tr.RoundTrip(req)
@@ -754,10 +761,9 @@ func TestLimitedRetryTransport(t *testing.T) {
 		assert.ErrorContains(t, err, "deadline exceeded")
 	})
 	t.Run("permanent failure", func(t *testing.T) {
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				return nil, fmt.Errorf("permanent failure")
-			}), "")
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, fmt.Errorf("permanent failure")
+		}), "")
 		req, err := http.NewRequest(http.MethodGet, "http://localhost", nil)
 		assert.NoError(t, err)
 		_, err = tr.RoundTrip(req)
@@ -766,18 +772,17 @@ func TestLimitedRetryTransport(t *testing.T) {
 	})
 	t.Run("succeeds after failure", func(t *testing.T) {
 		attempts := 0
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				if attempts < 3 {
-					attempts++
-					return nil, io.EOF
-				}
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("ok")),
-					Header:     make(http.Header),
-				}, nil
-			}), "")
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			if attempts < 3 {
+				attempts++
+				return nil, io.EOF
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("ok")),
+				Header:     make(http.Header),
+			}, nil
+		}), "")
 		req, err := http.NewRequest(http.MethodGet, "http://localhost", nil)
 		assert.NoError(t, err)
 		resp, err := tr.RoundTrip(req)
@@ -792,18 +797,17 @@ func TestLimitedRetryTransport(t *testing.T) {
 		// N+1 times (N retries + 1 final success) so we know retry logic fires.
 		const eofRetries = 2
 		calls := 0
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				calls++
-				if calls <= eofRetries {
-					return nil, io.EOF
-				}
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("")),
-					Header:     make(http.Header),
-				}, nil
-			}), ContextRequestTargetONTAP)
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if calls <= eofRetries {
+				return nil, io.EOF
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+			}, nil
+		}), ContextRequestTargetONTAP)
 		req, err := http.NewRequest(http.MethodGet, "http://ontap.local", nil)
 		assert.NoError(t, err)
 		_, err = tr.RoundTrip(req)
@@ -817,19 +821,18 @@ func TestLimitedRetryTransport(t *testing.T) {
 		// LimitedRetryTransport must still retry because errors.Is traverses the chain.
 		const eofRetries = 2
 		calls := 0
-		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1),
-			TestTransport(func(req *http.Request) (*http.Response, error) {
-				calls++
-				if calls <= eofRetries {
-					// Simulate what MetricsTransport does with ONTAP EOF.
-					return nil, errors.WrapWithServerBackPressureError(io.EOF, "received EOF from server")
-				}
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("")),
-					Header:     make(http.Header),
-				}, nil
-			}), ContextRequestTargetONTAP)
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if calls <= eofRetries {
+				// Simulate what MetricsTransport does with ONTAP EOF.
+				return nil, errors.WrapWithServerBackPressureError(io.EOF, "received EOF from server")
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+			}, nil
+		}), ContextRequestTargetONTAP)
 		req, err := http.NewRequest(http.MethodGet, "http://ontap.local", nil)
 		assert.NoError(t, err)
 		_, err = tr.RoundTrip(req)
