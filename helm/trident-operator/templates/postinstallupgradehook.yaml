@@ -38,6 +38,8 @@ spec:
   initContainers:
     - name: init-container-1
       image: {{ include "trident.image" $ }}
+      securityContext:
+        readOnlyRootFilesystem: true
       command:
         - tridentctl
         - --debug
@@ -55,6 +57,8 @@ spec:
   containers:
     - name: trident-post-hook
       image: {{ include "trident.image" $ }}
+      securityContext:
+        readOnlyRootFilesystem: true
       command:
         - tridentctl
         - --debug

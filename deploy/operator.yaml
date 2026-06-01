@@ -27,6 +27,8 @@ spec:
           - "/trident-operator"
           - "--debug"
           imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
           env:
             - name: POD_NAME
               valueFrom:

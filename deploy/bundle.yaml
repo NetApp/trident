@@ -511,6 +511,7 @@ spec:
               cpu: "10m"
               memory: "40Mi"
           securityContext:
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - all

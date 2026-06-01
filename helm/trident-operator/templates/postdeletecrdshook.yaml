@@ -67,6 +67,8 @@ spec:
       containers:
       - name: post-delete-container
         image: {{ .Values.helmHookImage }}
+        securityContext:
+          readOnlyRootFilesystem: true
         command:
           - sh
           - -c

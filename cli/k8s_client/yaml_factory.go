@@ -425,6 +425,7 @@ const deploymentAutosupportYAMLTemplate = `
         image: {AUTOSUPPORT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -734,6 +735,7 @@ spec:
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           runAsNonRoot: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -814,6 +816,7 @@ spec:
         image: {CSI_SIDECAR_PROVISIONER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -836,6 +839,7 @@ spec:
         image: {CSI_SIDECAR_ATTACHER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -858,6 +862,7 @@ spec:
         image: {CSI_SIDECAR_RESIZER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -880,6 +885,7 @@ spec:
         image: {CSI_SIDECAR_SNAPSHOTTER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -1249,6 +1255,7 @@ func getSectionIndentation(daemonSetYAML, tag string) (indent string) {
 const prepareNodeLinux = `initContainers:
 {INDENT}- name: trident-prepare-node
 {INDENT}  securityContext:
+{INDENT}    readOnlyRootFilesystem: true
 {INDENT}    privileged: true
 {INDENT}    allowPrivilegeEscalation: true
 {INDENT}    capabilities:
@@ -1301,6 +1308,7 @@ spec:
       containers:
       - name: trident-main
         securityContext:
+          readOnlyRootFilesystem: true
           privileged: true
           allowPrivilegeEscalation: true
           capabilities:
@@ -1395,6 +1403,8 @@ spec:
       - name: node-driver-registrar
         image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          readOnlyRootFilesystem: true
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -1508,6 +1518,8 @@ spec:
       serviceAccount: {SERVICE_ACCOUNT}
       containers:
       - name: trident-main
+        securityContext:
+          readOnlyRootFilesystem: true
         imagePullPolicy: {IMAGE_PULL_POLICY}
         image: {TRIDENT_IMAGE}
         command:
@@ -1596,6 +1608,8 @@ spec:
       - name: node-driver-registrar
         image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          readOnlyRootFilesystem: true
         args:
         - --v=2
         - --csi-address=$(CSI_ENDPOINT)
@@ -1626,6 +1640,8 @@ spec:
           mountPath: C:\registration
         {CSI_SIDECAR_REGISTRAR_RESOURCES}
       - name: liveness-probe
+        securityContext:
+          readOnlyRootFilesystem: true
         volumeMounts:
           - mountPath: C:\csi
             name: plugin-dir
@@ -1751,6 +1767,7 @@ spec:
     command: ["tridentctl"]
     args: ["pause"]
     securityContext:
+      readOnlyRootFilesystem: true
       capabilities:
         drop:
         - all

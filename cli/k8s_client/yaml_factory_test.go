@@ -1272,7 +1272,176 @@ func TestGetNamespaceYAML(t *testing.T) {
 	assert.Equal(t, "trident", actual.Name)
 }
 
+// assertReadOnlyRootFilesystemOnAllContainers requires every workload container and init
+// container to set securityContext.readOnlyRootFilesystem: true.
+func assertReadOnlyRootFilesystemOnAllContainers(
+	t *testing.T, containers, initContainers []v1.Container,
+) {
+	t.Helper()
+
+	for _, c := range initContainers {
+		require.NotNil(t, c.SecurityContext, "init container %q: missing securityContext", c.Name)
+		require.NotNil(t, c.SecurityContext.ReadOnlyRootFilesystem,
+			"init container %q: missing readOnlyRootFilesystem", c.Name)
+		assert.True(t, *c.SecurityContext.ReadOnlyRootFilesystem,
+			"init container %q: readOnlyRootFilesystem must be true", c.Name)
+	}
+	for _, c := range containers {
+		require.NotNil(t, c.SecurityContext, "container %q: missing securityContext", c.Name)
+		require.NotNil(t, c.SecurityContext.ReadOnlyRootFilesystem,
+			"container %q: missing readOnlyRootFilesystem", c.Name)
+		assert.True(t, *c.SecurityContext.ReadOnlyRootFilesystem,
+			"container %q: readOnlyRootFilesystem must be true", c.Name)
+	}
+}
+
+func assertContainerNamesPresent(t *testing.T, containers []v1.Container, expected ...string) {
+	t.Helper()
+	names := containerNames(containers)
+	for _, name := range expected {
+		assert.Contains(t, names, name, "expected container %q", name)
+	}
+}
+
+func assertInitContainerNamesPresent(t *testing.T, initContainers []v1.Container, expected ...string) {
+	t.Helper()
+	names := containerNames(initContainers)
+	for _, name := range expected {
+		assert.Contains(t, names, name, "expected init container %q", name)
+	}
+}
+
+// assertWorkloadReadOnlyRootFilesystem checks required container names are present, then
+// requires readOnlyRootFilesystem on every container and init container in the workload.
+func assertWorkloadReadOnlyRootFilesystem(
+	t *testing.T,
+	containers, initContainers []v1.Container,
+	expectedContainers, expectedInitContainers []string,
+) {
+	t.Helper()
+	require.NotEmpty(t, containers, "expected at least one container")
+	assertContainerNamesPresent(t, containers, expectedContainers...)
+	assertInitContainerNamesPresent(t, initContainers, expectedInitContainers...)
+	assertReadOnlyRootFilesystemOnAllContainers(t, containers, initContainers)
+}
+
+func TestWorkloadYAML_ReadOnlyRootFilesystem(t *testing.T) {
+	version := versionutils.MustParseSemantic("1.26.0")
+
+	t.Run("CSI controller deployment with autosupport", func(t *testing.T) {
+		deploymentArgs := &DeploymentYAMLArguments{
+			Version: version,
+		}
+		var deployment appsv1.Deployment
+		err := yaml.Unmarshal([]byte(GetCSIDeploymentYAML(deploymentArgs)), &deployment)
+		require.NoError(t, err)
+
+		podSpec := deployment.Spec.Template.Spec
+		assertWorkloadReadOnlyRootFilesystem(t, podSpec.Containers, podSpec.InitContainers,
+			[]string{
+				"trident-main",
+				config.DefaultAutosupportName,
+				"csi-provisioner",
+				"csi-attacher",
+				"csi-resizer",
+				"csi-snapshotter",
+			},
+			nil,
+		)
+	})
+
+	t.Run("CSI controller deployment without autosupport", func(t *testing.T) {
+		deploymentArgs := &DeploymentYAMLArguments{
+			Version:            version,
+			ExcludeAutosupport: true,
+		}
+		var deployment appsv1.Deployment
+		err := yaml.Unmarshal([]byte(GetCSIDeploymentYAML(deploymentArgs)), &deployment)
+		require.NoError(t, err)
+
+		podSpec := deployment.Spec.Template.Spec
+		assertWorkloadReadOnlyRootFilesystem(t, podSpec.Containers, podSpec.InitContainers,
+			[]string{
+				"trident-main",
+				"csi-provisioner",
+				"csi-attacher",
+				"csi-resizer",
+				"csi-snapshotter",
+			},
+			nil,
+		)
+		assert.NotContains(t, containerNames(podSpec.Containers), config.DefaultAutosupportName)
+	})
+
+	t.Run("CSI node daemonset linux", func(t *testing.T) {
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
+		var daemonSet appsv1.DaemonSet
+		err := yaml.Unmarshal([]byte(GetCSIDaemonSetYAMLLinux(daemonsetArgs)), &daemonSet)
+		require.NoError(t, err)
+
+		podSpec := daemonSet.Spec.Template.Spec
+		assertWorkloadReadOnlyRootFilesystem(t, podSpec.Containers, podSpec.InitContainers,
+			[]string{"trident-main", "node-driver-registrar"},
+			nil,
+		)
+	})
+
+	t.Run("CSI node daemonset linux with node prep", func(t *testing.T) {
+		daemonsetArgs := &DaemonsetYAMLArguments{
+			Version:  version,
+			NodePrep: []string{"iscsi"},
+		}
+		var daemonSet appsv1.DaemonSet
+		err := yaml.Unmarshal([]byte(GetCSIDaemonSetYAMLLinux(daemonsetArgs)), &daemonSet)
+		require.NoError(t, err)
+
+		podSpec := daemonSet.Spec.Template.Spec
+		assertWorkloadReadOnlyRootFilesystem(t, podSpec.Containers, podSpec.InitContainers,
+			[]string{"trident-main", "node-driver-registrar"},
+			[]string{"trident-prepare-node"},
+		)
+	})
+
+	t.Run("CSI node daemonset windows", func(t *testing.T) {
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
+		var daemonSet appsv1.DaemonSet
+		err := yaml.Unmarshal([]byte(GetCSIDaemonSetYAMLWindows(daemonsetArgs)), &daemonSet)
+		require.NoError(t, err)
+
+		podSpec := daemonSet.Spec.Template.Spec
+		assertWorkloadReadOnlyRootFilesystem(t, podSpec.Containers, podSpec.InitContainers,
+			[]string{"trident-main", "node-driver-registrar", "liveness-probe"},
+			nil,
+		)
+	})
+
+	t.Run("transient version pod", func(t *testing.T) {
+		versionPodArgs := &TridentVersionPodYAMLArguments{
+			TridentVersionPodName: "transient-trident-version-pod",
+			TridentImage:          ImageName,
+			ServiceAccountName:    "trident-csi",
+		}
+		var pod v1.Pod
+		err := yaml.Unmarshal([]byte(GetTridentVersionPodYAML(versionPodArgs)), &pod)
+		require.NoError(t, err)
+
+		assertWorkloadReadOnlyRootFilesystem(t, pod.Spec.Containers, pod.Spec.InitContainers,
+			[]string{"trident-main"},
+			nil,
+		)
+	})
+}
+
+func containerNames(containers []v1.Container) []string {
+	names := make([]string, len(containers))
+	for i, c := range containers {
+		names[i] = c.Name
+	}
+	return names
+}
+
 func getTestTridentVersionPodYAML(toleration []v1.Toleration) v1.Pod {
+	readOnlyRootFS := true
 	return v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
@@ -1300,6 +1469,7 @@ func getTestTridentVersionPodYAML(toleration []v1.Toleration) v1.Pod {
 					Command:         []string{"tridentctl"},
 					Args:            []string{"pause"},
 					SecurityContext: &v1.SecurityContext{
+						ReadOnlyRootFilesystem: &readOnlyRootFS,
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{
 								"all",

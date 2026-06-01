@@ -69,6 +69,8 @@ spec:
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
+        securityContext:
+          readOnlyRootFilesystem: true
         {{- if (include "trident-operator.hasResources" .Values.resources.operator) }}
         resources:
           {{- include "trident-operator.resources" .Values.resources.operator | indent 10 }}
