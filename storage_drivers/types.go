@@ -664,6 +664,8 @@ type GCNVStorageDriverConfig struct {
 	SDKTimeout          string            `json:"sdkTimeout"`
 	MaxCacheAge         string            `json:"maxCacheAge"`
 
+	RateLimitPerMinute string `json:"rateLimitPerMinute,omitempty"`
+
 	// NAS-specific fields (embedded, promoted to top level)
 	GCNVNASDriverConfig
 

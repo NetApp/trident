@@ -19,6 +19,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -84,6 +85,15 @@ type ClientConfig struct {
 	DebugTraceFlags map[string]bool
 	SDKTimeout      time.Duration // Timeout applied to all calls to the GCNV SDK
 	MaxCacheAge     time.Duration // The oldest data we should expect in the cached resources
+
+	// UnaryInterceptor, when non-nil, is installed on the underlying gRPC client
+	// so every GCNV RPC (including pagination's it.Next() and LRO poller.Wait()
+	// polls) flows through it. The driver layer uses this to plug in the
+	// adaptive rate limiter without coupling this package to any particular
+	// quota policy. A nil UnaryInterceptor disables pacing entirely for this
+	// client (useful for drivers without concurrency, such as the current GCNV
+	// SAN driver, and for tests).
+	UnaryInterceptor grpc.UnaryClientInterceptor
 }
 
 type GCNVClient struct {
@@ -140,8 +150,18 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 	if computeErr != nil {
 		return nil, computeErr
 	}
-	// Create GCNV client with optional endpoint override for testing
+
+	// Create GCNV client with optional endpoint override for testing.
 	clientOptions := []option.ClientOption{option.WithCredentials(credentials)}
+
+	// Install the caller-provided unary interceptor (typically the adaptive
+	// rate limiter) on the gRPC client so every GCNV RPC flows through it.
+	// Callers that pass UnaryInterceptor=nil get an unwrapped gRPC client.
+	if config.UnaryInterceptor != nil {
+		clientOptions = append(clientOptions,
+			option.WithGRPCDialOption(grpc.WithUnaryInterceptor(config.UnaryInterceptor)))
+	}
+
 	if config.APIEndpoint != "" {
 		clientOptions = append(clientOptions, option.WithEndpoint(config.APIEndpoint))
 	}

@@ -573,6 +573,16 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 		}
 	}
 
+	limiter, err := gcnvLimiterFor(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+	Logc(ctx).WithFields(LogFields{
+		"project":               config.ProjectNumber,
+		"initialLimitPerSecond": float64(limiter.Limit()),
+		"burst":                 limiter.Burst(),
+	}).Trace("GCNV adaptive rate limiter resolved.")
+
 	gcnv, err := api.NewDriver(ctx, &api.ClientConfig{
 		ProjectNumber:       config.ProjectNumber,
 		Location:            config.Location,
@@ -582,6 +592,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 		DebugTraceFlags:     config.DebugTraceFlags,
 		SDKTimeout:          sdkTimeout,
 		MaxCacheAge:         maxCacheAge,
+		UnaryInterceptor:    limiter.UnaryInterceptor(),
 	})
 	if err != nil {
 		return nil, err

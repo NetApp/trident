@@ -490,6 +490,13 @@ func (d *SANStorageDriver) initializeGCNVAPIClient(
 		}
 	}
 
+	// GCNV SAN concurrency is not yet implemented, so SAN cannot generate enough
+	// RPS to approach the per-project quota on its own. We therefore leave
+	// ClientConfig.UnaryInterceptor nil, which makes api.NewDriver build an
+	// unpaced gRPC client. When SAN concurrency lands, mirror the NAS path in
+	// gcp_gcnv.go: call gcnvLimiterFor(...) and pass limiter.UnaryInterceptor()
+	// here. The per-project gcnvLimiterRegistry will then share one limiter
+	// across NAS and SAN backends for the same GCP project.
 	gcnv, err := api.NewDriver(ctx, &api.ClientConfig{
 		ProjectNumber:       config.ProjectNumber,
 		Location:            config.Location,
