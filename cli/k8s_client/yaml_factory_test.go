@@ -666,17 +666,6 @@ func TestGetCSIDeploymentYAML_AutosupportYAML_EnableButSilenceAutosupport(t *tes
 }
 
 func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
-	const k8sAPIQPS = 100
-	args := &DeploymentYAMLArguments{
-		K8sAPIQPS: k8sAPIQPS,
-	}
-	yamlData := GetCSIDeploymentYAML(args)
-	deployment := appsv1.Deployment{}
-	err := yaml.Unmarshal([]byte(yamlData), &deployment)
-	if err != nil {
-		t.Fatalf("expected valid YAML, got %s", yamlData)
-	}
-
 	containerHasArgument := func(container v1.Container, expectedArg string) bool {
 		for _, arg := range container.Args {
 			if arg == expectedArg {
@@ -686,23 +675,85 @@ func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
 		return false
 	}
 
-	// trident-main container flag validation
-	tridentMainQPSFlag := fmt.Sprintf("--k8s_api_qps=%d", k8sAPIQPS)
-	tridentMainBurstFlag := fmt.Sprintf("--k8s_api_burst=%d", getBurstValueForQPS(k8sAPIQPS))
-	tridentMainContainer := deployment.Spec.Template.Spec.Containers[0]
-	assert.True(t, containerHasArgument(tridentMainContainer, tridentMainQPSFlag),
-		"expected trident-main to have k8s_api_qps flag")
-	assert.True(t, containerHasArgument(tridentMainContainer, tridentMainBurstFlag),
-		"expected trident-main to have k8s_api_burst flag")
+	tests := []struct {
+		name                 string
+		k8sAPIQPS            int
+		expectedTridentQPS   string
+		expectedTridentBurst int
+		expectedSidecarQPS   string
+		expectedSidecarBurst int
+	}{
+		{
+			name:                 "default when not specified",
+			k8sAPIQPS:            0,
+			expectedTridentQPS:   "100.0",
+			expectedTridentBurst: 200,
+			expectedSidecarQPS:   "25.0",
+			expectedSidecarBurst: 50,
+		},
+		{
+			name:                 "explicit value matching default",
+			k8sAPIQPS:            100,
+			expectedTridentQPS:   "100.0",
+			expectedTridentBurst: 200,
+			expectedSidecarQPS:   "25.0",
+			expectedSidecarBurst: 50,
+		},
+		{
+			name:                 "higher explicit value",
+			k8sAPIQPS:            200,
+			expectedTridentQPS:   "200.0",
+			expectedTridentBurst: 400,
+			expectedSidecarQPS:   "50.0",
+			expectedSidecarBurst: 100,
+		},
+		{
+			name:                 "minimum clamping for Trident",
+			k8sAPIQPS:            5,
+			expectedTridentQPS:   "10.0",
+			expectedTridentBurst: 20,
+			expectedSidecarQPS:   "10.0",
+			expectedSidecarBurst: 20,
+		},
+		{
+			name:                 "minimum clamping for sidecar only",
+			k8sAPIQPS:            20,
+			expectedTridentQPS:   "20.0",
+			expectedTridentBurst: 40,
+			expectedSidecarQPS:   "10.0", // 20/4=5 clamped to minimum 10
+			expectedSidecarBurst: 20,
+		},
+	}
 
-	sidecarQPSFlag := fmt.Sprintf("--kube-api-qps=%d", k8sAPIQPS)
-	sidecarBurstFlag := fmt.Sprintf("--kube-api-burst=%d", getBurstValueForQPS(k8sAPIQPS))
-	// trident-main and trident-autosupport containers will not have sidecar flags
-	for _, container := range deployment.Spec.Template.Spec.Containers[2:] {
-		assert.True(t, containerHasArgument(container, sidecarQPSFlag),
-			"expected sidecar %v to have kube-api-qps flag", container.Name)
-		assert.True(t, containerHasArgument(container, sidecarBurstFlag),
-			"expected sidecar %v to have kube-api-burst flag", container.Name)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := &DeploymentYAMLArguments{
+				K8sAPIQPS: tt.k8sAPIQPS,
+			}
+			yamlData := GetCSIDeploymentYAML(args)
+			deployment := appsv1.Deployment{}
+			err := yaml.Unmarshal([]byte(yamlData), &deployment)
+			require.NoError(t, err, "expected valid YAML")
+
+			// Trident-main container flag validation (first container)
+			tridentMainQPSFlag := fmt.Sprintf("--k8s_api_qps=%s", tt.expectedTridentQPS)
+			tridentMainBurstFlag := fmt.Sprintf("--k8s_api_burst=%d", tt.expectedTridentBurst)
+			tridentMainContainer := deployment.Spec.Template.Spec.Containers[0]
+			assert.True(t, containerHasArgument(tridentMainContainer, tridentMainQPSFlag),
+				"expected trident-main to have %s", tridentMainQPSFlag)
+			assert.True(t, containerHasArgument(tridentMainContainer, tridentMainBurstFlag),
+				"expected trident-main to have %s", tridentMainBurstFlag)
+
+			// Sidecar containers flag validation (skip trident-main and trident-autosupport)
+			sidecarQPSFlag := fmt.Sprintf("--kube-api-qps=%s", tt.expectedSidecarQPS)
+			sidecarBurstFlag := fmt.Sprintf("--kube-api-burst=%d", tt.expectedSidecarBurst)
+			for _, container := range deployment.Spec.Template.Spec.Containers[2:] {
+				assert.True(t, containerHasArgument(container, sidecarQPSFlag),
+					"expected sidecar %s to have %s", container.Name, sidecarQPSFlag)
+				assert.True(t, containerHasArgument(container, sidecarBurstFlag),
+					"expected sidecar %s to have %s", container.Name, sidecarBurstFlag)
+			}
+		})
 	}
 }
 

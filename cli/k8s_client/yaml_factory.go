@@ -633,12 +633,17 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "")
 	}
 
+	qpsTrident := commonconfig.DefaultK8sAPIQPS
 	if args.K8sAPIQPS != 0 {
-		queriesPerSecond := args.K8sAPIQPS
-		burst := getBurstValueForQPS(queriesPerSecond)
-		K8sAPITridentThrottle = fmt.Sprintf("- --k8s_api_qps=%d\n        - --k8s_api_burst=%d", queriesPerSecond, burst)
-		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
+		qpsTrident = float64(args.K8sAPIQPS)
 	}
+	qpsTrident = max(qpsTrident, commonconfig.MinimumK8sAPIQPS)
+	burstTrident := getBurstValueForQPS(int(qpsTrident))
+	K8sAPITridentThrottle = fmt.Sprintf("- \"--k8s_api_qps=%.1f\"\n        - \"--k8s_api_burst=%d\"", qpsTrident, burstTrident)
+
+	qpsSidecar := max(qpsTrident/4, commonconfig.MinimumK8sAPIQPS)
+	burstSidecar := getBurstValueForQPS(int(qpsSidecar))
+	K8sAPISidecarThrottle = fmt.Sprintf("- \"--kube-api-qps=%.1f\"\n        - \"--kube-api-burst=%d\"", qpsSidecar, burstSidecar)
 
 	// Fill in the CSI feature gates from the YAML.
 	// CSIFeatureGates should already be deduplicated.

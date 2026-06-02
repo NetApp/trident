@@ -286,6 +286,7 @@ const (
 	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.17.0"
 
 	DefaultK8sAPIQPS   = 100.0
+	MinimumK8sAPIQPS   = 10.0
 	DefaultK8sAPIBurst = 200
 
 	NamespaceFile          = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
