@@ -1980,6 +1980,7 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 		orchestrator: mockOrchestrator,
 		osutils:      osutils.New(),
 		iscsi:        iscsiClient,
+		nodeReadyCh:  make(chan struct{}),
 	}
 
 	// Create a fake node response to be returned by controller
@@ -2001,7 +2002,7 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
 	// assert node is registered
-	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 }
 
 func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
@@ -2025,6 +2026,7 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 		orchestrator: mockOrchestrator,
 		osutils:      osutils.New(),
 		iscsi:        iscsiClient,
+		nodeReadyCh:  make(chan struct{}),
 	}
 
 	// Create set of cases with varying topology labels
@@ -2084,7 +2086,7 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 			nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
 			// assert node is registered and topology in use is as expected
-			assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+			assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 			assert.Equal(t, data.expected, nodeServer.topologyInUse, "topologyInUse not as expected")
 		})
 	}
@@ -2111,6 +2113,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 		orchestrator: mockOrchestrator,
 		iscsi:        iscsiClient,
 		osutils:      osutils.New(),
+		nodeReadyCh:  make(chan struct{}),
 	}
 
 	// Create a fake node response to be returned by controller
@@ -2126,7 +2129,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
-	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 
 	// Case: Error setting log level
 	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
@@ -2137,7 +2140,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
-	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 
 	// Case: Error setting log layer
 	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
@@ -2148,7 +2151,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
-	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 
 	// Case: Error setting log workflow
 	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
@@ -2159,7 +2162,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
-	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 }
 
 func TestNodeUnstageISCSIVolume(t *testing.T) {

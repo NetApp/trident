@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	. "github.com/netapp/trident/logging"
 )
@@ -26,6 +28,13 @@ func stubHandler(capturedCtx *context.Context, resp interface{}, err error) grpc
 
 func serverInfo(server interface{}, fullMethod string) *grpc.UnaryServerInfo {
 	return &grpc.UnaryServerInfo{Server: server, FullMethod: fullMethod}
+}
+
+// closedCh returns a pre-closed channel (plugin is ready).
+func closedCh() chan struct{} {
+	ch := make(chan struct{})
+	close(ch)
+	return ch
 }
 
 func TestOperationRegistry_ContainsAllControllerMethods(t *testing.T) {
@@ -277,6 +286,164 @@ func TestTimeoutInterceptor_PreservesExistingDeadline(t *testing.T) {
 	assert.Equal(t, existingDeadline, deadline)
 }
 
+func TestNodeRegistrationInterceptor_NodeDataPathBlockedUntilReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodeStageVolume_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	assert.Nil(t, resp)
+	assert.False(t, called, "handler should not be invoked before node registration completes")
+	require.Error(t, err)
+	assert.Equal(t, codes.Unavailable, status.Code(err))
+}
+
+func TestNodeRegistrationInterceptor_NodeInfoAllowedBeforeReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodeGetInfo_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	require.NoError(t, err)
+	assert.Equal(t, "ok", resp)
+	assert.True(t, called, "handler should be invoked for non-data-path node methods")
+}
+
+func TestNodeRegistrationInterceptor_NodeCapabilitiesAllowedBeforeReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodeGetCapabilities_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.True(t, called, "handler should be invoked for startup-safe node methods")
+}
+
+func TestNodeRegistrationInterceptor_IdentityMethodsAllowedBeforeReady(t *testing.T) {
+	identityMethods := []string{
+		csi.Identity_Probe_FullMethodName,
+		csi.Identity_GetPluginInfo_FullMethodName,
+		csi.Identity_GetPluginCapabilities_FullMethodName,
+	}
+
+	for _, method := range identityMethods {
+		t.Run(method, func(t *testing.T) {
+			plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+			called := false
+			handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+				called = true
+				return "ok", nil
+			}
+			info := serverInfo(plugin, method)
+
+			resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+			require.NoError(t, err)
+			assert.Equal(t, "ok", resp)
+			assert.True(t, called, "identity methods must remain available while registration is in progress")
+		})
+	}
+}
+
+func TestNodeRegistrationInterceptor_AllInOneControllerMethodAllowedBeforeReady(t *testing.T) {
+	plugin := &Plugin{role: CSIAllInOne, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Controller_CreateVolume_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	require.NoError(t, err)
+	assert.Equal(t, "ok", resp)
+	assert.True(t, called, "controller methods in all-in-one mode should not be gated by node registration")
+}
+
+func TestNodeRegistrationInterceptor_NodeUnstageBlockedUntilReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodeUnstageVolume_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	assert.Nil(t, resp)
+	assert.False(t, called, "handler should not be invoked before node registration completes")
+	require.Error(t, err)
+	assert.Equal(t, codes.Unavailable, status.Code(err))
+}
+
+func TestNodeRegistrationInterceptor_NodeUnpublishBlockedUntilReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodeUnpublishVolume_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	assert.Nil(t, resp)
+	assert.False(t, called, "handler should not be invoked before node registration completes")
+	require.Error(t, err)
+	assert.Equal(t, codes.Unavailable, status.Code(err))
+}
+
+func TestNodeRegistrationInterceptor_UnknownNodeMethodBlockedUntilReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, "/csi.v1.Node/NodeFutureMethod")
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	assert.Nil(t, resp)
+	assert.False(t, called, "handler should not be invoked for unknown node methods before registration completes")
+	require.Error(t, err)
+	assert.Equal(t, codes.Unavailable, status.Code(err))
+}
+
+func TestNodeRegistrationInterceptor_NodeDataPathAllowedWhenReady(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: closedCh()}
+	called := false
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		called = true
+		return "ok", nil
+	}
+	info := serverInfo(plugin, csi.Node_NodePublishVolume_FullMethodName)
+
+	resp, err := nodeRegistrationInterceptor(context.Background(), nil, info, handler)
+
+	require.NoError(t, err)
+	assert.Equal(t, "ok", resp)
+	assert.True(t, called, "handler should be invoked after node registration completes")
+}
+
 func initAuditForTest(t *testing.T) {
 	t.Helper()
 	InitAuditLogger(true)
@@ -332,15 +499,17 @@ func TestLogGRPCInterceptor_PropagatesError(t *testing.T) {
 }
 
 func TestChainOrder_TimeoutContextVisibleToMetricsInterceptor(t *testing.T) {
-	plugin := &Plugin{role: CSINode}
+	plugin := &Plugin{role: CSINode, nodeReadyCh: closedCh()}
 	var handlerCtx context.Context
 	handler := stubHandler(&handlerCtx, nil, nil)
 	info := serverInfo(plugin, csi.Node_NodeStageVolume_FullMethodName)
 
-	// Simulate the chain: timeout -> metrics -> handler
+	// Simulate the chain: timeout -> registration -> metrics -> handler
 	chained := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
 		return timeoutInterceptor(ctx, req, info, func(ctx context.Context, req interface{}) (interface{}, error) {
-			return incomingRequestMetricsInterceptor(ctx, req, info, h)
+			return nodeRegistrationInterceptor(ctx, req, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+				return incomingRequestMetricsInterceptor(ctx, req, info, h)
+			})
 		})
 	}
 
@@ -351,4 +520,34 @@ func TestChainOrder_TimeoutContextVisibleToMetricsInterceptor(t *testing.T) {
 	_, hasDeadline := handlerCtx.Deadline()
 	assert.True(t, hasDeadline, "timeout interceptor's deadline should be visible through the chain")
 	assert.Equal(t, WorkflowNodeStage, handlerCtx.Value(ContextKeyWorkflow))
+}
+
+func TestChainOrder_BlockedNodeCallBypassesMetricsInterceptor(t *testing.T) {
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	metricsCalled := false
+	handlerCalled := false
+	info := serverInfo(plugin, csi.Node_NodeStageVolume_FullMethodName)
+
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		handlerCalled = true
+		return "ok", nil
+	}
+
+	// Simulate the chain segment relevant to metrics behavior: timeout -> node registration -> metrics -> handler.
+	chained := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
+		return timeoutInterceptor(ctx, req, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+			return nodeRegistrationInterceptor(ctx, req, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+				metricsCalled = true
+				return incomingRequestMetricsInterceptor(ctx, req, info, h)
+			})
+		})
+	}
+
+	resp, err := chained(context.Background(), nil, info, handler)
+
+	assert.Nil(t, resp)
+	require.Error(t, err)
+	assert.Equal(t, codes.Unavailable, status.Code(err))
+	assert.False(t, metricsCalled, "blocked node calls are rejected before metrics interceptor")
+	assert.False(t, handlerCalled, "blocked node calls should not reach handler")
 }

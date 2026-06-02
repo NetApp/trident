@@ -10,6 +10,8 @@ import (
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	. "github.com/netapp/trident/logging"
 )
@@ -58,6 +60,20 @@ var operationRegistry = map[string]operationMeta{
 	csi.GroupController_CreateVolumeGroupSnapshot_FullMethodName:      {WorkflowGroupSnapshotCreate, ContextRequestClientCSISnapshotter, http.MethodPost},
 	csi.GroupController_GetVolumeGroupSnapshot_FullMethodName:         {WorkflowGroupSnapshotGet, ContextRequestClientCSISnapshotter, http.MethodGet},
 	csi.GroupController_DeleteVolumeGroupSnapshot_FullMethodName:      {WorkflowGroupSnapshotDelete, ContextRequestClientCSISnapshotter, http.MethodDelete},
+}
+
+var nodeRegistrationAllowedMethods = map[string]struct{}{
+	csi.Node_NodeGetCapabilities_FullMethodName: {},
+	csi.Node_NodeGetInfo_FullMethodName:         {},
+}
+
+func nodeMethodAllowedBeforeRegistration(fullMethod string) bool {
+	_, ok := nodeRegistrationAllowedMethods[fullMethod]
+	return ok
+}
+
+func isNodeMethod(fullMethod string) bool {
+	return len(fullMethod) >= len("/csi.v1.Node/") && fullMethod[:len("/csi.v1.Node/")] == "/csi.v1.Node/"
 }
 
 func incomingRequestMetricsInterceptor(
@@ -114,6 +130,31 @@ func timeoutInterceptor(
 	}
 
 	return handler(ctx, req)
+}
+
+// nodeRegistrationInterceptor rejects Node RPCs until node registration with the controller completes, except for
+// the small allow-list required during startup probing. This keeps the gRPC socket available early for
+// node-driver-registrar while remaining safe by default as new Node RPCs are added.
+//
+// This interceptor is only added to the gRPC chain for CSINode and CSIAllInOne roles;
+// CSIController never includes it, so there is no role check here.
+func nodeRegistrationInterceptor(
+	ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (any, error) {
+	plugin, ok := info.Server.(*Plugin)
+	if !ok {
+		return handler(ctx, req)
+	}
+
+	if plugin.IsReady() || !isNodeMethod(info.FullMethod) || nodeMethodAllowedBeforeRegistration(info.FullMethod) {
+		return handler(ctx, req)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"method": info.FullMethod,
+		"node":   plugin.nodeName,
+	}).Debug("Rejecting node RPC before node registration completes.")
+	return nil, status.Error(codes.Unavailable, "node registration with controller is still in progress")
 }
 
 // logGRPCInterceptor sets the base context, logs and audit logs all incoming gRPC requests.

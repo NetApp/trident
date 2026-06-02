@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -74,7 +75,8 @@ type Plugin struct {
 
 	opCache sync.Map
 
-	nodeIsRegistered bool
+	nodeReadyCh   chan struct{} // closed once node registration completes; broadcast to all consumers
+	nodeReadyOnce sync.Once
 
 	limiterSharedMap map[string]limiter.Limiter
 
@@ -126,6 +128,7 @@ func NewControllerPlugin(
 		command:           execCmd.NewCommand(),
 		osutils:           osutils.New(),
 		activatedChan:     make(chan struct{}, 1),
+		nodeReadyCh:       func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
 	}
 
 	var err error
@@ -225,6 +228,7 @@ func NewNodePlugin(
 		command:                  execCmd.NewCommand(),
 		osutils:                  osutils.New(),
 		activatedChan:            make(chan struct{}, 1),
+		nodeReadyCh:              make(chan struct{}),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -336,6 +340,7 @@ func NewAllInOnePlugin(
 		command:                  execCmd.NewCommand(),
 		osutils:                  osutils.New(),
 		activatedChan:            make(chan struct{}, 1),
+		nodeReadyCh:              make(chan struct{}),
 	}
 
 	port := "34571"
@@ -409,10 +414,22 @@ func (p *Plugin) WaitForActivation(ctx context.Context) error {
 func (p *Plugin) Activate() error {
 	go func() {
 		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
-		p.grpc = NewNonBlockingGRPCServer()
+
+		// Only add the node registration interceptor for roles that serve Node RPCs.
+		// CSIController does not need it, so it is excluded from the interceptor chain entirely.
+		var extraInterceptors []grpc.UnaryServerInterceptor
+		if p.role == CSINode || p.role == CSIAllInOne {
+			extraInterceptors = append(extraInterceptors, nodeRegistrationInterceptor)
+		}
+		p.grpc = NewNonBlockingGRPCServer(extraInterceptors...)
 
 		fields := LogFields{"nodeName": p.nodeName, "role": p.role}
 		Logc(ctx).WithFields(fields).Info("Activating CSI frontend.")
+
+		// Start the gRPC server immediately so node-driver-registrar can connect to /plugin/csi.sock
+		// within its ~30s connection deadline, even if controller registration (nodeRegisterWithController)
+		// is slow or retrying. TRID-19339: Decouples socket availability from controller readiness.
+		p.grpc.Start(p.endpoint, p, p, p, p)
 
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
@@ -449,8 +466,6 @@ func (p *Plugin) Activate() error {
 
 		// Communicate the plugin is activated.
 		p.activatedChan <- struct{}{}
-
-		p.grpc.Start(p.endpoint, p, p, p, p)
 	}()
 	return nil
 }
@@ -466,7 +481,10 @@ func (p *Plugin) Deactivate() error {
 	}
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
-	p.grpc.GracefulStop()
+	// Safely stop gRPC server only if it was initialized by Activate().
+	if p.grpc != nil {
+		p.grpc.GracefulStop()
+	}
 
 	// Stop iSCSI self-healing thread
 	p.stopISCSISelfHealingThread(ctx)
@@ -574,7 +592,16 @@ func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
 }
 
 func (p *Plugin) IsReady() bool {
-	return p.nodeIsRegistered
+	select {
+	case <-p.nodeReadyCh:
+		return true
+	default:
+		return false
+	}
+}
+
+func (p *Plugin) markNodeReady() {
+	p.nodeReadyOnce.Do(func() { close(p.nodeReadyCh) })
 }
 
 // startISCSISelfHealingThread starts the iSCSI self-healing thread to heal faulty sessions.
