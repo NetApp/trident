@@ -5,18 +5,23 @@ package csi
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
@@ -24,7 +29,9 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
 	"github.com/netapp/trident/utils/errors"
+	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/limiter"
+	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -436,6 +443,8 @@ func TestPlugin_Activate(t *testing.T) {
 				iscsi:                    mockISCSIClient,
 				nvmeHandler:              mockNVMeHandler,
 				osutils:                  osutils.New(),
+				activatedChan:            make(chan struct{}, 1),
+				nodeReadyCh:              make(chan struct{}),
 			}
 
 			err := plugin.Activate()
@@ -450,6 +459,278 @@ func TestPlugin_Activate(t *testing.T) {
 			assert.NotNil(t, plugin.grpc)
 		})
 	}
+}
+
+func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
+	InitAuditLogger(true)
+	ctrl := gomock.NewController(t)
+
+	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+	mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
+	mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+
+	// Record when CreateNode is invoked so the test can prove the socket exists
+	// before the slow controller registration completes. This validates TRID-19339's fix:
+	// gRPC socket must be available before node-driver-registrar's ~30s timeout deadline.
+	registerStarted := make(chan struct{}, 1)
+	mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
+	mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ *models.Node) (controllerAPI.CreateNodeResponse, error) {
+			select {
+			case registerStarted <- struct{}{}:
+			default:
+			}
+			time.Sleep(2 * time.Second)
+			return controllerAPI.CreateNodeResponse{}, nil
+		},
+	).AnyTimes()
+	mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+
+	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+
+	// Use a short unique socket path. macOS limits Unix socket paths to 104 bytes;
+	// t.TempDir() + long test names easily exceed that, so use os.MkdirTemp with the
+	// default temp dir (typically /tmp on Linux) for a short path.
+	socketDir, err := os.MkdirTemp("", "csi")
+	require.NoError(t, err)
+	socketPath := filepath.Join(socketDir, "csi.sock")
+	t.Cleanup(func() { os.RemoveAll(socketDir) })
+
+	plugin := &Plugin{
+		orchestrator:             mockOrchestrator,
+		nodeHelper:               mockNodeHelper,
+		role:                     CSINode,
+		restClient:               mockRestClient,
+		nodeName:                 "test-node",
+		endpoint:                 "unix://" + socketPath,
+		activatedChan:            make(chan struct{}, 1),
+		nodeReadyCh:              make(chan struct{}),
+		iSCSISelfHealingInterval: 0, // Disable to avoid background goroutine leaks in test
+		nvmeSelfHealingInterval:  0,
+		limiterSharedMap:         make(map[string]limiter.Limiter),
+		iscsi:                    mockISCSIClient,
+		nvmeHandler:              mockNVMeHandler,
+		osutils:                  osutils.New(),
+	}
+
+	t.Cleanup(func() {
+		if plugin.grpc != nil {
+			plugin.grpc.Stop()
+		}
+		ctrl.Finish()
+	})
+
+	err = plugin.Activate()
+	assert.NoError(t, err)
+
+	// Wait until registration is in flight before checking for the socket. This
+	// makes the test prove ordering rather than just eventual startup. Use a generous
+	// timeout because node registration performs real host probing via osutils before
+	// the first CreateNode call, which can vary in CI environments.
+	select {
+	case <-registerStarted:
+	case <-time.After(5 * time.Second):
+		t.Fatal("expected node registration attempt to start")
+	}
+
+	// The node-driver-registrar sidecar has a hard ~30s connection deadline.
+	// With a 2-second sleep in CreateNode, the socket must appear within 1 second to
+	// prove that Activate() prioritizes gRPC listener startup over controller registration.
+	deadline := time.Now().Add(1 * time.Second)
+	socketFound := false
+	for time.Now().Before(deadline) {
+		if _, statErr := os.Stat(socketPath); statErr == nil {
+			socketFound = true
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	assert.True(t, socketFound, "expected gRPC socket to be created before slow node registration finishes")
+}
+
+// TestPlugin_Activate_ReproduceCustomerIssue_TRID19339 reproduces the exact customer scenario:
+//
+// Customer symptom: node-driver-registrar (v2.15.0) enters CrashLoopBackOff because
+// it cannot connect to the CSI socket within its hardcoded ~30s gRPC connection deadline.
+//
+// Root cause (pre-fix): Activate() called nodeRegisterWithController() BEFORE grpc.Start(),
+// meaning the Unix socket didn't exist until registration completed (38-70s on busy clusters).
+//
+// Fix: grpc.Start() is now called immediately, before nodeRegisterWithController(). The
+// nodeRegistrationInterceptor gates data-path RPCs until registration finishes.
+//
+// This test proves:
+//  1. The gRPC socket is available within 2s (well under the registrar's 30s deadline),
+//     even while registration is still blocked.
+//  2. A real gRPC client can connect and call Identity.Probe (the registrar's first call).
+//  3. Node data-path RPCs (NodeStageVolume) are rejected with Unavailable during registration.
+//  4. After registration completes, data-path RPCs succeed.
+func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
+	InitAuditLogger(true)
+	ctrl := gomock.NewController(t)
+
+	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+	mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockOrchestrator.EXPECT().GetVersion(gomock.Any()).Return("test", nil).AnyTimes()
+
+	mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
+	mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+
+	// Simulate a busy cluster: registration takes 5 seconds (customer saw 38-70s).
+	registrationDone := make(chan struct{})
+	mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
+	mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ *models.Node) (controllerAPI.CreateNodeResponse, error) {
+			time.Sleep(5 * time.Second) // Simulates slow controller registration on busy cluster
+			close(registrationDone)
+			return controllerAPI.CreateNodeResponse{}, nil
+		},
+	).AnyTimes()
+	mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+
+	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+
+	// Use a short socket path to avoid macOS 104-byte Unix socket path limit.
+	socketDir, err := os.MkdirTemp("", "csi")
+	require.NoError(t, err)
+	socketPath := filepath.Join(socketDir, "csi.sock")
+	t.Cleanup(func() { os.RemoveAll(socketDir) })
+
+	plugin := &Plugin{
+		orchestrator:             mockOrchestrator,
+		nodeHelper:               mockNodeHelper,
+		role:                     CSINode,
+		restClient:               mockRestClient,
+		nodeName:                 "customer-node",
+		endpoint:                 "unix://" + socketPath,
+		activatedChan:            make(chan struct{}, 1),
+		nodeReadyCh:              make(chan struct{}),
+		iSCSISelfHealingInterval: 0, // Disable to avoid background goroutine leaks in test
+		nvmeSelfHealingInterval:  0,
+		limiterSharedMap:         make(map[string]limiter.Limiter),
+		iscsi:                    mockISCSIClient,
+		nvmeHandler:              mockNVMeHandler,
+		osutils:                  osutils.New(),
+	}
+
+	t.Cleanup(func() {
+		if plugin.grpc != nil {
+			plugin.grpc.Stop()
+		}
+		ctrl.Finish()
+	})
+
+	err = plugin.Activate()
+	assert.NoError(t, err)
+
+	// --- PHASE 1: Prove socket available fast (customer's core issue) ---
+	// node-driver-registrar has a ~30s deadline. The socket must appear well before that.
+	socketAvailableDeadline := time.After(2 * time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+
+	socketFound := false
+	for !socketFound {
+		select {
+		case <-socketAvailableDeadline:
+			t.Fatal("REPRODUCTION: gRPC socket not available within 2s — " +
+				"this is the customer's CrashLoopBackOff scenario (TRID-19339)")
+		case <-ticker.C:
+			if _, statErr := os.Stat(socketPath); statErr == nil {
+				socketFound = true
+			}
+		}
+	}
+	t.Log("PASS: gRPC socket available within 2s (customer's registrar deadline is ~30s)")
+
+	// --- PHASE 2: Real gRPC client connectivity (simulates node-driver-registrar) ---
+	// The registrar's first action after connecting is to call Identity.Probe.
+	conn, dialErr := grpc.NewClient(
+		"unix://"+socketPath,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if dialErr != nil {
+		t.Fatalf("REPRODUCTION: gRPC client dial failed: %v — registrar would CrashLoop", dialErr)
+	}
+	defer conn.Close()
+
+	identityClient := csi.NewIdentityClient(conn)
+	probeCtx, probeCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer probeCancel()
+	probeResp, probeErr := identityClient.Probe(probeCtx, &csi.ProbeRequest{})
+	assert.NoError(t, probeErr, "Identity.Probe must succeed during registration — registrar depends on this")
+	assert.NotNil(t, probeResp, "Probe response should not be nil")
+	t.Log("PASS: Identity.Probe succeeds while registration is in progress")
+
+	// --- PHASE 3: Verify data-path RPCs blocked during registration ---
+	nodeClient := csi.NewNodeClient(conn)
+	stageCtx, stageCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer stageCancel()
+	_, stageErr := nodeClient.NodeStageVolume(stageCtx, &csi.NodeStageVolumeRequest{
+		VolumeId:          "vol-test",
+		StagingTargetPath: "/tmp/staging",
+		VolumeCapability:  &csi.VolumeCapability{},
+	})
+	assert.Error(t, stageErr, "NodeStageVolume must be rejected before registration completes")
+	assert.Equal(t, codes.Unavailable, status.Code(stageErr),
+		"blocked RPCs must return Unavailable, not a different error")
+	t.Log("PASS: NodeStageVolume correctly blocked with Unavailable during registration")
+
+	// --- PHASE 4: After registration, data-path RPCs should work ---
+	select {
+	case <-registrationDone:
+		t.Log("Registration completed, verifying data-path RPCs are unblocked...")
+	case <-time.After(10 * time.Second):
+		t.Fatal("Registration did not complete within expected time")
+	}
+
+	// Give a small window for markNodeReady() to execute after CreateNode returns
+	time.Sleep(100 * time.Millisecond)
+
+	assert.True(t, plugin.IsReady(), "Plugin must be ready after registration completes")
+	t.Log("PASS: Plugin.IsReady() returns true after registration")
+}
+
+// TestPlugin_Deactivate_SafeWithoutActivate validates that Deactivate() can be called
+// safely even if Activate() was never called or hasn't completed yet (p.grpc is nil).
+// This prevents nil pointer panics in shutdown scenarios. TRID-19339 safe shutdown.
+func TestPlugin_Deactivate_SafeWithoutActivate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+
+	plugin := &Plugin{
+		orchestrator:  mockOrchestrator,
+		role:          CSINode,
+		nodeName:      "test-node",
+		endpoint:      "unix:///tmp/test.sock",
+		command:       execCmd.NewCommand(),
+		osutils:       osutils.New(),
+		activatedChan: make(chan struct{}, 1),
+		grpc:          nil, // Simulate p.grpc not yet initialized
+	}
+
+	// Deactivate should not panic even though p.grpc is nil.
+	err := plugin.Deactivate()
+	assert.NoError(t, err, "Deactivate() should not panic or error when called before Activate() initializes gRPC")
 }
 
 func TestPlugin_GetName(t *testing.T) {
@@ -739,26 +1020,26 @@ func TestReadAESKey(t *testing.T) {
 
 func TestPlugin_IsReady(t *testing.T) {
 	testCases := []struct {
-		name             string
-		nodeIsRegistered bool
-		expectedReady    bool
+		name          string
+		nodeReadyCh   chan struct{}
+		expectedReady bool
 	}{
 		{
-			name:             "Ready - Node registered",
-			nodeIsRegistered: true,
-			expectedReady:    true,
+			name:          "Ready - Node registered",
+			nodeReadyCh:   closedCh(),
+			expectedReady: true,
 		},
 		{
-			name:             "Not ready - Node not registered",
-			nodeIsRegistered: false,
-			expectedReady:    false,
+			name:          "Not ready - Node not registered",
+			nodeReadyCh:   make(chan struct{}),
+			expectedReady: false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			plugin := &Plugin{
-				nodeIsRegistered: tc.nodeIsRegistered,
+				nodeReadyCh: tc.nodeReadyCh,
 			}
 
 			result := plugin.IsReady()

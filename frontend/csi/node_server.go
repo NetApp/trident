@@ -982,7 +982,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
 	}
 
-	p.nodeIsRegistered = true
+	p.markNodeReady()
 }
 
 func (p *Plugin) nodeStageNFSVolume(

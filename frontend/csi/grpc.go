@@ -29,13 +29,17 @@ type NonBlockingGRPCServer interface {
 	Stop()
 }
 
-func NewNonBlockingGRPCServer() NonBlockingGRPCServer {
-	return &nonBlockingGRPCServer{}
+// NewNonBlockingGRPCServer creates a gRPC server with optional extra interceptors inserted between the timeout
+// and metrics interceptors. For CSINode and CSIAllInOne roles the caller should pass nodeRegistrationInterceptor;
+// for CSIController it should be omitted so the interceptor is never in the chain.
+func NewNonBlockingGRPCServer(extraInterceptors ...grpc.UnaryServerInterceptor) NonBlockingGRPCServer {
+	return &nonBlockingGRPCServer{extraInterceptors: extraInterceptors}
 }
 
 // NonBlocking server
 type nonBlockingGRPCServer struct {
-	server *grpc.Server
+	server            *grpc.Server
+	extraInterceptors []grpc.UnaryServerInterceptor
 }
 
 func (s *nonBlockingGRPCServer) Start(
@@ -45,11 +49,28 @@ func (s *nonBlockingGRPCServer) Start(
 }
 
 func (s *nonBlockingGRPCServer) GracefulStop() {
-	s.server.GracefulStop()
+	if s.server != nil {
+		s.server.GracefulStop()
+	}
 }
 
 func (s *nonBlockingGRPCServer) Stop() {
-	s.server.Stop()
+	if s.server != nil {
+		s.server.Stop()
+	}
+}
+
+// buildInterceptorChain constructs the gRPC unary interceptor chain. The log and timeout interceptors are always
+// present. Any extra interceptors (e.g. nodeRegistrationInterceptor for Node/AllInOne roles) are inserted between
+// the timeout and metrics interceptors so they only run for the roles that need them.
+func (s *nonBlockingGRPCServer) buildInterceptorChain() []grpc.UnaryServerInterceptor {
+	chain := []grpc.UnaryServerInterceptor{
+		logGRPCInterceptor,
+		timeoutInterceptor,
+	}
+	chain = append(chain, s.extraInterceptors...)
+	chain = append(chain, incomingRequestMetricsInterceptor)
+	return chain
 }
 
 func (s *nonBlockingGRPCServer) serve(
@@ -107,7 +128,7 @@ func (s *nonBlockingGRPCServer) serve(
 		// The first interceptor is always the outermost.
 		// When CSI calls come in, the outermost interceptor is hit first.
 		// The log gRPC and timeout interceptors should always be the first in the chain.
-		grpc.ChainUnaryInterceptor(logGRPCInterceptor, timeoutInterceptor, incomingRequestMetricsInterceptor),
+		grpc.ChainUnaryInterceptor(s.buildInterceptorChain()...),
 	}
 	server := grpc.NewServer(opts...)
 	s.server = server
