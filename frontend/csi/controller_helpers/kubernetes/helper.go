@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -139,6 +139,9 @@ func (h *helper) GetVolumeConfig(
 			if err != nil {
 				Logc(ctx).WithError(err).Error("Invalid storage class parameters for LUKS volume import.")
 				return nil, err
+			}
+			if getAnnotation(annotations, AnnFileSystem) == "" {
+				return nil, fmt.Errorf("imported LUKS encrypted volume must provide file system type annotation")
 			}
 		}
 	}
@@ -881,6 +884,9 @@ func getVolumeConfig(
 		if luksEncryption != "" {
 			if _, err = strconv.ParseBool(luksEncryption); err != nil {
 				Logc(ctx).WithError(err).Warning("Unable to parse luks annotation into bool.")
+			}
+			if getAnnotation(annotations, AnnFileSystem) == "" {
+				Logc(ctx).Warning("Imported LUKS encrypted volume must provide file system type annotation.")
 			}
 		}
 	}

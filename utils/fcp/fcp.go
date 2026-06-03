@@ -19,10 +19,8 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/internal/fiji"
-	"github.com/netapp/trident/pkg/collection"
-
 	. "github.com/netapp/trident/logging"
-
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
@@ -1152,6 +1150,17 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 		if err != nil {
 			return err
 		}
+	}
+
+	fstype, err := filesystem.DetermineFSType(publishInfo.FilesystemType, existingFstype, publishInfo.VolumeMode)
+	if err != nil {
+		return fmt.Errorf("LUN %s, device %s is formatted with unknown filesystem type", name, devicePath)
+	}
+	publishInfo.FilesystemType = fstype
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return nil
 	}
 
 	if existingFstype == "" {
