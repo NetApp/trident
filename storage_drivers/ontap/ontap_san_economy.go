@@ -213,15 +213,15 @@ type SANEconomyStorageDriver struct {
 	lunsPerFlexvol      int
 	denyNewFlexvols     bool
 	iscsi               iscsi.ISCSI
-	flexvolLocks        *locks.GCNamedMutex // Locks for FlexVol-level operations
-	flexvolCreationLock sync.Mutex          // Global lock for FlexVol find-or-create decisions
+	flexvolLocks        locks.NamedLocker // Locks for FlexVol-level operations
+	flexvolCreationLock sync.Mutex        // Global lock for FlexVol find-or-create decisions
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 }
 
 // lockFlexvol locks the specified FlexVol and returns a locked wrapper
-func (d *SANEconomyStorageDriver) lockFlexvol(name string) *locks.LockedResource {
+func (d *SANEconomyStorageDriver) lockFlexvol(name string) locks.Guard {
 	return d.flexvolLocks.LockWithGuard(name)
 }
 
@@ -620,7 +620,7 @@ func (d *SANEconomyStorageDriver) Create(
 			bucketVol     string
 			lunPathEco    string
 			newVol        bool
-			lockedFlexvol *locks.LockedResource
+			lockedFlexvol locks.Guard
 		)
 
 		// Track FlexVols that have already been tried (to avoid retrying the same one)
@@ -663,7 +663,7 @@ func (d *SANEconomyStorageDriver) Create(
 			bucketVol = lockedFlexvol.Name()
 
 			// Grow or shrink the Flexvol as needed (lock is held)
-			if err = d.resizeFlexvol(ctx, bucketVol, sizeBytes); err != nil {
+			if err = d.resizeFlexvol(ctx, bucketVol, sizeBytes, true, nil); err != nil {
 				errMessage := fmt.Sprintf(
 					"ONTAP-SAN-ECONOMY pool %s/%s; Flexvol resize failed %s/%s: %v",
 					storagePool.Name(), aggregate, bucketVol, name, err,
@@ -813,7 +813,7 @@ func (d *SANEconomyStorageDriver) Create(
 			if initialVolumeSize, err := d.API.VolumeSize(ctx, bucketVol); err != nil {
 				Logc(ctx).WithField("name", bucketVol).Warning("Failed to get volume size.")
 			} else {
-				err = d.resizeFlexvol(ctx, bucketVol, 0)
+				err = d.resizeFlexvol(ctx, bucketVol, 0, true, nil)
 				if err != nil {
 					Logc(ctx).WithFields(
 						LogFields{
@@ -920,7 +920,7 @@ func (d *SANEconomyStorageDriver) cloneLUNFromSnapshot(
 	internalID := d.CreateLUNInternalID(d.Config.SVM, bucketVolume, lunName)
 
 	// Grow or shrink the FlexVol as needed (lock is still held)
-	if err := d.resizeFlexvol(ctx, bucketVolume, 0); err != nil {
+	if err := d.resizeFlexvol(ctx, bucketVolume, 0, true, nil); err != nil {
 		return "", err
 	}
 
@@ -987,7 +987,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	}
 
 	if shouldLimitFlexvolSize {
-		sizeWithRequest, flexvolSizeErr := d.getOptimalSizeForFlexvol(ctx, flexvol, sourceLunSizeBytes)
+		sizeWithRequest, _, flexvolSizeErr := d.getOptimalSizeForFlexvol(ctx, flexvol, sourceLunSizeBytes, nil)
 		if flexvolSizeErr != nil {
 			return "", fmt.Errorf("could not calculate optimal Flexvol size; %w", flexvolSizeErr)
 		}
@@ -1010,7 +1010,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	internalID := d.CreateLUNInternalID(config.SVM, flexvol, lunName)
 
 	// Grow or shrink the Flexvol as needed (lock is still held)
-	if err = d.resizeFlexvol(ctx, flexvol, 0); err != nil {
+	if err = d.resizeFlexvol(ctx, flexvol, 0, true, nil); err != nil {
 		return "", err
 	}
 
@@ -1263,6 +1263,17 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	lockedFlexvol := d.lockFlexvol(bucketVol)
 	defer lockedFlexvol.Unlock()
 
+	// Capture deleted LUN size and flexvol VolumeInfo before LunDestroy (see resizeFlexvolAfterLUNDelete).
+	deletedLunBytes, lunSizeErr := d.getLUNSize(ctx, name, bucketVol)
+	if lunSizeErr != nil {
+		Logc(ctx).WithError(lunSizeErr).Warn("Could not determine deleted LUN size before destroy.")
+	}
+
+	preDeleteVol, preDeleteVolErr := d.API.VolumeInfo(ctx, bucketVol)
+	if preDeleteVolErr != nil {
+		Logc(ctx).WithError(preDeleteVolErr).Warn("Could not read Flexvol VolumeInfo before LUN delete.")
+	}
+
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPathEco); err != nil {
 		msg := "error removing all mappings from LUN"
 		Logc(ctx).WithError(err).Error(msg)
@@ -1281,12 +1292,109 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	}
 
 	// Check if a bucket volume has no more LUNs. If none left, delete the bucketVol. Else, call for resize
-	return d.deleteBucketIfEmpty(ctx, bucketVol)
+	return d.deleteBucketIfEmpty(ctx, bucketVol, deletedLunBytes, preDeleteVol)
+}
+
+// flexvolBucket caches ONTAP VolumeInfo and LUN inventory for one economy hosting flexvol
+// during a single flexvol-locked workflow (resize, delete-with-shrink, etc.).
+//
+// Populate it when LunList is already in hand (see newFlexvolBucket); pass the same pointer
+// through getOptimalSizeForFlexvol and resizeFlexvol on that flexvol. Set bucket.vol to skip a
+// redundant VolumeInfo on optimal sizing. On delete paths, preDeleteVol is passed separately to
+// resizeFlexvolAfterLUNDelete (for autosize policy and grow subtract sizing). nil bucket means
+// each call fetches what it needs (single-step paths such as provision/create).
+type flexvolBucket struct {
+	vol           *api.Volume
+	luns          api.Luns
+	totalLUNBytes uint64
+}
+
+func newFlexvolBucket(luns api.Luns) (*flexvolBucket, error) {
+	totalLUNBytes, err := sumLUNBytes(luns)
+	if err != nil {
+		return nil, err
+	}
+	return &flexvolBucket{luns: luns, totalLUNBytes: totalLUNBytes}, nil
+}
+
+func sumLUNBytes(luns api.Luns) (uint64, error) {
+	var total uint64
+	for _, lun := range luns {
+		size, err := strconv.ParseUint(lun.Size, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("invalid LUN size for %q: parsing %q: %w", lun.Name, lun.Size, err)
+		}
+		if size == 0 {
+			return 0, fmt.Errorf("invalid LUN size for %q: size is zero", lun.Name)
+		}
+		total += size
+	}
+	return total, nil
+}
+
+// flexvolVolumeInfo returns VolumeInfo, storing it on bucket when bucket is non-nil.
+func (d *SANEconomyStorageDriver) flexvolVolumeInfo(
+	ctx context.Context, flexvol string, bucket *flexvolBucket,
+) (*api.Volume, error) {
+	if bucket != nil && bucket.vol != nil {
+		return bucket.vol, nil
+	}
+	vol, err := d.API.VolumeInfo(ctx, flexvol)
+	if err != nil {
+		return nil, err
+	}
+	if bucket != nil {
+		bucket.vol = vol
+	}
+	return vol, nil
+}
+
+func (d *SANEconomyStorageDriver) listFlexvolLUNs(ctx context.Context, flexvol string) (api.Luns, error) {
+	luns, err := d.API.LunList(ctx, fmt.Sprintf("/vol/%s/*", flexvol))
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating LUNs for volume %s: %w", flexvol, err)
+	}
+	return luns, nil
+}
+
+// flexvolTotalLUNBytes returns the sum of LUN sizes on flexvol, storing luns/total on bucket when non-nil.
+func (d *SANEconomyStorageDriver) flexvolTotalLUNBytes(
+	ctx context.Context, flexvol string, bucket *flexvolBucket,
+) (uint64, error) {
+	if bucket != nil && bucket.totalLUNBytes > 0 {
+		return bucket.totalLUNBytes, nil
+	}
+	if bucket != nil && len(bucket.luns) > 0 {
+		total, err := sumLUNBytes(bucket.luns)
+		if err != nil {
+			return 0, err
+		}
+		bucket.totalLUNBytes = total
+		return total, nil
+	}
+
+	luns, err := d.listFlexvolLUNs(ctx, flexvol)
+	if err != nil {
+		return 0, err
+	}
+	total, err := sumLUNBytes(luns)
+	if err != nil {
+		return 0, err
+	}
+	if bucket != nil {
+		bucket.luns = luns
+		bucket.totalLUNBytes = total
+	}
+	return total, nil
 }
 
 // deleteBucketIfEmpty will check if the given bucket volume is empty, if the bucket is empty it will be deleted.
 // Otherwise, it will be resized. Callers must hold the FlexVol lock before calling this method.
-func (d *SANEconomyStorageDriver) deleteBucketIfEmpty(ctx context.Context, bucketVol string) error {
+// deletedLunBytes is the size in bytes of the LUN just removed (0 if unknown).
+// preDeleteVol is VolumeInfo for the flexvol before the LUN was destroyed (nil if unavailable).
+func (d *SANEconomyStorageDriver) deleteBucketIfEmpty(
+	ctx context.Context, bucketVol string, deletedLunBytes uint64, preDeleteVol *api.Volume,
+) error {
 	fields := LogFields{
 		"Method":    "deleteBucketIfEmpty",
 		"Type":      "SANEconomyStorageDriver",
@@ -1295,14 +1403,12 @@ func (d *SANEconomyStorageDriver) deleteBucketIfEmpty(ctx context.Context, bucke
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> deleteBucketIfEmpty")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< deleteBucketIfEmpty")
 
-	lunPathPattern := fmt.Sprintf("/vol/%s/*", bucketVol)
-	luns, err := d.API.LunList(ctx, lunPathPattern)
+	luns, err := d.listFlexvolLUNs(ctx, bucketVol)
 	if err != nil {
-		return fmt.Errorf("error enumerating LUNs for volume %s: %w", bucketVol, err)
+		return err
 	}
 
-	count := len(luns)
-	if count == 0 {
+	if len(luns) == 0 {
 		// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 		// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 		// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
@@ -1322,13 +1428,63 @@ func (d *SANEconomyStorageDriver) deleteBucketIfEmpty(ctx context.Context, bucke
 			return fmt.Errorf("error destroying volume %s: %w", bucketVol, err)
 		}
 	} else {
-		// Grow or shrink the Flexvol as needed (lock is held by caller)
-		err = d.resizeFlexvol(ctx, bucketVol, 0)
+		bucket, bucketErr := newFlexvolBucket(luns)
+		if bucketErr != nil {
+			return bucketErr
+		}
+		// Reuse post-delete LUN list in resizeFlexvolAfterLUNDelete (avoids a second LunList).
+		err = d.resizeFlexvolAfterLUNDelete(ctx, bucketVol, deletedLunBytes, preDeleteVol, bucket)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// resizeFlexvolAfterLUNDelete adjusts hosting flexvol size after a LUN was removed.
+//
+// Policy by autosize.mode (AutosizeMode from preDeleteVol when available, otherwise post-delete VolumeInfo):
+//   - off / grow_shrink: optimal size from remaining LUNs (honorGrowMode false).
+//   - grow with known pre-delete flexvol size and deleted LUN size: pre-delete size − deleted LUN.
+//   - grow when either size is unknown: fall back to optimal sizing.
+//
+// bucket carries the post-delete LUN list from deleteBucketIfEmpty so optimal sizing does not
+// call LunList again. preDeleteVol must be captured before LunDestroy for the grow subtract path.
+func (d *SANEconomyStorageDriver) resizeFlexvolAfterLUNDelete(
+	ctx context.Context, flexvol string, deletedLunBytes uint64, preDeleteVol *api.Volume, bucket *flexvolBucket,
+) error {
+	volAttrs := preDeleteVol
+	if volAttrs == nil {
+		var err error
+		volAttrs, err = d.flexvolVolumeInfo(ctx, flexvol, bucket)
+		if err != nil {
+			return fmt.Errorf("could not read Flexvol attributes: %w", err)
+		}
+		Logc(ctx).WithField("flexvol", flexvol).Warn(
+			"Flexvol VolumeInfo before LUN delete unavailable; using post-delete VolumeInfo for autosize policy.")
+	}
+
+	if !isAutosizeOnlyGrow(volAttrs) {
+		return d.resizeFlexvol(ctx, flexvol, 0, false, bucket)
+	}
+	if deletedLunBytes == 0 {
+		Logc(ctx).WithField("flexvol", flexvol).Warn(
+			"Deleted LUN size unknown; falling back to optimal Flexvol resize.")
+		return d.resizeFlexvol(ctx, flexvol, 0, false, bucket)
+	}
+	if preDeleteVol == nil {
+		Logc(ctx).WithField("flexvol", flexvol).Warn(
+			"Flexvol size before LUN delete unknown; falling back to optimal Flexvol resize.")
+		return d.resizeFlexvol(ctx, flexvol, 0, false, bucket)
+	}
+	flexvolBytesBeforeDelete, err := flexvolSizeBytesFromVolume(preDeleteVol)
+	if err != nil {
+		return fmt.Errorf("could not read Flexvol size before LUN delete: %w", err)
+	}
+	// Grow mode: reclaim exactly the deleted LUN footprint using pre-delete flexvol size.
+	return applyFlexvolSizeAfterLUNDelete(
+		ctx, d.API, flexvol, flexvolBytesBeforeDelete, deletedLunBytes,
+	)
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -1851,6 +2007,17 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	lockedFlexvol := d.lockFlexvol(bucketVol)
 	defer lockedFlexvol.Unlock()
 
+	// Capture deleted LUN size and flexvol VolumeInfo before LunDestroy (see resizeFlexvolAfterLUNDelete).
+	deletedLunBytes, lunSizeErr := d.getLUNSize(ctx, snapLunName, bucketVol)
+	if lunSizeErr != nil {
+		Logc(ctx).WithError(lunSizeErr).Warn("Could not determine deleted snapshot LUN size before destroy.")
+	}
+
+	preDeleteVol, preDeleteVolErr := d.API.VolumeInfo(ctx, bucketVol)
+	if preDeleteVolErr != nil {
+		Logc(ctx).WithError(preDeleteVolErr).Warn("Could not read Flexvol VolumeInfo before snapshot LUN delete.")
+	}
+
 	snapPath := GetLUNPathEconomy(bucketVol, snapLunName)
 
 	// Don't leave the new LUN around
@@ -1860,7 +2027,7 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	}
 
 	// Check if a bucket volume has no more LUNs. If none left, delete the bucketVol. Else, call for resize
-	return d.deleteBucketIfEmpty(ctx, bucketVol)
+	return d.deleteBucketIfEmpty(ctx, bucketVol, deletedLunBytes, preDeleteVol)
 }
 
 // GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
@@ -2155,7 +2322,7 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, volConfig *storage.Vo
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	ctx context.Context, volAttrs *api.Volume, sizeBytes uint64, opts map[string]string,
 	config *drivers.OntapStorageDriverConfig, storagePool storage.Pool, ignoredVols map[string]struct{},
-) (*locks.LockedResource, bool, error) {
+) (locks.Guard, bool, error) {
 	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
 		ctx, sizeBytes, config)
 	if checkFlexvolSizeLimitsError != nil {
@@ -2292,7 +2459,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 func (d *SANEconomyStorageDriver) findFlexvolForLUN(
 	ctx context.Context, volumeAttributes *api.Volume, sizeBytes uint64, shouldLimitFlexvolSize bool,
 	flexvolSizeLimit uint64, ignoredVols map[string]struct{},
-) (*locks.LockedResource, error) {
+) (locks.Guard, error) {
 	// Get all volumes matching the specified attributes
 	volumes, err := d.API.VolumeListByAttrs(ctx, volumeAttributes)
 	if err != nil {
@@ -2324,7 +2491,7 @@ func (d *SANEconomyStorageDriver) findFlexvolForLUN(
 
 		// Check if flexvol is over the size limit (with proposed new LUN)
 		if shouldLimitFlexvolSize {
-			sizeWithRequest, err := d.getOptimalSizeForFlexvol(ctx, volName, sizeBytes)
+			sizeWithRequest, _, err := d.getOptimalSizeForFlexvol(ctx, volName, sizeBytes, nil)
 			if err != nil {
 				Logc(ctx).WithError(err).Errorf("Error checking size for existing LUN %s", volName)
 				lockedFlexvol.Unlock()
@@ -2338,11 +2505,10 @@ func (d *SANEconomyStorageDriver) findFlexvolForLUN(
 		}
 
 		// Check LUN count
-		lunPathPattern := fmt.Sprintf("/vol/%s/*", volName)
-		luns, err := d.API.LunList(ctx, lunPathPattern)
+		luns, err := d.listFlexvolLUNs(ctx, volName)
 		if err != nil {
 			lockedFlexvol.Unlock()
-			return nil, fmt.Errorf("error enumerating LUNs for volume %v: %w", volName, err)
+			return nil, err
 		}
 
 		count := 0
@@ -2373,23 +2539,23 @@ func (d *SANEconomyStorageDriver) findFlexvolForLUN(
 
 // getOptimalSizeForFlexvol sums up all the LUN sizes on a Flexvol and adds the size of
 // the new LUN being added as well as the current Flexvol snapshot reserve.  This value may be used
-// to grow the Flexvol as new LUNs are being added.
+// to grow the Flexvol as new LUNs are being added. Pass a non-nil bucket to reuse cached LUN/VolumeInfo
+// from an earlier step in the same flexvol-locked operation.
 func (d *SANEconomyStorageDriver) getOptimalSizeForFlexvol(
-	ctx context.Context, flexvol string, newLunSizeBytes uint64,
-) (uint64, error) {
-	// Get more info about the Flexvol
-	volAttrs, err := d.API.VolumeInfo(ctx, flexvol)
+	ctx context.Context, flexvol string, newLunSizeBytes uint64, bucket *flexvolBucket,
+) (uint64, *api.Volume, error) {
+	volAttrs, err := d.flexvolVolumeInfo(ctx, flexvol, bucket)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
-	totalDiskLimitBytes, err := d.getTotalLUNSize(ctx, flexvol)
+	totalDiskLimitBytes, err := d.flexvolTotalLUNBytes(ctx, flexvol, bucket)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	flexvolSizeBytes := calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttrs, newLunSizeBytes, totalDiskLimitBytes)
 
-	return flexvolSizeBytes, nil
+	return flexvolSizeBytes, volAttrs, nil
 }
 
 // getLUNSize returns the size of the LUN
@@ -2412,22 +2578,7 @@ func (d *SANEconomyStorageDriver) getLUNSize(ctx context.Context, name, flexvol 
 
 // getTotalLUNSize returns the sum of all LUN sizes on a Flexvol
 func (d *SANEconomyStorageDriver) getTotalLUNSize(ctx context.Context, flexvol string) (uint64, error) {
-	lunPathPattern := fmt.Sprintf("/vol/%s/*", flexvol)
-	luns, err := d.API.LunList(ctx, lunPathPattern)
-	if err != nil {
-		return 0, fmt.Errorf("error enumerating LUNs for volume %v: %w", flexvol, err)
-	}
-
-	var totalDiskLimit uint64
-
-	for _, lun := range luns {
-		diskLimitSize, _ := strconv.ParseUint(lun.Size, 10, 64)
-		if diskLimitSize == 0 {
-			return 0, fmt.Errorf("unable to determine LUN size")
-		}
-		totalDiskLimit += diskLimitSize
-	}
-	return totalDiskLimit, nil
+	return d.flexvolTotalLUNBytes(ctx, flexvol, nil)
 }
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
@@ -2760,23 +2911,36 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 	lockedFlexvol := d.lockFlexvol(bucketVol)
 	defer lockedFlexvol.Unlock()
 
-	// Calculate the delta size needed to resize the bucketVol (now under lock)
-	totalLunSize, err := d.getTotalLUNSize(ctx, bucketVol)
+	// List LUNs once; reuse bucket through optimal sizing and any follow-on flexvol resize.
+	luns, err := d.listFlexvolLUNs(ctx, bucketVol)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Failed to enumerate LUNs for flexvol.")
+		return resizeError
+	}
+	bucket, err := newFlexvolBucket(luns)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to determine total LUN size.")
 		return resizeError
 	}
+	totalLunSize := bucket.totalLUNBytes
 
 	currentLunSize, err := d.getLUNSize(ctx, name, bucketVol)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to determine LUN size.")
 		return resizeError
 	}
+	if sizeBytes < currentLunSize {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, currentLunSize)
+	}
+	lunDeltaBytes := sizeBytes - currentLunSize
 
-	flexvolSize, err := d.getOptimalSizeForFlexvol(ctx, bucketVol, sizeBytes-currentLunSize)
+	flexvolSize, volAttrs, err := d.getOptimalSizeForFlexvol(ctx, bucketVol, lunDeltaBytes, bucket)
 	if err != nil {
-		Logc(ctx).WithError(err).Warnf("Could not calculate optimal Flexvol size.")
-		flexvolSize = totalLunSize + sizeBytes - currentLunSize
+		Logc(ctx).WithError(err).Warn(
+			"Could not calculate optimal Flexvol size for resize; using sum of LUN sizes (autosize shrink policy not applied).",
+		)
+		flexvolSize = totalLunSize + lunDeltaBytes
+		volAttrs = nil // grow-mode shrink suppression requires VolumeInfo
 	}
 
 	sameSize := capacity.VolumeSizeWithinTolerance(
@@ -2839,11 +3003,15 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 	lunPath := d.helper.GetLUNPath(bucketVol, name)
 
-	// Resize FlexVol
-	err = d.API.VolumeSetSize(ctx, bucketVol, strconv.FormatUint(flexvolSize, 10))
+	// Resize FlexVol (honorGrowMode true: do not shrink grow-mode flexvols below current size).
+	effectiveBytes, err := resolveFlexvolSetSize(ctx, bucketVol, flexvolSize, volAttrs, true)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Volume resize failed.")
-		return fmt.Errorf("volume resize failed")
+		return fmt.Errorf("volume resize failed: %w", err)
+	}
+	if err = setFlexvolSize(ctx, d.API, bucketVol, effectiveBytes, volAttrs); err != nil {
+		Logc(ctx).WithError(err).Error("Volume resize failed.")
+		return fmt.Errorf("volume resize failed: %w", err)
 	}
 
 	// Resize LUN
@@ -2857,10 +3025,10 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
 
-	// Resize Flexvol to be the same size or bigger than LUN because ONTAP creates
-	// larger LUNs sometimes based on internal geometry
+	// ONTAP may round LUN size up; refresh cached LUN total before recomputing optimal flexvol size.
 	if returnSize > sizeBytes {
-		err = d.resizeFlexvol(ctx, bucketVol, 0)
+		bucket.totalLUNBytes = totalLunSize - currentLunSize + returnSize
+		err = d.resizeFlexvol(ctx, bucketVol, 0, true, bucket)
 		if err != nil {
 			Logc(ctx).WithFields(
 				LogFields{
@@ -2889,29 +3057,42 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 	return nil
 }
 
-// resizeFlexvol grows or shrinks the Flexvol to an optimal size if possible. Otherwise
-// the Flexvol is expanded by the value of sizeBytes
-func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol string, sizeBytes uint64) error {
-	flexvolSizeBytes, err := d.getOptimalSizeForFlexvol(ctx, flexvol, sizeBytes)
+// resizeFlexvol grows or shrinks the hosting flexvol toward the optimal size for sizeBytes (the
+// delta added to total LUN capacity, or zero to fit current LUNs only).
+//
+// honorGrowMode: when true, respect ONTAP autosize mode grow by not shrinking below current size
+// (provision, resize, clone). When false, always apply the optimal target (post-delete paths).
+//
+// bucket: optional cache from an earlier LunList/VolumeInfo in the same flexvol-locked operation; nil
+// for single-step calls such as create. On optimal-size failure, grows by relative +sizeBytes only.
+func (d *SANEconomyStorageDriver) resizeFlexvol(
+	ctx context.Context, flexvol string, sizeBytes uint64, honorGrowMode bool, bucket *flexvolBucket,
+) error {
+	flexvolSizeBytes, volAttrs, err := d.getOptimalSizeForFlexvol(ctx, flexvol, sizeBytes, bucket)
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Could not calculate optimal Flexvol size.")
-		// Lacking the optimal size, just grow the Flexvol to contain the new LUN
+		Logc(ctx).WithError(err).Warn(
+			"Could not calculate optimal Flexvol size; applying relative VolumeSetSize +delta only (autosize shrink policy not applied).",
+		)
+		if sizeBytes == 0 {
+			return nil
+		}
+		// Relative grow only; autosize shrink policy does not apply without optimal size and VolumeInfo.
 		size := strconv.FormatUint(sizeBytes, 10)
 		err := d.API.VolumeSetSize(ctx, flexvol, "+"+size)
 		if err != nil {
-			Logc(ctx).WithError(err).Error("LUN resize failed.")
-			return fmt.Errorf("volume resize failed")
+			Logc(ctx).WithError(err).WithField("flexvol", flexvol).Error(
+				"Volume resize failed: Flexvol relative resize failed (optimal size unavailable).",
+			)
+			return fmt.Errorf("volume resize failed: flexvol resize: %w", err)
 		}
-	} else {
-		// Got optimal size, so just set the Flexvol to that value
-		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
-		err := d.API.VolumeSetSize(ctx, flexvol, flexvolSizeStr)
-		if err != nil {
-			Logc(ctx).WithError(err).Error("LUN resize failed.")
-			return fmt.Errorf("volume resize failed")
-		}
+		return nil
 	}
-	return nil
+
+	effectiveBytes, err := resolveFlexvolSetSize(ctx, flexvol, flexvolSizeBytes, volAttrs, honorGrowMode)
+	if err != nil {
+		return err
+	}
+	return setFlexvolSize(ctx, d.API, flexvol, effectiveBytes, volAttrs)
 }
 
 func (d *SANEconomyStorageDriver) ReconcileNodeAccess(

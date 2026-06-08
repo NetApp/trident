@@ -9275,6 +9275,146 @@ func TestInitializeOntapConfig(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestResolveFlexvolSetSize(t *testing.T) {
+	ctx := context.Background()
+	flexvol := "economy_bucket"
+	desiredBytes := uint64(50_000_000_000)
+	currentBytes := uint64(100_000_000_000)
+
+	t.Run("grow honorGrowMode clamps desired below current to current size", func(t *testing.T) {
+		vol := &api.Volume{Size: strconv.FormatUint(currentBytes, 10), AutosizeMode: api.VolumeAutosizeModeGrow}
+		effective, err := resolveFlexvolSetSize(ctx, flexvol, desiredBytes, vol, true)
+		assert.NoError(t, err)
+		assert.Equal(t, currentBytes, effective)
+	})
+
+	t.Run("honorGrowMode false uses desired size", func(t *testing.T) {
+		vol := &api.Volume{Size: strconv.FormatUint(currentBytes, 10), AutosizeMode: api.VolumeAutosizeModeGrowShrink}
+		effective, err := resolveFlexvolSetSize(ctx, flexvol, desiredBytes, vol, false)
+		assert.NoError(t, err)
+		assert.Equal(t, desiredBytes, effective)
+	})
+
+	t.Run("grow mode with honorGrowMode false uses desired below current", func(t *testing.T) {
+		vol := &api.Volume{Size: strconv.FormatUint(currentBytes, 10), AutosizeMode: api.VolumeAutosizeModeGrow}
+		effective, err := resolveFlexvolSetSize(ctx, flexvol, desiredBytes, vol, false)
+		assert.NoError(t, err)
+		assert.Equal(t, desiredBytes, effective)
+	})
+
+	t.Run("grow honorGrowMode uses desired when desired exceeds current", func(t *testing.T) {
+		largerDesired := currentBytes + 1
+		vol := &api.Volume{Size: strconv.FormatUint(currentBytes, 10), AutosizeMode: api.VolumeAutosizeModeGrow}
+		effective, err := resolveFlexvolSetSize(ctx, flexvol, largerDesired, vol, true)
+		assert.NoError(t, err)
+		assert.Equal(t, largerDesired, effective)
+	})
+}
+
+func TestSetFlexvolSize(t *testing.T) {
+	ctx := context.Background()
+	flexvol := "economy_bucket"
+	sizeBytes := uint64(100_000_000_000)
+
+	t.Run("skips VolumeSetSize when size matches vol", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		vol := &api.Volume{Size: strconv.FormatUint(sizeBytes, 10)}
+
+		err := setFlexvolSize(ctx, mockAPI, flexvol, sizeBytes, vol)
+		assert.NoError(t, err)
+	})
+
+	t.Run("calls VolumeSetSize when size differs from vol", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		mockAPI.EXPECT().VolumeSetSize(ctx, flexvol, strconv.FormatUint(sizeBytes, 10)).Return(nil)
+		vol := &api.Volume{Size: strconv.FormatUint(sizeBytes+1, 10)}
+
+		err := setFlexvolSize(ctx, mockAPI, flexvol, sizeBytes, vol)
+		assert.NoError(t, err)
+	})
+
+	t.Run("calls VolumeSetSize when vol is nil", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		mockAPI.EXPECT().VolumeSetSize(ctx, flexvol, strconv.FormatUint(sizeBytes, 10)).Return(nil)
+
+		err := setFlexvolSize(ctx, mockAPI, flexvol, sizeBytes, nil)
+		assert.NoError(t, err)
+	})
+}
+
+func TestApplyFlexvolSizeAfterLUNDelete(t *testing.T) {
+	ctx := context.Background()
+	flexvol := "economy_bucket"
+	flexvolBytesBeforeDelete := uint64(10_000_000_000)
+	deletedLunBytes := uint64(2_000_000_000)
+	flexvolBytesAfterDelete := flexvolBytesBeforeDelete - deletedLunBytes
+
+	t.Run("sets size to current minus deleted LUN", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		mockAPI.EXPECT().VolumeSetSize(
+			ctx, flexvol, strconv.FormatUint(flexvolBytesAfterDelete, 10),
+		).Return(nil)
+
+		err := applyFlexvolSizeAfterLUNDelete(
+			ctx, mockAPI, flexvol, flexvolBytesBeforeDelete, deletedLunBytes,
+		)
+		assert.NoError(t, err)
+	})
+
+	t.Run("rejects deleted LUN larger than Flexvol", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+		err := applyFlexvolSizeAfterLUNDelete(
+			ctx, mockAPI, flexvol, deletedLunBytes, flexvolBytesBeforeDelete,
+		)
+		assert.Error(t, err)
+	})
+
+	t.Run("uses pre-delete size when ONTAP already shrank flexvol", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		const ontapPostDeleteFlexvolBytes = uint64(7_000_000_000)
+
+		// Target is 10GB − 2GB = 8GB. Post-delete 7GB − 2GB would over-shrink to 5GB; pre-delete baseline avoids that.
+		assert.Greater(t, flexvolBytesAfterDelete, ontapPostDeleteFlexvolBytes)
+
+		mockAPI.EXPECT().VolumeSetSize(
+			ctx, flexvol, strconv.FormatUint(flexvolBytesAfterDelete, 10),
+		).Return(nil)
+
+		err := applyFlexvolSizeAfterLUNDelete(
+			ctx, mockAPI, flexvol, flexvolBytesBeforeDelete, deletedLunBytes,
+		)
+		assert.NoError(t, err)
+	})
+}
+
+func TestIsAutosizeOnlyGrow(t *testing.T) {
+	assert.False(t, isAutosizeOnlyGrow(nil))
+	assert.False(t, isAutosizeOnlyGrow(&api.Volume{}))
+	assert.False(t, isAutosizeOnlyGrow(&api.Volume{AutosizeMode: api.VolumeAutosizeModeOff}))
+	assert.False(t, isAutosizeOnlyGrow(&api.Volume{AutosizeMode: api.VolumeAutosizeModeGrowShrink}))
+	assert.True(t, isAutosizeOnlyGrow(&api.Volume{AutosizeMode: api.VolumeAutosizeModeGrow}))
+	assert.True(t, isAutosizeOnlyGrow(&api.Volume{AutosizeMode: "GROW"}))
+}
+
+func TestFlexvolSizeBytesFromVolume(t *testing.T) {
+	size, err := flexvolSizeBytesFromVolume(&api.Volume{Size: "1073741824"})
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1073741824), size)
+
+	_, err = flexvolSizeBytesFromVolume(&api.Volume{})
+	assert.Error(t, err)
+
+	_, err = flexvolSizeBytesFromVolume(nil)
+	assert.Error(t, err)
+}
+
 func TestCalculateFlexvolEconomySizeBytes(t *testing.T) {
 	ctx := context.Background()
 	flexvol := "fakeName"

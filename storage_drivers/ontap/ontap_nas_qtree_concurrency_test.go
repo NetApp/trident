@@ -499,7 +499,7 @@ func TestConcurrency_CreateRaceFlexVolCapacity(t *testing.T) {
 
 	// Run concurrent findFlexvolForQtree calls
 	var wg sync.WaitGroup
-	results := make([]*locks.LockedResource, numConcurrent)
+	results := make([]locks.Guard, numConcurrent)
 	errors := make([]error, numConcurrent)
 
 	for i := 0; i < numConcurrent; i++ {
@@ -639,7 +639,7 @@ func TestConcurrency_CreateRaceQtreeCount(t *testing.T) {
 
 	// Run concurrent findFlexvolForQtree calls
 	var wg sync.WaitGroup
-	results := make([]*locks.LockedResource, numConcurrent)
+	results := make([]locks.Guard, numConcurrent)
 	errors := make([]error, numConcurrent)
 
 	for i := 0; i < numConcurrent; i++ {

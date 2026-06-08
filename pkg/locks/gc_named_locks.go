@@ -15,6 +15,26 @@ func (lr *LockedResource) Name() string {
 	return lr.name
 }
 
+// Guard is the unlock handle returned by GCNamedMutex.LockWithGuard.
+type Guard interface {
+	Name() string
+	Unlock()
+}
+
+// NamedLocker provides garbage-collected named write locks. *GCNamedMutex is the
+// production implementation; tests may inject gomock.MockNamedLocker to assert lock scope.
+//
+//go:generate mockgen -destination=../../mocks/mock_pkg/mock_locks/mock_named_locker.go github.com/netapp/trident/pkg/locks NamedLocker
+type NamedLocker interface {
+	LockWithGuard(name string) Guard
+}
+
+// Compile-time check that *LockedResource implements Guard.
+var _ Guard = (*LockedResource)(nil)
+
+// Compile-time check that *GCNamedMutex implements NamedLocker.
+var _ NamedLocker = (*GCNamedMutex)(nil)
+
 // Unlock releases the lock on this resource.
 // Safe to call multiple times (subsequent calls are no-ops).
 func (lr *LockedResource) Unlock() {
@@ -106,7 +126,7 @@ func (g *GCNamedMutex) RUnlock(name string) {
 //
 //	locked := mutex.LockWithGuard("resourceName")
 //	defer locked.Unlock()
-func (g *GCNamedMutex) LockWithGuard(name string) *LockedResource {
+func (g *GCNamedMutex) LockWithGuard(name string) Guard {
 	g.Lock(name)
 	return &LockedResource{
 		name:   name,
@@ -120,7 +140,7 @@ func (g *GCNamedMutex) LockWithGuard(name string) *LockedResource {
 //
 //	locked := mutex.RLockWithGuard("resourceName")
 //	defer locked.Unlock()
-func (g *GCNamedMutex) RLockWithGuard(name string) *LockedResource {
+func (g *GCNamedMutex) RLockWithGuard(name string) Guard {
 	g.RLock(name)
 	return &LockedResource{
 		name:   name,

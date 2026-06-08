@@ -1416,7 +1416,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool,
 	enableEncryption *bool, sizeBytes uint64, config *drivers.OntapStorageDriverConfig, snapshotReserve,
 	exportPolicy string,
-) (*locks.LockedResource, error) {
+) (locks.Guard, error) {
 	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
 		ctx, sizeBytes, config)
 	if checkFlexvolSizeLimitsError != nil {
@@ -1594,7 +1594,7 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve string,
 	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolSize bool,
 	sizeBytes, flexvolSizeLimit uint64,
-) (*locks.LockedResource, error) {
+) (locks.Guard, error) {
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
 		return nil, fmt.Errorf("invalid value for snapshotReserve: %v", err)

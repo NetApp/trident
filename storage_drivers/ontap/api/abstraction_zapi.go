@@ -308,9 +308,16 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		responseSnapdirAccessEnabled = volumeGetResponse.VolumeSnapshotAttributesPtr.SnapdirAccessEnabledPtr
 	}
 
+	responseAutosizeMode := ""
+	if volumeGetResponse.VolumeAutosizeAttributesPtr != nil &&
+		volumeGetResponse.VolumeAutosizeAttributesPtr.ModePtr != nil {
+		responseAutosizeMode = *volumeGetResponse.VolumeAutosizeAttributesPtr.ModePtr
+	}
+
 	volumeInfo := &Volume{
 		AccessType:        responseAccessType,
 		Aggregates:        responseAggregates,
+		AutosizeMode:      responseAutosizeMode,
 		Comment:           responseComment,
 		ExportPolicy:      responseExportPolicy,
 		JunctionPath:      responseJunctionPath,

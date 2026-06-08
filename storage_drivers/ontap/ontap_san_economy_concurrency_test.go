@@ -20,6 +20,14 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
+func deleteBucketIfEmptyUnderFlexvolLock(
+	ctx context.Context, driver *SANEconomyStorageDriver, bucketName string, deletedLunBytes uint64, preDeleteVol *api.Volume,
+) error {
+	locked := driver.lockFlexvol(bucketName)
+	defer locked.Unlock()
+	return driver.deleteBucketIfEmpty(ctx, bucketName, deletedLunBytes, preDeleteVol)
+}
+
 // ============================================================================
 // Phase 2: deleteBucketIfEmpty Tests - With Simple Mocks
 // These tests verify concurrent bucket deletion operations
@@ -80,7 +88,7 @@ func TestSANEco_DeleteBucket_ConcurrentSameBucket(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			err := driver.deleteBucketIfEmpty(ctx, bucketName)
+			err := deleteBucketIfEmptyUnderFlexvolLock(ctx, driver, bucketName, 0, nil)
 			if err == nil {
 				successCount.Add(1)
 			} else {
@@ -158,7 +166,7 @@ func TestSANEco_DeleteBucket_ConcurrentDifferentBuckets(t *testing.T) {
 		go func(bucketID int) {
 			defer wg.Done()
 			bucketName := fmt.Sprintf("bucket_%d", bucketID)
-			err := driver.deleteBucketIfEmpty(ctx, bucketName)
+			err := deleteBucketIfEmptyUnderFlexvolLock(ctx, driver, bucketName, 0, nil)
 			assert.NoError(t, err)
 		}(i)
 	}
@@ -196,12 +204,12 @@ func TestSANEco_DeleteBucket_MixedEmptyAndNonEmpty(t *testing.T) {
 	nonEmptyBucket := "nonempty_bucket"
 
 	// Mock: Empty bucket returns no LUNs
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("/vol/%s/*", emptyBucket)).Return(
+	mockAPI.EXPECT().LunList(ctx, economyFlexvolLUNListPath(emptyBucket)).Return(
 		api.Luns{}, nil,
 	).AnyTimes()
 
 	// Mock: Non-empty bucket returns LUNs
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("/vol/%s/*", nonEmptyBucket)).Return(
+	mockAPI.EXPECT().LunList(ctx, economyFlexvolLUNListPath(nonEmptyBucket)).Return(
 		api.Luns{
 			{Name: "/vol/nonempty_bucket/lun1", Size: "1073741824"},
 		}, nil,
@@ -222,13 +230,13 @@ func TestSANEco_DeleteBucket_MixedEmptyAndNonEmpty(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		err := driver.deleteBucketIfEmpty(ctx, emptyBucket)
+		err := deleteBucketIfEmptyUnderFlexvolLock(ctx, driver, emptyBucket, 0, nil)
 		assert.NoError(t, err)
 	}()
 
 	go func() {
 		defer wg.Done()
-		err := driver.deleteBucketIfEmpty(ctx, nonEmptyBucket)
+		err := deleteBucketIfEmptyUnderFlexvolLock(ctx, driver, nonEmptyBucket, 0, nil)
 		assert.NoError(t, err)
 	}()
 

@@ -6,9 +6,17 @@ import "time"
 
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
+// ONTAP FlexVol autosize.mode values.
+const (
+	VolumeAutosizeModeOff        = "off"
+	VolumeAutosizeModeGrow       = "grow"
+	VolumeAutosizeModeGrowShrink = "grow_shrink"
+)
+
 type Volume struct {
 	AccessType        string
 	Aggregates        []string
+	AutosizeMode      string
 	Comment           string
 	Encrypt           *bool
 	ExportPolicy      string

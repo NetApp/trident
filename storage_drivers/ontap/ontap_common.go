@@ -4043,6 +4043,102 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	return cloneConfig
 }
 
+// flexvolSizeBytesFromVolume parses Volume.Size from VolumeInfo as a byte count.
+func flexvolSizeBytesFromVolume(vol *api.Volume) (uint64, error) {
+	if vol == nil || vol.Size == "" {
+		return 0, fmt.Errorf("volume size is unknown")
+	}
+	sizeBytes, err := strconv.ParseUint(vol.Size, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid volume size %q: %w", vol.Size, err)
+	}
+	return sizeBytes, nil
+}
+
+// Economy hosting flexvols inherit ONTAP autosize.mode (off, grow, grow_shrink). Trident aligns
+// flexvol resize behavior with that setting:
+//
+//   - off / grow_shrink: use optimal sizing on provision, resize, and LUN delete; shrink is allowed.
+//   - grow: optimal sizing on provision and resize but do not shrink below the current flexvol size;
+//     after LUN delete set the flexvol to (size before delete − deleted LUN size) when both are known,
+//     otherwise fall back to optimal sizing.
+//
+// honorGrowMode applies grow autosize mode policy on provision/resize paths (do not shrink below
+// current flexvol size). Post-delete optimal resize passes honorGrowMode false so off and
+// grow_shrink buckets still shrink normally.
+
+// isAutosizeOnlyGrow reports whether vol.AutosizeMode is grow.
+// Missing or empty AutosizeMode is treated as not grow (same as off and grow_shrink).
+func isAutosizeOnlyGrow(vol *api.Volume) bool {
+	if vol == nil {
+		return false
+	}
+	return strings.EqualFold(vol.AutosizeMode, api.VolumeAutosizeModeGrow)
+}
+
+// resolveFlexvolSetSize applies autosize grow policy to a desired byte target and returns the
+// effective absolute size to request from VolumeSetSize.
+func resolveFlexvolSetSize(
+	ctx context.Context, flexvol string, desiredBytes uint64, vol *api.Volume, honorGrowMode bool,
+) (uint64, error) {
+	if honorGrowMode && isAutosizeOnlyGrow(vol) {
+		currentFlexvolBytes, err := flexvolSizeBytesFromVolume(vol)
+		if err != nil {
+			return 0, fmt.Errorf("could not read Flexvol size from VolumeInfo: %w", err)
+		}
+		if desiredBytes < currentFlexvolBytes {
+			Logc(ctx).WithFields(LogFields{
+				"flexvol":      flexvol,
+				"currentBytes": currentFlexvolBytes,
+				"targetBytes":  desiredBytes,
+			}).Info("Skipping Flexvol shrink; ONTAP autosize mode is grow.")
+			return currentFlexvolBytes, nil
+		}
+	}
+	return desiredBytes, nil
+}
+
+// setFlexvolSize sets flexvol to sizeBytes using an absolute VolumeSetSize request. When vol is
+// non-nil and sizeBytes matches the current flexvol size, the ONTAP call is skipped.
+func setFlexvolSize(
+	ctx context.Context, client api.OntapAPI, flexvol string, sizeBytes uint64, vol *api.Volume,
+) error {
+	if vol != nil {
+		currentFlexvolBytes, err := flexvolSizeBytesFromVolume(vol)
+		if err == nil && sizeBytes == currentFlexvolBytes {
+			return nil
+		}
+	}
+	if err := client.VolumeSetSize(ctx, flexvol, strconv.FormatUint(sizeBytes, 10)); err != nil {
+		return fmt.Errorf("flexvol resize failed: %w", err)
+	}
+	return nil
+}
+
+// applyFlexvolSizeAfterLUNDelete sets the flexvol to flexvolBytesBeforeDelete minus deletedLunBytes.
+//
+// flexvolBytesBeforeDelete must come from VolumeInfo captured before LunDestroy. ONTAP may shrink
+// the flexvol after destroy; subtracting deletedLunBytes from that post-delete size would
+// over-shrink below the intended flexvolBytesBeforeDelete − deletedLunBytes target.
+func applyFlexvolSizeAfterLUNDelete(
+	ctx context.Context, client api.OntapAPI, flexvol string, flexvolBytesBeforeDelete, deletedLunBytes uint64,
+) error {
+	if deletedLunBytes > flexvolBytesBeforeDelete {
+		return fmt.Errorf(
+			"deleted LUN size %d exceeds Flexvol size %d for %s",
+			deletedLunBytes, flexvolBytesBeforeDelete, flexvol,
+		)
+	}
+	flexvolBytesAfterDelete := flexvolBytesBeforeDelete - deletedLunBytes
+	Logc(ctx).WithFields(LogFields{
+		"flexvol":                  flexvol,
+		"flexvolBytesBeforeDelete": flexvolBytesBeforeDelete,
+		"deletedLunBytes":          deletedLunBytes,
+		"flexvolBytesAfterDelete":  flexvolBytesAfterDelete,
+	}).Info("Resizing Flexvol after LUN delete (grow autosize mode).")
+	return setFlexvolSize(ctx, client, flexvol, flexvolBytesAfterDelete, nil)
+}
+
 func calculateFlexvolEconomySizeBytes(
 	ctx context.Context, flexvol string, volAttrs *api.Volume, newLunOrQtreeSizeBytes, totalDiskLimitBytes uint64,
 ) uint64 {

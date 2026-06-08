@@ -249,7 +249,7 @@ func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, err
 		"type", "size", "comment", "aggregates", "nas", "guarantee",
 		"snapshot_policy", "snapshot_directory_access_enabled",
 		"space.snapshot.used", "space.snapshot.reserve_percent",
-		"nas.export_policy.name",
+		"nas.export_policy.name", "autosize.mode",
 	}
 	volumeGetResponse, err := d.api.VolumeGetByName(ctx, name, fields)
 	if err != nil {
@@ -392,9 +392,15 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		responseSnapdirAccessEnabled = volumeGetResponse.SnapshotDirectoryAccessEnabled
 	}
 
+	responseAutosizeMode := ""
+	if volumeGetResponse.Autosize != nil && volumeGetResponse.Autosize.Mode != nil {
+		responseAutosizeMode = *volumeGetResponse.Autosize.Mode
+	}
+
 	volumeInfo := &Volume{
 		AccessType:        responseAccessType,
 		Aggregates:        responseAggregates,
+		AutosizeMode:      responseAutosizeMode,
 		Comment:           responseComment,
 		ExportPolicy:      responseExportPolicy,
 		JunctionPath:      responseJunctionPath,

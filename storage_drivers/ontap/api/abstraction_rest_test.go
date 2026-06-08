@@ -4970,7 +4970,7 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 				"type", "size", "comment", "aggregates", "nas", "guarantee",
 				"snapshot_policy", "snapshot_directory_access_enabled",
 				"space.snapshot.used", "space.snapshot.reserve_percent",
-				"nas.export_policy.name",
+				"nas.export_policy.name", "autosize.mode",
 			}
 			rsi.EXPECT().VolumeGetByName(ctx, tt.sourceVolume, expectedFields).Return(tt.mockVolumeInfo, tt.mockVolumeErr)
 
