@@ -131,6 +131,13 @@ func (h *helper) GetVolumeConfig(
 		}
 	}
 
+	// If this is a clone created by a backup vendor, default SkipRecoveryQueue to true.
+	// If the user already set SkipRecoveryQueue via annotation, respect that value instead.
+	if volumeConfig.SkipRecoveryQueue == "" && IsEphemeralPVC(pvc) {
+		Logc(ctx).Debug("Detected backup annotation on PVC; setting SkipRecoveryQueue to true.")
+		volumeConfig.SkipRecoveryQueue = "true"
+	}
+
 	// Check if we're importing a volume and do some further validation
 	if volumeConfig.ImportOriginalName != "" {
 		// If this is a LUKS encrypted volume, ensure the storage class contains the expected parameters
@@ -1023,4 +1030,20 @@ func isValidAccessControlPermission(permission string) bool {
 	default:
 		return false
 	}
+}
+
+// IsEphemeralPVC checks whether a PVC being provisioned is an ephemeral one that is part of a backup workflow.
+func IsEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
+	return IsVeeamKastenEphemeralPVC(pvc)
+}
+
+// IsVeeamKastenEphemeralPVC checks if a PVC is part of a Veeam Kasten workflow.
+func IsVeeamKastenEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
+	if pvc == nil {
+		return false
+	}
+
+	// Check for well-known backup vendor annotations on the PVC.
+	value, exists := pvc.Annotations[AnnVeeamKastenBackup]
+	return exists && value != ""
 }

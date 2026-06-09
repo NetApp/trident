@@ -348,7 +348,7 @@ func TestProcessPVCAnnotations(t *testing.T) {
 	}
 }
 
-func TestGetVolumeConfigFunction(t *testing.T) {
+func TestGetVolumeConfig(t *testing.T) {
 	tests := []struct {
 		name               string
 		pvc                *v1.PersistentVolumeClaim
@@ -2278,4 +2278,230 @@ func TestRecordStorageClassEvent_NilIndexer(t *testing.T) {
 	assert.Panics(t, func() {
 		h.RecordStorageClassEvent(ctx, "test-sc", controllerhelpers.EventTypeNormal, "Test", "Test message")
 	})
+}
+
+func TestIsVeeamKastenEphemeralPVC(t *testing.T) {
+	tests := []struct {
+		name     string
+		pvc      *v1.PersistentVolumeClaim
+		expected bool
+	}{
+		{
+			name:     "Nil PVC",
+			pvc:      nil,
+			expected: false,
+		},
+		{
+			name: "PVC with Kasten readyForGCAt annotation",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "PVC without Kasten annotation",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"some-other-key": "value",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with empty annotations",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with nil annotations",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: nil,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with Kasten annotation set to empty string",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"k10.kasten.io/readyForGCAt": "",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with Kasten annotation set to a non-empty value",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+					},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsVeeamKastenEphemeralPVC(tt.pvc)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIsEphemeralPVC(t *testing.T) {
+	tests := []struct {
+		name     string
+		pvc      *v1.PersistentVolumeClaim
+		expected bool
+	}{
+		{
+			name: "Kasten ephemeral PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "No backup vendor - regular PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"app": "myapp",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Empty PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsEphemeralPVC(tt.pvc)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestGetVolumeConfig_SkipRecoveryQueue verifies SkipRecoveryQueue behaviour:
+//   - Ephemeral PVCs (backup vendor annotation) default SkipRecoveryQueue to "true".
+//   - Non-ephemeral PVCs leave SkipRecoveryQueue empty.
+//   - An explicit annotation is never overridden, even for ephemeral PVCs.
+func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
+	const pvcUID = "12345678-1234-1234-1234-123456789abc"
+	scName := "test-sc"
+
+	tests := []struct {
+		name                      string
+		pvcName                   string
+		pvcAnnotations            map[string]string
+		expectedSkipRecoveryQueue string
+	}{
+		{
+			name:    "ephemeral PVC defaults SkipRecoveryQueue to true",
+			pvcName: "kasten-pvc",
+			pvcAnnotations: map[string]string{
+				"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+			},
+			expectedSkipRecoveryQueue: "true",
+		},
+		{
+			name:                      "non-ephemeral PVC leaves SkipRecoveryQueue empty",
+			pvcName:                   "regular-pvc",
+			pvcAnnotations:            nil,
+			expectedSkipRecoveryQueue: "",
+		},
+		{
+			name:    "ephemeral PVC with explicit annotation preserves annotation value",
+			pvcName: "kasten-pvc-explicit",
+			pvcAnnotations: map[string]string{
+				"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+				AnnSkipRecoveryQueue:         "false",
+			},
+			expectedSkipRecoveryQueue: "false",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pvc := &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        tt.pvcName,
+					Namespace:   "default",
+					UID:         pvcUID,
+					Annotations: tt.pvcAnnotations,
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					StorageClassName: &scName,
+					AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("10Gi"),
+						},
+					},
+				},
+				Status: v1.PersistentVolumeClaimStatus{
+					Phase: v1.ClaimPending,
+				},
+			}
+
+			h := &helper{
+				pvcIndexer: &MockFullIndexer{
+					byIndexFunc: func(indexName, indexKey string) ([]interface{}, error) {
+						if indexName == "uid" && indexKey == pvcUID {
+							return []interface{}{pvc}, nil
+						}
+						return []interface{}{}, nil
+					},
+				},
+				scIndexer: &MockFullIndexer{
+					getByKeyFunc: func(key string) (interface{}, bool, error) {
+						if key == scName {
+							return &k8sstoragev1.StorageClass{
+								ObjectMeta:  metav1.ObjectMeta{Name: scName},
+								Provisioner: "csi.trident.netapp.io",
+								Parameters:  map[string]string{},
+							}, true, nil
+						}
+						return nil, false, nil
+					},
+				},
+				mrIndexer: &MockFullIndexer{
+					listFunc: func() []interface{} { return []interface{}{} },
+				},
+			}
+
+			volConfig, err := h.GetVolumeConfig(context.Background(), "pvc-"+pvcUID, 10737418240, nil,
+				config.File, nil, config.Filesystem, "ext4", nil, nil, nil, nil)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, volConfig)
+			assert.Equal(t, tt.expectedSkipRecoveryQueue, volConfig.SkipRecoveryQueue)
+		})
+	}
 }

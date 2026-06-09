@@ -94,6 +94,9 @@ const (
 
 	// Orchestrator-defined storage class parameters
 	SCParameterNASType = prefix + "/nasType"
+
+	// Third-party backup annotations
+	AnnVeeamKastenBackup = "k10.kasten.io/readyForGCAt"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{
