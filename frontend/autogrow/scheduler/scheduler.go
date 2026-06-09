@@ -10,6 +10,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"math/big"
+	"sync/atomic"
 	"time"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -31,6 +32,9 @@ import (
 	eventbusTypes "github.com/netapp/trident/pkg/eventbus/types"
 	"github.com/netapp/trident/utils/errors"
 )
+
+// volumesScheduledEventSeq adds entropy when timestamp and TVP count match across back-to-back publishes.
+var volumesScheduledEventSeq uint64
 
 // createPublishFunc creates the publish callback function for the assorter
 // This function publishes VolumesScheduled events to the EventBus
@@ -665,10 +669,10 @@ func (s *Scheduler) processWorkItem(ctx context.Context, workItem WorkItem) erro
 	}
 }
 
-// generateEventID creates a unique event ID based on timestamp and tvpCount count
+// generateEventID creates a unique event ID based on timestamp, tvpCount, and a monotonic sequence.
 func generateEventID(timestamp time.Time, tvpCount int) uint64 {
-	// Create composite string: timestamp (nanoseconds) + tvpCount
-	composite := fmt.Sprintf("%d:%d", timestamp.UnixNano(), tvpCount)
+	seq := atomic.AddUint64(&volumesScheduledEventSeq, 1)
+	composite := fmt.Sprintf("%d:%d:%d", timestamp.UnixNano(), tvpCount, seq)
 
 	// Hash the composite string using SHA256
 	hash := sha256.Sum256([]byte(composite))

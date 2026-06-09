@@ -1097,16 +1097,15 @@ func TestGenerateEventID(t *testing.T) {
 			},
 		},
 		{
-			name: "SameInputs_GenerateSameID",
+			name: "RepeatedCalls_GenerateDistinctIDs",
 			setup: func() (time.Time, int) {
 				ts := time.Date(2026, 1, 25, 12, 0, 0, 0, time.UTC)
 				return ts, 5
 			},
 			verify: func(t *testing.T, id1 uint64) {
-				// Generate again with exact same inputs
 				ts := time.Date(2026, 1, 25, 12, 0, 0, 0, time.UTC)
 				id2 := generateEventID(ts, 5)
-				assert.Equal(t, id1, id2, "same inputs should generate same ID")
+				assert.NotEqual(t, id1, id2, "each call should generate a unique ID")
 			},
 		},
 		{
@@ -3641,14 +3640,13 @@ func TestStartScheduleLoop(t *testing.T) {
 func TestCreatePublishFunc(t *testing.T) {
 	tests := []struct {
 		name        string
-		setup       func() (context.Context, []string, func())
+		setup       func(*testing.T) (context.Context, []string, func())
 		expectError bool
 		errorMsg    string
-		verifyEvent func(*testing.T, *agTypes.VolumesScheduled)
 	}{
 		{
 			name: "Success_PublishesEventWithTVPNames",
-			setup: func() (context.Context, []string, func()) {
+			setup: func(t *testing.T) (context.Context, []string, func()) {
 				// Setup mock eventbus
 				mockCtrl := gomock.NewController(t)
 				mockEventBus := mockEventbus.NewMockEventBusMetricsOptions[agTypes.VolumesScheduled](mockCtrl)
@@ -3673,13 +3671,10 @@ func TestCreatePublishFunc(t *testing.T) {
 				return ctx, tvpNames, cleanup
 			},
 			expectError: false,
-			verifyEvent: func(t *testing.T, event *agTypes.VolumesScheduled) {
-				// Verification done via mock expectations
-			},
 		},
 		{
 			name: "Success_PublishesEventWithEmptyTVPNames",
-			setup: func() (context.Context, []string, func()) {
+			setup: func(t *testing.T) (context.Context, []string, func()) {
 				mockEventBus := mockEventbus.NewMockEventBusMetricsOptions[agTypes.VolumesScheduled](gomock.NewController(t))
 
 				mockEventBus.EXPECT().
@@ -3699,13 +3694,10 @@ func TestCreatePublishFunc(t *testing.T) {
 				return ctx, tvpNames, cleanup
 			},
 			expectError: false,
-			verifyEvent: func(t *testing.T, event *agTypes.VolumesScheduled) {
-				// No verification needed for this test
-			},
 		},
 		{
 			name: "Error_EventBusNotInitialized_ReturnsError",
-			setup: func() (context.Context, []string, func()) {
+			setup: func(t *testing.T) (context.Context, []string, func()) {
 				// Store original and set to nil
 				originalEventBus := eventbus.VolumesScheduledEventBus
 				eventbus.VolumesScheduledEventBus = nil
@@ -3721,16 +3713,13 @@ func TestCreatePublishFunc(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "VolumesScheduled eventbus not initialized",
-			verifyEvent: func(t *testing.T, event *agTypes.VolumesScheduled) {
-				// No event should be published
-			},
 		},
 		{
 			name: "Success_EventIDIsUnique",
-			setup: func() (context.Context, []string, func()) {
+			setup: func(t *testing.T) (context.Context, []string, func()) {
 				mockEventBus := mockEventbus.NewMockEventBusMetricsOptions[agTypes.VolumesScheduled](gomock.NewController(t))
 
-				var event1, event2 agTypes.VolumesScheduled
+				var event1 agTypes.VolumesScheduled
 				callCount := 0
 				mockEventBus.EXPECT().
 					Publish(gomock.Any(), gomock.Any()).
@@ -3738,7 +3727,7 @@ func TestCreatePublishFunc(t *testing.T) {
 						if callCount == 0 {
 							event1 = event
 						} else {
-							event2 = event
+							assert.NotEqual(t, event1.ID, event.ID, "Event IDs should be unique")
 						}
 						callCount++
 					}).
@@ -3749,10 +3738,6 @@ func TestCreatePublishFunc(t *testing.T) {
 
 				cleanup := func() {
 					eventbus.VolumesScheduledEventBus = originalEventBus
-					// Verify IDs are different
-					if event1.ID != 0 && event2.ID != 0 {
-						assert.NotEqual(t, event1.ID, event2.ID, "Event IDs should be unique")
-					}
 				}
 
 				ctx := context.Background()
@@ -3761,15 +3746,12 @@ func TestCreatePublishFunc(t *testing.T) {
 				return ctx, tvpNames, cleanup
 			},
 			expectError: false,
-			verifyEvent: func(t *testing.T, event *agTypes.VolumesScheduled) {
-				// Verification done in cleanup
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, tvpNames, cleanup := tt.setup()
+			ctx, tvpNames, cleanup := tt.setup(t)
 			defer cleanup()
 
 			// Create the publish function
@@ -3789,7 +3771,6 @@ func TestCreatePublishFunc(t *testing.T) {
 
 			// Special handling for unique ID test
 			if tt.name == "Success_EventIDIsUnique" {
-				// Call again to generate second event
 				err2 := publishFunc(ctx, tvpNames)
 				assert.NoError(t, err2)
 			}
