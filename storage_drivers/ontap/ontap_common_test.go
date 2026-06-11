@@ -642,7 +642,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 		},
 	).AnyTimes()
 
-	err := checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err := checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -655,7 +655,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 		},
 	).AnyTimes()
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -674,7 +674,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 		},
 	).AnyTimes()
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 	assert.Nil(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -682,7 +682,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 
 	aggr = ""
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 
 	assert.Error(t, err)
 
@@ -694,7 +694,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 	mockOntapAPI.EXPECT().GetSVMAggregateSpace(gomock.Any(), aggr).Return([]api.SVMAggregateSpace{},
 		errors.New("GetSVMAggregateSpace returned error"))
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 
 	assert.Error(t, err)
 
@@ -717,7 +717,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 		},
 	).AnyTimes()
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 
 	assert.Error(t, err)
 
@@ -740,7 +740,7 @@ func TestCheckAggregateLimits(t *testing.T) {
 		},
 	).AnyTimes()
 
-	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	err = checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), "create", ontapConfig, mockOntapAPI)
 
 	assert.Error(t, err)
 }
