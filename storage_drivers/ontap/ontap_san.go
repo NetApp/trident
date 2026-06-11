@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -145,7 +146,17 @@ func (d *SANStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
+		if d.Config.GCNVConfig != nil {
+			var transport http.RoundTripper
+			transport, err = initializeGCNVDriver(ctx, &d.Config)
+			if err != nil {
+				return fmt.Errorf("error initializing %s GCNV driver; %v", d.Name(), err)
+			}
+			d.API, err = InitializeOntapDriverForGCNV(ctx, &d.Config, transport)
+		} else {
+			d.API, err = InitializeOntapDriver(ctx, &d.Config)
+		}
+		if err != nil {
 			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
@@ -689,6 +700,12 @@ func (d *SANStorageDriver) CreateClone(
 
 	opts := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
 
+	skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, storagePool, opts)
+	if err != nil {
+		return err
+	}
+	cloneVolConfig.SkipRecoveryQueue = skipRecoveryQueue
+
 	// How "splitOnClone" value gets set:
 	// In the Core we first check clone's VolumeConfig for splitOnClone value
 	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
@@ -869,6 +886,15 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 	}
 
+	if !volConfig.ImportNotManaged {
+		opts := d.GetVolumeOpts(ctx, volConfig, make(map[string]sa.Request))
+		skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, nil, opts)
+		if err != nil {
+			return err
+		}
+		volConfig.SkipRecoveryQueue = skipRecoveryQueue
+	}
+
 	return nil
 }
 
@@ -988,6 +1014,9 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// Delete the Flexvol & LUN
+	// The shared OntapAPI signature still takes both force and skipRecoveryQueue. The REST adapter
+	// collapses that to one transport flag and uses skipRecoveryQueue semantics there, while ZAPI
+	// continues to use the force argument directly.
 	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)

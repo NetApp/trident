@@ -160,6 +160,77 @@ func TestExtractErrorResponse(t *testing.T) {
 	assert.Equal(t, *eeResponse.Error.Message, "error 42", "Unexpected message")
 }
 
+func TestGCNVSemaphoreKey_ReturnsProxyWhenNil(t *testing.T) {
+	key := GCNVSemaphoreKey(nil)
+	assert.Equal(t, "proxy", key)
+}
+
+func TestGCNVSemaphoreKey_ReturnsProxyWhenIncomplete(t *testing.T) {
+	tests := []struct {
+		name string
+		g    *drivers.GCNVConfig
+	}{
+		{"empty struct", &drivers.GCNVConfig{}},
+		{"missing ProjectNumber", &drivers.GCNVConfig{Location: "us-c1", PoolID: "pool-1"}},
+		{"missing Location", &drivers.GCNVConfig{ProjectNumber: "123", PoolID: "pool-1"}},
+		{"missing PoolID", &drivers.GCNVConfig{ProjectNumber: "123", Location: "us-c1"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := GCNVSemaphoreKey(tt.g)
+			assert.Equal(t, "proxy", key)
+		})
+	}
+}
+
+func TestGCNVSemaphoreKey_ReturnsUniqueKeyWhenComplete(t *testing.T) {
+	g := &drivers.GCNVConfig{
+		ProjectNumber: "123456",
+		Location:      "us-central1-a",
+		PoolID:        "pool-abc",
+	}
+	key := GCNVSemaphoreKey(g)
+	assert.Equal(t, "gcnv:123456/us-central1-a/pool-abc", key)
+}
+
+func TestGCNVSemaphoreKey_DifferentBackendsGetDifferentKeys(t *testing.T) {
+	g1 := &drivers.GCNVConfig{ProjectNumber: "1", Location: "us-c1", PoolID: "pool-1"}
+	g2 := &drivers.GCNVConfig{ProjectNumber: "2", Location: "us-c1", PoolID: "pool-1"}
+	g3 := &drivers.GCNVConfig{ProjectNumber: "1", Location: "us-e4", PoolID: "pool-1"}
+	g4 := &drivers.GCNVConfig{ProjectNumber: "1", Location: "us-c1", PoolID: "pool-2"}
+	k1 := GCNVSemaphoreKey(g1)
+	k2 := GCNVSemaphoreKey(g2)
+	k3 := GCNVSemaphoreKey(g3)
+	k4 := GCNVSemaphoreKey(g4)
+	assert.NotEqual(t, k1, k2)
+	assert.NotEqual(t, k1, k3)
+	assert.NotEqual(t, k1, k4)
+	assert.Equal(t, "gcnv:1/us-c1/pool-1", k1)
+	assert.Equal(t, "gcnv:2/us-c1/pool-1", k2)
+	assert.Equal(t, "gcnv:1/us-e4/pool-1", k3)
+	assert.Equal(t, "gcnv:1/us-c1/pool-2", k4)
+}
+
+func TestNewGcnvRestClient_UsesProvidedSemaphoreKey(t *testing.T) {
+	// Use a no-op transport so we don't hit the network.
+	transport := &http.Transport{}
+	config := ClientConfig{DebugTraceFlags: map[string]bool{}}
+	client, err := NewGcnvRestClient(ctx, config, "svm0", "ontap-nas", transport, "gcnv:999/us-west2/pool-xyz")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+	// Terminate must free the semaphore key we passed; should not panic.
+	client.Terminate()
+}
+
+func TestNewGcnvRestClient_EmptySemaphoreKeyFallsBackToProxy(t *testing.T) {
+	transport := &http.Transport{}
+	config := ClientConfig{DebugTraceFlags: map[string]bool{}}
+	client, err := NewGcnvRestClient(ctx, config, "svm0", "ontap-nas", transport, "")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+	client.Terminate()
+}
+
 func TestVolumeEncryption(t *testing.T) {
 	// negative case:  if nil, should not be set
 	veMarshall := models.VolumeInlineEncryption{}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -46,6 +47,14 @@ func GetStorageDriver(
 		return nil, fmt.Errorf("error initializing %s driver: %v", commonConfig.StorageDriverName, err)
 	}
 
+	// GCNV ONTAP-mode is supported only with ontap-san and ontap-nas. Reject other driver types.
+	if ontapConfig.GCNVConfig != nil &&
+		ontapConfig.StorageDriverName != config.OntapSANStorageDriverName &&
+		ontapConfig.StorageDriverName != config.OntapNASStorageDriverName {
+		return nil, fmt.Errorf("GCNV ONTAP-mode (gcnv config) is only supported with driver %s or %s; got %s",
+			config.OntapSANStorageDriverName, config.OntapNASStorageDriverName, ontapConfig.StorageDriverName)
+	}
+
 	// Initialize AWS API if applicable.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	AWSAPI, err := initializeAWSDriver(ctx, ontapConfig)
@@ -53,8 +62,18 @@ func GetStorageDriver(
 		return nil, fmt.Errorf("error initializing %s AWS driver; %v", commonConfig.StorageDriverName, err)
 	}
 
-	// Initialize the ONTAP API.
-	API, err := InitializeOntapDriver(ctx, ontapConfig)
+	// Connect to ONTAP: use GCNV path when GCNVConfig is set, else normal LIF-based path.
+	var API api.OntapAPI
+	if ontapConfig.GCNVConfig != nil {
+		var transport http.RoundTripper
+		transport, err = initializeGCNVDriver(ctx, ontapConfig)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing %s GCNV driver; %v", commonConfig.StorageDriverName, err)
+		}
+		API, err = InitializeOntapDriverForGCNV(ctx, ontapConfig, transport)
+	} else {
+		API, err = InitializeOntapDriver(ctx, ontapConfig)
+	}
 	if API == nil {
 		Logc(ctx).WithError(err).Errorf("error initializing %s driver", commonConfig.StorageDriverName)
 		storageDriver, err = getEmptyStorageDriver(commonConfig.StorageDriverName, driverProtocol)
@@ -121,13 +140,26 @@ func getSANStorageDriverBasedOnPersonality(
 		isASAr2 = true
 	}
 
+	// GCNV ONTAP-mode supports only unified (non-ASAr2) iSCSI SAN. ASAr2 uses a different backend path.
+	if ontapConfig.GCNVConfig != nil {
+		if isASAr2 {
+			return nil, fmt.Errorf("GCNV ONTAP-mode is only supported with unified ontap-san; ASA r2 is not supported")
+		}
+		if driverProtocol != sa.ISCSI {
+			return nil, fmt.Errorf(
+				"GCNV ONTAP-mode is only supported with unified ontap-san using iSCSI; SAN protocol %s is not supported",
+				driverProtocol,
+			)
+		}
+	}
+
 	switch driverProtocol {
 	case sa.ISCSI:
 		if isASAr2 {
 			// ASAr2 iSCSI SAN driver
 			return &ASAStorageDriver{API: api, Config: *ontapConfig}, nil
 		} else {
-			// Unified iSCSI SAN driver
+			// Unified iSCSI SAN driver (and the only SAN personality supported with GCNV ONTAP-mode)
 			return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
 		}
 	case sa.NVMe:

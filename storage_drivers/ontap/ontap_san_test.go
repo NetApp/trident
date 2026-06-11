@@ -15,6 +15,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"golang.org/x/oauth2/google"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
@@ -23,6 +24,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
+	"github.com/netapp/trident/storage_drivers/ontap/gcpapi"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -4215,6 +4217,43 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 	assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+}
+
+// TestOntapSanStorageDriverInitialize_WithGCNVConfig_TakesGCNVPath verifies that when API is nil and
+// config contains gcnv, Initialize uses the GCNV path and propagates resolver errors.
+func TestOntapSanStorageDriverInitialize_WithGCNVConfig_TakesGCNVPath(t *testing.T) {
+	const stubErr = "stub: no credentials for GCNV SAN test"
+	prev := resolveCredentialsForGCNV
+	resolveCredentialsForGCNV = func(_ context.Context, _ *gcpapi.ClientConfig) (*google.Credentials, error) {
+		return nil, fmt.Errorf("%s", stubErr)
+	}
+	defer func() { resolveCredentialsForGCNV = prev }()
+
+	driver := &SANStorageDriver{} // API is nil
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-san",
+		BackendName:       "gcnv-san-backend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+	configJSON := `{
+		"version": 1,
+		"storageDriverName": "ontap-san",
+		"gcnv": {
+			"proxyURL": "https://netapp.googleapis.com",
+			"projectNumber": "12345",
+			"location": "us-central1-a",
+			"poolID": "test-pool"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "GCNV", "expected error from GCNV init path")
+	assert.Contains(t, err.Error(), "error resolving GCP credentials", "expected error from stubbed credential resolution")
+	assert.Contains(t, err.Error(), stubErr, "expected stub error to propagate")
 }
 
 func TestOntapSanStorageDriverInitialize_WithFC(t *testing.T) {

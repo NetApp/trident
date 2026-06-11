@@ -5,6 +5,7 @@ package ontap
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -137,8 +138,18 @@ func (d *NASStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
-			return fmt.Errorf("error initializing %s driver; %v", d.Name(), err)
+		if d.Config.GCNVConfig != nil {
+			var transport http.RoundTripper
+			transport, err = initializeGCNVDriver(ctx, &d.Config)
+			if err != nil {
+				return fmt.Errorf("error initializing %s GCNV driver; %v", d.Name(), err)
+			}
+			d.API, err = InitializeOntapDriverForGCNV(ctx, &d.Config, transport)
+		} else {
+			d.API, err = InitializeOntapDriver(ctx, &d.Config)
+		}
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
 
@@ -503,6 +514,12 @@ func (d *NASStorageDriver) CreateClone(
 
 	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
+	skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, storagePool, opts)
+	if err != nil {
+		return err
+	}
+	cloneVolConfig.SkipRecoveryQueue = skipRecoveryQueue
+
 	labels := flexvol.Comment
 
 	// How "splitOnClone" value gets set:
@@ -701,6 +718,9 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
+	// The shared OntapAPI signature still takes both force and skipRecoveryQueue. The REST adapter
+	// collapses that to one transport flag and uses skipRecoveryQueue semantics there, while ZAPI
+	// continues to use the force argument directly.
 	if err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue); err != nil {
 		return err
 	}
@@ -853,6 +873,15 @@ func (d *NASStorageDriver) Import(
 				return err
 			}
 		}
+	}
+
+	if !volConfig.ImportNotManaged {
+		opts := d.GetVolumeOpts(ctx, volConfig, make(map[string]sa.Request))
+		skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, nil, opts)
+		if err != nil {
+			return err
+		}
+		volConfig.SkipRecoveryQueue = skipRecoveryQueue
 	}
 
 	return nil

@@ -96,6 +96,15 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 	return err
 }
 
+// VolumeDestroy deletes a flexvol via ONTAP ZAPI.
+//
+// force and skipRecoveryQueue are not the same on ZAPI:
+//   - force: passed to ZAPI VolumeDestroy (ONTAP force delete semantics).
+//   - skipRecoveryQueue: when true, after a successful destroy, best-effort purge of the volume
+//     from the recovery queue via separate ZAPI calls (GetIter + Purge).
+//
+// REST/GCNV uses abstraction_rest.VolumeDestroy instead; there skipRecoveryQueue maps to REST
+// DELETE ?force= and there is no post-delete RQ purge in that path.
 func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
 	volDestroyResponse, err := d.api.VolumeDestroy(name, force)
 	if err != nil {

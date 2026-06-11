@@ -61,7 +61,8 @@ func (m *MetricsTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		recErr = err
 		// Handle the special ONTAP case where the API may return EOF instead of
 		// an HTTP backpressure status when the server gives up.
-		if errors.Is(err, io.EOF) && m.target == ContextRequestTargetONTAP {
+		if errors.Is(err, io.EOF) &&
+			(m.target == ContextRequestTargetONTAP || m.target == ContextRequestTargetGCNV) {
 			recErr = errors.WrapWithServerBackPressureError(err, "received EOF from server")
 		}
 		return res, recErr
@@ -77,10 +78,10 @@ func (m *MetricsTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		recErr = errors.ServerBackPressureError("received status: %d from the server", res.StatusCode)
 
 		switch m.target {
-		case ContextRequestTargetONTAP:
+		case ContextRequestTargetONTAP, ContextRequestTargetGCNV:
 			// This breaks the standard RoundTripper semantics but is necessary to handle
-			// the special case where ONTAP returns an EOF error when the API is too busy.
-			// ONTAP callers gate on err != nil and may not inspect the HTTP status code,
+			// the special case where ONTAP/GCNV proxy returns an EOF error when the API is too busy.
+			// Callers gate on err != nil and may not inspect the HTTP status code,
 			// so return a non-nil backpressure error.
 			return res, recErr
 		case ContextRequestTargetKubernetes:

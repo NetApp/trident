@@ -181,6 +181,72 @@ func TestSanitizeDataLIF(t *testing.T) {
 	}
 }
 
+func TestGetExternalConfig_RedactsGCNVCredentials(t *testing.T) {
+	ctx := context.Background()
+
+	config := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{},
+		Username:                  "username",
+		Password:                  "password",
+		ClientPrivateKey:          "private-key",
+		GCNVConfig: &drivers.GCNVConfig{
+			ProxyURL:      "https://netapp.googleapis.com",
+			ProjectNumber: "123456789012",
+			Location:      "us-central1",
+			PoolID:        "pool-1",
+			APIKey: &drivers.GCPPrivateKey{
+				PrivateKey:   "super-secret-key",
+				PrivateKeyID: "super-secret-key-id",
+			},
+			WIPCredential: &drivers.GCPWIPCredential{
+				Type:     "external_account",
+				Audience: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+			},
+		},
+	}
+
+	externalConfig := getExternalConfig(ctx, config).(drivers.OntapStorageDriverConfig)
+
+	assert.Equal(t, tridentconfig.REDACTED, externalConfig.Username)
+	assert.Equal(t, tridentconfig.REDACTED, externalConfig.Password)
+	assert.Equal(t, tridentconfig.REDACTED, externalConfig.ClientPrivateKey)
+	assert.NotNil(t, externalConfig.GCNVConfig)
+	if assert.NotNil(t, externalConfig.GCNVConfig.APIKey) {
+		assert.Equal(t, tridentconfig.REDACTED, externalConfig.GCNVConfig.APIKey.PrivateKey)
+		assert.Equal(t, tridentconfig.REDACTED, externalConfig.GCNVConfig.APIKey.PrivateKeyID)
+	}
+	if assert.NotNil(t, externalConfig.GCNVConfig.WIPCredential) {
+		assert.Equal(t, tridentconfig.REDACTED, externalConfig.GCNVConfig.WIPCredential.Type)
+		assert.Equal(t, tridentconfig.REDACTED, externalConfig.GCNVConfig.WIPCredential.Audience)
+		if assert.NotNil(t, externalConfig.GCNVConfig.WIPCredential.CredentialSource) {
+			assert.Equal(t, tridentconfig.REDACTED, externalConfig.GCNVConfig.WIPCredential.CredentialSource.File)
+		}
+	}
+
+	// Runtime auth uses the live driver config, not getExternalConfig's redacted clone.
+	assert.Equal(t, "super-secret-key", config.GCNVConfig.APIKey.PrivateKey)
+	assert.Equal(t, "super-secret-key-id", config.GCNVConfig.APIKey.PrivateKeyID)
+	assert.Equal(t, "external_account", config.GCNVConfig.WIPCredential.Type)
+	assert.Contains(t, config.GCNVConfig.WIPCredential.Audience, "workloadIdentityPools")
+}
+
+func TestResolveSkipRecoveryQueue(t *testing.T) {
+	t.Parallel()
+
+	pool := storage.NewStoragePool(nil, "pool1")
+	pool.InternalAttributes()[SkipRecoveryQueue] = "false"
+
+	got, err := resolveSkipRecoveryQueue("false", pool, map[string]string{
+		"skipRecoveryQueue": "true",
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "true", got)
+
+	_, err = resolveSkipRecoveryQueue("not-a-bool", nil, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid boolean value for skipRecoveryQueue")
+}
+
 func newMockZapiClient(t *testing.T) *mock_ontap.MockZapiClientInterface {
 	mockCtrl := gomock.NewController(t)
 	mockZapiClient := mock_ontap.NewMockZapiClientInterface(mockCtrl)
@@ -6811,6 +6877,52 @@ func TestPublishLun(t *testing.T) {
 	assert.Equal(t, "xfs", publishInfo.FilesystemType)
 	assert.Equal(t, volFmtOpts, publishInfo.FormatOptions)
 	assert.Contains(t, publishInfo.MountOptions, "nouuid")
+
+	// Test 11c - CSI raw block: FileSystem is "raw" but LunGetFSType must run (e.g. import with existing ext4 on LUN)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("ext4", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg(filesystem.Raw, ""))
+	assert.NoError(t, err)
+	assert.Equal(t, "ext4", publishInfo.FilesystemType)
+
+	// Test 11d - FileSystem "raw" and LUN has no fstype attribute: keep raw (unformatted block LUN)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg(filesystem.Raw, ""))
+	assert.NoError(t, err)
+	assert.Equal(t, filesystem.Raw, publishInfo.FilesystemType)
 
 	// Test 12 - volume fstype empty, LunGetFSType returns empty string with no error, expect empty
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)

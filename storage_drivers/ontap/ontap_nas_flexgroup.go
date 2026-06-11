@@ -855,6 +855,12 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 
 	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
+	skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, storagePool, opts)
+	if err != nil {
+		return err
+	}
+	cloneVolConfig.SkipRecoveryQueue = skipRecoveryQueue
+
 	// How "splitOnClone" value gets set:
 	// In the Core we first check clone's VolumeConfig for splitOnClone value
 	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value

@@ -226,3 +226,57 @@ func TestBackendAuthorizationRedactor(t *testing.T) {
 		})
 	}
 }
+
+func TestBackendSensitiveMapRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "credentials map",
+			line:     "credentials:map[name:my-secret type:secret]",
+			expected: "credentials:<REDACTED>",
+		},
+		{
+			name:     "apiKey map",
+			line:     "apiKey:map[private_key:abc private_key_id:123]",
+			expected: "apiKey:<REDACTED>",
+		},
+		{
+			name:     "wipCredentialConfig simple",
+			line:     "wipCredentialConfig:map[audience:a tokenURL:https://example/token]",
+			expected: "wipCredentialConfig:<REDACTED>",
+		},
+		{
+			name: "wipCredentialConfig nested map",
+			line: "wipCredentialConfig:map[audience:a credentialSource:map[file:/var/run/secrets/token] " +
+				"subjectTokenType:urn:ietf:params:oauth:token-type:jwt tokenURL:https://sts.googleapis.com type:external_account]",
+			expected: "wipCredentialConfig:<REDACTED>",
+		},
+		{
+			name:     "wipCredential simple",
+			line:     "wipCredential:map[audience:a tokenURL:https://example/token]",
+			expected: "wipCredential:<REDACTED>",
+		},
+		{
+			name: "wipCredential nested map",
+			line: "wipCredential:map[audience:a credentialSource:map[file:/var/run/secrets/token] " +
+				"subjectTokenType:urn:ietf:params:oauth:token-type:jwt tokenURL:https://sts.googleapis.com type:external_account]",
+			expected: "wipCredential:<REDACTED>",
+		},
+		{
+			name:     "wrong key unchanged",
+			line:     "wipCredentialConfigs:map[audience:a]",
+			expected: "wipCredentialConfigs:map[audience:a]",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := backendSensitiveMap.re.ReplaceAll(input, backendSensitiveMap.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}

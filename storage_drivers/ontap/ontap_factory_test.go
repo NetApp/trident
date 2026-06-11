@@ -193,6 +193,77 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 	}
 }
 
+func TestGetSANStorageDriverBasedOnPersonality_GCNVRestrictions(t *testing.T) {
+	gcnvConfig := &drivers.GCNVConfig{
+		ProxyURL:      "https://gcnv.example/ontap",
+		ProjectNumber: "123",
+		Location:      "us-c1",
+		PoolID:        "pool-1",
+	}
+	ontapConfig := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			Flags: make(map[string]string),
+		},
+		GCNVConfig: gcnvConfig,
+	}
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+
+	tests := []struct {
+		name               string
+		sanOptimized       bool
+		disaggregated      bool
+		driverProtocol     string
+		expectedDriverType interface{}
+		expectError        bool
+		errorMessage       string
+	}{
+		{
+			name:               "GCNV unified iSCSI SAN",
+			driverProtocol:     sa.ISCSI,
+			expectedDriverType: &SANStorageDriver{},
+		},
+		{
+			name:           "GCNV rejects NVMe",
+			driverProtocol: sa.NVMe,
+			expectError:    true,
+			errorMessage:   "using iSCSI",
+		},
+		{
+			name:           "GCNV rejects FCP",
+			driverProtocol: sa.FCP,
+			expectError:    true,
+			errorMessage:   "using iSCSI",
+		},
+		{
+			name:           "GCNV rejects ASA r2",
+			sanOptimized:   true,
+			disaggregated:  true,
+			driverProtocol: sa.ISCSI,
+			expectError:    true,
+			errorMessage:   "ASA r2 is not supported",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			driver, err := getSANStorageDriverBasedOnPersonality(
+				test.sanOptimized, test.disaggregated, test.driverProtocol, ontapConfig, mockAPI, mockAWSAPI,
+			)
+			if test.expectError {
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, test.errorMessage)
+				assert.Nil(t, driver)
+				return
+			}
+			assert.NoError(t, err)
+			assert.IsType(t, test.expectedDriverType, driver)
+		})
+	}
+}
+
 // TestGetStorageDriver tests the main factory function for creating storage drivers
 func TestGetStorageDriver(t *testing.T) {
 	tests := []struct {

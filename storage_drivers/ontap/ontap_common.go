@@ -13,6 +13,7 @@ import (
 	"maps"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"reflect"
 	"regexp"
@@ -1560,7 +1561,8 @@ func ensureIGroupExists(ctx context.Context, clientAPI api.OntapAPI, igroupName,
 }
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
-// that are common to all the ONTAP drivers.
+// that are common to all the ONTAP drivers. Use InitializeOntapDriverForGCNV when the
+// backend is configured for GCNV ONTAP-mode (proxy transport) instead.
 func InitializeOntapDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
 ) (api.OntapAPI, error) {
@@ -1578,7 +1580,6 @@ func InitializeOntapDriver(
 	mgmtLIF := ""
 	if network.IPv6Check(config.ManagementLIF) {
 		// This is an IPv6 address
-
 		mgmtLIF = strings.Split(config.ManagementLIF, "[")[1]
 		mgmtLIF = strings.Split(mgmtLIF, "]")[0]
 	} else {
@@ -1620,6 +1621,36 @@ func InitializeOntapDriver(
 	return client, nil
 }
 
+// InitializeOntapDriverForGCNV initializes the ONTAP API client for GCNV ONTAP-mode backends.
+// The transport parameter is the proxy round-tripper returned by initializeGCNVDriver.
+// There is no management LIF, no DNS lookup, no ZAPI fallback.
+func InitializeOntapDriverForGCNV(
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, transport http.RoundTripper,
+) (api.OntapAPI, error) {
+	fields := LogFields{"Method": "InitializeOntapDriverForGCNV", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapDriverForGCNV")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriverForGCNV")
+
+	if config.StoragePrefix == nil {
+		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		config.StoragePrefix = &prefix
+	}
+
+	ontapAPI, err := api.NewGcnvRestClientFromOntapConfig(ctx, config, transport)
+	if err != nil {
+		return nil, fmt.Errorf("could not create ONTAP API client via GCNV proxy: %v", err)
+	}
+
+	if err = ontapAPI.ValidateAPIVersion(ctx); err != nil {
+		ontapAPI.Terminate()
+		return nil, err
+	}
+
+	return ontapAPI, nil
+}
+
 // InitializeOntapAPI returns an ontap.Client ZAPI or REST client.  If the SVM isn't specified in the config
 // file, this method attempts to derive the one to use.
 func InitializeOntapAPI(
@@ -1655,6 +1686,11 @@ func InitializeOntapAPI(
 		// The creation of a REST client may fail due to various reasons.
 		// One of the primary reasons could be the lack of authorization for the REST client.
 		// In such cases, we attempt to fall back to ZAPI.
+
+		// In proxy mode (e.g. GCNV ONTAP-mode) ZAPI is never valid; fail fast with the REST error.
+		if config.GCNVConfig != nil {
+			return nil, fmt.Errorf("error creating ONTAP REST API client via proxy: %v", err)
+		}
 
 		msg := "Error creating ONTAP REST API client for initial call. Falling back to ZAPI."
 		Logc(ctx).WithError(err).Error(msg)
@@ -4014,6 +4050,23 @@ func createPrepareCommon(ctx context.Context, d storage.Driver, volConfig *stora
 	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
+// resolveSkipRecoveryQueue merges driver default, storage pool, and per-volume opts.
+func resolveSkipRecoveryQueue(
+	driverDefault string,
+	storagePool storage.Pool,
+	opts map[string]string,
+) (string, error) {
+	skipRecoveryQueue := driverDefault
+	if !storage.IsStoragePoolUnset(storagePool) {
+		skipRecoveryQueue = storagePool.InternalAttributes()[SkipRecoveryQueue]
+	}
+	skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", skipRecoveryQueue)
+	if _, err := strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
+		return "", fmt.Errorf("invalid boolean value for skipRecoveryQueue: %v", err)
+	}
+	return skipRecoveryQueue, nil
+}
+
 func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverConfig) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.OntapStorageDriverConfig
@@ -4032,6 +4085,37 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 		drivers.KeyName: tridentconfig.REDACTED,
 		drivers.KeyType: tridentconfig.REDACTED,
 	} // redact the credentials
+
+	if cloneConfig.GCNVConfig != nil {
+		if cloneConfig.GCNVConfig.APIKey != nil {
+			cloneConfig.GCNVConfig.APIKey = &drivers.GCPPrivateKey{
+				Type:                    tridentconfig.REDACTED,
+				ProjectID:               tridentconfig.REDACTED,
+				PrivateKeyID:            tridentconfig.REDACTED,
+				PrivateKey:              tridentconfig.REDACTED,
+				ClientEmail:             tridentconfig.REDACTED,
+				ClientID:                tridentconfig.REDACTED,
+				AuthURI:                 tridentconfig.REDACTED,
+				TokenURI:                tridentconfig.REDACTED,
+				AuthProviderX509CertURL: tridentconfig.REDACTED,
+				ClientX509CertURL:       tridentconfig.REDACTED,
+			}
+		}
+		if cloneConfig.GCNVConfig.WIPCredential != nil {
+			cloneConfig.GCNVConfig.WIPCredential = &drivers.GCPWIPCredential{
+				UniverseDomain:                 tridentconfig.REDACTED,
+				Type:                           tridentconfig.REDACTED,
+				Audience:                       tridentconfig.REDACTED,
+				SubjectTokenType:               tridentconfig.REDACTED,
+				TokenURL:                       tridentconfig.REDACTED,
+				ServiceAccountImpersonationURL: tridentconfig.REDACTED,
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: tridentconfig.REDACTED,
+				},
+				QuotaProjectID: tridentconfig.REDACTED,
+			}
+		}
+	}
 
 	// https://github.com/golang/go/issues/4609
 	// It's how gob encoding-decoding works, it flattens the pointer while encoding,

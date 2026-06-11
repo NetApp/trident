@@ -663,6 +663,12 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	opts := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
 
+	skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, storagePool, opts)
+	if err != nil {
+		return err
+	}
+	cloneVolConfig.SkipRecoveryQueue = skipRecoveryQueue
+
 	// How "splitOnClone" value gets set:
 	// In the Core we first check clone's VolumeConfig for splitOnClone value
 	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
@@ -671,7 +677,6 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
-	var err error
 	labels := ""
 	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
@@ -845,6 +850,16 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 			}
 		}
 	}
+
+	if !volConfig.ImportNotManaged {
+		opts := d.GetVolumeOpts(ctx, volConfig, make(map[string]sa.Request))
+		skipRecoveryQueue, err := resolveSkipRecoveryQueue(d.Config.SkipRecoveryQueue, nil, opts)
+		if err != nil {
+			return err
+		}
+		volConfig.SkipRecoveryQueue = skipRecoveryQueue
+	}
+
 	importedFlexVolName := volConfig.InternalName
 	importedNamespaceName := extractNamespaceName(nsInfo.Name)
 	volConfig.InternalID = createNamespacePath(importedFlexVolName, importedNamespaceName)

@@ -84,10 +84,7 @@ func (s *TridentBackendConfigSpec) ToString() string {
 		return ""
 	}
 
-	// Redact the credentials information
-	backendConfigSpec["credentials"] = "<REDACTED>"
-
-	return fmt.Sprintf("backendConfig: %+v", backendConfigSpec)
+	return RedactString(fmt.Sprintf("backendConfig: %+v", backendConfigSpec))
 }
 
 func (in *TridentBackendConfig) IsSpecValid() bool {

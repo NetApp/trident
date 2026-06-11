@@ -34,6 +34,7 @@ import (
 var ontapConfigRedactList = [...]string{
 	"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
 	"ChapTargetUsername", "ChapTargetInitiatorSecret", "ClientPrivateKey",
+	"GCNVConfig",
 }
 
 func GetOntapConfigRedactList() []string {

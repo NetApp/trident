@@ -57,22 +57,27 @@ var returnTimeout = new(int64(2)) // seconds
 
 // RestClient is the object to use for interacting with ONTAP controllers via the REST API
 type RestClient struct {
-	config        ClientConfig
-	httpClient    *http.Client
-	api           *client.ONTAPRESTAPIOnlineReference
-	authInfo      runtime.ClientAuthInfoWriter
-	OntapVersion  string
-	driverName    string
-	svmUUID       string
-	svmName       string
-	clusterUUID   string
-	sanOptimized  bool
-	disaggregated bool
-	m             *sync.RWMutex
+	config           ClientConfig
+	httpClient       *http.Client
+	api              *client.ONTAPRESTAPIOnlineReference
+	authInfo         runtime.ClientAuthInfoWriter
+	OntapVersion     string
+	driverName       string
+	svmUUID          string
+	svmName          string
+	clusterUUID      string
+	sanOptimized     bool
+	disaggregated    bool
+	m                *sync.RWMutex
+	gcnvSemaphoreKey string
 }
 
 func (c *RestClient) Terminate() {
-	drivers.FreeSemaphore(c.config.ManagementLIF)
+	key := c.config.ManagementLIF
+	if c.gcnvSemaphoreKey != "" {
+		key = c.gcnvSemaphoreKey
+	}
+	drivers.FreeSemaphore(key)
 }
 
 func (c *RestClient) ClientConfig() ClientConfig {
@@ -226,6 +231,74 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	return result, nil
 }
 
+// GCNVSemaphoreKey returns a unique semaphore key for the given GCNV backend (project/location/pool).
+// Used so each GCNV backend gets its own concurrency limit. Returns "proxy" if config is nil or incomplete.
+func GCNVSemaphoreKey(g *drivers.GCNVConfig) string {
+	if g == nil || g.ProjectNumber == "" || g.Location == "" || g.PoolID == "" {
+		return "proxy"
+	}
+	return fmt.Sprintf("gcnv:%s/%s/%s", g.ProjectNumber, g.Location, g.PoolID)
+}
+
+// NewGcnvRestClient creates a REST client for GCNV ONTAP-mode using an externally provided
+// proxy transport. semaphoreKey is used for rate-limiting; each backend/pool should use a unique key
+// (e.g. from GCNVSemaphoreKey). If empty, "proxy" is used.
+func NewGcnvRestClient(ctx context.Context, config ClientConfig, SVM, driverName string, gcnvTransport http.RoundTripper, semaphoreKey string) (*RestClient, error) {
+	const proxyPlaceholder = "proxy"
+	if gcnvTransport == nil {
+		return nil, fmt.Errorf("gcnv transport cannot be nil")
+	}
+	if semaphoreKey == "" {
+		semaphoreKey = proxyPlaceholder
+	}
+
+	result := &RestClient{
+		config:           config,
+		svmName:          SVM,
+		driverName:       driverName,
+		m:                &sync.RWMutex{},
+		gcnvSemaphoreKey: semaphoreKey,
+	}
+	result.config.ManagementLIF = proxyPlaceholder
+
+	formats := strfmt.Default
+	transportConfig := client.DefaultTransportConfig()
+	transportConfig.Host = proxyPlaceholder
+	result.api = client.NewHTTPClientWithConfig(formats, transportConfig)
+
+	// gcnvTransport is the innermost (base) transport; wrap outward only with Metrics →
+	// LimitedRetry → ClientApp so the proxy rewrite/auth stays at the bottom of the chain.
+	var transport = gcnvTransport
+	// Create a metrics transport that captures request metrics.
+	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetGCNV))
+	// Create a retry transport round tripper that uses semaphores for rate limiting.
+	// Use semaphoreKey so each GCNV backend/pool has its own concurrency limit.
+	transport = drivers.NewLimitedRetryTransport(
+		drivers.NewSemaphore(semaphoreKey, drivers.ONTAPRequestLimit), transport, ContextRequestTargetGCNV,
+	)
+	// Stamp the X-Dot-Client-App header on every request so ONTAP can track per-app usage.
+	transport = NewClientAppTransport(transport, ClientAppHeaderValue())
+	result.httpClient = &http.Client{
+		Transport: transport,
+	}
+
+	if rClient, ok := result.api.Transport.(*runtime_client.Runtime); ok {
+		apiLogger := &log.Logger{
+			Out:       os.Stdout,
+			Formatter: &Redactor{BaseFormatter: new(log.TextFormatter)},
+			Level:     log.DebugLevel,
+		}
+		rClient.SetLogger(apiLogger)
+		rClient.SetDebug(config.DebugTraceFlags["api"])
+		// Also install our wrapped transport on the go-openapi runtime so any REST
+		// call paths that do not explicitly set params.HTTPClient still use the
+		// proxy + retry + client-app-header middleware chain.
+		rClient.Transport = transport
+	}
+
+	return result, nil
+}
+
 // EnsureSVMWithRest uses the supplied SVM or attempts to derive one if no SVM is supplied
 func EnsureSVMWithRest(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, restClient RestClientInterface,
@@ -324,6 +397,38 @@ func NewRestClientFromOntapConfig(
 
 	apiREST, err := NewOntapAPIREST(restClient, ontapConfig.StorageDriverName)
 	if err != nil {
+		return nil, fmt.Errorf("unable to get REST API client for ontap; %v", err)
+	}
+
+	return apiREST, nil
+}
+
+// NewGcnvRestClientFromOntapConfig creates an OntapAPI using the GCNV proxy transport.
+// On any error after creating the REST client, the client is terminated to release its semaphore reference.
+func NewGcnvRestClientFromOntapConfig(
+	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, transport http.RoundTripper,
+) (OntapAPI, error) {
+	semKey := GCNVSemaphoreKey(ontapConfig.GCNVConfig)
+	restClient, err := NewGcnvRestClient(ctx, ClientConfig{
+		DebugTraceFlags: ontapConfig.DebugTraceFlags,
+	}, ontapConfig.SVM, ontapConfig.StorageDriverName, transport, semKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not instantiate GCNV REST client; %s", err.Error())
+	}
+
+	if _, err = restClient.SystemGetOntapVersion(ctx, false); err != nil {
+		restClient.Terminate()
+		return nil, err
+	}
+
+	if err = EnsureSVMWithRest(ctx, ontapConfig, restClient); err != nil {
+		restClient.Terminate()
+		return nil, err
+	}
+
+	apiREST, err := NewOntapAPIREST(restClient, ontapConfig.StorageDriverName)
+	if err != nil {
+		restClient.Terminate()
 		return nil, fmt.Errorf("unable to get REST API client for ontap; %v", err)
 	}
 
@@ -1660,7 +1765,12 @@ func (c *RestClient) VolumeCloneSplitStart(ctx context.Context, volumeName strin
 	return c.startCloneSplitByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
-// VolumeDestroy destroys a flexvol
+// VolumeDestroy destroys a flexvol.
+//
+// The third parameter is named force because it becomes ONTAP REST VolumeDelete ?force=.
+// Semantically it is skipRecoveryQueue (bypass recovery queue for this delete), not the same as
+// the abstraction-layer force argument used on the ZAPI path. Callers on the REST stack should
+// pass the user's skipRecoveryQueue intent here — see OntapAPIREST.VolumeDestroy.
 func (c *RestClient) VolumeDestroy(ctx context.Context, name string, force bool) error {
 	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol, force)
 }

@@ -111,28 +111,29 @@ func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
-	*CommonStorageDriverConfig                  // embedded types replicate all fields
-	AWSConfig                        *AWSConfig `json:"aws,omitempty"` // AWS-specific config attributes
-	ManagementLIF                    string     `json:"managementLIF"`
-	DataLIF                          string     `json:"dataLIF"`
-	IgroupName                       string     `json:"igroupName"`
-	SVM                              string     `json:"svm"`
-	Username                         string     `json:"username"`
-	Password                         string     `json:"password"`
-	Aggregate                        string     `json:"aggregate"`
-	UsageHeartbeat                   string     `json:"usageHeartbeat"`                   // in hours, default to 24.0
-	QtreePruneFlexvolsPeriod         string     `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
-	QtreeQuotaResizePeriod           string     `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
-	QtreesPerFlexvol                 string     `json:"qtreesPerFlexvol"`                 // default to 200
-	LUNsPerFlexvol                   string     `json:"lunsPerFlexvol"`                   // default to 100
-	EmptyFlexvolDeferredDeletePeriod string     `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
-	CloneSplitDelay                  string     `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
-	NfsMountOptions                  string     `json:"nfsMountOptions"`
-	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
-	LimitVolumePoolSize              string     `json:"limitVolumePoolSize"`
-	DenyNewVolumePools               string     `json:"denyNewVolumePools"`
-	AutoExportPolicy                 bool       `json:"autoExportPolicy"`
-	AutoExportCIDRs                  []string   `json:"autoExportCIDRs"`
+	*CommonStorageDriverConfig                   // embedded types replicate all fields
+	AWSConfig                        *AWSConfig  `json:"aws,omitempty"`  // AWS-specific config attributes
+	GCNVConfig                       *GCNVConfig `json:"gcnv,omitempty"` // GCNV ONTAP-mode proxy (expert mode)
+	ManagementLIF                    string      `json:"managementLIF"`
+	DataLIF                          string      `json:"dataLIF"`
+	IgroupName                       string      `json:"igroupName"`
+	SVM                              string      `json:"svm"`
+	Username                         string      `json:"username"`
+	Password                         string      `json:"password"`
+	Aggregate                        string      `json:"aggregate"`
+	UsageHeartbeat                   string      `json:"usageHeartbeat"`                   // in hours, default to 24.0
+	QtreePruneFlexvolsPeriod         string      `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
+	QtreeQuotaResizePeriod           string      `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
+	QtreesPerFlexvol                 string      `json:"qtreesPerFlexvol"`                 // default to 200
+	LUNsPerFlexvol                   string      `json:"lunsPerFlexvol"`                   // default to 100
+	EmptyFlexvolDeferredDeletePeriod string      `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
+	CloneSplitDelay                  string      `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
+	NfsMountOptions                  string      `json:"nfsMountOptions"`
+	LimitAggregateUsage              string      `json:"limitAggregateUsage"`
+	LimitVolumePoolSize              string      `json:"limitVolumePoolSize"`
+	DenyNewVolumePools               string      `json:"denyNewVolumePools"`
+	AutoExportPolicy                 bool        `json:"autoExportPolicy"`
+	AutoExportCIDRs                  []string    `json:"autoExportCIDRs"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
@@ -166,6 +167,33 @@ type AWSConfig struct {
 	FSxFilesystemID string `json:"fsxFilesystemID"`
 	APIKey          string `json:"apiKey"`
 	SecretKey       string `json:"secretKey"`
+}
+
+// GCNVConfig holds settings for ONTAP drivers when using the GCNV ONTAP proxy (expert mode).
+// When set, the driver uses the GCNV proxy URL and GCP auth instead of direct ONTAP cluster access.
+type GCNVConfig struct {
+	ProxyURL      string            `json:"proxyURL"`                // e.g. https://netappcloudmanager.googleapis.com
+	ProjectNumber string            `json:"projectNumber"`           // GCP project number
+	Location      string            `json:"location"`                // GCP region/location
+	PoolID        string            `json:"poolID"`                  // GCNV storage pool ID (ONTAP-mode pool)
+	APIKey        *GCPPrivateKey    `json:"apiKey,omitempty"`        // GCP service account (optional)
+	WIPCredential *GCPWIPCredential `json:"wipCredential,omitempty"` // Workload Identity (optional)
+}
+
+// String makes GCNVConfig satisfy the Stringer interface. Pointer receiver so nil *GCNVConfig can be formatted safely.
+func (c *GCNVConfig) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	return convert.ToStringRedacted(c, []string{"APIKey", "WIPCredential"}, nil)
+}
+
+// GoString makes GCNVConfig satisfy the GoStringer interface.
+func (c *GCNVConfig) GoString() string {
+	if c == nil {
+		return "<nil>"
+	}
+	return c.String()
 }
 
 // StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
@@ -256,6 +284,17 @@ func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) er
 	if _, ok = secretMap[strings.ToLower("Password")]; ok {
 		d.Password = secretMap[strings.ToLower("Password")]
 	}
+	if d.GCNVConfig != nil {
+		if d.GCNVConfig.APIKey == nil {
+			d.GCNVConfig.APIKey = &GCPPrivateKey{}
+		}
+		if val, ok := secretMap["private_key"]; ok {
+			d.GCNVConfig.APIKey.PrivateKey = val
+		}
+		if val, ok := secretMap["private_key_id"]; ok {
+			d.GCNVConfig.APIKey.PrivateKeyID = val
+		}
+	}
 	// CHAP settings
 	if d.UseCHAP {
 		if d.ChapUsername, ok = secretMap[strings.ToLower("ChapUsername")]; !ok {
@@ -283,6 +322,10 @@ func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap["ClientPrivateKey"] = d.ClientPrivateKey
 	secretMap["Username"] = d.Username
 	secretMap["Password"] = d.Password
+	if d.GCNVConfig != nil && d.GCNVConfig.APIKey != nil {
+		secretMap["Private_Key"] = d.GCNVConfig.APIKey.PrivateKey
+		secretMap["Private_Key_ID"] = d.GCNVConfig.APIKey.PrivateKeyID
+	}
 
 	if d.ClientPrivateKey != "" && d.Username != "" {
 		Log().Warn("Defaulting to certificate authentication, " +
@@ -305,6 +348,10 @@ func (d *OntapStorageDriverConfig) ResetSecrets() {
 	d.ClientPrivateKey = ""
 	d.Username = ""
 	d.Password = ""
+	if d.GCNVConfig != nil && d.GCNVConfig.APIKey != nil {
+		d.GCNVConfig.APIKey.PrivateKey = ""
+		d.GCNVConfig.APIKey.PrivateKeyID = ""
+	}
 
 	// CHAP settings
 	if d.UseCHAP {
@@ -324,6 +371,14 @@ func (d *OntapStorageDriverConfig) HideSensitiveWithSecretName(secretName string
 	if d.Username != "" {
 		d.Username = secretName
 		d.Password = secretName
+	}
+	if d.GCNVConfig != nil && d.GCNVConfig.APIKey != nil {
+		if d.GCNVConfig.APIKey.PrivateKey != "" {
+			d.GCNVConfig.APIKey.PrivateKey = secretName
+		}
+		if d.GCNVConfig.APIKey.PrivateKeyID != "" {
+			d.GCNVConfig.APIKey.PrivateKeyID = secretName
+		}
 	}
 
 	// CHAP settings

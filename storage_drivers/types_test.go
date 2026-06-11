@@ -192,6 +192,27 @@ func TestOntapStorageDriverConfig_GoString(t *testing.T) {
 	assert.NotContains(t, configGoString, config.ClientPrivateKey)
 }
 
+func TestGCNVConfig_String_GoString_Nil(t *testing.T) {
+	var c *GCNVConfig
+	assert.Equal(t, "<nil>", c.String())
+	assert.Equal(t, "<nil>", c.GoString())
+}
+
+func TestGCNVConfig_String_GoString_NonNil(t *testing.T) {
+	c := &GCNVConfig{
+		ProxyURL:      "https://proxy.example.com",
+		ProjectNumber: "123",
+		Location:      "us-central1",
+		PoolID:        "pool-1",
+	}
+	s := c.String()
+	g := c.GoString()
+	assert.NotEqual(t, "<nil>", s)
+	assert.NotEqual(t, "<nil>", g)
+	assert.Contains(t, s, "proxy.example.com")
+	assert.Contains(t, g, "proxy.example.com")
+}
+
 func TestOntapStorageDriverConfig_InjectSecrets(t *testing.T) {
 	// configMap for holding a config struct data as a map.
 	var configMap map[string]interface{}
@@ -245,6 +266,22 @@ func TestOntapStorageDriverConfig_InjectSecrets(t *testing.T) {
 	for _, secret := range secretList {
 		assert.Error(t, config.InjectSecrets(forceFailuresMap))
 		forceFailuresMap[secret] = secret
+	}
+}
+
+func TestOntapStorageDriverConfig_InjectSecrets_WithGCNVAPIKey(t *testing.T) {
+	config := &OntapStorageDriverConfig{
+		GCNVConfig: &GCNVConfig{},
+	}
+
+	err := config.InjectSecrets(map[string]string{
+		"private_key":    "gcnv-private-key",
+		"private_key_id": "gcnv-private-key-id",
+	})
+	assert.NoError(t, err)
+	if assert.NotNil(t, config.GCNVConfig) && assert.NotNil(t, config.GCNVConfig.APIKey) {
+		assert.Equal(t, "gcnv-private-key", config.GCNVConfig.APIKey.PrivateKey)
+		assert.Equal(t, "gcnv-private-key-id", config.GCNVConfig.APIKey.PrivateKeyID)
 	}
 }
 
@@ -450,6 +487,36 @@ func TestOntapStorageDriverConfig_GetAndHideSensitive(t *testing.T) {
 	}
 	config.GetAndHideSensitive(secretName)
 	assertions(config, secretName, secretMap)
+}
+
+func TestOntapStorageDriverConfig_GCNVAPIKeySecretLifecycle(t *testing.T) {
+	secretName := "keep-it-secret-keep-it-safe"
+	config := &OntapStorageDriverConfig{
+		GCNVConfig: &GCNVConfig{
+			APIKey: &GCPPrivateKey{
+				PrivateKey:   "gcnv-private-key",
+				PrivateKeyID: "gcnv-private-key-id",
+			},
+		},
+	}
+
+	secretMap := config.ExtractSecrets()
+	assert.Equal(t, "gcnv-private-key", secretMap["Private_Key"])
+	assert.Equal(t, "gcnv-private-key-id", secretMap["Private_Key_ID"])
+
+	secretMap = config.GetAndHideSensitive(secretName)
+	assert.Equal(t, "gcnv-private-key", secretMap["Private_Key"])
+	assert.Equal(t, "gcnv-private-key-id", secretMap["Private_Key_ID"])
+	if assert.NotNil(t, config.GCNVConfig) && assert.NotNil(t, config.GCNVConfig.APIKey) {
+		assert.Equal(t, secretName, config.GCNVConfig.APIKey.PrivateKey)
+		assert.Equal(t, secretName, config.GCNVConfig.APIKey.PrivateKeyID)
+	}
+
+	config.ResetSecrets()
+	if assert.NotNil(t, config.GCNVConfig) && assert.NotNil(t, config.GCNVConfig.APIKey) {
+		assert.Equal(t, "", config.GCNVConfig.APIKey.PrivateKey)
+		assert.Equal(t, "", config.GCNVConfig.APIKey.PrivateKeyID)
+	}
 }
 
 func TestOntapStorageDriverConfig_CheckForCRDControllerForbiddenAttributes(t *testing.T) {

@@ -50,3 +50,21 @@ var backendAuthorization = redactedPattern{
 	re:  regexp.MustCompile(`\\*"username\\*":\\*"([^\\"])*\\*"`),
 	rep: []byte("\\\"username\\\":<REDACTED>"),
 }
+
+// backendMapOneLevelNested matches map[...] in %+#v logs with at most one nested map[...]
+// (e.g. credentialSource:map[file:...]). [^\]]* alone stops at the first ']' and leaks trailing fields.
+const backendMapOneLevelNested = `(?:[^\[\]]|map\[[^\]]*\])*`
+
+// backendSensitiveMap redacts backend credential maps in map-formatted logs (%+#v).
+// Examples:
+//
+//	credentials:map[name:my-secret type:secret]
+//	apiKey:map[private_key:... private_key_id:...]
+//	wipCredentialConfig:map[audience:... credentialSource:map[file:...] ...]
+//	wipCredential:map[audience:... credentialSource:map[file:...] ...]
+var backendSensitiveMap = redactedPattern{
+	re: regexp.MustCompile(
+		`(credentials|apiKey|wipCredentialConfig|wipCredential):map\[` + backendMapOneLevelNested + `\]`,
+	),
+	rep: []byte("$1:<REDACTED>"),
+}

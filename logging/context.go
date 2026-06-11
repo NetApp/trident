@@ -74,6 +74,7 @@ const (
 	ContextRequestTargetTrident    ContextRequestTarget = "trident"
 	ContextRequestTargetKubernetes ContextRequestTarget = "kubernetes"
 	ContextRequestTargetONTAP      ContextRequestTarget = "ontap"
+	ContextRequestTargetGCNV       ContextRequestTarget = "gcnv"
 )
 
 // Misc. context request values. These can be used with incoming and outgoing requests.

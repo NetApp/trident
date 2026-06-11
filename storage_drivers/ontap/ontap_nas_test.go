@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -15,6 +16,8 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
@@ -23,6 +26,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
+	"github.com/netapp/trident/storage_drivers/ontap/gcpapi"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -398,6 +402,117 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 	assert.NoError(t, result)
+}
+
+// TestOntapNasStorageDriverInitialize_WithGCNVConfig_TakesGCNVPath verifies that when API is nil and
+// config contains gcnv, Initialize uses the GCNV path (initializeGCNVDriver + InitializeOntapDriverForGCNV).
+// Credential resolution is stubbed so the test never touches ADC or the network; we only assert control flow.
+func TestOntapNasStorageDriverInitialize_WithGCNVConfig_TakesGCNVPath(t *testing.T) {
+	const stubErr = "stub: no credentials for GCNV test"
+	prev := resolveCredentialsForGCNV
+	resolveCredentialsForGCNV = func(_ context.Context, _ *gcpapi.ClientConfig) (*google.Credentials, error) {
+		return nil, fmt.Errorf("%s", stubErr)
+	}
+	defer func() { resolveCredentialsForGCNV = prev }()
+
+	driver := &NASStorageDriver{} // API is nil
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "gcnv-nas-backend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+	// Valid GCNV config so we pass validation and hit the credential resolver stub (no ADC, no HTTP).
+	configJSON := `{
+		"version": 1,
+		"storageDriverName": "ontap-nas",
+		"gcnv": {
+			"proxyURL": "https://netapp.googleapis.com",
+			"projectNumber": "12345",
+			"location": "us-central1-a",
+			"poolID": "test-pool"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "GCNV", "expected error from GCNV init path")
+	assert.Contains(t, err.Error(), "error resolving GCP credentials", "expected error from stubbed credential resolution")
+	assert.Contains(t, err.Error(), stubErr, "expected stub error to propagate")
+}
+
+// TestOntapNasStorageDriverInitialize_WithGCNVConfig_ReachesGCNVClientInit verifies that after
+// credential resolution succeeds, Initialize advances to the GCNV ONTAP client init path.
+// The malformed proxyURL triggers a URL parse error inside gcnv transport, so no external calls are made.
+func TestOntapNasStorageDriverInitialize_WithGCNVConfig_ReachesGCNVClientInit(t *testing.T) {
+	prev := resolveCredentialsForGCNV
+	resolverCalled := false
+	resolveCredentialsForGCNV = func(_ context.Context, _ *gcpapi.ClientConfig) (*google.Credentials, error) {
+		resolverCalled = true
+		return &google.Credentials{
+			TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "test-token"}),
+		}, nil
+	}
+	defer func() { resolveCredentialsForGCNV = prev }()
+
+	driver := &NASStorageDriver{} // API is nil
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "gcnv-nas-backend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+	configJSON := `{
+		"version": 1,
+		"storageDriverName": "ontap-nas",
+		"gcnv": {
+			"proxyURL": "http://[::1",
+			"projectNumber": "12345",
+			"location": "us-central1-a",
+			"poolID": "test-pool"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, err)
+	assert.True(t, resolverCalled, "expected resolver to run before GCNV ONTAP client init")
+	assert.NotContains(t, err.Error(), "error resolving GCP credentials")
+	// Error can be from URL validation (invalid/HTTP) or from transport (parse rewritten URL).
+	assert.True(t, strings.Contains(err.Error(), "ProxyURL") || strings.Contains(err.Error(), "gcnv proxy transport"),
+		"expected GCNV-related error, got: %s", err.Error())
+}
+
+// TestOntapNasStorageDriverInitialize_WithGCNVConfig_MissingProxyURL verifies that when GCNV config
+// is present but proxyURL is empty, initializeGCNVDriver returns an error and Initialize propagates it.
+func TestOntapNasStorageDriverInitialize_WithGCNVConfig_MissingProxyURL(t *testing.T) {
+	driver := &NASStorageDriver{} // API is nil
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "gcnv-nas-backend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+	configJSON := `{
+		"version": 1,
+		"storageDriverName": "ontap-nas",
+		"gcnv": {
+			"proxyURL": "",
+			"projectNumber": "12345",
+			"location": "us-central1-a",
+			"poolID": "test-pool"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "GCNV driver", "expected error from GCNV driver init")
+	assert.Contains(t, err.Error(), "proxyURL", "expected proxyURL validation error")
 }
 
 func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *testing.T) {

@@ -202,6 +202,11 @@ type OntapAPI interface {
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
 	VolumeCreate(ctx context.Context, volume Volume) error
+	// VolumeDestroy keeps both flags in the shared abstraction because ZAPI and REST expose
+	// delete semantics differently. ZAPI consumes force directly and may need a follow-up
+	// recovery-queue purge when skipRecoveryQueue is true. REST only exposes one delete flag at
+	// the transport layer, so the REST adapter maps skipRecoveryQueue onto that flag while keeping
+	// this caller-facing signature stable.
 	VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
 	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
