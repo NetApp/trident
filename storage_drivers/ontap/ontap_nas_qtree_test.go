@@ -15,6 +15,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/acp"
@@ -921,10 +922,279 @@ func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
 	assert.Error(t, result, "expected error")
 }
 
-func TestImport_NotSupported(t *testing.T) {
+// TestImport_InvalidPath ensures Import rejects an originalName that is not exactly "<flexvol>/<qtree>"
+// (CSI volume path used for qtree economy import).
+func TestImport_InvalidPath(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
-	result := driver.Import(ctx, &storage.VolumeConfig{}, "")
+	result := driver.Import(ctx, &storage.VolumeConfig{}, "qtreeOnly")
 	assert.Error(t, result, "Expected error in Import, got nil")
+}
+
+// TestImport_ManagedRenameSuccess covers the default managed-import path: qtree is renamed to InternalName,
+// then a non–economy-prefixed FlexVol is renamed to the economy prefix so Trident owns the naming layout.
+func TestImport_ManagedRenameSuccess(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	prefix := driver.FlexvolNamePrefix()
+
+	// The FlexVol does NOT match the economy prefix, so it should be renamed.
+	originalFlexvol := "userVol1"
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "imported-qtree",
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, originalFlexvol).Return(
+		&api.Volume{Name: originalFlexvol, AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "old-qtree", originalFlexvol).Return(
+		&api.Qtree{Name: "old-qtree", Volume: originalFlexvol}, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+originalFlexvol+"/old-qtree",
+		"/vol/"+originalFlexvol+"/imported-qtree").Return(nil)
+	mockAPI.EXPECT().VolumeRename(ctx, originalFlexvol, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, newName string) error {
+			assert.True(t, strings.HasPrefix(newName, prefix),
+				"new FlexVol name should start with economy prefix")
+			return nil
+		})
+
+	result := driver.Import(ctx, volConfig, originalFlexvol+"/old-qtree")
+	assert.NoError(t, result)
+	assert.Equal(t, "imported-qtree", volConfig.InternalName)
+	assert.NotEmpty(t, volConfig.InternalID)
+}
+
+// TestImport_ManagedRenameFlexvolAlreadyConforming ensures that when the parent FlexVol already matches the
+// economy prefix, Import only renames the qtree and does not call VolumeRename on the FlexVol.
+func TestImport_ManagedRenameFlexvolAlreadyConforming(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	prefix := driver.FlexvolNamePrefix()
+
+	// The FlexVol already matches the economy prefix, so only the qtree should be renamed.
+	conformingFlexvol := prefix + "ABCDE12345"
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "imported-qtree",
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, conformingFlexvol).Return(
+		&api.Volume{Name: conformingFlexvol, AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "old-qtree", conformingFlexvol).Return(
+		&api.Qtree{Name: "old-qtree", Volume: conformingFlexvol}, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+conformingFlexvol+"/old-qtree",
+		"/vol/"+conformingFlexvol+"/imported-qtree").Return(nil)
+	// VolumeRename should NOT be called since the FlexVol name already conforms.
+
+	result := driver.Import(ctx, volConfig, conformingFlexvol+"/old-qtree")
+	assert.NoError(t, result)
+	assert.Equal(t, "imported-qtree", volConfig.InternalName)
+	assert.Equal(t,
+		driver.CreateQtreeInternalID(driver.Config.SVM, conformingFlexvol, "imported-qtree"),
+		volConfig.InternalID)
+}
+
+// TestImport_NotManagedSuccess verifies ImportNotManaged: no renames; InternalID and InternalName reflect the
+// existing qtree; SecureSMBEnabled is cleared; Volume must report a junction path so import validation passes.
+func TestImport_NotManagedSuccess(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	prefix := driver.FlexvolNamePrefix()
+	conformingFlexvol := prefix + "ABCDE12345"
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "new-name-ignored",
+		ImportNotManaged: true,
+		SecureSMBEnabled: true,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, conformingFlexvol).Return(
+		&api.Volume{Name: conformingFlexvol, AccessType: "rw", JunctionPath: "/import/" + conformingFlexvol}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "old-qtree", conformingFlexvol).Return(
+		&api.Qtree{Name: "old-qtree", Volume: conformingFlexvol}, nil)
+
+	result := driver.Import(ctx, volConfig, conformingFlexvol+"/old-qtree")
+	assert.NoError(t, result)
+	assert.Equal(t, "old-qtree", volConfig.InternalName)
+	assert.Equal(t,
+		driver.CreateQtreeInternalID(driver.Config.SVM, conformingFlexvol, "old-qtree"),
+		volConfig.InternalID)
+	assert.False(t, volConfig.SecureSMBEnabled)
+}
+
+// TestImport_NotManagedBadFlexvolName ensures not-managed import still requires the FlexVol name to match
+// the economy naming prefix (Trident only tracks imports that follow its conventions).
+func TestImport_NotManagedBadFlexvolName(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "new-name-ignored",
+		ImportNotManaged: true,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, "badName").Return(
+		&api.Volume{Name: "badName", AccessType: "rw", JunctionPath: "/import/badName"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "qtree1", "badName").Return(
+		&api.Qtree{Name: "qtree1", Volume: "badName"}, nil)
+
+	result := driver.Import(ctx, volConfig, "badName/qtree1")
+	assert.Error(t, result, "Expected error for non-conforming FlexVol name")
+	assert.Contains(t, result.Error(), "volume is named incorrectly")
+}
+
+// TestImport_FlexvolRenameFailRollbacksQtree checks rollback: if FlexVol rename fails after the qtree was
+// renamed, Import attempts to QtreeRename back to the original path and surfaces the FlexVol rename error.
+func TestImport_FlexvolRenameFailRollbacksQtree(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "new-qtree",
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, "userVol").Return(
+		&api.Volume{Name: "userVol", AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "old-qtree", "userVol").Return(
+		&api.Qtree{Name: "old-qtree", Volume: "userVol"}, nil)
+	// Qtree rename succeeds
+	mockAPI.EXPECT().QtreeRename(ctx, "/vol/userVol/old-qtree", "/vol/userVol/new-qtree").Return(nil)
+	// FlexVol rename fails
+	mockAPI.EXPECT().VolumeRename(ctx, "userVol", gomock.Any()).Return(fmt.Errorf("rename failed"))
+	// Rollback: qtree name is restored
+	mockAPI.EXPECT().QtreeRename(ctx, "/vol/userVol/new-qtree", "/vol/userVol/old-qtree").Return(nil)
+
+	result := driver.Import(ctx, volConfig, "userVol/old-qtree")
+	assert.Error(t, result)
+	assert.Contains(t, result.Error(), "rename failed")
+}
+
+// TestImport_ManagedRenameFlexvolOnly verifies that a non-conforming FlexVol is renamed even when the qtree
+// already carries the desired InternalName (i.e. originalQtreeName == volConfig.InternalName). Before the fix,
+// the FlexVol rename was skipped because the originalPath == targetPath guard also gated VolumeRename, leaving
+// a non-prefixed FlexVol name in InternalID that would break later publish/destroy tracking.
+func TestImport_ManagedRenameFlexvolOnly(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	prefix := driver.FlexvolNamePrefix()
+
+	// The qtree name already matches InternalName — no qtree rename needed.
+	// The FlexVol does NOT match the prefix and must be renamed.
+	originalFlexvol := "userVol1"
+	qtreeName := "my-pvc"
+	volConfig := &storage.VolumeConfig{
+		InternalName:     qtreeName,
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, originalFlexvol).Return(
+		&api.Volume{Name: originalFlexvol, AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, originalFlexvol).Return(
+		&api.Qtree{Name: qtreeName, Volume: originalFlexvol}, nil)
+	// QtreeRename must NOT be called because the qtree name already matches.
+	var renamedFlexvol string
+	mockAPI.EXPECT().VolumeRename(ctx, originalFlexvol, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, newName string) error {
+			assert.True(t, strings.HasPrefix(newName, prefix),
+				"new FlexVol name should start with economy prefix")
+			renamedFlexvol = newName
+			return nil
+		})
+
+	result := driver.Import(ctx, volConfig, originalFlexvol+"/"+qtreeName)
+	assert.NoError(t, result)
+	assert.Equal(t, qtreeName, volConfig.InternalName)
+	assert.Equal(t,
+		driver.CreateQtreeInternalID(driver.Config.SVM, renamedFlexvol, qtreeName),
+		volConfig.InternalID,
+		"InternalID must reference the renamed FlexVol, not the original non-conforming name")
+}
+
+// TestImport_ManagedRenameFlexvolOnlyRollbackNotNeeded verifies that when only the FlexVol rename is needed
+// (qtree name already matches) and that FlexVol rename fails, no qtree rollback is attempted because
+// no qtree rename was performed.
+func TestImport_ManagedRenameFlexvolOnlyRollbackNotNeeded(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+
+	qtreeName := "my-pvc"
+	volConfig := &storage.VolumeConfig{
+		InternalName:     qtreeName,
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, "userVol1").Return(
+		&api.Volume{Name: "userVol1", AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, "userVol1").Return(
+		&api.Qtree{Name: qtreeName, Volume: "userVol1"}, nil)
+	// QtreeRename must NOT be called (qtree already has the right name).
+	// FlexVol rename fails.
+	mockAPI.EXPECT().VolumeRename(ctx, "userVol1", gomock.Any()).Return(fmt.Errorf("flexvol rename failed"))
+	// QtreeRename rollback must NOT be called since no qtree rename was performed.
+
+	result := driver.Import(ctx, volConfig, "userVol1/"+qtreeName)
+	assert.Error(t, result)
+	assert.Contains(t, result.Error(), "flexvol rename failed")
+}
+
+// TestImport_ManagedImportNoRename covers ImportNoRename (CSI): existing qtree name is kept as InternalName,
+// no QtreeRename/VolumeRename when flexvol already conforms; InternalID matches the existing flexvol/qtree.
+func TestImport_ManagedImportNoRename(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	prefix := driver.FlexvolNamePrefix()
+	conformingFlexvol := prefix + "ABCDEFGHIJ"
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "pvc-should-not-be-used",
+		ImportNotManaged: false,
+		ImportNoRename:   true,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, conformingFlexvol).Return(
+		&api.Volume{Name: conformingFlexvol, AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "existingQt", conformingFlexvol).Return(
+		&api.Qtree{Name: "existingQt", Volume: conformingFlexvol}, nil)
+
+	err := driver.Import(ctx, volConfig, conformingFlexvol+"/existingQt")
+	assert.NoError(t, err)
+	assert.Equal(t, "existingQt", volConfig.InternalName)
+	assert.Equal(t,
+		driver.CreateQtreeInternalID(driver.Config.SVM, conformingFlexvol, "existingQt"),
+		volConfig.InternalID)
+}
+
+// TestImport_QtreeRenameFails asserts that a failure from QtreeRename during managed import is wrapped and returned,
+// so the operator sees import failed at the rename step.
+func TestImport_QtreeRenameFails(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "trident_qtree_pool_trident_"
+	originalFlexvol := "userVol1"
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "new-qtree",
+		ImportNotManaged: false,
+		ImportNoRename:   false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, originalFlexvol).Return(
+		&api.Volume{Name: originalFlexvol, AccessType: "rw"}, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, "old-qtree", originalFlexvol).Return(
+		&api.Qtree{Name: "old-qtree", Volume: originalFlexvol}, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+originalFlexvol+"/old-qtree",
+		"/vol/"+originalFlexvol+"/new-qtree").Return(fmt.Errorf("rename blocked"))
+
+	err := driver.Import(ctx, volConfig, originalFlexvol+"/old-qtree")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "rename failed")
 }
 
 func TestRename_NotSupported(t *testing.T) {
@@ -2941,6 +3211,8 @@ func ScopedTridentConfigUsingPassthroughStore(newValue bool) func() {
 	}
 }
 
+// TestCreateFollowup_Success_WithNASTypeNone validates CreateFollowup after qtree exists: InternalID is filled,
+// and NFS access paths are built from the FlexVol junction path (VolumeInfo), not the raw flexvol name alone.
 func TestCreateFollowup_Success_WithNASTypeNone(t *testing.T) {
 	svm := "svm1"
 	volName := "testVol"
@@ -2960,6 +3232,11 @@ func TestCreateFollowup_Success_WithNASTypeNone(t *testing.T) {
 
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
 
+	// CreateFollowup resolves export paths via VolumeInfo.JunctionPath (important when junction != flexvol name, e.g. import).
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.JunctionPath = volName
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfo, nil)
+
 	// Create followup
 	result := driver.CreateFollowup(ctx, volConfig)
 
@@ -2974,6 +3251,8 @@ func TestCreateFollowup_Success_WithNASTypeNone(t *testing.T) {
 		"Incorrect MountOptions")
 }
 
+// TestCreateFollowup_Success_WithNASTypeSMB is the SMB variant of junction-based paths: SMBPath uses
+// JunctionPath from VolumeInfo together with share and qtree internal name.
 func TestCreateFollowup_Success_WithNASTypeSMB(t *testing.T) {
 	svm := "svm1"
 	volName := "testVol"
@@ -2992,6 +3271,11 @@ func TestCreateFollowup_Success_WithNASTypeSMB(t *testing.T) {
 
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
 
+	// Same as NFS: path construction uses VolumeInfo.JunctionPath after qtree-import–related CreateFollowup changes.
+	volInfoSMB, _ := MockGetVolumeInfo(ctx, volName)
+	volInfoSMB.JunctionPath = volName
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfoSMB, nil)
+
 	// Create followup
 	result := driver.CreateFollowup(ctx, volConfig)
 
@@ -3005,6 +3289,8 @@ func TestCreateFollowup_Success_WithNASTypeSMB(t *testing.T) {
 	assert.Equal(t, sa.SMB, volConfig.FileSystem, "Incorrect FileSystem")
 }
 
+// TestCreateFollowup_Success_WithROClone checks read-only clone NFS paths also use JunctionPath from VolumeInfo
+// when resolving the parent flexvol for export path construction.
 func TestCreateFollowup_Success_WithROClone(t *testing.T) {
 	svm := "svm1"
 	volName := "testVol"
@@ -3025,6 +3311,11 @@ func TestCreateFollowup_Success_WithROClone(t *testing.T) {
 	driver.Config.NfsMountOptions = "-o nfsvers=3"
 
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+
+	// RO clone path logic also reads JunctionPath from VolumeInfo for the flexvol hosting the qtree.
+	volInfoRO, _ := MockGetVolumeInfo(ctx, volName)
+	volInfoRO.JunctionPath = volName
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfoRO, nil)
 
 	// Create followup
 	result := driver.CreateFollowup(ctx, volConfig)
@@ -3111,30 +3402,34 @@ func TestStoreConfig_Success(t *testing.T) {
 	assert.Equal(t, &driver.Config, backendConfig.OntapConfig, "Incorrect backend config")
 }
 
+// TestGetVolumeForImport_Success exercises GetVolumeForImport for NAS economy qtrees using volumeID
+// "<flexvol>/<qtree>": VolumeInfo on the flexvol, QtreeGetByName, then QuotaGetEntry, and maps the result to VolumeExternal.
 func TestGetVolumeForImport_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test"
 
-	volName := "testVol"
-	volNameInternal := *driver.Config.StoragePrefix + "Internal"
-	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	flexvolName := "testVol"
+	qtreeName := *driver.Config.StoragePrefix + "Internal"
+	volumeID := flexvolName + "/" + qtreeName
+	volInfo, _ := MockGetVolumeInfo(ctx, flexvolName)
 	volInfo.Aggregates = []string{"aggr1", "aggr2"}
 	quotaEntry := &api.QuotaEntry{
 		Target:         "",
 		DiskLimitBytes: 1073741824,
 	}
 
-	mockAPI.EXPECT().QtreeGetByName(ctx, volName, driver.flexvolNamePrefix).AnyTimes().Return(
-		newMockQtree(volNameInternal, volName), nil)
-	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(volInfo, nil)
-	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), flexvolName).AnyTimes().Return(volInfo, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, flexvolName).AnyTimes().Return(
+		newMockQtree(qtreeName, flexvolName), nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, flexvolName, qtreeName, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
 
-	volumeExternal, result := driver.GetVolumeForImport(ctx, volName)
+	volumeExternal, result := driver.GetVolumeForImport(ctx, volumeID)
 
 	// Expect no error and external volume attributes are set
 	assert.NoError(t, result, "Expected no error in getting external volume, got error")
+	require.NotNil(t, volumeExternal)
 	assert.Equal(t, "Internal", volumeExternal.Config.Name, "Volume name doesn't match")
-	assert.Equal(t, volNameInternal, volumeExternal.Config.InternalName, "Volume internal name doesn't match")
+	assert.Equal(t, qtreeName, volumeExternal.Config.InternalName, "Volume internal name doesn't match")
 	assert.Equal(t, strconv.FormatInt(quotaEntry.DiskLimitBytes, 10), volumeExternal.Config.Size,
 		"Volume size incorrect")
 	assert.Equal(t, volInfo.SnapshotPolicy, volumeExternal.Config.SnapshotPolicy,
@@ -3143,17 +3438,32 @@ func TestGetVolumeForImport_Success(t *testing.T) {
 	assert.Equal(t, volInfo.Aggregates[0], volumeExternal.Pool, "Volume pool not correct")
 }
 
-func TestGetVolumeForImport_WithErrorInApiOperation(t *testing.T) {
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+// TestGetVolumeForImport_InvalidVolumeID ensures a malformed import ID (not "flexvol/qtree") returns a clear error
+// and does not assume a valid volume external.
+func TestGetVolumeForImport_InvalidVolumeID(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
 
-	// CASE 1: Error in getting qtree by name
+	volumeExternal, err := driver.GetVolumeForImport(ctx, "onlyOneSegment")
+	assert.Error(t, err)
+	assert.Nil(t, volumeExternal)
+	assert.Contains(t, err.Error(), "not a valid import vol/qtree path")
+}
+
+// TestGetVolumeForImport_WithErrorInApiOperation covers failure propagation in order: (1) QtreeGetByName after
+// successful VolumeInfo, (2) VolumeInfo failure before qtree lookup, (3) QuotaGetEntry failure after both succeed.
+func TestGetVolumeForImport_WithErrorInApiOperation(t *testing.T) {
+	flexvolName := "testVol"
+	qtreeName := flexvolName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, flexvolName)
+	volumeID := flexvolName + "/" + qtreeName
+
+	// CASE 1: Error in getting qtree by name (after VolumeInfo succeeds)
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test"
-	mockAPI.EXPECT().QtreeGetByName(ctx, volName, driver.flexvolNamePrefix).AnyTimes().Return(nil, mockError)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), flexvolName).AnyTimes().Return(volInfo, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, flexvolName).AnyTimes().Return(nil, mockError)
 
-	volumeExternal1, result1 := driver.GetVolumeForImport(ctx, volName)
+	volumeExternal1, result1 := driver.GetVolumeForImport(ctx, volumeID)
 
 	assert.Error(t, result1, "Expected error when api failed to get qtree, got nil")
 	assert.Nil(t, volumeExternal1, "Expected nil volume when error occurs, got non-nil")
@@ -3161,11 +3471,9 @@ func TestGetVolumeForImport_WithErrorInApiOperation(t *testing.T) {
 	// CASE 2: Error in getting volume info
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test"
-	mockAPI.EXPECT().QtreeGetByName(ctx, volName, driver.flexvolNamePrefix).AnyTimes().Return(
-		newMockQtree(volNameInternal, volName), nil)
-	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(nil, mockError)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), flexvolName).AnyTimes().Return(nil, mockError)
 
-	volumeExternal2, result2 := driver.GetVolumeForImport(ctx, volName)
+	volumeExternal2, result2 := driver.GetVolumeForImport(ctx, volumeID)
 
 	assert.Error(t, result2, "Expected error when api failed to get volume info, got nil")
 	assert.Nil(t, volumeExternal2, "Expected nil volume when error occurs, got non-nil")
@@ -3173,12 +3481,12 @@ func TestGetVolumeForImport_WithErrorInApiOperation(t *testing.T) {
 	// CASE 3: Error in getting quota entry
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test"
-	mockAPI.EXPECT().QtreeGetByName(ctx, volName, driver.flexvolNamePrefix).AnyTimes().Return(
-		newMockQtree(volNameInternal, volName), nil)
-	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(volInfo, nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), flexvolName).AnyTimes().Return(volInfo, nil)
+	mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, flexvolName).AnyTimes().Return(
+		newMockQtree(qtreeName, flexvolName), nil)
 	mockAPI.EXPECT().QuotaGetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil, mockError)
 
-	volumeExternal3, result3 := driver.GetVolumeForImport(ctx, volName)
+	volumeExternal3, result3 := driver.GetVolumeForImport(ctx, volumeID)
 
 	assert.Error(t, result3, "Expected error when api failed to get quota entry, got nil")
 	assert.Nil(t, volumeExternal3, "Expected nil volume when error occurs, got non-nil")

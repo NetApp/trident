@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -615,12 +615,198 @@ func (d *NASQtreeStorageDriver) CreateClone(
 }
 
 func (d *NASQtreeStorageDriver) Import(
-	context.Context, *storage.VolumeConfig, string,
+	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-	return errors.New("import is not implemented")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NASQtreeStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
+		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
+
+	// Parse import path, which must be in "flexvol/qtree" format.
+	originalPath := "/vol/" + originalName
+	pathElements := strings.Split(originalName, "/")
+	if len(pathElements) != 2 {
+		return fmt.Errorf("%s is not a valid import vol/qtree path", originalName)
+	}
+	originalFlexvolName := pathElements[0]
+	originalQtreeName := pathElements[1]
+	originalInternalID := d.CreateQtreeInternalID(d.Config.SVM, originalFlexvolName, originalQtreeName)
+
+	// Ensure the volume exists, volume validation already occurred.
+	flexvol, err := d.API.VolumeInfo(ctx, originalFlexvolName)
+	if api.IsVolumeReadError(err) {
+		return err
+	}
+
+	// Validate the volume is what it should be
+	if !api.IsVolumeIdAttributesReadError(err) {
+		if flexvol.AccessType != "" && flexvol.AccessType != "rw" {
+			Logc(ctx).WithField("originalName", originalFlexvolName).Error("Could not import volume, type is not rw.")
+			return fmt.Errorf("volume %s type is %s, not rw", originalFlexvolName, flexvol.AccessType)
+		}
+
+		// Make sure we're not importing a volume without a junction path on the volume when not managed
+		if volConfig.ImportNotManaged && flexvol.JunctionPath == "" {
+			return fmt.Errorf("junction path is not set for volume %s", originalName)
+		}
+	} else {
+		if volConfig.ImportNotManaged {
+			return err
+		}
+	}
+
+	// Ensure the qtree exists.
+	qtree, err := d.API.QtreeGetByName(ctx, originalQtreeName, originalFlexvolName)
+	if err != nil {
+		return err
+	} else if qtree == nil {
+		return errors.NotFoundError("Qtree %s not found in volume %s", originalQtreeName, originalFlexvolName)
+	}
+	Logc(ctx).WithField("Qtree", qtree.Name).Trace("Import, Qtree found.")
+
+	// Lock the FlexVol to prevent race conditions during import operations.
+	// This prevents concurrent Create/Delete/Resize/Clone operations from
+	// interfering with qtree rename, FlexVol rename, and export policy changes.
+	d.flexvolLocks.Lock(originalFlexvolName)
+	defer d.flexvolLocks.Unlock(originalFlexvolName)
+
+	// Not managed scenario
+	if volConfig.ImportNotManaged {
+		// Volume/qtree import is not managed by Trident it must be in the same naming conventions
+		if !strings.HasPrefix(flexvol.Name, d.FlexvolNamePrefix()) {
+			// Reject import if the Flexvol is not following naming conventions.
+			return fmt.Errorf("could not import volume/qtree, volume is named incorrectly: %s, expected pattern: %s*",
+				flexvol.Name, d.FlexvolNamePrefix())
+		}
+		volConfig.InternalName = originalQtreeName
+		volConfig.InternalID = originalInternalID
+		volConfig.SecureSMBEnabled = false
+		return nil
+	}
+
+	var targetPath string
+	// Managed, but no rename scenario
+	// Managed import with no rename only supported for csi workflow
+	if volConfig.ImportNoRename && d.Config.DriverContext != tridentconfig.ContextDocker {
+		if !strings.HasPrefix(flexvol.Name, d.FlexvolNamePrefix()) {
+			// Reject import if the Flexvol is not following naming conventions.
+			return fmt.Errorf("could not import volume/qtree, volume is named incorrectly: %s, expected pattern: %s*",
+				flexvol.Name, d.FlexvolNamePrefix())
+		}
+		volConfig.InternalName = originalQtreeName
+		volConfig.InternalID = originalInternalID
+		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
+	} else {
+		// Managed with rename as if it were created by Trident in the first place
+		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, originalFlexvolName, originalQtreeName)
+		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
+
+		// Rename qtree if the desired name differs from the original.
+		qtreeRenamed := false
+		if originalPath != targetPath {
+
+			// Ensure qtree name isn't too long
+			if len(volConfig.InternalName) > maxQtreeNameLength {
+				return fmt.Errorf("volume %s name exceeds the limit of %d characters", volConfig.InternalName,
+					maxQtreeNameLength)
+			}
+
+			// OriginalName will be the /testvol/qtree and target path will be the new qtree name testvol/pvc_123
+			err = d.API.QtreeRename(ctx, originalPath, targetPath)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"path":    originalName,
+					"newPath": targetPath,
+				}).WithError(err).Debug("Could not import volume, renaming qtree failed.")
+				return fmt.Errorf("qtree path %s rename failed: %w", originalName, err)
+			}
+			qtreeRenamed = true
+		}
+
+		// Rename the FlexVol if it does not conform to the naming prefix
+		flexVolName := originalFlexvolName
+		if !strings.HasPrefix(flexvol.Name, d.FlexvolNamePrefix()) {
+			newFlexvolName := d.FlexvolNamePrefix() + crypto.RandomString(10)
+			err = d.API.VolumeRename(ctx, originalFlexvolName, newFlexvolName)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"originalName": originalFlexvolName,
+					"newName":      newFlexvolName,
+				}).WithError(err).Debug("Could not import volume, rename Flexvol failed.")
+
+				// Restore qtree to old name if it was renamed above.
+				if qtreeRenamed {
+					if renameErr := d.API.QtreeRename(ctx, targetPath, originalPath); renameErr != nil {
+						Logc(ctx).WithFields(LogFields{
+							"originalName": qtree.Name,
+							"newName":      targetPath,
+						}).WithError(renameErr).Warn("Failed restoring qtree name to original name.")
+					}
+				}
+				return fmt.Errorf("volume %s rename failed: %w", originalFlexvolName, err)
+			}
+			flexVolName = newFlexvolName
+		}
+
+		// Update InternalID and target path to reflect the final FlexVol name.
+		targetPath = "/vol/" + flexVolName + "/" + volConfig.InternalName
+		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexVolName, volConfig.InternalName)
+	}
+
+	// If autoExportPolicy is turned on and Trident is managing the volume, set qtree to empty export policy so that
+	// subsequent qtree publish will set the correct per-qtree export policy.
+	_, flexVolName, qtreeName, err := d.ParseQtreeInternalID(volConfig.InternalID)
+	if err != nil {
+		return fmt.Errorf("error parsing internal ID %s", volConfig.InternalID)
+	}
+	if d.Config.AutoExportPolicy && !volConfig.ImportNotManaged {
+		// set empty export policy on qtree creation
+		if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, flexVolName); err != nil {
+			return err
+		}
+	}
+
+	// For SMB backends, ensure share ACL defaults are present and the share/path exist.
+	if d.Config.NASType == sa.SMB {
+		if volConfig.SMBShareACL == nil {
+			volConfig.SMBShareACL = map[string]string{}
+		}
+
+		adAdminUser := d.Config.ADAdminUser
+		if adAdminUser != "" {
+			if _, exists := volConfig.SMBShareACL[adAdminUser]; !exists {
+				volConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+			}
+		}
+
+		if flexvol.JunctionPath != "" {
+			shareName, sharePath := getSMBShareNamePath(flexvol.JunctionPath, qtreeName, volConfig.SecureSMBEnabled)
+			if err := d.EnsureSMBShare(ctx, shareName, sharePath, volConfig.SMBShareACL,
+				volConfig.SecureSMBEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
-func (d *NASQtreeStorageDriver) Rename(context.Context, string, string) error {
+func (d *NASQtreeStorageDriver) Rename(ctx context.Context, name, newName string) error {
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "NASQtreeStorageDriver",
+		"name":    name,
+		"newName": newName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
+
 	return errors.New("rename is not implemented")
 }
 
@@ -2184,7 +2370,7 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	}
 
 	// Check that volume exists
-	exists, flexvol, err := d.API.QtreeExists(ctx, name, volumePattern)
+	exists, flexvolName, err := d.API.QtreeExists(ctx, name, volumePattern)
 	if err != nil {
 		return fmt.Errorf("could not determine if qtree %s exists: %v", volConfig.InternalName, err)
 	}
@@ -2194,19 +2380,26 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	// If qtree exists, update the volConfig.InternalID in case it was not set
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
-		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
+		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvolName, name)
 		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
+	// Find junction path, do not assume junction path is the same as the flexvol name, for case in import
+	flexVol, err := d.API.VolumeInfo(ctx, flexvolName)
+	if err != nil {
+		return fmt.Errorf("could not find flexvol %s: %v", flexvolName, err)
+	}
+
 	// Set export path info on the volume config
+	junctionPath := strings.TrimPrefix(flexVol.JunctionPath, "/")
 	if d.Config.NASType == sa.SMB {
 		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
-		volConfig.AccessInfo.SMBPath = ConstructOntapNASQTreeVolumePath(ctx, d.Config.SMBShare, flexvol,
+		volConfig.AccessInfo.SMBPath = ConstructOntapNASQTreeVolumePath(ctx, d.Config.SMBShare, junctionPath,
 			volConfig, sa.SMB)
 		volConfig.FileSystem = sa.SMB
 	} else {
 		volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-		volConfig.AccessInfo.NfsPath = ConstructOntapNASQTreeVolumePath(ctx, "", flexvol, volConfig, sa.NFS)
+		volConfig.AccessInfo.NfsPath = ConstructOntapNASQTreeVolumePath(ctx, "", junctionPath, volConfig, sa.NFS)
 		volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 		volConfig.FileSystem = sa.NFS
 	}
@@ -2229,17 +2422,25 @@ func (d *NASQtreeStorageDriver) GetExternalConfig(ctx context.Context) interface
 
 // GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.  For this driver, volumeID is the name of the
-// Qtree on the storage system.
+// representation of the volume. For this driver, volumeID is the path of the
+// Qtree on the storage system in the format <flexvol>/<qtree>.
 func (d *NASQtreeStorageDriver) GetVolumeForImport(
 	ctx context.Context, volumeID string,
 ) (*storage.VolumeExternal, error) {
-	qtree, err := d.API.QtreeGetByName(ctx, volumeID, d.FlexvolNamePrefix())
+
+	pathElements := strings.Split(volumeID, "/")
+	if len(pathElements) != 2 {
+		return nil, fmt.Errorf("%s is not a valid import vol/qtree path", volumeID)
+	}
+	originalFlexvolName := pathElements[0]
+	originalQtreeName := pathElements[1]
+
+	volume, err := d.API.VolumeInfo(ctx, originalFlexvolName)
 	if err != nil {
 		return nil, err
 	}
 
-	volume, err := d.API.VolumeInfo(ctx, qtree.Volume)
+	qtree, err := d.API.QtreeGetByName(ctx, originalQtreeName, originalFlexvolName)
 	if err != nil {
 		return nil, err
 	}
@@ -2249,6 +2450,11 @@ func (d *NASQtreeStorageDriver) GetVolumeForImport(
 		return nil, err
 	}
 
+	Logc(ctx).WithFields(LogFields{
+		"name":   qtree.Name,
+		"volume": qtree.Volume,
+		"Type":   "NASQtreeStorageDriver",
+	}).Trace("GetVolumeForImport, Qtree found.")
 	return d.getVolumeExternal(qtree, volume, quota), nil
 }
 

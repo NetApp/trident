@@ -4833,8 +4833,13 @@ func (c *RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName str
 // QtreeRename renames a qtree
 // equivalent to filer::> volume qtree rename
 func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) error {
-	fields := []string{""}
-	qtree, err := c.QtreeGetByPath(ctx, path, fields)
+	oldPathElements := strings.Split(path, "/")
+	if len(oldPathElements) < 3 {
+		return fmt.Errorf("%s is not a valid path", path)
+	}
+	originalFlexvolName := oldPathElements[1]
+	originalQtreeName := oldPathElements[2]
+	qtree, err := c.QtreeGetByName(ctx, originalQtreeName, originalFlexvolName)
 	if err != nil {
 		return err
 	}
@@ -4856,8 +4861,12 @@ func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) erro
 	params.SetVolumeUUID(*qtree.Volume.UUID)
 	// params.SetReturnTimeout(returnTimeout)
 
+	newQtreePathElements := strings.Split(newPath, "/")
+	if len(newQtreePathElements) < 3 {
+		return fmt.Errorf("%s is not a valid path", newPath)
+	}
 	qtreeInfo := &models.Qtree{
-		Name: new(strings.TrimPrefix(newPath, "/"+*qtree.Volume.Name+"/")),
+		Name: new(newQtreePathElements[2]),
 	}
 
 	params.SetInfo(qtreeInfo)
@@ -4879,8 +4888,13 @@ func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) erro
 // equivalent to filer::> volume qtree delete -foreground false
 func (c *RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
 	// note, force isn't used
-	fields := []string{""}
-	qtree, err := c.QtreeGetByPath(ctx, path, fields)
+	pathElements := strings.Split(path, "/")
+	if len(pathElements) < 3 {
+		return fmt.Errorf("%s is not a valid path", path)
+	}
+	flexvolName := pathElements[1]
+	qtreeName := pathElements[2]
+	qtree, err := c.QtreeGetByName(ctx, qtreeName, flexvolName)
 	if err != nil {
 		return err
 	}
