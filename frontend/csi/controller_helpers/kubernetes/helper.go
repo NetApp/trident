@@ -134,7 +134,7 @@ func (h *helper) GetVolumeConfig(
 	// If this is a clone created by a backup vendor, default SkipRecoveryQueue to true.
 	// If the user already set SkipRecoveryQueue via annotation, respect that value instead.
 	if volumeConfig.SkipRecoveryQueue == "" && IsEphemeralPVC(pvc) {
-		Logc(ctx).Debug("Detected backup annotation on PVC; setting SkipRecoveryQueue to true.")
+		Logc(ctx).Debug("Detected backup vendor metadata on PVC; setting SkipRecoveryQueue to true.")
 		volumeConfig.SkipRecoveryQueue = "true"
 	}
 
@@ -1034,7 +1034,7 @@ func isValidAccessControlPermission(permission string) bool {
 
 // IsEphemeralPVC checks whether a PVC being provisioned is an ephemeral one that is part of a backup workflow.
 func IsEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
-	return IsVeeamKastenEphemeralPVC(pvc)
+	return IsVeeamKastenEphemeralPVC(pvc) || IsTrilioEphemeralPVC(pvc)
 }
 
 // IsVeeamKastenEphemeralPVC checks if a PVC is part of a Veeam Kasten workflow.
@@ -1046,4 +1046,15 @@ func IsVeeamKastenEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
 	// Check for well-known backup vendor annotations on the PVC.
 	value, exists := pvc.Annotations[AnnVeeamKastenBackup]
 	return exists && value != ""
+}
+
+// IsTrilioEphemeralPVC checks if a PVC is part of a TrilioVault workflow.
+func IsTrilioEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
+	if pvc == nil {
+		return false
+	}
+
+	// Check for the well-known TrilioVault managed-by label on the PVC.
+	value, exists := pvc.Labels[LabelK8sAppManagedByKey]
+	return exists && value == LabelK8sAppManagedByTrilioValue
 }

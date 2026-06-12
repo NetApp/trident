@@ -2363,6 +2363,89 @@ func TestIsVeeamKastenEphemeralPVC(t *testing.T) {
 	}
 }
 
+func TestIsTrilioEphemeralPVC(t *testing.T) {
+	tests := []struct {
+		name     string
+		pvc      *v1.PersistentVolumeClaim
+		expected bool
+	}{
+		{
+			name:     "Nil PVC",
+			pvc:      nil,
+			expected: false,
+		},
+		{
+			name: "PVC with Trilio managed-by label",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "PVC with managed-by label set to a different value",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelK8sAppManagedByKey: "some-other-tool",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC without managed-by label",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"some-other-key": "value",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with empty labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with nil labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: nil,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with managed-by label set to empty string",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelK8sAppManagedByKey: "",
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsTrilioEphemeralPVC(tt.pvc)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestIsEphemeralPVC(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -2381,11 +2464,33 @@ func TestIsEphemeralPVC(t *testing.T) {
 			expected: true,
 		},
 		{
+			name: "Trilio ephemeral PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
+					},
+				},
+			},
+			expected: true,
+		},
+		{
 			name: "No backup vendor - regular PVC",
 			pvc: &v1.PersistentVolumeClaim{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"app": "myapp",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Non-matching managed-by label - regular PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelK8sAppManagedByKey: "some-other-tool",
 					},
 				},
 			},
@@ -2420,6 +2525,7 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 		name                      string
 		pvcName                   string
 		pvcAnnotations            map[string]string
+		pvcLabels                 map[string]string
 		expectedSkipRecoveryQueue string
 	}{
 		{
@@ -2427,6 +2533,14 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			pvcName: "kasten-pvc",
 			pvcAnnotations: map[string]string{
 				"k10.kasten.io/readyForGCAt": "2026-01-01T00:00:00Z",
+			},
+			expectedSkipRecoveryQueue: "true",
+		},
+		{
+			name:    "Trilio ephemeral PVC defaults SkipRecoveryQueue to true",
+			pvcName: "trilio-pvc",
+			pvcLabels: map[string]string{
+				LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
 			},
 			expectedSkipRecoveryQueue: "true",
 		},
@@ -2445,6 +2559,17 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			},
 			expectedSkipRecoveryQueue: "false",
 		},
+		{
+			name:    "Trilio ephemeral PVC with explicit annotation preserves annotation value",
+			pvcName: "trilio-pvc-explicit",
+			pvcAnnotations: map[string]string{
+				AnnSkipRecoveryQueue: "false",
+			},
+			pvcLabels: map[string]string{
+				LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
+			},
+			expectedSkipRecoveryQueue: "false",
+		},
 	}
 
 	for _, tt := range tests {
@@ -2455,6 +2580,7 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 					Namespace:   "default",
 					UID:         pvcUID,
 					Annotations: tt.pvcAnnotations,
+					Labels:      tt.pvcLabels,
 				},
 				Spec: v1.PersistentVolumeClaimSpec{
 					StorageClassName: &scName,

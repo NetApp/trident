@@ -97,6 +97,10 @@ const (
 
 	// Third-party backup annotations
 	AnnVeeamKastenBackup = "k10.kasten.io/readyForGCAt"
+
+	// Third-party backup labels
+	LabelK8sAppManagedByKey         = "app.kubernetes.io/managed-by"
+	LabelK8sAppManagedByTrilioValue = "k8s-triliovault"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{
