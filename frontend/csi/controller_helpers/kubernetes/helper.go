@@ -153,6 +153,22 @@ func (h *helper) GetVolumeConfig(
 		}
 	}
 
+	// If this is not an import and the Red Hat MTV annotation is present, then wait for the Shift Toolkit to
+	// convert the disk image and annotate this PVC as an import.
+	if volumeConfig.ImportOriginalName == "" {
+		if mtvAnnotation := getAnnotation(annotations, AnnRedHatMTV); mtvAnnotation != "" {
+			if isMTV, err := strconv.ParseBool(mtvAnnotation); err == nil && isMTV {
+				errString := "Red Hat Migration Toolkit for Virtualization PVC %s/%s not yet annotated " +
+					"as an import, waiting for NetApp Shift Toolkit to convert disk image."
+				Logc(ctx).Warningf(errString, pvc.Namespace, pvc.Name)
+				return nil, errors.PreconditionError(errString, pvc.Namespace, pvc.Name)
+			} else if err != nil {
+				return nil, errors.InvalidInputError("unable to parse %s annotation into bool; %s",
+					AnnRedHatMTV, err.Error())
+			}
+		}
+	}
+
 	// Check for TMRs pointing to this PVC
 	mirrorRelationshipName := getAnnotation(annotations, AnnMirrorRelationship)
 	volumeConfig.PeerVolumeHandle, err = h.getPVCMirrorPeer(pvc, mirrorRelationshipName)

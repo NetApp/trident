@@ -1773,3 +1773,28 @@ func IsAutogrowStuckResizeAtMaxSizeError(err error) bool {
 	var errPtr *autogrowStuckResizeAtMaxSizeError
 	return errors.As(err, &errPtr)
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// preconditionError
+// ///////////////////////////////////////////////////////////////////////////
+
+type preconditionError struct {
+	message string
+}
+
+func (e *preconditionError) Error() string { return e.message }
+
+func PreconditionError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &preconditionError{message: message}
+	}
+	return &preconditionError{message: fmt.Sprintf(message, a...)}
+}
+
+func IsPreconditionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *preconditionError
+	return errors.As(err, &errPtr)
+}

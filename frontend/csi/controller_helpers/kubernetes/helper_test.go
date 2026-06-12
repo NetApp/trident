@@ -11,13 +11,13 @@ import (
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetCaseFoldedAnnotation(t *testing.T) {
@@ -1469,6 +1469,153 @@ func TestGetVolumeConfig_PVCWithoutValidSize(t *testing.T) {
 
 	assert.Error(t, err, "Expected error when PVC does not have valid size")
 	assert.Contains(t, err.Error(), "PVC test-pvc does not have a valid size")
+}
+
+// TestGetVolumeConfig_RedHatMTV tests that GetVolumeConfig returns a PreconditionError when the
+// AnnRedHatMTV annotation is present and this is not an import, and succeeds when it is an import.
+// It also covers the bool parsing of the annotation value: an explicit "false" opt-out succeeds,
+// and a non-parseable value returns an InvalidInputError.
+func TestGetVolumeConfig_RedHatMTV(t *testing.T) {
+	const pvcUID = "12345678-1234-1234-1234-123456789abc"
+	scName := "test-sc"
+
+	makePVCIndexer := func(annotations map[string]string) *MockFullIndexer {
+		return &MockFullIndexer{
+			byIndexFunc: func(indexName, indexKey string) ([]interface{}, error) {
+				if indexName == "uid" && indexKey == pvcUID {
+					pvc := &v1.PersistentVolumeClaim{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:        "test-pvc",
+							Namespace:   "default",
+							UID:         pvcUID,
+							Annotations: annotations,
+						},
+						Spec: v1.PersistentVolumeClaimSpec{
+							StorageClassName: &scName,
+							Resources: v1.VolumeResourceRequirements{
+								Requests: v1.ResourceList{
+									v1.ResourceStorage: resource.MustParse("1Gi"),
+								},
+							},
+						},
+						Status: v1.PersistentVolumeClaimStatus{
+							Phase: v1.ClaimPending,
+						},
+					}
+					return []interface{}{pvc}, nil
+				}
+				return []interface{}{}, nil
+			},
+		}
+	}
+
+	makeSCIndexer := func() *MockFullIndexer {
+		return &MockFullIndexer{
+			getByKeyFunc: func(key string) (interface{}, bool, error) {
+				return &k8sstoragev1.StorageClass{
+					ObjectMeta:  metav1.ObjectMeta{Name: scName},
+					Provisioner: "csi.trident.netapp.io",
+					Parameters:  map[string]string{},
+				}, true, nil
+			},
+		}
+	}
+
+	makeMRIndexer := func() *MockFullIndexer {
+		return &MockFullIndexer{
+			listFunc: func() []interface{} { return []interface{}{} },
+		}
+	}
+
+	t.Run("Red HatMTV annotation present without import returns PreconditionError", func(t *testing.T) {
+		h := &helper{
+			pvcIndexer: makePVCIndexer(map[string]string{
+				AnnRedHatMTV: "true",
+			}),
+			scIndexer: makeSCIndexer(),
+			mrIndexer: makeMRIndexer(),
+		}
+
+		_, err := h.GetVolumeConfig(context.Background(),
+			"pvc-"+pvcUID, 1024, nil, config.File, nil, config.VolumeMode(""), "", nil, nil, nil, nil)
+
+		assert.Error(t, err)
+		assert.True(t, errors.IsPreconditionError(err), "expected PreconditionError, got: %v", err)
+		assert.Contains(t, err.Error(), "Red Hat Migration Toolkit for Virtualization")
+		assert.Contains(t, err.Error(), "not yet annotated as an import")
+	})
+
+	t.Run("RedHatMTV annotation present with import does not return PreconditionError", func(t *testing.T) {
+		h := &helper{
+			pvcIndexer: makePVCIndexer(map[string]string{
+				AnnRedHatMTV:          "true",
+				AnnImportOriginalName: "original-volume-name",
+			}),
+			scIndexer: makeSCIndexer(),
+			mrIndexer: makeMRIndexer(),
+		}
+
+		result, err := h.GetVolumeConfig(context.Background(),
+			"pvc-"+pvcUID, 1024, nil, config.File, nil, config.VolumeMode(""), "", nil, nil, nil, nil)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "original-volume-name", result.ImportOriginalName)
+	})
+
+	t.Run("RedHatMTV annotation set to false succeeds (explicit opt-out)", func(t *testing.T) {
+		h := &helper{
+			pvcIndexer: makePVCIndexer(map[string]string{
+				AnnRedHatMTV: "false",
+			}),
+			scIndexer: makeSCIndexer(),
+			mrIndexer: makeMRIndexer(),
+		}
+
+		result, err := h.GetVolumeConfig(context.Background(),
+			"pvc-"+pvcUID, 1024, nil, config.File, nil, config.VolumeMode(""), "", nil, nil, nil, nil)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Empty(t, result.ImportOriginalName)
+	})
+
+	t.Run("RedHatMTV annotation set to false with import succeeds (explicit opt-out)", func(t *testing.T) {
+		h := &helper{
+			pvcIndexer: makePVCIndexer(map[string]string{
+				AnnRedHatMTV:          "false",
+				AnnImportOriginalName: "original-volume-name",
+			}),
+			scIndexer: makeSCIndexer(),
+			mrIndexer: makeMRIndexer(),
+		}
+
+		result, err := h.GetVolumeConfig(context.Background(),
+			"pvc-"+pvcUID, 1024, nil, config.File, nil, config.VolumeMode(""), "", nil, nil, nil, nil)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "original-volume-name", result.ImportOriginalName)
+	})
+
+	t.Run("RedHatMTV annotation with invalid bool value returns InvalidInputError", func(t *testing.T) {
+		h := &helper{
+			pvcIndexer: makePVCIndexer(map[string]string{
+				AnnRedHatMTV: "invalid",
+			}),
+			scIndexer: makeSCIndexer(),
+			mrIndexer: makeMRIndexer(),
+		}
+
+		_, err := h.GetVolumeConfig(context.Background(),
+			"pvc-"+pvcUID, 1024, nil, config.File, nil, config.VolumeMode(""), "", nil, nil, nil, nil)
+
+		assert.Error(t, err)
+		// Guard the err.Error() call so a nil error fails cleanly instead of panicking.
+		if assert.True(t, errors.IsInvalidInputError(err), "expected InvalidInputError, got: %v", err) {
+			assert.Contains(t, err.Error(), AnnRedHatMTV)
+		}
+	})
 }
 
 // TestGetPVCForCSIVolume_ResyncPath tests the cache resync error path

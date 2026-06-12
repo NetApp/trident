@@ -902,6 +902,11 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 			expectedCode: codes.FailedPrecondition,
 		},
 		{
+			name:         "PreconditionError",
+			inputError:   errors.PreconditionError(""),
+			expectedCode: codes.FailedPrecondition,
+		},
+		{
 			name:         "NotFoundError",
 			inputError:   errors.NotFoundError(""),
 			expectedCode: codes.NotFound,

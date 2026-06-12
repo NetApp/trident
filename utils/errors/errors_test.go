@@ -1825,3 +1825,47 @@ func TestAutogrowStuckResizeAtMaxSizeError(t *testing.T) {
 		assert.True(t, IsAutogrowStuckResizeAtMaxSizeError(errNoArgs))
 	})
 }
+
+func TestPreconditionError(t *testing.T) {
+	tests := []struct {
+		name        string
+		createErr   func() error
+		expectedMsg string
+	}{
+		{
+			name:        "NoArgs",
+			createErr:   func() error { return PreconditionError("simple precondition message") },
+			expectedMsg: "simple precondition message",
+		},
+		{
+			name:        "WithArgs",
+			createErr:   func() error { return PreconditionError("precondition failed: %s", "test") },
+			expectedMsg: "precondition failed: test",
+		},
+		{
+			name:        "WithMultipleArgs",
+			createErr:   func() error { return PreconditionError("precondition %s failed for %s", "check", "vol1") },
+			expectedMsg: "precondition check failed for vol1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.createErr()
+
+			// Test error message
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			// Test detection function
+			assert.True(t, IsPreconditionError(err))
+			assert.False(t, IsPreconditionError(nil))
+			assert.False(t, IsPreconditionError(errors.New("generic error")))
+		})
+	}
+
+	t.Run("WrappedError", func(t *testing.T) {
+		inner := PreconditionError("inner precondition")
+		wrapped := fmt.Errorf("outer: %w", inner)
+		assert.True(t, IsPreconditionError(wrapped))
+	})
+}
