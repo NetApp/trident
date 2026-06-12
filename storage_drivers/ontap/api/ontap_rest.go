@@ -5252,9 +5252,15 @@ func (c *RestClient) QtreeCount(ctx context.Context, volumeName string) (int, er
 	}
 }
 
-// QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
+// QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols).
+//
+// When volumePattern is an exact Flexvol name the query is restricted to that Flexvol. When
+// volumePattern is a wildcard (e.g. "<prefix>*" or "*") we deliberately do NOT pass volume.name
+// to ONTAP: a wildcard volume.name filter forces ONTAP to evaluate the pattern against every
+// Flexvol in the SVM under RDB epoch locks, which scales poorly on large SVMs (tens of seconds
+// with hundreds of Flexvols). Instead we filter on the (effectively unique) qtree name only and
+// match the Flexvol prefix in memory while paging.
 func (c *RestClient) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
-	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -5262,19 +5268,25 @@ func (c *RestClient) QtreeExists(ctx context.Context, name, volumePattern string
 	// params.MaxRecords = utils.ToPtr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(new(c.svmUUID))
-	params.SetName(new(name))                // Qtree name
-	params.SetVolumeName(new(volumePattern)) // Flexvol name prefix
-	fields := []string{""}
-	params.SetFields(fields)
+	params.SetName(new(name)) // Qtree name
+
+	// Only constrain by Flexvol when an exact name is supplied. A wildcard pattern is matched in
+	// memory (see above) to avoid the expensive server-side volume.name wildcard scan.
+	flexvolPrefix, wildcard := strings.CutSuffix(volumePattern, "*")
+	if !wildcard {
+		params.SetVolumeName(new(volumePattern)) // exact Flexvol name
+	}
+	params.SetFields([]string{"volume"})
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
 	if err != nil {
 		return false, "", err
 	}
-	if result == nil {
+	if result == nil || result.Payload == nil {
 		return false, "", nil
 	}
 
+	// Page through the (typically tiny) name-filtered result set.
 	if HasNextLink(result.Payload) {
 		nextLink := result.Payload.Links.Next
 		done := false
@@ -5284,15 +5296,10 @@ func (c *RestClient) QtreeExists(ctx context.Context, name, volumePattern string
 			if errNext != nil {
 				return false, "", errNext
 			}
-			if resultNext == nil || resultNext.Payload == nil || resultNext.Payload.NumRecords == nil {
+			if resultNext == nil || resultNext.Payload == nil {
 				done = true
 				continue NextLoop
 			}
-
-			if result.Payload.NumRecords == nil {
-				result.Payload.NumRecords = new(int64(0))
-			}
-			result.Payload.NumRecords = new(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
 			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords,
 				resultNext.Payload.QtreeResponseInlineRecords...)
 
@@ -5305,24 +5312,27 @@ func (c *RestClient) QtreeExists(ctx context.Context, name, volumePattern string
 		}
 	}
 
-	if result.Payload == nil || result.Payload.NumRecords == nil {
-		return false, "", nil
+	// Match the qtree to a Flexvol whose name has the requested prefix. Only count
+	// qtrees in FlexVols managed by this driver (identified by the storage prefix).
+	matches := 0
+	matchFlexvol := ""
+	for _, qtree := range result.Payload.QtreeResponseInlineRecords {
+		if qtree == nil || qtree.Volume == nil || qtree.Volume.Name == nil {
+			continue
+		}
+		if wildcard && !strings.HasPrefix(*qtree.Volume.Name, flexvolPrefix) {
+			continue
+		}
+		matches++
+		matchFlexvol = *qtree.Volume.Name
 	}
 
 	// Ensure qtree is unique
-	n := *result.Payload.NumRecords
-	if n != 1 {
+	if matches != 1 {
 		return false, "", nil
 	}
 
-	// Get containing Flexvol
-	volume := result.Payload.QtreeResponseInlineRecords[0].Volume
-	if volume == nil || volume.Name == nil {
-		return false, "", nil
-	}
-
-	flexvol := volume.Name
-	return true, *flexvol, nil
+	return true, matchFlexvol, nil
 }
 
 // QtreeGet returns all relevant details for a single qtree

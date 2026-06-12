@@ -6288,7 +6288,9 @@ func mockQtreeListResponseQtreeExists(hasNextLink bool, w http.ResponseWriter, r
 	}
 
 	if !hasNextLink {
+		// Terminal page of a paged response: no further records.
 		qtreeResponse.NumRecords = new(int64(0))
+		qtreeResponse.QtreeResponseInlineRecords = nil
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(qtreeResponse)
@@ -6619,6 +6621,66 @@ func TestOntapREST_QtreeExists(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestOntapREST_QtreeExists_WildcardPrefixMatch(t *testing.T) {
+	// When the caller passes a wildcard volume pattern, QtreeExists must NOT send a
+	// server-side volume.name filter (which triggers the slow RDB epoch-lock scan) and
+	// must instead match the Flexvol prefix in memory.
+
+	t.Run("unique qtree in matching flexvol", func(t *testing.T) {
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			assert.Empty(t, r.URL.Query().Get("volume.name"),
+				"wildcard pattern must not send a server-side volume.name filter")
+
+			matching := getQtree() // volume "vol1"
+			resp := &models.QtreeResponse{
+				QtreeResponseInlineRecords: []*models.Qtree{&matching},
+				NumRecords:                 new(int64(1)),
+			}
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(resp)
+		}
+		server := httptest.NewServer(http.HandlerFunc(handler))
+		defer server.Close()
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		assert.NotNil(t, rs)
+
+		exists, flexvol, err := rs.QtreeExists(ctx, "qtree_vol1", "vol*")
+		assert.NoError(t, err)
+		assert.True(t, exists, "qtree with matching Flexvol prefix should be found")
+		assert.Equal(t, "vol1", flexvol)
+	})
+
+	t.Run("qtree in unmanaged volume is ignored", func(t *testing.T) {
+		// If the same qtree name also exists in a FlexVol outside the managed prefix,
+		// it is ignored — the driver only cares about its own volumes.
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			assert.Empty(t, r.URL.Query().Get("volume.name"))
+
+			matching := getQtree() // volume "vol1"
+			otherName := "other_vol"
+			otherUUID := "otherUUID"
+			nonMatching := getQtree()
+			nonMatching.Volume = &models.QtreeInlineVolume{Name: &otherName, UUID: &otherUUID}
+
+			resp := &models.QtreeResponse{
+				QtreeResponseInlineRecords: []*models.Qtree{&matching, &nonMatching},
+				NumRecords:                 new(int64(2)),
+			}
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(resp)
+		}
+		server := httptest.NewServer(http.HandlerFunc(handler))
+		defer server.Close()
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		assert.NotNil(t, rs)
+
+		exists, flexvol, err := rs.QtreeExists(ctx, "qtree_vol1", "vol*")
+		assert.NoError(t, err)
+		assert.True(t, exists, "qtree in managed Flexvol should be found")
+		assert.Equal(t, "vol1", flexvol)
+	})
 }
 
 func TestOntapREST_QtreeGet(t *testing.T) {

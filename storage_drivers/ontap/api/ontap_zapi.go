@@ -1863,9 +1863,16 @@ func (c Client) QtreeCount(ctx context.Context, volume string) (int, error) {
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
 func (c Client) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
-	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
+	// Filter on the qtree name. When volumePattern is an exact Flexvol name we also constrain the
+	// query to that Flexvol; when it is a wildcard we match the Flexvol prefix in memory to avoid a
+	// server-side volume wildcard scan that scales poorly on large SVMs.
+	flexvolPrefix, wildcard := strings.CutSuffix(volumePattern, "*")
+
+	queryInfo := azgo.NewQtreeInfoType().SetQtree(name)
+	if !wildcard {
+		queryInfo.SetVolume(volumePattern)
+	}
 	query := &azgo.QtreeListIterRequestQuery{}
-	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePattern).SetQtree(name)
 	query.SetQtreeInfo(*queryInfo)
 
 	// Limit the returned data to only the Flexvol and Qtree names
@@ -1884,19 +1891,29 @@ func (c Client) QtreeExists(ctx context.Context, name, volumePattern string) (bo
 		return false, "", err
 	}
 
-	// Ensure qtree is unique
-	if response.Result.NumRecords() != 1 {
-		return false, "", nil
-	}
-
 	if response.Result.AttributesListPtr == nil {
 		return false, "", nil
 	}
 
-	// Get containing Flexvol
-	flexvol := response.Result.AttributesListPtr.QtreeInfoPtr[0].Volume()
+	// Match the qtree to a Flexvol whose name has the requested prefix. Only count
+	// qtrees in FlexVols managed by this driver (identified by the storage prefix).
+	matches := 0
+	matchFlexvol := ""
+	for _, qtree := range response.Result.AttributesListPtr.QtreeInfoPtr {
+		flexvol := qtree.Volume()
+		if wildcard && !strings.HasPrefix(flexvol, flexvolPrefix) {
+			continue
+		}
+		matches++
+		matchFlexvol = flexvol
+	}
 
-	return true, flexvol, nil
+	// Ensure qtree is unique
+	if matches != 1 {
+		return false, "", nil
+	}
+
+	return true, matchFlexvol, nil
 }
 
 // QtreeGet returns all relevant details for a single qtree

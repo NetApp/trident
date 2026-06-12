@@ -5,6 +5,7 @@ package api
 import (
 	"context"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -1722,6 +1723,88 @@ func TestZAPI_Priority2_AggregateCommitmentMethods(t *testing.T) {
 		}
 		result3 := ac3.Percent()
 		assert.Equal(t, 200.0, result3) // 200% over-committed
+	})
+}
+
+func TestZAPI_QtreeExists_WildcardPrefixMatch(t *testing.T) {
+	// Build a minimal fake ZAPI server that responds to qtree-list-iter requests.
+	newQtreeListIterXML := func(qtrees []azgo.QtreeInfoType) string {
+		var items string
+		for _, q := range qtrees {
+			items += fmt.Sprintf(`<qtree-info><volume>%s</volume><qtree>%s</qtree></qtree-info>`,
+				q.Volume(), q.Qtree())
+		}
+		return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<netapp xmlns="http://www.netapp.com/filer/admin" version="1.21">
+<results status="passed">
+  <num-records>%d</num-records>
+  <attributes-list>%s</attributes-list>
+</results>
+</netapp>`, len(qtrees), items)
+	}
+
+	setupZAPIQtreeServer := func(t *testing.T, respXML string) *Client {
+		t.Helper()
+		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/xml")
+			w.Write([]byte(respXML))
+		}))
+		t.Cleanup(server.Close)
+
+		host, port, _ := net.SplitHostPort(server.Listener.Addr().String())
+		config := ClientConfig{
+			ManagementLIF: host + ":" + port,
+			Username:      "admin",
+			Password:      "password",
+		}
+		client, _ := NewClient(config, "datavserver", "trident")
+		return client
+	}
+
+	t.Run("unique qtree in matching flexvol", func(t *testing.T) {
+		qtrees := []azgo.QtreeInfoType{
+			*azgo.NewQtreeInfoType().SetVolume("trident_pool_001").SetQtree("pvc-abc123"),
+		}
+		client := setupZAPIQtreeServer(t, newQtreeListIterXML(qtrees))
+
+		exists, flexvol, err := client.QtreeExists(ctx, "pvc-abc123", "trident_pool_*")
+		assert.NoError(t, err)
+		assert.True(t, exists)
+		assert.Equal(t, "trident_pool_001", flexvol)
+	})
+
+	t.Run("qtree in unmanaged volume is ignored", func(t *testing.T) {
+		qtrees := []azgo.QtreeInfoType{
+			*azgo.NewQtreeInfoType().SetVolume("trident_pool_001").SetQtree("pvc-abc123"),
+			*azgo.NewQtreeInfoType().SetVolume("other_vol").SetQtree("pvc-abc123"),
+		}
+		client := setupZAPIQtreeServer(t, newQtreeListIterXML(qtrees))
+
+		exists, flexvol, err := client.QtreeExists(ctx, "pvc-abc123", "trident_pool_*")
+		assert.NoError(t, err)
+		assert.True(t, exists, "qtree in managed Flexvol should be found")
+		assert.Equal(t, "trident_pool_001", flexvol)
+	})
+
+	t.Run("no qtrees found", func(t *testing.T) {
+		client := setupZAPIQtreeServer(t, newQtreeListIterXML(nil))
+
+		exists, flexvol, err := client.QtreeExists(ctx, "pvc-missing", "trident_pool_*")
+		assert.NoError(t, err)
+		assert.False(t, exists)
+		assert.Empty(t, flexvol)
+	})
+
+	t.Run("exact volume pattern bypasses wildcard", func(t *testing.T) {
+		qtrees := []azgo.QtreeInfoType{
+			*azgo.NewQtreeInfoType().SetVolume("exact_vol").SetQtree("pvc-xyz"),
+		}
+		client := setupZAPIQtreeServer(t, newQtreeListIterXML(qtrees))
+
+		exists, flexvol, err := client.QtreeExists(ctx, "pvc-xyz", "exact_vol")
+		assert.NoError(t, err)
+		assert.True(t, exists)
+		assert.Equal(t, "exact_vol", flexvol)
 	})
 }
 
