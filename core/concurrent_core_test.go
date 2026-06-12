@@ -92,7 +92,7 @@ func makeSyncMapFromMap[K comparable, V any](m map[K]V) *sync.Map {
 func addBackendsToCache(t *testing.T, backends ...storage.Backend) {
 	t.Helper()
 	for _, backend := range backends {
-		results, unlocker, err := db.Lock(context.Background(), db.Query(db.UpsertBackend(backend.BackendUUID(), "",
+		_, results, unlocker, err := db.Lock(context.Background(), db.Query(db.UpsertBackend(backend.BackendUUID(), "",
 			backend.Name())))
 		require.NoError(t, err)
 		results[0].Backend.Upsert(backend)
@@ -102,7 +102,7 @@ func addBackendsToCache(t *testing.T, backends ...storage.Backend) {
 
 func removeBackendFromCache(t *testing.T, backendUUID string) {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteBackend(backendUUID)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteBackend(backendUUID)))
 	defer unlocker()
 	require.NoError(t, err)
 	results[0].Backend.Delete()
@@ -111,7 +111,7 @@ func removeBackendFromCache(t *testing.T, backendUUID string) {
 func addStorageClassesToCache(t *testing.T, storageClasses ...*storageclass.StorageClass) {
 	t.Helper()
 	for _, sc := range storageClasses {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertStorageClass(sc.GetName())))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertStorageClass(sc.GetName())))
 		require.NoError(t, err)
 		results[0].StorageClass.Upsert(sc)
 		unlocker()
@@ -121,7 +121,7 @@ func addStorageClassesToCache(t *testing.T, storageClasses ...*storageclass.Stor
 func addSnapshotsToCache(t *testing.T, snapshots ...*storage.Snapshot) {
 	t.Helper()
 	for _, snapshot := range snapshots {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSnapshot(snapshot.Config.VolumeName, snapshot.Config.ID())))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSnapshot(snapshot.Config.VolumeName, snapshot.Config.ID())))
 		require.NoError(t, err)
 		results[0].Snapshot.Upsert(snapshot)
 		unlocker()
@@ -131,7 +131,7 @@ func addSnapshotsToCache(t *testing.T, snapshots ...*storage.Snapshot) {
 func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePublication) {
 	t.Helper()
 	for _, publication := range publications {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(publication.VolumeName, publication.NodeName)))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(publication.VolumeName, publication.NodeName)))
 		require.NoError(t, err)
 		results[0].VolumePublication.Upsert(publication)
 		unlocker()
@@ -141,7 +141,7 @@ func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePu
 func removeVolumePublicationsFromCache(t *testing.T, publications ...*models.VolumePublication) {
 	t.Helper()
 	for _, publication := range publications {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolumePublication(publication.VolumeName, publication.NodeName)))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolumePublication(publication.VolumeName, publication.NodeName)))
 		require.NoError(t, err)
 		if results[0].VolumePublication.Delete != nil {
 			results[0].VolumePublication.Delete()
@@ -152,7 +152,7 @@ func removeVolumePublicationsFromCache(t *testing.T, publications ...*models.Vol
 
 func getBackendByUuidFromCache(t *testing.T, backendUuid string) storage.Backend {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackend(backendUuid)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackend(backendUuid)))
 	defer unlocker()
 	require.NoError(t, err)
 	backend := results[0].Backend.Read
@@ -161,7 +161,7 @@ func getBackendByUuidFromCache(t *testing.T, backendUuid string) storage.Backend
 
 func getSnapshotByIDFromCache(t *testing.T, snapshotId string) *storage.Snapshot {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSnapshot(snapshotId)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSnapshot(snapshotId)))
 	defer unlocker()
 	require.NoError(t, err)
 	snapshot := results[0].Snapshot.Read
@@ -170,7 +170,7 @@ func getSnapshotByIDFromCache(t *testing.T, snapshotId string) *storage.Snapshot
 
 func getBackendByNameFromCache(t *testing.T, backendName string) storage.Backend {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackendByName(backendName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackendByName(backendName)))
 	defer unlocker()
 	require.NoError(t, err)
 	backend := results[0].Backend.Read
@@ -179,7 +179,7 @@ func getBackendByNameFromCache(t *testing.T, backendName string) storage.Backend
 
 func getStorageClassByNameFromCache(t *testing.T, scName string) *storageclass.StorageClass {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadStorageClass(scName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadStorageClass(scName)))
 	defer unlocker()
 	require.NoError(t, err)
 	sc := results[0].StorageClass.Read
@@ -188,7 +188,7 @@ func getStorageClassByNameFromCache(t *testing.T, scName string) *storageclass.S
 
 func getVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volumeName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].Volume.Read
@@ -197,7 +197,7 @@ func getVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 
 func getSubVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].SubordinateVolume.Read
@@ -215,7 +215,7 @@ func addBackendsToPersistence(t *testing.T, o *ConcurrentTridentOrchestrator, ba
 func addVolumesToCache(t *testing.T, vols ...*storage.Volume) {
 	t.Helper()
 	for _, vol := range vols {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
 		require.NoError(t, err)
 		results[0].Volume.Upsert(vol)
 		unlocker()
@@ -232,7 +232,7 @@ func addVolumesToPersistence(t *testing.T, o *ConcurrentTridentOrchestrator, vol
 
 func getNodeByNameFromCache(t *testing.T, nodeName string) *models.Node {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadNode(nodeName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadNode(nodeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	node := results[0].Node.Read
@@ -242,7 +242,7 @@ func getNodeByNameFromCache(t *testing.T, nodeName string) *models.Node {
 func addNodesToCache(t *testing.T, nodes ...*models.Node) {
 	t.Helper()
 	for _, node := range nodes {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertNode(node.Name)))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertNode(node.Name)))
 		require.NoError(t, err)
 		results[0].Node.Upsert(node)
 		unlocker()
@@ -251,7 +251,7 @@ func addNodesToCache(t *testing.T, nodes ...*models.Node) {
 
 func getVolumePublicationByIDFromCache(t *testing.T, volumeID, nodeID string) *models.VolumePublication {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(volumeID, nodeID)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(volumeID, nodeID)))
 	defer unlocker()
 	require.NoError(t, err)
 	vp := results[0].VolumePublication.Read
@@ -270,7 +270,7 @@ func addVolumePublicationsToPersistence(t *testing.T, o *ConcurrentTridentOrches
 func addSubordinateVolumesToCache(t *testing.T, subVols ...*storage.Volume) {
 	t.Helper()
 	for _, subVol := range subVols {
-		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSubordinateVolume(subVol.Config.Name, subVol.Config.ShareSourceVolume)))
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSubordinateVolume(subVol.Config.Name, subVol.Config.ShareSourceVolume)))
 		require.NoError(t, err)
 		results[0].SubordinateVolume.Upsert(subVol)
 		unlocker()
@@ -279,7 +279,7 @@ func addSubordinateVolumesToCache(t *testing.T, subVols ...*storage.Volume) {
 
 func getSubordinateVolumeByNameFromCache(t *testing.T, volumeId string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeId)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeId)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].SubordinateVolume.Read
@@ -288,7 +288,7 @@ func getSubordinateVolumeByNameFromCache(t *testing.T, volumeId string) *storage
 
 func removeVolumeFromCache(t *testing.T, volumeName string) {
 	t.Helper()
-	results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolume(volumeName)))
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	results[0].Volume.Delete()
@@ -2239,7 +2239,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, fakeBackend)
 
 				// Use case where Backend ConfigRef is non-empty
-				results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
+				_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
 				require.NoError(t, err)
 				oldBackend := results[0].Backend.Read
 				require.NotNil(t, oldBackend)
@@ -2614,7 +2614,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, fakeBackend)
 
 				// Use case where Backend ConfigRef is non-empty
-				results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
+				_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
 				require.NoError(t, err)
 				oldBackend := results[0].Backend.Read
 				require.NotNil(t, oldBackend)
@@ -10753,7 +10753,7 @@ func TestDeleteStorageClassConcurrentCore(t *testing.T) {
 
 				// Add autogrow policy
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -10788,7 +10788,7 @@ func TestDeleteStorageClassConcurrentCore(t *testing.T) {
 				assert.NoError(t, err)
 
 				// Volume should have been updated to empty policy
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadVolume("vol1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadVolume("vol1")))
 				defer unlocker()
 				vol := results[0].Volume.Read
 				assert.NotNil(t, vol)
@@ -11107,7 +11107,7 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 				// Add backend to cache
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
 				defer unlocker()
 
 				results[0].Node.Upsert(&models.Node{
@@ -11179,7 +11179,7 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			}
 			tt.verifyError(t, err)
 
-			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode(tt.newNode.Name)))
+			_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode(tt.newNode.Name)))
 			defer unlocker()
 
 			assert.NotNil(t, results)
@@ -11356,7 +11356,7 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 			o.storeClient = mockStoreClient
 
 			if tt.node != nil {
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(tt.node.Name)))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(tt.node.Name)))
 				results[0].Node.Upsert(tt.node)
 				unlocker()
 			}
@@ -11367,7 +11367,7 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				tt.verifyError(t, err)
 			}
 			if tt.expectedState != "" {
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode("node1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode("node1")))
 				defer unlocker()
 				assert.NotNil(t, results)
 				assert.Equal(t, tt.expectedState, results[0].Node.Read.PublicationState)
@@ -11387,7 +11387,7 @@ func TestGetNodeConcurrentCore(t *testing.T) {
 			name: "success",
 			setup: func(t *testing.T) {
 				t.Helper()
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
 				defer unlocker()
 				results[0].Node.Upsert(getFakeNode("node1"))
 			},
@@ -11432,7 +11432,7 @@ func TestListNodesConcurrentCore(t *testing.T) {
 			setup: func(t *testing.T) {
 				// maps are always iterated randomly
 				for name := range map[string]struct{}{"node1": {}, "node2": {}} {
-					results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(name)))
+					_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(name)))
 					results[0].Node.Upsert(getFakeNode(name))
 					unlocker()
 				}
@@ -13821,7 +13821,7 @@ func TestUnpublishVolume_DriverMutationPersisted(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify the driver's mutation was persisted to cache.
-	readResults, readUnlocker, readErr := db.Lock(testCtx, db.Query(db.InconsistentReadVolume("testVol")))
+	_, readResults, readUnlocker, readErr := db.Lock(testCtx, db.Query(db.InconsistentReadVolume("testVol")))
 	defer readUnlocker()
 	require.NoError(t, readErr)
 
@@ -15192,7 +15192,10 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				backend = tt.setupMocks(mockCtrl, mockStoreClient, o)
 			}
 
-			err := o.updateBackendVolumes(testCtx, backend)
+			lockCtx, _, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(backend.BackendUUID(), "", "")))
+			assert.NoError(t, err)
+			err = o.updateBackendVolumes(lockCtx, backend)
+			unlocker()
 
 			if tt.verifyError != nil {
 				tt.verifyError(err)
@@ -18615,7 +18618,7 @@ func TestConcurrent_BootstrapAutogrowPolicies(t *testing.T) {
 
 			// Verify policy count in cache
 			if tt.verifyPolicyCount > 0 {
-				results, unlocker, lockErr := db.Lock(testCtx, db.Query(db.ListAutogrowPolicies()))
+				_, results, unlocker, lockErr := db.Lock(testCtx, db.Query(db.ListAutogrowPolicies()))
 				assert.NoError(t, lockErr)
 				assert.Len(t, results[0].AutogrowPolicies, tt.verifyPolicyCount)
 				unlocker()
@@ -18661,7 +18664,7 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 					AutogrowPolicy: "policy1",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 			},
@@ -18682,7 +18685,7 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 					AutogrowPolicy: "NONE",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 			},
@@ -18699,7 +18702,7 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 			},
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 			},
@@ -18729,7 +18732,7 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 			},
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy-failed", "80", "20", "1000Gi", storage.AutogrowPolicyStateFailed)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-failed")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-failed")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 			},
@@ -18747,7 +18750,7 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 			},
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy-deleting", "80", "20", "1000Gi", storage.AutogrowPolicyStateDeleting)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-deleting")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-deleting")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 			},
@@ -18769,12 +18772,12 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 					AutogrowPolicy: "policy2",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policy := storage.NewAutogrowPolicy("policy2", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy2")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy2")))
 				results2[0].AutogrowPolicy.Upsert(policy)
 				unlocker2()
 			},
@@ -18795,17 +18798,17 @@ func TestConcurrent_ResolveEffectiveAutogrowPolicy(t *testing.T) {
 					AutogrowPolicy: "policy-sc",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				volPolicy := storage.NewAutogrowPolicy("policy-vol", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
 				results2[0].AutogrowPolicy.Upsert(volPolicy)
 				unlocker2()
 
 				scPolicy := storage.NewAutogrowPolicy("policy-sc", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-sc")))
+				_, results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-sc")))
 				results3[0].AutogrowPolicy.Upsert(scPolicy)
 				unlocker3()
 			},
@@ -18868,7 +18871,7 @@ func TestConcurrent_InvalidateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -18894,7 +18897,7 @@ func TestConcurrent_InvalidateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -18920,7 +18923,7 @@ func TestConcurrent_InvalidateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -18976,7 +18979,7 @@ func TestConcurrent_InvalidateVolumesForPolicy(t *testing.T) {
 			o.invalidateVolumesForPolicy(testCtx, tt.policyName)
 
 			for _, volName := range tt.expectedInvalid {
-				results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
+				_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
 				assert.NoError(t, err)
 				vol := results[0].Volume.Read
 				assert.NotNil(t, vol)
@@ -19003,7 +19006,7 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19031,7 +19034,7 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19063,12 +19066,12 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 					AutogrowPolicy: "policy1",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results2[0].AutogrowPolicy.Upsert(policy)
 				unlocker2()
 
@@ -19097,7 +19100,7 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19158,7 +19161,7 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 			policyName: "policy-failed",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy-failed", "80", "20", "1000Gi", storage.AutogrowPolicyStateFailed)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-failed")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-failed")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19196,12 +19199,12 @@ func TestConcurrent_ReevaluateVolumesForPolicy(t *testing.T) {
 			o.reevaluateVolumesForPolicy(testCtx, tt.policyName)
 
 			// Get policy to check its state
-			policyResults, policyUnlocker, _ := db.Lock(testCtx, db.Query(db.ReadAutogrowPolicy(tt.policyName)))
+			_, policyResults, policyUnlocker, _ := db.Lock(testCtx, db.Query(db.ReadAutogrowPolicy(tt.policyName)))
 			policy := policyResults[0].AutogrowPolicy.Read
 			policyUnlocker()
 
 			for _, volName := range tt.expectedUpdated {
-				results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
+				_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
 				assert.NoError(t, err)
 				vol := results[0].Volume.Read
 				assert.NotNil(t, vol)
@@ -19240,12 +19243,12 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "policy1",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results2[0].AutogrowPolicy.Upsert(policy)
 				unlocker2()
 
@@ -19264,17 +19267,17 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "policy-new",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policyNew := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
 				results2[0].AutogrowPolicy.Upsert(policyNew)
 				unlocker2()
 
 				policyOld := storage.NewAutogrowPolicy("policy-old", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-old")))
+				_, results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-old")))
 				results3[0].AutogrowPolicy.Upsert(policyOld)
 				unlocker3()
 
@@ -19307,17 +19310,17 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "policy-sc",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policySC := storage.NewAutogrowPolicy("policy-sc", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-sc")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-sc")))
 				results2[0].AutogrowPolicy.Upsert(policySC)
 				unlocker2()
 
 				policyVol := storage.NewAutogrowPolicy("policy-vol", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
+				_, results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
 				results3[0].AutogrowPolicy.Upsert(policyVol)
 				unlocker3()
 
@@ -19350,22 +19353,22 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "policy-new",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policyNew := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
 				results2[0].AutogrowPolicy.Upsert(policyNew)
 				unlocker2()
 
 				policyOld := storage.NewAutogrowPolicy("policy-old", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-old")))
+				_, results3, unlocker3, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-old")))
 				results3[0].AutogrowPolicy.Upsert(policyOld)
 				unlocker3()
 
 				policyVol := storage.NewAutogrowPolicy("policy-vol", "75", "25", "1500Gi", storage.AutogrowPolicyStateSuccess)
-				results4, unlocker4, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
+				_, results4, unlocker4, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-vol")))
 				results4[0].AutogrowPolicy.Upsert(policyVol)
 				unlocker4()
 
@@ -19422,12 +19425,12 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "policy1",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results2[0].AutogrowPolicy.Upsert(policy)
 				unlocker2()
 
@@ -19461,7 +19464,7 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 					AutogrowPolicy: "nonexistent-policy",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
@@ -19506,7 +19509,7 @@ func TestConcurrent_UpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
 			}
 
 			for _, volName := range tt.expectedUpdated {
-				results, unlocker, lockErr := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
+				_, results, unlocker, lockErr := db.Lock(testCtx, db.Query(db.ReadVolume(volName)))
 				assert.NoError(t, lockErr)
 				vol := results[0].Volume.Read
 				assert.NotNil(t, vol)
@@ -19591,7 +19594,7 @@ func TestConcurrent_AddAutogrowPolicy(t *testing.T) {
 			setupCache: func() {
 				// Policy already exists
 				existingPolicy := storage.NewAutogrowPolicy("policy1", "70", "30", "500Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(existingPolicy)
 				unlocker()
 			},
@@ -19626,7 +19629,7 @@ func TestConcurrent_AddAutogrowPolicy(t *testing.T) {
 
 				// For Failed policy test, verify volume reason was updated
 				if tt.policyConfig.State == storage.AutogrowPolicyStateFailed {
-					volResults, volUnlocker, volErr := db.Lock(testCtx, db.Query(db.ReadVolume("vol1")))
+					_, volResults, volUnlocker, volErr := db.Lock(testCtx, db.Query(db.ReadVolume("vol1")))
 					assert.NoError(t, volErr)
 					vol := volResults[0].Volume.Read
 					assert.NotNil(t, vol)
@@ -19654,7 +19657,7 @@ func TestConcurrent_DeleteAutogrowPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 			},
@@ -19666,7 +19669,7 @@ func TestConcurrent_DeleteAutogrowPolicy(t *testing.T) {
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19716,7 +19719,7 @@ func TestConcurrent_DeleteAutogrowPolicy(t *testing.T) {
 				assert.NoError(t, err)
 
 				// Verify policy state
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.InconsistentReadAutogrowPolicy(tt.policyName)))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.InconsistentReadAutogrowPolicy(tt.policyName)))
 				policy := results[0].AutogrowPolicy.Read
 				unlocker()
 
@@ -19750,7 +19753,7 @@ func TestConcurrent_UpdateVolumeAutogrowPolicy(t *testing.T) {
 			requestedAutogrowPolicy: "policy-new",
 			setupCache: func(mockStore *mockpersistentstore.MockStoreClient) {
 				policy := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -19828,7 +19831,7 @@ func TestConcurrent_UpdateVolumeAutogrowPolicy(t *testing.T) {
 			}
 
 			// Verify volume was updated
-			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadVolume(tt.volumeName)))
+			_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadVolume(tt.volumeName)))
 			vol := results[0].Volume.Read
 			unlocker()
 
@@ -19855,12 +19858,12 @@ func TestVolumePublicationDelete_RemovedFromCache(t *testing.T) {
 	addVolumePublicationsToCache(t, vp)
 	removeVolumePublicationsFromCache(t, vp)
 
-	readResults, readUnlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(vp.VolumeName, vp.NodeName)))
+	_, readResults, readUnlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(vp.VolumeName, vp.NodeName)))
 	require.NoError(t, err)
 	require.Nil(t, readResults[0].VolumePublication.Read)
 	readUnlocker()
 
-	upsertResults, upsertUnlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+	_, upsertResults, upsertUnlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
 	require.NoError(t, err)
 	require.Nil(t, upsertResults[0].VolumePublication.Read)
 	upsertUnlocker()
@@ -20124,7 +20127,7 @@ func TestBootstrapVolumes_SubordinateAutogrowPolicy(t *testing.T) {
 
 				// Add autogrow policy to cache
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20235,7 +20238,7 @@ func TestAddSubordinateVolume_AutogrowPolicyResolution(t *testing.T) {
 
 				// Add autogrow policy
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20309,7 +20312,7 @@ func TestDeleteStorageClass_SubordinateVolumes_AutogrowPolicy(t *testing.T) {
 
 				// Add autogrow policy
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20401,7 +20404,7 @@ func TestConcurrent_UpdateVolumeAutogrowPolicy_SubordinateVolume(t *testing.T) {
 			requestedAutogrowPolicy: "policy-new",
 			setupCache: func(mockStore *mockpersistentstore.MockStoreClient) {
 				policy := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20465,7 +20468,7 @@ func TestConcurrent_UpdateVolumeAutogrowPolicy_SubordinateVolume(t *testing.T) {
 			}
 
 			// Verify subordinate volume was updated
-			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(tt.volumeName)))
+			_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(tt.volumeName)))
 			subVol := results[0].SubordinateVolume.Read
 			unlocker()
 
@@ -20491,7 +20494,7 @@ func TestConcurrent_InvalidateVolumesForPolicy_SubordinateVolumes(t *testing.T) 
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20575,7 +20578,7 @@ func TestConcurrent_ReevaluateVolumesForPolicy_SubordinateVolumes(t *testing.T) 
 			policyName: "policy1",
 			setupCache: func() {
 				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
 				results[0].AutogrowPolicy.Upsert(policy)
 				unlocker()
 
@@ -20650,12 +20653,12 @@ func TestConcurrent_UpsertStorageClassAutogrowPolicyInternal_SubordinateVolumes(
 					AutogrowPolicy: "policy-new",
 				}
 				sc := storageclass.New(scConfig)
-				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
 				results[0].StorageClass.Upsert(sc)
 				unlocker()
 
 				policyNew := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
-				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				_, results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
 				results2[0].AutogrowPolicy.Upsert(policyNew)
 				unlocker2()
 
@@ -21126,7 +21129,7 @@ func TestDeleteCloneSnapshotsConcurrentCore(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			snapID := storage.MakeSnapshotID(cloneVolName, "imported-snap")
-			results, unlocker, err := db.Lock(testCtx, db.Query(
+			_, results, unlocker, err := db.Lock(testCtx, db.Query(
 				db.UpsertSnapshot(cloneVolName, snapID),
 			))
 			if err == nil {

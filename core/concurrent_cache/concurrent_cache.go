@@ -1,10 +1,17 @@
 // Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-// Package concurrent_cache provides similar functionality as concurrent_cache but with half the calories
-// Resources/objects/whatever are always locked and unlocked in the same order, by list, then type, then id.
-// One query may only contain list operations and one "tree" of resources.
-// Multiple "trees" must be found with multiple queries. For example, if volume 1 is in backend 1,
-// and backend 2 and volume 1 are in the same query, that will return an error.
+// Package concurrent_cache provides ordered, deadlock-safe locking for Trident's in-memory
+// resource caches.
+//
+// Subqueries in a single Query() slice are deduplicated to at most one non-list operation per
+// resource type (list plus one other op on the same type is allowed). Duplicate non-list ops
+// on the same type return an error; for example, two UpsertBackend calls in one Query().
+//
+// Locks are acquired in a stable order: list ops first, then resource rank, resource type,
+// id, and operation. New keys are locked by lockNewKeys before resource locks in lockQuery.
+//
+// NestedLock rejects lock upgrades, out-of-order new locks relative to the last held lock,
+// and nested subqueries with newKey.
 
 package concurrent_cache
 
@@ -14,7 +21,6 @@ import (
 	"slices"
 	"sync"
 
-	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -26,7 +32,7 @@ func init() {
 	Initialize()
 }
 
-// Initialize Need this as public for unit tests
+// Initialize resets global cache state. Exported for unit tests.
 func Initialize() {
 	rootCache = cache{
 		data:          make(map[string]SmartCopier),
@@ -113,7 +119,7 @@ type cache struct {
 type uniqueKey struct {
 	// map of view to resource id
 	data map[string]string
-	// locks for each view, by id (only required if view must be unique)
+	// locks for each view, by key string (only required if view must be unique)
 	keyLocks *locks.GCNamedMutex
 	// lock for adding or removing data entries
 	m sync.RWMutex
@@ -187,7 +193,7 @@ type Subquery struct {
 	key string
 	// newKey is used to update the key of the resource
 	newKey string
-	// setDependencyIDs is a function that sets the owner IDs (based on owner indices) for the Subquery slice
+	// setDependencyIDs sets dependency IDs from dependency indices in the Subquery slice
 	setDependencyIDs func(s []Subquery, i int) error
 	// setResults is a function that sets Result for this subquery
 	setResults func(*Subquery, *Result) error
@@ -197,68 +203,221 @@ type Subquery struct {
 	err error
 }
 
+func (sq Subquery) elem() querySetElem {
+	return querySetElem{
+		id:  sq.id,
+		res: sq.res,
+	}
+}
+
 func Query(query ...Subquery) []Subquery {
 	return query
 }
 
-// Lock
-//  1. Check for errors
-//     Return errors from subquery generators
-//  2. Dedupe
-//     One list or crud operation for each resource is allowed (is called dedupe but returns an error)
-//  3. Find parents/build trees
-//     Returns roots of trees
-//  4. Fill in IDs
-//     This is where we get read locks on caches
-//  5. Merge all queries
-//     Returns sorted list of subqueries
-//  6. Acquire locks and fill in Results
-func Lock(ctx context.Context, queries ...[]Subquery) (results []Result, unlocker func(), err error) {
-	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCoreCache).BuildContext()
-
-	roots := make([][]int, len(queries))
-	cachesPresent := make(map[resource]struct{}, resourceCount)
-	// if there are no consistent locks, we don't add the root lock
-	hasConsistentLocks := false
-	// phase 1, requires no locks, check errors, dedupe, and build trees
-	if hasConsistentLocks, err = assembleQueries(queries, roots, cachesPresent); err != nil {
-		return nil, func() {}, err
-	}
-
-	// phase 2, requires locks, fill in IDs
-	if err = lockCachesAndFillInIDs(queries, roots, cachesPresent); err != nil {
-		return nil, func() {}, err
-	}
-
-	// phase 3, takes per-resource locks
-	merged := mergeQueries(queries, hasConsistentLocks)
-	results, unlocker, err = lockQuery(merged, len(queries))
-	if err == nil && ctx.Err() != nil {
-		err = ctx.Err()
-	}
-	return results, unlocker, err
+type querySetElem struct {
+	res resource
+	id  string
 }
 
-func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) (bool, error) {
-	hasConsistentLocks := false
+func (e querySetElem) subquery() Subquery {
+	return Subquery{
+		res: e.res,
+		id:  e.id,
+	}
+}
+
+type querySet map[querySetElem]bool
+type lockContextKey struct{}
+type lockContext struct {
+	qs               querySet
+	lastLock         *Subquery
+	hasSyntheticRoot bool
+}
+
+// Lock locks resources from queries. Returns a context that can be used with NestedLock.
+func Lock(ctx context.Context, queries ...[]Subquery) (context.Context, []Result, func(), error) {
+	roots, cachesPresent, hasConsistentLocks, _, err := assembleQueries(queries)
+	if err != nil {
+		return ctx, nil, func() {}, err
+	}
+
+	if hasConsistentLocks && ctx.Value(lockContextKey{}) != nil {
+		return ctx, nil, func() {}, fmt.Errorf("cannot get consistent locks with existing query in context")
+	}
+
+	ret, err := lock(nil, nil, false, roots, cachesPresent, hasConsistentLocks, queries...)
+	if err != nil {
+		return ctx, nil, ret.unlocker, err
+	}
+	if ctx.Err() != nil {
+		return ctx, nil, ret.unlocker, ctx.Err()
+	}
+	lockCtx := context.WithValue(ctx, lockContextKey{}, &lockContext{
+		qs:               ret.qs,
+		lastLock:         ret.lastLock,
+		hasSyntheticRoot: ret.hasConsistentLocks,
+	})
+	return lockCtx, ret.results, ret.unlocker, nil
+}
+
+// NestedLock extends locks held in ctx. New locks must not upgrade existing read locks, must sort
+// after the last held lock, and must not include newKey. Returns an error otherwise.
+func NestedLock(ctx context.Context, queries ...[]Subquery) (context.Context, []Result, func(), error) {
+	lockContextValue := ctx.Value(lockContextKey{})
+	if lockContextValue == nil {
+		return ctx, nil, func() {}, fmt.Errorf("nested locks must have existing query in context")
+	}
+
+	ql := lockContextValue.(*lockContext)
+	roots, cachesPresent, hasConsistentLocks, hasNewKeys, err := assembleQueries(queries)
+	if err != nil {
+		return ctx, nil, func() {}, err
+	}
+	if hasNewKeys {
+		return ctx, nil, func() {}, fmt.Errorf("key updates are not allowed in nested lock")
+	}
+
+	ret, err := lock(ql.qs, ql.lastLock, ql.hasSyntheticRoot, roots, cachesPresent, hasConsistentLocks, queries...)
+	if err != nil {
+		return ctx, nil, ret.unlocker, err
+	}
+	if ctx.Err() != nil {
+		return ctx, nil, ret.unlocker, ctx.Err()
+	}
+	lockCtx := context.WithValue(ctx, lockContextKey{}, &lockContext{
+		qs:               ret.qs,
+		lastLock:         ret.lastLock,
+		hasSyntheticRoot: ret.hasConsistentLocks,
+	})
+	return lockCtx, ret.results, ret.unlocker, nil
+}
+
+type lockReturn struct {
+	results            []Result
+	qs                 querySet
+	lastLock           *Subquery
+	hasConsistentLocks bool
+	hasKeyUpdate       bool
+	unlocker           func()
+}
+
+// lock acquires locks for assembled queries. Callers must run assembleQueries first and reject
+// nested newKey updates before calling lock.
+//  1. Fill in IDs under cache read locks.
+//  2. Merge queries and validate nested locks (no read-to-write upgrades; first new consistent
+//     lock must sort after lastLock).
+//  3. Lock new keys (lockNewKeys), then acquire resource locks and populate results (lockQuery).
+//  4. Build return context: merged query set, lastLock, and results.
+func lock(existingQuerySet querySet, lastLock *Subquery, hasSyntheticRoot bool,
+	roots [][]int, cachesPresent map[resource]struct{}, hasConsistentLocks bool,
+	queries ...[]Subquery) (ret lockReturn, err error) {
+	ret.unlocker = func() {}
+	// phase 1, requires locks, fill in IDs
+	if err = lockCachesAndFillInIDs(queries, roots, cachesPresent); err != nil {
+		return ret, err
+	}
+
+	// phase 2, merge and validate with existing locks
+	newKeys, merged := mergeQueries(queries, hasConsistentLocks && !hasSyntheticRoot)
+	// no new locks can upgrade
+	for _, q := range merged {
+		if write, ok := existingQuerySet[q.elem()]; ok && !write && isWriteOp(q.op) {
+			return ret, fmt.Errorf("nested locks must not upgrade locks: [%s: %s]", q.res, q.op)
+		}
+	}
+	// the first new consistent lock must be after the last lock held to avoid deadlocks
+	if lastLock != nil {
+		for _, q := range merged {
+			if q.op == list || q.op == inconsistentRead {
+				continue
+			}
+			if _, ok := existingQuerySet[q.elem()]; ok {
+				continue
+			}
+			if compareSubqueries(*lastLock, q) > 0 {
+				return ret, fmt.Errorf("new lock could cause deadlock: [%s: %s]", q.res, q.op)
+			}
+			break
+		}
+	}
+
+	// phase 4, acquire locks, fill in results
+	newKeyUnlocker, err := lockNewKeys(newKeys)
+	if err != nil {
+		ret.unlocker = newKeyUnlocker
+		return ret, err
+	}
+	results, unlocker, err := lockQuery(existingQuerySet, merged, len(queries))
+	ret.unlocker = func() {
+		unlocker()
+		newKeyUnlocker()
+	}
+	if err != nil {
+		return ret, err
+	}
+
+	// phase 5, return elements of new context
+	qs := make(querySet)
+	for k, v := range existingQuerySet {
+		qs[k] = v
+	}
+	lastLockIndex := -1
+	for i, q := range merged {
+		if q.op == list || q.op == inconsistentRead {
+			continue
+		}
+		lastLockIndex = i
+		qs[q.elem()] = isWriteOp(q.op)
+	}
+	if lastLockIndex > -1 {
+		sq := merged[lastLockIndex]
+		lastLock = &sq
+	}
+	ret.results = results
+	ret.qs = qs
+	ret.lastLock = lastLock
+	ret.hasConsistentLocks = hasConsistentLocks || hasSyntheticRoot
+	for _, q := range merged {
+		if q.newKey == "" {
+			continue
+		}
+		if _, ok := existingQuerySet[q.elem()]; ok {
+			continue
+		}
+		ret.hasKeyUpdate = true
+		break
+	}
+	return ret, nil
+}
+
+func assembleQueries(queries [][]Subquery) (roots [][]int, cachesPresent map[resource]struct{}, hasConsistentLocks,
+	hasNewKeys bool, err error) {
+	cachesPresent = make(map[resource]struct{}, resourceCount)
+	roots = make([][]int, len(queries))
 	for i, q := range queries {
 		if err := checkError(q); err != nil {
-			return false, err
+			return nil, nil, false, false, err
 		}
 		ri, err := dedupe(q)
 		if err != nil {
-			return false, err
+			return nil, nil, false, false, err
 		}
 		for _, sq := range q {
-			cachesPresent[sq.res] = struct{}{}
+			if sq.newKey != "" {
+				hasNewKeys = true
+			}
 			if sq.op != list && sq.op != inconsistentRead {
 				hasConsistentLocks = true
 			}
 		}
 		queries[i], roots[i] = buildTrees(ri, q)
+		// Include synthetic read dependencies added by buildTree so fillInIDs holds cache RLocks.
+		for _, sq := range queries[i] {
+			cachesPresent[sq.res] = struct{}{}
+		}
 	}
 
-	return hasConsistentLocks, nil
+	return roots, cachesPresent, hasConsistentLocks, hasNewKeys, nil
 }
 
 func lockCachesAndFillInIDs(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) error {
@@ -282,8 +441,8 @@ func lockCachesAndFillInIDs(queries [][]Subquery, roots [][]int, cachesPresent m
 	return nil
 }
 
-// rLockCaches sorts and acquires read locks on all caches for the given resources. It returns a function that releases
-// the locks, and error if a cache does not exist.
+// rLockCaches sorts resources by descending rank then resource type, acquires read locks on
+// each cache, and returns an unlock function. Returns an error if a cache does not exist.
 func rLockCaches(resources []resource) (func(), error) {
 	slices.SortFunc(resources, func(i, j resource) int {
 		switch {
@@ -391,7 +550,7 @@ func buildTrees(resourceIndices map[resource]int, query []Subquery) ([]Subquery,
 			continue
 		}
 
-		// if the current subquery has dependent resources in the query it is not a root
+		// if a dependent resource type is also present in the query, this subquery is not a root
 		root := true
 		dependents := inverseSchema[query[i].res]
 		for j := 0; j < len(dependents) && root; j++ {
@@ -406,7 +565,7 @@ func buildTrees(resourceIndices map[resource]int, query []Subquery) ([]Subquery,
 	return query, roots
 }
 
-// buildTree takes a Subquery and builds a tree from it, adding existing subqueries as appropriate
+// buildTree walks schema dependencies for a subquery, appending synthetic read subqueries as needed.
 func buildTree(resourceIndices map[resource]int, query []Subquery, root int) []Subquery {
 	if query[root].op == list || query[root].op == inconsistentRead {
 		return query
@@ -427,10 +586,11 @@ func buildTree(resourceIndices map[resource]int, query []Subquery, root int) []S
 	return query
 }
 
-// fillInIDs finds all missing IDs in a tree. There are 3 ways to set an ID:
-// 1. It was passed in the subquery
-// 2. It is set by a child
-// 3. A key was passed in the subquery
+// fillInIDs finds all missing IDs in a tree. An ID may be:
+// 1. Passed in the subquery
+// 2. Resolved from key via uniqueKey.data
+// 3. Propagated to dependency subqueries from stored dependent data (dependentQueries)
+// 4. Set explicitly via setDependencyIDs
 func fillInIDs(root int, query []Subquery) error {
 	c := caches[query[root].res]
 	if query[root].op == list {
@@ -492,12 +652,131 @@ func fillInIDs(root int, query []Subquery) error {
 	return nil
 }
 
-func mergeQueries(queries [][]Subquery, hasConsistentLocks bool) []Subquery {
+// subqueries are sorted by:
+// 1. list operations
+// 2. resource rank
+// 3. resource type
+// 4. resource id
+// 5. operation
+func compareSubqueries(i, j Subquery) int {
+	switch {
+	case i.op == list && j.op != list:
+		return -1
+	case i.op != list && j.op == list:
+		return 1
+	}
+
+	switch {
+	case resourceRanks[i.res] < resourceRanks[j.res]:
+		return -1
+	case resourceRanks[i.res] > resourceRanks[j.res]:
+		return 1
+	}
+
+	switch {
+	case i.res < j.res:
+		return -1
+	case i.res > j.res:
+		return 1
+	}
+
+	switch {
+	case i.id < j.id:
+		return -1
+	case i.id > j.id:
+		return 1
+	}
+
+	switch {
+	case i.op < j.op:
+		return -1
+	case i.op > j.op:
+		return 1
+	}
+
+	return 0
+}
+
+type newKey struct {
+	r resource
+	k string
+	o operation
+}
+
+func compareNewKeys(i, j newKey) int {
+	switch {
+	case i.r < j.r:
+		return -1
+	case i.r > j.r:
+		return 1
+	}
+	switch {
+	case i.k < j.k:
+		return -1
+	case i.k > j.k:
+		return 1
+	}
+	switch {
+	case i.o < j.o:
+		return -1
+	case i.o > j.o:
+		return 1
+	}
+	return 0
+}
+
+// lockNewKeys locks all new keys in query. Returns error if they collide with existing resources.
+func lockNewKeys(newKeys []newKey) (func(), error) {
+	unlocks := make([]func(), 0, len(newKeys))
+	var previousNK *newKey
+	for _, nk := range newKeys {
+		c := caches[nk.r]
+		if c.key == nil {
+			continue
+		}
+		unlock := lockNewKey(previousNK, nk, c)
+		if unlock != nil {
+			unlocks = append(unlocks, unlock)
+		}
+		previousNK = &nk
+		// check for collisions after locking, to ensure the search is
+		// consistent. It is the caller's responsibility to handle the error and
+		// call unlock. Key updates are rare, so it's ok to take each cache lock individually instead of combining them
+		// like we do for fillInIDs.
+		c.key.m.RLock()
+		_, exists := c.key.data[nk.k]
+		c.key.m.RUnlock()
+		if exists {
+			return func() { doReverse(unlocks) }, fmt.Errorf("key %s for %s already exists", nk.k, nk.r)
+		}
+	}
+	return func() { doReverse(unlocks) }, nil
+}
+
+func lockNewKey(previousNK *newKey, nk newKey, c *cache) func() {
+	if previousNK == nil || previousNK.r != nk.r || previousNK.k != nk.k {
+		if isWriteOp(nk.o) {
+			c.key.keyLocks.Lock(nk.k)
+			return func() {
+				c.key.keyLocks.Unlock(nk.k)
+			}
+		} else {
+			c.key.keyLocks.RLock(nk.k)
+			return func() {
+				c.key.keyLocks.RUnlock(nk.k)
+			}
+		}
+	}
+	return nil
+}
+
+func mergeQueries(queries [][]Subquery, hasConsistentLocks bool) ([]newKey, []Subquery) {
 	length := 1
 	for _, q := range queries {
 		length += len(q)
 	}
 	merged := make([]Subquery, 0, length)
+	newKeys := make([]newKey, 0, length)
 	// if there are consistent locks, we need to add the root lock to block during shutdown. Inconsistent reads are still allowed.
 	if hasConsistentLocks {
 		merged = append(merged, Subquery{res: root, op: read, id: "."})
@@ -505,133 +784,30 @@ func mergeQueries(queries [][]Subquery, hasConsistentLocks bool) []Subquery {
 	for i, q := range queries {
 		for j := range q {
 			q[j].result = i
+			if q[j].newKey != "" {
+				newKeys = append(newKeys, newKey{q[j].res, q[j].newKey, q[j].op})
+			}
 		}
 		merged = append(merged, q...)
 	}
-	// subqueries are sorted by:
-	// 1. list operations
-	// 2. resource rank
-	// 3. resource type
-	// 4. resource id
-	// 5. operation
-	slices.SortFunc(merged, func(i, j Subquery) int {
-		switch {
-		case i.op == list && j.op != list:
-			return -1
-		case i.op != list && j.op == list:
-			return 1
-		}
-
-		switch {
-		case resourceRanks[i.res] < resourceRanks[j.res]:
-			return -1
-		case resourceRanks[i.res] > resourceRanks[j.res]:
-			return 1
-		}
-
-		switch {
-		case i.res < j.res:
-			return -1
-		case i.res > j.res:
-			return 1
-		}
-
-		switch {
-		case i.id < j.id:
-			return -1
-		case i.id > j.id:
-			return 1
-		}
-
-		switch {
-		case i.op < j.op:
-			return -1
-		case i.op > j.op:
-			return 1
-		}
-
-		return 0
-	})
-	return merged
+	slices.SortFunc(merged, compareSubqueries)
+	slices.SortFunc(newKeys, compareNewKeys)
+	return newKeys, merged
 }
 
-func lockQuery(query []Subquery, resultCount int) ([]Result, func(), error) {
-	if len(query) == 0 {
-		return nil, func() {}, nil
-	}
-
+// lockQuery acquires resource and existing-key locks for new subqueries in stable order
+// (from mergeQueries), then populates results. New keys are locked by lockNewKeys before
+// this function runs.
+func lockQuery(existingQuerySet querySet, query []Subquery, resultCount int) ([]Result, func(), error) {
 	results := make([]Result, resultCount)
 	unlocks := make([]func(), 0, len(query))
 
-	// lock unique keys first
-	uniqueKeysToLock := make(map[uniqueKeyToLock]bool, len(query))
+	// Lock keys with their resources in subquery order.
+	var lastLocked *Subquery
 	for i := range query {
-		for _, k := range [2]string{query[i].key, query[i].newKey} {
-			// no locks are needed for inconsistent reads, or if there is no key
-			if k == "" || query[i].op == inconsistentRead {
-				continue
-			}
-			uk := uniqueKeyToLock{
-				r: query[i].res,
-				k: k,
-			}
-			if !uniqueKeysToLock[uk] {
-				uniqueKeysToLock[uk] = isWriteOp(query[i].op)
-			}
-		}
-	}
-	uniqueKeys := make([]uniqueKeyToLock, 0, len(uniqueKeysToLock))
-	for k := range uniqueKeysToLock {
-		uniqueKeys = append(uniqueKeys, k)
-	}
-	slices.SortFunc(uniqueKeys, func(i, j uniqueKeyToLock) int {
-		switch {
-		case resourceRanks[i.r] > resourceRanks[j.r]:
-			return -1
-		case resourceRanks[i.r] < resourceRanks[j.r]:
-			return 1
-		}
-
-		switch {
-		case i.r < j.r:
-			return -1
-		case i.r > j.r:
-		}
-
-		switch {
-		case i.k < j.k:
-			return -1
-		case i.k > j.k:
-			return 1
-		}
-
-		return 0
-	})
-	for _, uk := range uniqueKeys {
-		c := caches[uk.r]
-		if c.key == nil {
+		if _, ok := existingQuerySet[query[i].elem()]; ok {
 			continue
 		}
-		if uniqueKeysToLock[uk] {
-			c.key.keyLocks.Lock(uk.k)
-			unlocks = append(unlocks, func() {
-				c.key.keyLocks.Unlock(uk.k)
-			})
-		} else {
-			c.key.keyLocks.RLock(uk.k)
-			unlocks = append(unlocks, func() {
-				c.key.keyLocks.RUnlock(uk.k)
-			})
-		}
-	}
-
-	// lock IDs
-	for i := range query {
-		var previousQuery *Subquery
-		if i > 0 {
-			previousQuery = &query[i-1]
-		}
-		// no locks are needed for lists or inconsistent reads
 		if query[i].op == list || query[i].op == inconsistentRead {
 			continue
 		}
@@ -639,10 +815,9 @@ func lockQuery(query []Subquery, resultCount int) ([]Result, func(), error) {
 		if query[i].id == "" && !allowBlankID {
 			continue
 		}
-		unlock := lockSubquery(&query[i], previousQuery, allowBlankID)
-		if unlock != nil {
-			unlocks = append(unlocks, unlock)
-		}
+		u := lockSubquery(&query[i], lastLocked, allowBlankID)
+		unlocks = append(unlocks, u...)
+		lastLocked = &query[i]
 	}
 
 	// set results
@@ -657,26 +832,40 @@ func lockQuery(query []Subquery, resultCount int) ([]Result, func(), error) {
 	return results, func() { doReverse(unlocks) }, nil
 }
 
-func lockSubquery(subquery, previousSubquery *Subquery, allowBlankID bool) func() {
+func lockSubquery(subquery, previousSubquery *Subquery, allowBlankID bool) []func() {
 	c := caches[subquery.res]
-	var u func()
-	// take a new lock only if the previous resource and id are different and the operation is a write and there is
-	// an id to lock.
+	write := isWriteOp(subquery.op)
+	unlocks := make([]func(), 0, 2)
+
 	if (subquery.id != "" || !allowBlankID) &&
 		(previousSubquery == nil || previousSubquery.res != subquery.res || previousSubquery.id != subquery.id) {
-		if isWriteOp(subquery.op) {
-			c.resourceLocks.Lock(subquery.id)
-			u = func() {
-				c.resourceLocks.Unlock(subquery.id)
-			}
-		} else {
-			c.resourceLocks.RLock(subquery.id)
-			u = func() {
-				c.resourceLocks.RUnlock(subquery.id)
+		if subquery.key != "" {
+			if write {
+				c.key.keyLocks.Lock(subquery.key)
+				unlocks = append(unlocks, func() {
+					c.key.keyLocks.Unlock(subquery.key)
+				})
+			} else {
+				c.key.keyLocks.RLock(subquery.key)
+				unlocks = append(unlocks, func() {
+					c.key.keyLocks.RUnlock(subquery.key)
+				})
 			}
 		}
+		if write {
+			c.resourceLocks.Lock(subquery.id)
+			unlocks = append(unlocks, func() {
+				c.resourceLocks.Unlock(subquery.id)
+			})
+		} else {
+			c.resourceLocks.RLock(subquery.id)
+			unlocks = append(unlocks, func() {
+				c.resourceLocks.RUnlock(subquery.id)
+			})
+		}
 	}
-	return u
+
+	return unlocks
 }
 
 func doReverse(f []func()) {
@@ -696,7 +885,7 @@ func isWriteOp(op operation) bool {
 
 func checkDependency(s []Subquery, i int, r resource) error {
 	if len(s[i].dependencies) != 1 {
-		return fmt.Errorf("expected one dependency, got %data", len(s[i].dependencies))
+		return fmt.Errorf("expected one dependency, got %d", len(s[i].dependencies))
 	}
 	if s[s[i].dependencies[0]].res != r {
 		return fmt.Errorf("expected %s dependency, got %s", r, s[s[i].dependencies[0]].res)
@@ -844,7 +1033,7 @@ const (
 // schema is the authoritative source for relationships between resources. For example,
 // a snapshot depends on a volume, and a volume depends on a backend.
 var schema = map[resource][]resource{
-	root:              nil, // root is an implied dependency for all resources
+	root:              nil, // root is not a schema dependency; injected synthetically during consistent locks
 	node:              nil,
 	storageClass:      nil,
 	backend:           nil,
@@ -895,7 +1084,7 @@ type UniqueKey interface {
 	GetUniqueKey() string
 }
 
-type uniqueKeyToLock struct {
+type newKeyToLock struct {
 	r resource
 	k string
 }

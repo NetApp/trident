@@ -23,7 +23,7 @@ func TestLockCache(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_, unlock, err := Lock(context.Background(), Query(LockCache()))
+		_, _, unlock, err := Lock(context.Background(), Query(LockCache()))
 		firstErr = err
 		unlockFirst = unlock
 		close(lockHeld)
@@ -41,7 +41,7 @@ func TestLockCache(t *testing.T) {
 	secondDone := make(chan struct{})
 	var secondErr error
 	go func() {
-		_, _, secondErr = Lock(context.Background(), Query(ReadBackend("backend1"), ReadVolume("volume1")))
+		_, _, _, secondErr = Lock(context.Background(), Query(ReadBackend("backend1"), ReadVolume("volume1")))
 		close(secondDone)
 	}()
 
