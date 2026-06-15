@@ -402,18 +402,15 @@ func assembleQueries(queries [][]Subquery) (roots [][]int, cachesPresent map[res
 		if err != nil {
 			return nil, nil, false, false, err
 		}
-		for _, sq := range q {
+		queries[i], roots[i] = buildTrees(ri, q)
+		for _, sq := range queries[i] {
 			if sq.newKey != "" {
 				hasNewKeys = true
 			}
+			cachesPresent[sq.res] = struct{}{}
 			if sq.op != list && sq.op != inconsistentRead {
 				hasConsistentLocks = true
 			}
-		}
-		queries[i], roots[i] = buildTrees(ri, q)
-		// Include synthetic read dependencies added by buildTree so fillInIDs holds cache RLocks.
-		for _, sq := range queries[i] {
-			cachesPresent[sq.res] = struct{}{}
 		}
 	}
 
