@@ -22,6 +22,13 @@ type reactor struct {
 	Reaction k8stesting.ReactionFunc
 }
 
+const (
+	testOldSnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v7.2.0"
+	testV84SnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.4.0"
+	testV85SnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.5.0"
+	testNewSnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.6.0"
+)
+
 // fakeKubeClientWithReactors constructs a KubeClient with the given reactors.
 func fakeKubeClientWithReactors(t *testing.T, reactors []reactor) *KubeClient {
 	t.Helper()
@@ -50,6 +57,7 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 	// Outer key: feature name
 	features := map[string]map[string]struct {
 		reactors     []reactor // reactors define a set of props to be added to the fake clientset for the feature.
+		snapshotter  string
 		assertError  assert.ErrorAssertionFunc
 		assertResult func(*testing.T, map[string]string)
 	}{
@@ -62,11 +70,32 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 						Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
 							get := action.(k8stesting.GetAction)
 							name := get.GetName()
-							crd := newFakeCRD(t, name, []string{"v1beta1"})
+							crd := newFakeCRD(t, name, []string{"v1beta1", "v1beta2", "v1"})
 							return true, crd, nil
 						},
 					},
 				},
+				snapshotter: testNewSnapshotterImage,
+				assertError: assert.NoError,
+				assertResult: func(t *testing.T, snip map[string]string) {
+					assert.Contains(t, snip, "{FEATURE_GATES_CSI_SNAPSHOTTER}")
+					assert.Equal(t, "CSIVolumeGroupSnapshot=true", snip["{FEATURE_GATES_CSI_SNAPSHOTTER}"])
+				},
+			},
+			"old snapshotter with beta CRDs": {
+				reactors: []reactor{
+					{
+						Verb:     "get",
+						Resource: "customresourcedefinitions",
+						Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+							get := action.(k8stesting.GetAction)
+							name := get.GetName()
+							crd := newFakeCRD(t, name, []string{"v1beta1", "v1beta2", "v1"})
+							return true, crd, nil
+						},
+					},
+				},
+				snapshotter: testOldSnapshotterImage,
 				assertError: assert.NoError,
 				assertResult: func(t *testing.T, snip map[string]string) {
 					assert.Contains(t, snip, "{FEATURE_GATES_CSI_SNAPSHOTTER}")
@@ -89,12 +118,13 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 						},
 					},
 				},
+				snapshotter: testNewSnapshotterImage,
 				assertError: assert.Error,
 				assertResult: func(t *testing.T, snip map[string]string) {
 					assert.Empty(t, snip)
 				},
 			},
-			"unsupported version": {
+			"unsupported v1beta1 version": {
 				reactors: []reactor{
 					{
 						Verb:     "get",
@@ -102,11 +132,51 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 						Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
 							get := action.(k8stesting.GetAction)
 							name := get.GetName()
-							crd := newFakeCRD(t, name, []string{"v1alpha1"})
+							crd := newFakeCRD(t, name, []string{"v1beta1"})
 							return true, crd, nil
 						},
 					},
 				},
+				snapshotter: testNewSnapshotterImage,
+				assertError: assert.Error,
+				assertResult: func(t *testing.T, snip map[string]string) {
+					assert.Empty(t, snip)
+				},
+			},
+			"v8.5 snapshotter with v1beta2 CRDs": {
+				reactors: []reactor{
+					{
+						Verb:     "get",
+						Resource: "customresourcedefinitions",
+						Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+							get := action.(k8stesting.GetAction)
+							name := get.GetName()
+							crd := newFakeCRD(t, name, []string{"v1beta2"})
+							return true, crd, nil
+						},
+					},
+				},
+				snapshotter: testV85SnapshotterImage,
+				assertError: assert.NoError,
+				assertResult: func(t *testing.T, snip map[string]string) {
+					assert.Contains(t, snip, "{FEATURE_GATES_CSI_SNAPSHOTTER}")
+					assert.Equal(t, "CSIVolumeGroupSnapshot=true", snip["{FEATURE_GATES_CSI_SNAPSHOTTER}"])
+				},
+			},
+			"v8.6 snapshotter with v1beta2 CRDs": {
+				reactors: []reactor{
+					{
+						Verb:     "get",
+						Resource: "customresourcedefinitions",
+						Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+							get := action.(k8stesting.GetAction)
+							name := get.GetName()
+							crd := newFakeCRD(t, name, []string{"v1beta2"})
+							return true, crd, nil
+						},
+					},
+				},
+				snapshotter: testNewSnapshotterImage,
 				assertError: assert.Error,
 				assertResult: func(t *testing.T, snip map[string]string) {
 					assert.Empty(t, snip)
@@ -128,6 +198,7 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 						},
 					},
 				},
+				snapshotter: testNewSnapshotterImage,
 				assertResult: func(t *testing.T, snip map[string]string) {
 					assert.Empty(t, snip)
 				},
@@ -135,6 +206,7 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 			},
 			"nil client": {
 				reactors:     nil,
+				snapshotter:  testNewSnapshotterImage,
 				assertResult: func(t *testing.T, snip map[string]string) { assert.Nil(t, snip) },
 				assertError:  assert.Error,
 			},
@@ -164,7 +236,7 @@ func TestConstructCSIFeatureGateYAMLSnippets(t *testing.T) {
 				} else {
 					client = nil
 				}
-				snippets, err := ConstructCSIFeatureGateYAMLSnippets(client)
+				snippets, err := ConstructCSIFeatureGateYAMLSnippets(client, tc.snapshotter)
 				tc.assertError(t, err)
 				tc.assertResult(t, snippets)
 			})
@@ -177,6 +249,7 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 
 	tests := map[string]struct {
 		reactors    []reactor
+		snapshotter string
 		assertBool  assert.BoolAssertionFunc
 		assertError assert.ErrorAssertionFunc
 	}{
@@ -193,6 +266,24 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 					},
 				},
 			},
+			snapshotter: testNewSnapshotterImage,
+			assertBool:  assert.True,
+			assertError: assert.NoError,
+		},
+		"with old snapshotter and beta CRDs": {
+			reactors: []reactor{
+				{
+					Verb:     "get",
+					Resource: "customresourcedefinitions",
+					Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+						get := action.(k8stesting.GetAction)
+						name := get.GetName()
+						crd := newFakeCRD(t, name, []string{"v1beta2"})
+						return true, crd, nil
+					},
+				},
+			},
+			snapshotter: testOldSnapshotterImage,
 			assertBool:  assert.True,
 			assertError: assert.NoError,
 		},
@@ -207,15 +298,16 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 						if name == volumeGroupSnapshotClassCRDName {
 							return true, nil, apierrors.NewNotFound(apiextensionsv1.Resource("customresourcedefinitions"), name)
 						}
-						crd := newFakeCRD(t, name, []string{"v1beta1", "v1beta2"})
+						crd := newFakeCRD(t, name, []string{"v1beta1", "v1beta2", "v1"})
 						return true, crd, nil
 					},
 				},
 			},
+			snapshotter: testNewSnapshotterImage,
 			assertBool:  assert.False,
 			assertError: assert.Error,
 		},
-		"with unsupported version": {
+		"with unsupported v1beta1 version": {
 			reactors: []reactor{
 				{
 					Verb:     "get",
@@ -223,11 +315,63 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 					Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
 						get := action.(k8stesting.GetAction)
 						name := get.GetName()
-						crd := newFakeCRD(t, name, []string{"v1alpha1"})
+						crd := newFakeCRD(t, name, []string{"v1beta1"})
 						return true, crd, nil
 					},
 				},
 			},
+			snapshotter: testNewSnapshotterImage,
+			assertBool:  assert.False,
+			assertError: assert.Error,
+		},
+		"with old snapshotter and v1-only CRDs": {
+			reactors: []reactor{
+				{
+					Verb:     "get",
+					Resource: "customresourcedefinitions",
+					Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+						get := action.(k8stesting.GetAction)
+						name := get.GetName()
+						crd := newFakeCRD(t, name, []string{"v1"})
+						return true, crd, nil
+					},
+				},
+			},
+			snapshotter: testOldSnapshotterImage,
+			assertBool:  assert.False,
+			assertError: assert.Error,
+		},
+		"with v8.4 snapshotter and v1beta2 CRDs": {
+			reactors: []reactor{
+				{
+					Verb:     "get",
+					Resource: "customresourcedefinitions",
+					Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+						get := action.(k8stesting.GetAction)
+						name := get.GetName()
+						crd := newFakeCRD(t, name, []string{"v1beta2"})
+						return true, crd, nil
+					},
+				},
+			},
+			snapshotter: testV84SnapshotterImage,
+			assertBool:  assert.True,
+			assertError: assert.NoError,
+		},
+		"with v8.6 snapshotter and v1beta2 CRDs": {
+			reactors: []reactor{
+				{
+					Verb:     "get",
+					Resource: "customresourcedefinitions",
+					Reaction: func(action k8stesting.Action) (bool, runtime.Object, error) {
+						get := action.(k8stesting.GetAction)
+						name := get.GetName()
+						crd := newFakeCRD(t, name, []string{"v1beta2"})
+						return true, crd, nil
+					},
+				},
+			},
+			snapshotter: testNewSnapshotterImage,
 			assertBool:  assert.False,
 			assertError: assert.Error,
 		},
@@ -242,11 +386,12 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 						if name == volumeGroupSnapshotCRDName {
 							return true, nil, errors.New("API error")
 						}
-						crd := newFakeCRD(t, name, []string{"v1beta1"})
+						crd := newFakeCRD(t, name, []string{"v1"})
 						return true, crd, nil
 					},
 				},
 			},
+			snapshotter: testNewSnapshotterImage,
 			assertBool:  assert.False,
 			assertError: assert.Error,
 		},
@@ -255,7 +400,7 @@ func Test_canAutoEnableFeatureGate(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			client := fakeKubeClientWithReactors(t, tc.reactors)
-			canEnable, err := canAutoEnableFeatureGate(client, gate)
+			canEnable, err := canAutoEnableFeatureGate(client, gate, tc.snapshotter)
 			tc.assertError(t, err)
 			tc.assertBool(t, canEnable)
 		})

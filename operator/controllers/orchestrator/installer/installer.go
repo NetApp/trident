@@ -1773,7 +1773,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		return fmt.Errorf("failed to remove unwanted Trident deployments; %v", err)
 	}
 
-	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(i.client)
+	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(i.client, csiSidecarSnapshotterImage)
 	if err != nil {
 		Log().WithError(err).Debug("Could not enable some CSI feature gates.")
 	} else {

@@ -25,6 +25,16 @@
       "matchManagers": ["gomod"],
       "matchDepTypes": ["indirect"],
       "enabled": false
+    },
+    {
+      "description": "Deep v5 needs explicit migration (new module path and API)",
+      "matchPackageNames": ["github.com/brunoga/deep/v5"],
+      "enabled": false
+    },
+    {
+      "description": "Backoff v5 uses a different module path than v4",
+      "matchPackageNames": ["github.com/cenkalti/backoff/v5"],
+      "enabled": false
     }
   ],
   "vulnerabilityAlerts": {

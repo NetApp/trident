@@ -5,6 +5,7 @@ package k8sclient
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/netapp/trident/pkg/collection"
@@ -40,8 +41,6 @@ var (
 			volumeGroupSnapshotContentCRDName,
 		},
 		supportedAPIs: []string{
-			apiV1Beta1,
-			apiV1Beta2,
 			apiV1,
 		},
 		gates: map[string]string{
@@ -89,7 +88,7 @@ func (g autoFeatureGate) Gates() map[string]string {
 // If any of the feature gates are not safe to enable, it will gather errors and log a warning.
 // Importantly, this is not an all or nothing operation.
 // If some but not all feature gates are safe to enable, they will be returned along with an error.
-func ConstructCSIFeatureGateYAMLSnippets(client KubernetesClient) (map[string]string, error) {
+func ConstructCSIFeatureGateYAMLSnippets(client KubernetesClient, csiSidecarSnapshotterImage string) (map[string]string, error) {
 	if client == nil {
 		return nil, errors.New("k8s API client is nil; cannot auto-enable feature gates")
 	}
@@ -105,7 +104,7 @@ func ConstructCSIFeatureGateYAMLSnippets(client KubernetesClient) (map[string]st
 	var errs error
 	placeholderToGates := make(map[string]map[string]struct{}) // snippets to inject for feature gates
 	for _, autoFeatureGate := range autoFeatureGates {
-		canEnable, err := canAutoEnableFeatureGate(client, autoFeatureGate)
+		canEnable, err := canAutoEnableFeatureGate(client, autoFeatureGate, csiSidecarSnapshotterImage)
 		if err != nil {
 			errs = errors.Join(errs, err)
 			continue
@@ -153,7 +152,12 @@ func ConstructCSIFeatureGateYAMLSnippets(client KubernetesClient) (map[string]st
 // canAutoEnableFeatureGate checks if all autoFeatureGate requirements are met, such as the presence of
 // CRDs and correct API versions. If any precondition is not met, it returns an error indicating which
 // requirements are not satisfied and does not allow Trident to automatically enable the feature gate.
-func canAutoEnableFeatureGate(client KubernetesClient, gate autoFeatureGate) (bool, error) {
+func canAutoEnableFeatureGate(client KubernetesClient, gate autoFeatureGate, csiSidecarSnapshotterImage string) (bool, error) {
+	requiredAPIs := gate.supportedAPIs
+	if gate.name == AutoFeatureGateVolumeGroupSnapshot {
+		requiredAPIs = volumeGroupSnapshotRequiredAPIs(csiSidecarSnapshotterImage)
+	}
+
 	var errs error
 	for _, crdName := range gate.crds {
 		crdExists, err := client.CheckCRDExists(crdName)
@@ -178,11 +182,11 @@ func canAutoEnableFeatureGate(client KubernetesClient, gate autoFeatureGate) (bo
 
 		// Check if the discovered CRD version is one of the allowed versions.
 		// If the CRD API Version is not at least one of the supported versions, we cannot enable the feature.
-		if len(gate.supportedAPIs) > 0 {
+		if len(requiredAPIs) > 0 {
 			// We need to check both Spec.Versions and Status.StoredVersions.
 			found := false
 			for _, version := range crd.Spec.Versions {
-				if collection.ContainsString(gate.supportedAPIs, version.Name) {
+				if collection.ContainsString(requiredAPIs, version.Name) {
 					found = true
 					break
 				}
@@ -202,4 +206,62 @@ func canAutoEnableFeatureGate(client KubernetesClient, gate autoFeatureGate) (bo
 	}
 
 	return true, nil
+}
+
+func volumeGroupSnapshotRequiredAPIs(csiSidecarSnapshotterImage string) []string {
+	major, minor := snapshotterMajorMinorVersion(csiSidecarSnapshotterImage)
+
+	if major > 8 || (major == 8 && minor >= 6) {
+		return []string{apiV1}
+	}
+
+	if major == 8 && minor >= 4 {
+		return []string{apiV1, apiV1Beta2}
+	}
+
+	return []string{apiV1Beta1, apiV1Beta2}
+}
+
+func snapshotterMajorMinorVersion(image string) (int, int) {
+	image = strings.TrimSpace(image)
+	if image == "" {
+		return 0, 0
+	}
+
+	tagSep := strings.LastIndex(image, ":")
+	if tagSep == -1 || tagSep == len(image)-1 {
+		return 0, 0
+	}
+
+	tag := strings.TrimPrefix(image[tagSep+1:], "v")
+	if tag == "" || tag[0] < '0' || tag[0] > '9' {
+		return 0, 0
+	}
+
+	parts := strings.Split(tag, ".")
+	if len(parts) == 0 {
+		return 0, 0
+	}
+
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0
+	}
+
+	minor := 0
+	if len(parts) > 1 {
+		minorDigits := 0
+		for minorDigits < len(parts[1]) && parts[1][minorDigits] >= '0' && parts[1][minorDigits] <= '9' {
+			minorDigits++
+		}
+
+		if minorDigits > 0 {
+			minor, err = strconv.Atoi(parts[1][:minorDigits])
+			if err != nil {
+				minor = 0
+			}
+		}
+	}
+
+	return major, minor
 }

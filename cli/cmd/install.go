@@ -948,7 +948,12 @@ func installTrident() (returnError error) {
 	}
 
 	// Automatically enable CSI feature gates.
-	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(client)
+	csiSidecarSnapshotterImage := tridentconfig.CSISidecarSnapshotterImageTag
+	if imageRegistry != "" {
+		csiSidecarSnapshotterImage = imageRegistry + "/" + csiSidecarSnapshotterImage
+	}
+
+	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(client, csiSidecarSnapshotterImage)
 	if err != nil {
 		Log().WithError(err).Debug("Could not enable some CSI feature gates.")
 	} else {

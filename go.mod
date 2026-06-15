@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/compute v1.60.0
 	cloud.google.com/go/netapp v1.15.0 // https://pkg.go.dev/cloud.google.com/go/netapp
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v8 v8.0.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v9 v9.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.9.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures v1.2.0
 	github.com/RoaringBitmap/roaring/v2 v2.18.0
@@ -16,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/fsx v1.65.8
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.41.6
 	github.com/brunoga/deep v1.3.1
-	github.com/cenkalti/backoff/v4 v4.3.0 //v5.0.2
+	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/container-storage-interface/spec v1.12.0
 	github.com/distribution/reference v0.6.0
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
