@@ -2430,9 +2430,125 @@ func (o *ConcurrentTridentOrchestrator) addVolumeCleanup(
 
 // UpdateVolume updates the allowed fields of a volume in the backend, persistent store and cache.
 func (o *ConcurrentTridentOrchestrator) UpdateVolume(
-	ctx context.Context, volume string, volumeUpdateInfo *models.VolumeUpdateInfo,
-) error {
-	return fmt.Errorf("UpdateVolume is not implemented in concurrent core")
+	ctx context.Context, volumeName string, volumeUpdateInfo *models.VolumeUpdateInfo,
+) (err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCore).BuildContext()
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	fields := LogFields{
+		"Method":     "UpdateVolume",
+		"Type":       "TridentOrchestrator",
+		"volume":     volumeName,
+		"updateInfo": volumeUpdateInfo,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> UpdateVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< UpdateVolume")
+
+	defer recordTiming("volume_update", &err)()
+
+	if volumeUpdateInfo == nil {
+		err = errors.InvalidInputError("no volume update information provided for volume %v", volumeName)
+		Logc(ctx).WithError(err).Error("Failed to update volume.")
+		return err
+	}
+
+	genericUpdateErr := fmt.Sprintf("failed to update volume %v", volumeName)
+
+	// Ensure volume exists before grabbing write locks
+	_, results, unlocker, dbErr := db.Lock(ctx, db.Query(db.InconsistentReadVolume(volumeName)))
+	unlocker()
+	if dbErr != nil {
+		return fmt.Errorf("error checking for existing volume; %w", dbErr)
+	}
+
+	volume := results[0].Volume.Read
+	if volume == nil {
+		err = errors.NotFoundError("volume %v was not found", volumeName)
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+	backendUUID := volume.BackendUUID
+
+	// Lock the backend, which prevents changes to all volumes on that backend.
+	lockCtx, results, backendUnlocker, dbErr := db.Lock(ctx,
+		db.Query(db.UpsertBackend(backendUUID, "", "")),
+		db.Query(db.InconsistentReadVolume(volumeName)),
+	)
+	defer backendUnlocker()
+	if dbErr != nil {
+		return dbErr
+	}
+
+	backend := results[0].Backend.Read
+	volume = results[1].Volume.Read
+
+	// Get the volume
+	if volume == nil {
+		err = errors.NotFoundError("volume %s was not found", volumeName)
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Get the backend
+	if backend == nil {
+		err = errors.NotFoundError("backend %s was not found", backendUUID)
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Call the backend to update the volume(s)
+	updatedVols, err := backend.UpdateVolume(ctx, volume.Config, volumeUpdateInfo)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// While holding backend write lock, acquire write locks for all impacted volumes.
+	lockQuery := make([][]db.Subquery, 0, len(updatedVols))
+	for _, updatedVol := range updatedVols {
+		lockQuery = append(lockQuery, db.Query(db.UpsertVolume(updatedVol.Config.Name, updatedVol.BackendUUID)))
+	}
+	_, volumeResults, volumeUnlocker, err := db.NestedLock(lockCtx, lockQuery...)
+	defer volumeUnlocker()
+	if err != nil {
+		return err
+	}
+
+	// For each volume we locked, pull its updated value from the map returned from the backend, update
+	// the cache, and update the persistent store.  If any of these steps fail for a volume, we log the error
+	// and continue updating the remaining volumes, then return a combined error at the end if any volume
+	// updates failed.  The cache is only updated for a volume if the persistent store is, so both will always match.
+
+	var volumeUpdateErrors error
+
+	for _, volumeResult := range volumeResults {
+
+		lockedVolume := volumeResult.Volume.Read
+		if lockedVolume == nil {
+			Logc(ctx).Error("Locked volume not found.")
+			continue
+		}
+
+		updatedVolume, ok := updatedVols[lockedVolume.Config.Name]
+		if !ok || updatedVolume == nil {
+			Logc(ctx).WithField("volume", lockedVolume.Config.Name).Error("Updated volume not found.")
+			continue
+		}
+
+		if err = o.storeClient.UpdateVolume(ctx, updatedVolume); err != nil {
+			Logc(ctx).WithField("volume", lockedVolume.Config.Name).WithError(err).Error(
+				"Unable to update the volume in the persistent store.")
+			volumeUpdateErrors = multierr.Append(volumeUpdateErrors, err)
+			continue
+		}
+
+		volumeResult.Volume.Upsert(updatedVolume)
+	}
+
+	return volumeUpdateErrors
 }
 
 // UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store.

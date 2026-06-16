@@ -5515,6 +5515,246 @@ func TestAddSubordinateVolumeConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestUpdateVolumeConcurrentCore(t *testing.T) {
+	const (
+		volName     = "vol1"
+		backendUUID = "backend-uuid1"
+		backendName = "backend1"
+	)
+
+	updateInfo := &models.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}
+
+	// newVolume builds a volume in the cache referencing the shared test backend.
+	newVolume := func(name, snapshotDir string) *storage.Volume {
+		return &storage.Volume{
+			Config:      &storage.VolumeConfig{InternalName: name, Name: name, SnapshotDir: snapshotDir},
+			BackendUUID: backendUUID,
+		}
+	}
+
+	tests := []struct {
+		name         string
+		volumeName   string
+		updateInfo   *models.VolumeUpdateInfo
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError  func(t *testing.T, err error)
+		verifyState  func(t *testing.T)
+	}{
+		{
+			name:         "BootstrapError",
+			volumeName:   volName,
+			updateInfo:   updateInfo,
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks:   nil,
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "bootstrap error")
+			},
+		},
+		{
+			name:       "NilUpdateInfo",
+			volumeName: volName,
+			updateInfo: nil,
+			setupMocks: nil,
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.True(t, errors.IsInvalidInputError(err))
+			},
+		},
+		{
+			name:       "VolumeNotFound",
+			volumeName: "nonexistent",
+			updateInfo: updateInfo,
+			setupMocks: nil,
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name:       "BackendNotFound",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// Volume in cache references a backend that is not in the cache.
+				addVolumesToCache(t, newVolume(volName, "false"))
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name:       "BackendUpdateFails",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := newVolume(volName, "false")
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).
+					Return(nil, errors.New("backend update error")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, vol)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "backend update error")
+			},
+		},
+		{
+			name:       "Success_SingleVolume",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := newVolume(volName, "false")
+				updatedVol := newVolume(volName, "true")
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).
+					Return(map[string]*storage.Volume{volName: updatedVol}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, vol)
+
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				cached := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, cached)
+				assert.Equal(t, "true", cached.Config.SnapshotDir)
+			},
+		},
+		{
+			name:       "Success_MultipleVolumes",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := newVolume(volName, "false")
+				vol2 := newVolume("vol2", "false")
+				updatedVol := newVolume(volName, "true")
+				updatedVol2 := newVolume("vol2", "true")
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).
+					Return(map[string]*storage.Volume{volName: updatedVol, "vol2": updatedVol2}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, vol, vol2)
+
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol2).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				cached := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, cached)
+				assert.Equal(t, "true", cached.Config.SnapshotDir)
+
+				cached2 := getVolumeByNameFromCache(t, "vol2")
+				require.NotNil(t, cached2)
+				assert.Equal(t, "true", cached2.Config.SnapshotDir)
+			},
+		},
+		{
+			name:       "PersistenceError",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := newVolume(volName, "false")
+				updatedVol := newVolume(volName, "true")
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).
+					Return(map[string]*storage.Volume{volName: updatedVol}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, vol)
+
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(failed).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				// Cache should NOT be updated when persistence fails.
+				cached := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, cached)
+				assert.Equal(t, "false", cached.Config.SnapshotDir)
+			},
+		},
+		{
+			name:       "Success_SkipsMissingUpdatedVolume",
+			volumeName: volName,
+			updateInfo: updateInfo,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := newVolume(volName, "false")
+				updatedVol := newVolume(volName, "true")
+
+				// Backend returns an extra volume that is not in the cache; its lock read
+				// will be nil and it should be skipped without panicking.
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).
+					Return(map[string]*storage.Volume{volName: updatedVol, "ghost": newVolume("ghost", "true")}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, vol)
+
+				// Only the real, locked volume should be persisted.
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				cached := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, cached)
+				assert.Equal(t, "true", cached.Config.SnapshotDir)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.UpdateVolume(testCtx, tt.volumeName, tt.updateInfo)
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+
+			if tt.verifyState != nil {
+				tt.verifyState(t)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
 func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name            string
