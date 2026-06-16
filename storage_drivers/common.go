@@ -252,7 +252,7 @@ func CalculateVolumeSizeBytes(
 
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
 func Clone(ctx context.Context, source, destination interface{}) {
-	if reflect.TypeOf(destination).Kind() != reflect.Ptr {
+	if reflect.TypeOf(destination).Kind() != reflect.Pointer {
 		Logc(ctx).Error("storage_drivers.Clone, destination parameter must be a pointer")
 	}
 

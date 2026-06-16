@@ -6,12 +6,12 @@
 //	mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_node_helpers/mock_node_helpers.go github.com/netapp/trident/frontend/csi/node_helpers NodeHelper,VolumePublishManager,VolumeStatsManager
 //
 
-// Package mock_node_helpers is a generated GoMock package.
-package mock_node_helpers
+// Package mock_nodehelpers is a generated GoMock package.
+package mock_nodehelpers
 
 import (
 	context "context"
-	fs "io/fs"
+	os "os"
 	reflect "reflect"
 
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
@@ -23,6 +23,7 @@ import (
 type MockNodeHelper struct {
 	ctrl     *gomock.Controller
 	recorder *MockNodeHelperMockRecorder
+	isgomock struct{}
 }
 
 // MockNodeHelperMockRecorder is the mock recorder for MockNodeHelper.
@@ -43,21 +44,21 @@ func (m *MockNodeHelper) EXPECT() *MockNodeHelperMockRecorder {
 }
 
 // AddPublishedPath mocks base method.
-func (m *MockNodeHelper) AddPublishedPath(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockNodeHelper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPublishedPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "AddPublishedPath", ctx, volumeID, pathToAdd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddPublishedPath indicates an expected call of AddPublishedPath.
-func (mr *MockNodeHelperMockRecorder) AddPublishedPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) AddPublishedPath(ctx, volumeID, pathToAdd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).AddPublishedPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).AddPublishedPath), ctx, volumeID, pathToAdd)
 }
 
 // DeleteFailedUpgradeTrackingFile mocks base method.
-func (m *MockNodeHelper) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 fs.FileInfo) {
+func (m *MockNodeHelper) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 os.FileInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DeleteFailedUpgradeTrackingFile", arg0, arg1)
 }
@@ -83,55 +84,55 @@ func (mr *MockNodeHelperMockRecorder) DeleteTrackingInfo(arg0, arg1 any) *gomock
 }
 
 // GetBlockDeviceStatsByID mocks base method.
-func (m *MockNodeHelper) GetBlockDeviceStatsByID(arg0 context.Context, arg1 string, arg2 *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
+func (m *MockNodeHelper) GetBlockDeviceStatsByID(ctx context.Context, volumeID string, trackingInfo *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBlockDeviceStatsByID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetBlockDeviceStatsByID", ctx, volumeID, trackingInfo)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBlockDeviceStatsByID indicates an expected call of GetBlockDeviceStatsByID.
-func (mr *MockNodeHelperMockRecorder) GetBlockDeviceStatsByID(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) GetBlockDeviceStatsByID(ctx, volumeID, trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockDeviceStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetBlockDeviceStatsByID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockDeviceStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetBlockDeviceStatsByID), ctx, volumeID, trackingInfo)
 }
 
 // GetFilesystemStatsByID mocks base method.
-func (m *MockNodeHelper) GetFilesystemStatsByID(arg0 context.Context, arg1 string) (*nodehelpers.VolumeStats, error) {
+func (m *MockNodeHelper) GetFilesystemStatsByID(ctx context.Context, volumePath string) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilesystemStatsByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetFilesystemStatsByID", ctx, volumePath)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilesystemStatsByID indicates an expected call of GetFilesystemStatsByID.
-func (mr *MockNodeHelperMockRecorder) GetFilesystemStatsByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) GetFilesystemStatsByID(ctx, volumePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetFilesystemStatsByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetFilesystemStatsByID), ctx, volumePath)
 }
 
 // GetVolumeStatsByID mocks base method.
-func (m *MockNodeHelper) GetVolumeStatsByID(arg0 context.Context, arg1 string) (*nodehelpers.VolumeStats, error) {
+func (m *MockNodeHelper) GetVolumeStatsByID(ctx context.Context, volumeID string) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeStatsByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeStatsByID", ctx, volumeID)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeStatsByID indicates an expected call of GetVolumeStatsByID.
-func (mr *MockNodeHelperMockRecorder) GetVolumeStatsByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) GetVolumeStatsByID(ctx, volumeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetVolumeStatsByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeStatsByID", reflect.TypeOf((*MockNodeHelper)(nil).GetVolumeStatsByID), ctx, volumeID)
 }
 
 // GetVolumeTrackingFiles mocks base method.
-func (m *MockNodeHelper) GetVolumeTrackingFiles() ([]fs.FileInfo, error) {
+func (m *MockNodeHelper) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumeTrackingFiles")
-	ret0, _ := ret[0].([]fs.FileInfo)
+	ret0, _ := ret[0].([]os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -143,17 +144,17 @@ func (mr *MockNodeHelperMockRecorder) GetVolumeTrackingFiles() *gomock.Call {
 }
 
 // IsRawBlockVolume mocks base method.
-func (m *MockNodeHelper) IsRawBlockVolume(arg0 *models.VolumeTrackingInfo) bool {
+func (m *MockNodeHelper) IsRawBlockVolume(trackingInfo *models.VolumeTrackingInfo) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsRawBlockVolume", arg0)
+	ret := m.ctrl.Call(m, "IsRawBlockVolume", trackingInfo)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsRawBlockVolume indicates an expected call of IsRawBlockVolume.
-func (mr *MockNodeHelperMockRecorder) IsRawBlockVolume(arg0 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) IsRawBlockVolume(trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRawBlockVolume", reflect.TypeOf((*MockNodeHelper)(nil).IsRawBlockVolume), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRawBlockVolume", reflect.TypeOf((*MockNodeHelper)(nil).IsRawBlockVolume), trackingInfo)
 }
 
 // ListVolumeTrackingInfo mocks base method.
@@ -187,17 +188,17 @@ func (mr *MockNodeHelperMockRecorder) ReadTrackingInfo(arg0, arg1 any) *gomock.C
 }
 
 // RemovePublishedPath mocks base method.
-func (m *MockNodeHelper) RemovePublishedPath(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockNodeHelper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemovePublishedPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RemovePublishedPath", ctx, volumeID, pathToRemove)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemovePublishedPath indicates an expected call of RemovePublishedPath.
-func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(ctx, volumeID, pathToRemove any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).RemovePublishedPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).RemovePublishedPath), ctx, volumeID, pathToRemove)
 }
 
 // UpgradeVolumeTrackingFile mocks base method.
@@ -231,17 +232,17 @@ func (mr *MockNodeHelperMockRecorder) ValidateTrackingFile(arg0, arg1 any) *gomo
 }
 
 // VerifyVolumePath mocks base method.
-func (m *MockNodeHelper) VerifyVolumePath(arg0 context.Context, arg1 string) error {
+func (m *MockNodeHelper) VerifyVolumePath(ctx context.Context, volumePath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyVolumePath", arg0, arg1)
+	ret := m.ctrl.Call(m, "VerifyVolumePath", ctx, volumePath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VerifyVolumePath indicates an expected call of VerifyVolumePath.
-func (mr *MockNodeHelperMockRecorder) VerifyVolumePath(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) VerifyVolumePath(ctx, volumePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyVolumePath", reflect.TypeOf((*MockNodeHelper)(nil).VerifyVolumePath), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyVolumePath", reflect.TypeOf((*MockNodeHelper)(nil).VerifyVolumePath), ctx, volumePath)
 }
 
 // WriteTrackingInfo mocks base method.
@@ -262,6 +263,7 @@ func (mr *MockNodeHelperMockRecorder) WriteTrackingInfo(arg0, arg1, arg2 any) *g
 type MockVolumePublishManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockVolumePublishManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockVolumePublishManagerMockRecorder is the mock recorder for MockVolumePublishManager.
@@ -282,7 +284,7 @@ func (m *MockVolumePublishManager) EXPECT() *MockVolumePublishManagerMockRecorde
 }
 
 // DeleteFailedUpgradeTrackingFile mocks base method.
-func (m *MockVolumePublishManager) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 fs.FileInfo) {
+func (m *MockVolumePublishManager) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 os.FileInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DeleteFailedUpgradeTrackingFile", arg0, arg1)
 }
@@ -308,10 +310,10 @@ func (mr *MockVolumePublishManagerMockRecorder) DeleteTrackingInfo(arg0, arg1 an
 }
 
 // GetVolumeTrackingFiles mocks base method.
-func (m *MockVolumePublishManager) GetVolumeTrackingFiles() ([]fs.FileInfo, error) {
+func (m *MockVolumePublishManager) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumeTrackingFiles")
-	ret0, _ := ret[0].([]fs.FileInfo)
+	ret0, _ := ret[0].([]os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -400,6 +402,7 @@ func (mr *MockVolumePublishManagerMockRecorder) WriteTrackingInfo(arg0, arg1, ar
 type MockVolumeStatsManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockVolumeStatsManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockVolumeStatsManagerMockRecorder is the mock recorder for MockVolumeStatsManager.
@@ -420,74 +423,74 @@ func (m *MockVolumeStatsManager) EXPECT() *MockVolumeStatsManagerMockRecorder {
 }
 
 // GetBlockDeviceStatsByID mocks base method.
-func (m *MockVolumeStatsManager) GetBlockDeviceStatsByID(arg0 context.Context, arg1 string, arg2 *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
+func (m *MockVolumeStatsManager) GetBlockDeviceStatsByID(ctx context.Context, volumeID string, trackingInfo *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBlockDeviceStatsByID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetBlockDeviceStatsByID", ctx, volumeID, trackingInfo)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBlockDeviceStatsByID indicates an expected call of GetBlockDeviceStatsByID.
-func (mr *MockVolumeStatsManagerMockRecorder) GetBlockDeviceStatsByID(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockVolumeStatsManagerMockRecorder) GetBlockDeviceStatsByID(ctx, volumeID, trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockDeviceStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetBlockDeviceStatsByID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockDeviceStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetBlockDeviceStatsByID), ctx, volumeID, trackingInfo)
 }
 
 // GetFilesystemStatsByID mocks base method.
-func (m *MockVolumeStatsManager) GetFilesystemStatsByID(arg0 context.Context, arg1 string) (*nodehelpers.VolumeStats, error) {
+func (m *MockVolumeStatsManager) GetFilesystemStatsByID(ctx context.Context, volumePath string) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilesystemStatsByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetFilesystemStatsByID", ctx, volumePath)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilesystemStatsByID indicates an expected call of GetFilesystemStatsByID.
-func (mr *MockVolumeStatsManagerMockRecorder) GetFilesystemStatsByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockVolumeStatsManagerMockRecorder) GetFilesystemStatsByID(ctx, volumePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetFilesystemStatsByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetFilesystemStatsByID), ctx, volumePath)
 }
 
 // GetVolumeStatsByID mocks base method.
-func (m *MockVolumeStatsManager) GetVolumeStatsByID(arg0 context.Context, arg1 string) (*nodehelpers.VolumeStats, error) {
+func (m *MockVolumeStatsManager) GetVolumeStatsByID(ctx context.Context, volumeID string) (*nodehelpers.VolumeStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeStatsByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeStatsByID", ctx, volumeID)
 	ret0, _ := ret[0].(*nodehelpers.VolumeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeStatsByID indicates an expected call of GetVolumeStatsByID.
-func (mr *MockVolumeStatsManagerMockRecorder) GetVolumeStatsByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockVolumeStatsManagerMockRecorder) GetVolumeStatsByID(ctx, volumeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetVolumeStatsByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeStatsByID", reflect.TypeOf((*MockVolumeStatsManager)(nil).GetVolumeStatsByID), ctx, volumeID)
 }
 
 // IsRawBlockVolume mocks base method.
-func (m *MockVolumeStatsManager) IsRawBlockVolume(arg0 *models.VolumeTrackingInfo) bool {
+func (m *MockVolumeStatsManager) IsRawBlockVolume(trackingInfo *models.VolumeTrackingInfo) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsRawBlockVolume", arg0)
+	ret := m.ctrl.Call(m, "IsRawBlockVolume", trackingInfo)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsRawBlockVolume indicates an expected call of IsRawBlockVolume.
-func (mr *MockVolumeStatsManagerMockRecorder) IsRawBlockVolume(arg0 any) *gomock.Call {
+func (mr *MockVolumeStatsManagerMockRecorder) IsRawBlockVolume(trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRawBlockVolume", reflect.TypeOf((*MockVolumeStatsManager)(nil).IsRawBlockVolume), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRawBlockVolume", reflect.TypeOf((*MockVolumeStatsManager)(nil).IsRawBlockVolume), trackingInfo)
 }
 
 // VerifyVolumePath mocks base method.
-func (m *MockVolumeStatsManager) VerifyVolumePath(arg0 context.Context, arg1 string) error {
+func (m *MockVolumeStatsManager) VerifyVolumePath(ctx context.Context, volumePath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyVolumePath", arg0, arg1)
+	ret := m.ctrl.Call(m, "VerifyVolumePath", ctx, volumePath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VerifyVolumePath indicates an expected call of VerifyVolumePath.
-func (mr *MockVolumeStatsManagerMockRecorder) VerifyVolumePath(arg0, arg1 any) *gomock.Call {
+func (mr *MockVolumeStatsManagerMockRecorder) VerifyVolumePath(ctx, volumePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyVolumePath", reflect.TypeOf((*MockVolumeStatsManager)(nil).VerifyVolumePath), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyVolumePath", reflect.TypeOf((*MockVolumeStatsManager)(nil).VerifyVolumePath), ctx, volumePath)
 }

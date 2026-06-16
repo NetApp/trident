@@ -435,6 +435,20 @@ func NewGcnvRestClientFromOntapConfig(
 	return apiREST, nil
 }
 
+// Indicate the minimum Ontap version for each feature here (non-API specific)
+var restFeaturesByVersion = map[Feature]*versionutils.Version{
+	MinimumONTAPIVersion:      versionutils.MustParseSemantic("9.5.0"),
+	NetAppFlexGroups:          versionutils.MustParseSemantic("9.2.0"),
+	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("9.7.0"),
+	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("9.2.0"),
+	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("9.5.0"),
+	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
+	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
+	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
+	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
+	BalancedPlacement:         versionutils.MustParseSemantic("9.19.1"),
+}
+
 var (
 	MinimumONTAPVersion                             = versionutils.MustParseSemantic("9.12.1")
 	MinimumONTAPVersionDefault                      = versionutils.MustParseSemantic("9.15.1")
@@ -480,7 +494,7 @@ func (c *RestClient) SupportsFeature(ctx context.Context, feature Feature) bool 
 		return false
 	}
 
-	if minVersion, ok := featuresByVersion[feature]; ok {
+	if minVersion, ok := restFeaturesByVersion[feature]; ok {
 		return ontapSemVer.AtLeast(minVersion)
 	} else {
 		return false
@@ -592,7 +606,7 @@ func HasNextLink(restResult interface{}) (result bool) {
 		return false // we were passed a nil
 	}
 	val := reflect.ValueOf(restResult)
-	if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+	if reflect.TypeOf(restResult).Kind() == reflect.Pointer {
 		// handle being passed either a pointer
 		val = reflect.Indirect(val)
 	}
@@ -601,7 +615,7 @@ func HasNextLink(restResult interface{}) (result bool) {
 	if testLinks := val.FieldByName("Links"); testLinks.IsValid() {
 		restResult = testLinks.Interface()
 		val = reflect.ValueOf(restResult)
-		if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+		if reflect.TypeOf(restResult).Kind() == reflect.Pointer {
 			val = reflect.Indirect(val)
 		}
 	} else {
@@ -612,7 +626,7 @@ func HasNextLink(restResult interface{}) (result bool) {
 	if testNext := val.FieldByName("Next"); testNext.IsValid() {
 		restResult = testNext.Interface()
 		val = reflect.ValueOf(restResult)
-		if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+		if reflect.TypeOf(restResult).Kind() == reflect.Pointer {
 			val = reflect.Indirect(val)
 		}
 
@@ -1030,6 +1044,88 @@ func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, styl
 	return c.PollJobStatus(ctx, jobLink)
 }
 
+func (c *RestClient) modifyVolumeByNameAndStyle(ctx context.Context, volume Volume, style string) error {
+	fields := []string{
+		"comment",
+		"encryption.enabled",
+		"snapshot_directory_access_enabled",
+		"space.snapshot.reserve_percent",
+		"guarantee.type",
+	}
+	extantVolume, err := c.getVolumeByNameAndStyle(ctx, volume.Name, style, fields)
+	if err != nil {
+		return err
+	}
+	if extantVolume == nil {
+		return fmt.Errorf("could not find volume with name %v", volume.Name)
+	}
+	if extantVolume.UUID == nil {
+		return fmt.Errorf("could not find volume uuid with name %v", volume.Name)
+	}
+
+	uuid := *extantVolume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = uuid
+
+	volumeInfo := &models.Volume{}
+
+	// Handle changed comment
+	extantComment := ""
+	if extantVolume.Comment != nil {
+		extantComment = *extantVolume.Comment
+	}
+	if volume.Comment != extantComment {
+		volumeInfo.Comment = convert.ToPtr(volume.Comment)
+	}
+
+	// Handle changed encryption (can only change from false to true)
+	extantEncrypt := false
+	if extantVolume.Encryption != nil && extantVolume.Encryption.Enabled != nil {
+		extantEncrypt = *extantVolume.Encryption.Enabled
+	}
+	if volume.Encrypt != nil && *volume.Encrypt && *volume.Encrypt != extantEncrypt {
+		volumeInfo.Encryption = &models.VolumeInlineEncryption{Enabled: volume.Encrypt}
+	}
+
+	// Handle changed snapshot reserve
+	extantSnapshotReserve := NumericalValueNotSet
+	if extantVolume.Space != nil && extantVolume.Space.Snapshot != nil && extantVolume.Space.Snapshot.ReservePercent != nil {
+		extantSnapshotReserve = int(*extantVolume.Space.Snapshot.ReservePercent)
+	}
+	if volume.SnapshotReserve != NumericalValueNotSet && volume.SnapshotReserve != extantSnapshotReserve {
+		volumeInfo.Space = &models.VolumeInlineSpace{
+			Snapshot: &models.VolumeInlineSpaceInlineSnapshot{
+				ReservePercent: convert.ToPtr(int64(volume.SnapshotReserve)),
+			},
+		}
+	}
+
+	// Handle changed space reserve
+	extantSpaceReserve := ""
+	if extantVolume.Guarantee != nil && extantVolume.Guarantee.Type != nil {
+		extantSpaceReserve = *extantVolume.Guarantee.Type
+	}
+	if volume.SpaceReserve != "" && volume.SpaceReserve != extantSpaceReserve {
+		volumeInfo.Guarantee = &models.VolumeInlineGuarantee{Type: convert.ToPtr(volume.SpaceReserve)}
+	}
+
+	params.SetInfo(volumeInfo)
+
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
 func (c *RestClient) modifyVolumeExportPolicyByNameAndStyle(
 	ctx context.Context, volumeName, exportPolicyName, style string,
 ) error {
@@ -1440,7 +1536,14 @@ func (c *RestClient) createVolumeByStyle(
 
 	volumeInfoAggregates := ToSliceVolumeAggregatesItems(aggrs)
 	if len(volumeInfoAggregates) > 0 {
+		// Only set aggregates if they were specified
 		volumeInfo.VolumeInlineAggregates = volumeInfoAggregates
+
+		// If specifying aggregates for a Flexgroup, also set the number of constituents per aggregate
+		if style == models.VolumeStyleFlexgroup {
+			constituentsPerAggregate := int64(defaultConstituentsPerAggregate)
+			volumeInfo.ConstituentsPerAggregate = convert.ToPtr(constituentsPerAggregate)
+		}
 	}
 
 	if snapshotReserve != NumericalValueNotSet {
@@ -1453,9 +1556,9 @@ func (c *RestClient) createVolumeByStyle(
 
 	volumeInfo.Svm = &models.VolumeInlineSvm{UUID: new(c.svmUUID)}
 
-	// For encrypt == nil - we don't explicitely set the encrypt argument.
+	// For encrypt == nil - we don't explicitly set the encrypt argument.
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
-	// else it will be volume encrypted as per Ontap's default behaviour.
+	// else it will be volume encrypted as per ONTAP's default behaviour.
 	if encrypt != nil {
 		volumeInfo.Encryption = &models.VolumeInlineEncryption{Enabled: encrypt}
 	}
@@ -1507,6 +1610,135 @@ func (c *RestClient) createVolumeByStyle(
 	// Sample REST error: API State: failure, Message: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 917534
 
 	jobLink := getGenericJobLinkFromVolumeJobLink(volumeCreateAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
+		apiError, message, code := ExtractError(pollErr)
+		if apiError == "failure" && code == FLEXGROUP_VOLUME_SIZE_ERROR_REST {
+			return errors.InvalidInputError(message)
+		}
+		return pollErr
+	}
+
+	switch style {
+	case models.VolumeStyleFlexgroup:
+		return c.waitForFlexgroup(ctx, name)
+	default:
+		return c.waitForVolume(ctx, name)
+	}
+}
+
+func (c *RestClient) createApplicationContainerByStyle(
+	ctx context.Context, name string, sizeInBytes int64, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+	snapshotReserve int, dpVolume bool, style string,
+) error {
+	params := application.NewContainerCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	volumeInfo := &models.ContainerInlineVolumesInlineArrayItem{
+		Comment:           convert.ToPtr(comment),
+		ExcludeAggregates: make([]*models.ContainerVolumesItems0ExcludeAggregatesItems0, 0),
+		Guarantee:         &models.ContainerInlineVolumesInlineArrayItemInlineGuarantee{Type: convert.ToPtr(spaceReserve)},
+		Name:              convert.ToPtr(name),
+		Space:             &models.ContainerInlineVolumesInlineArrayItemInlineSpace{Size: convert.ToPtr(sizeInBytes)},
+	}
+
+	// For encrypt == nil - we don't explicitly set the encrypt argument.
+	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
+	// else it will be volume encrypted as per ONTAP's default behaviour.
+	if encrypt != nil {
+		volumeInfo.Encryption = &models.ContainerInlineVolumesInlineArrayItemInlineEncryption{Enabled: encrypt}
+	}
+
+	if tieringPolicy != "" {
+		volumeInfo.Tiering = &models.ContainerInlineVolumesInlineArrayItemInlineTiering{
+			Policy:       convert.ToPtr(tieringPolicy),
+			ObjectStores: make([]*models.ContainerVolumesItems0TieringObjectStoresItems0, 0),
+		}
+	}
+
+	if snapshotReserve != NumericalValueNotSet {
+		volumeInfo.Space.Snapshot = &models.ContainerInlineVolumesInlineArrayItemInlineSpaceInlineSnapshot{
+			ReservePercent: convert.ToPtr(int64(snapshotReserve)),
+		}
+	}
+
+	if dpVolume {
+		volumeInfo.Type = convert.ToPtr("dp")
+	} else {
+		volumeInfo.Type = convert.ToPtr("rw")
+	}
+
+	// Handle NAS options
+	nas := &models.ContainerInlineVolumesInlineArrayItemInlineNas{}
+	haveNAS := false
+
+	if securityStyle != "" {
+		nas.SecurityStyle = convert.ToPtr(securityStyle)
+		haveNAS = true
+	}
+	if exportPolicy != "" {
+		nas.ExportPolicy = &models.ContainerInlineVolumesInlineArrayItemInlineNasInlineExportPolicy{
+			Name: &exportPolicy,
+		}
+		haveNAS = true
+	}
+	if unixPermissions != "" {
+		unixPermissions = convertUnixPermissions(unixPermissions)
+		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		if parseErr != nil {
+			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+		}
+		nas.UnixPermissions = &volumePermissions
+		haveNAS = true
+	}
+
+	if haveNAS {
+		volumeInfo.Nas = nas
+	}
+
+	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
+		if qosPolicyGroup.Name != "" {
+			volumeInfo.Qos = &models.ContainerInlineVolumesInlineArrayItemInlineQos{
+				Policy: &models.ContainerInlineVolumesInlineArrayItemInlineQosInlinePolicy{
+					Name: convert.ToPtr(qosPolicyGroup.Name),
+				},
+			}
+		}
+	}
+
+	if snapshotPolicy != "" {
+		volumeInfo.SnapshotPolicy = &models.ContainerInlineVolumesInlineArrayItemInlineSnapshotPolicy{
+			Name: convert.ToPtr(snapshotPolicy),
+		}
+	}
+
+	switch style {
+	case models.VolumeStyleFlexgroup:
+		volumeInfo.ScaleOut = convert.ToPtr(true)
+	default:
+		volumeInfo.ScaleOut = convert.ToPtr(false)
+	}
+
+	containerInfo := &models.Container{
+		ContainerInlineVolumes: []*models.ContainerInlineVolumesInlineArrayItem{volumeInfo},
+		Svm:                    &models.ContainerInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
+	}
+
+	params.Info = containerInfo
+
+	_, containerCreateAccepted, err := c.api.Application.ContainerCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if containerCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from container create")
+	}
+
+	// Sample ZAPI error: API status: failed, Reason: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 13115
+	// Sample REST error: API State: failure, Message: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 917534
+
+	jobLink := getGenericJobLinkFromContainerJobLink(containerCreateAccepted.Payload)
 	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
 		apiError, message, code := ExtractError(pollErr)
 		if apiError == "failure" && code == FLEXGROUP_VOLUME_SIZE_ERROR_REST {
@@ -1684,12 +1916,42 @@ func (c *RestClient) VolumeCreate(
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
 ) error {
-	sizeBytesStr, _ := capacity.ToBytes(size)
-	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
+	sizeBytesStr, err := capacity.ToBytes(size)
+	if err != nil {
+		return err
+	}
+	sizeInBytes, err := strconv.ParseInt(sizeBytesStr, 10, 64)
+	if err != nil {
+		return err
+	}
 
 	return c.createVolumeByStyle(ctx, name, sizeInBytes, []string{aggregateName}, spaceReserve, snapshotPolicy,
 		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
 		models.VolumeStyleFlexvol, dpVolume)
+}
+
+func (c *RestClient) VolumeCreateBalanced(
+	ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+	snapshotReserve int, dpVolume bool,
+) error {
+	sizeBytesStr, err := capacity.ToBytes(size)
+	if err != nil {
+		return err
+	}
+	sizeInBytes, err := strconv.ParseInt(sizeBytesStr, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return c.createApplicationContainerByStyle(ctx, name, sizeInBytes, spaceReserve, snapshotPolicy,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		snapshotReserve, dpVolume, models.VolumeStyleFlexvol)
+}
+
+// VolumeModify modifies a few select Flexvol attributes
+func (c *RestClient) VolumeModify(ctx context.Context, volume Volume) error {
+	return c.modifyVolumeByNameAndStyle(ctx, volume, models.VolumeStyleFlexvol)
 }
 
 // VolumeExists tests for the existence of a flexvol
@@ -1941,8 +2203,7 @@ func (c *RestClient) ConsistencyGroupCreate(
 			Name: new(vol),
 		}
 		v.ProvisioningOptions = &models.ConsistencyGroupInlineVolumesInlineArrayItemInlineProvisioningOptions{
-			Action: new(models.
-				ConsistencyGroupInlineVolumesInlineArrayItemInlineProvisioningOptionsActionAdd),
+			Action: new(models.ConsistencyGroupInlineVolumesInlineArrayItemInlineProvisioningOptionsActionAdd),
 		}
 
 		volumes = append(volumes, v)
@@ -3790,6 +4051,14 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 	}
 }
 
+func getGenericJobLinkFromContainerJobLink(volJobLink *models.ContainerJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if volJobLink != nil {
+		jobLink.Job = volJobLink.Job
+	}
+	return jobLink
+}
+
 func getGenericJobLinkFromVolumeJobLink(volJobLink *models.VolumeJobLinkResponse) *models.JobLinkResponse {
 	jobLink := &models.JobLinkResponse{}
 	if volJobLink != nil {
@@ -4015,7 +4284,7 @@ func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOu
 	}
 
 	val := reflect.ValueOf(restResult)
-	if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+	if reflect.TypeOf(restResult).Kind() == reflect.Pointer {
 		// handle being passed a pointer
 		val = reflect.Indirect(val)
 		if !val.IsValid() {
@@ -4027,7 +4296,7 @@ func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOu
 	if testPayload := val.FieldByName("Payload"); testPayload.IsValid() {
 		restResult = testPayload.Interface()
 		val = reflect.ValueOf(restResult)
-		if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+		if reflect.TypeOf(restResult).Kind() == reflect.Pointer {
 			val = reflect.Indirect(val)
 			if !val.IsValid() {
 				return fmt.Errorf("result payload was nil")
@@ -4057,7 +4326,7 @@ func ExtractErrorResponse(ctx context.Context, restError interface{}) (errorResp
 	}
 
 	val := reflect.ValueOf(restError)
-	if reflect.TypeOf(restError).Kind() == reflect.Ptr {
+	if reflect.TypeOf(restError).Kind() == reflect.Pointer {
 		// handle being passed a pointer
 		val = reflect.Indirect(val)
 		if !val.IsValid() {
@@ -4096,7 +4365,7 @@ func ExtractError(errResponse error) (string, string, string) {
 }
 
 func getType(i interface{}) string {
-	if t := reflect.TypeOf(i); t.Kind() == reflect.Ptr {
+	if t := reflect.TypeOf(i); t.Kind() == reflect.Pointer {
 		return "*" + t.Elem().Name()
 	} else {
 		return t.Name()
@@ -4707,6 +4976,21 @@ func (c *RestClient) FlexGroupCreate(
 	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
 		models.VolumeStyleFlexgroup, false)
+}
+
+func (c *RestClient) FlexGroupCreateBalanced(
+	ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+	snapshotReserve int,
+) error {
+	return c.createApplicationContainerByStyle(ctx, name, int64(size), spaceReserve, snapshotPolicy,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		snapshotReserve, false /*dpVolume*/, models.VolumeStyleFlexgroup)
+}
+
+// FlexgroupModify modifies a few select Flexgroup attributes
+func (c *RestClient) FlexgroupModify(ctx context.Context, volume Volume) error {
+	return c.modifyVolumeByNameAndStyle(ctx, volume, models.VolumeStyleFlexgroup)
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone

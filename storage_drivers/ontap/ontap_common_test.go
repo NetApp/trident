@@ -41,11 +41,6 @@ import (
 	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
-// ToIPAddressPointer takes a models.IPAddress and returns a pointer
-// func ToIPAddressPointer(ipAddress models.IPAddress) *models.IPAddress {
-// 	return &ipAddress
-// }
-
 func NewAPIResponse(
 	_, _, status, reason, errno string,
 ) *api.APIResponse {
@@ -56,6 +51,44 @@ var (
 	APIResponsePassed = NewAPIResponse("client", "version", "passed", "reason", "errno")
 	APIResponseFailed = NewAPIResponse("client", "version", "failed", "reason", "errno")
 )
+
+func getManagedPool(backend storage.Backend) storage.Pool {
+	managedPool := storage.NewStoragePool(nil, managedStoragePoolName)
+	managedPool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	managedPool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	managedPool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	managedPool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	managedPool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	managedPool.InternalAttributes()[Aggregates] = ""
+	managedPool.InternalAttributes()[SpaceReserve] = "none"
+	managedPool.InternalAttributes()[SnapshotPolicy] = "none"
+	managedPool.InternalAttributes()[SnapshotReserve] = "10"
+	managedPool.InternalAttributes()[Size] = "10000000000"
+	managedPool.InternalAttributes()[SplitOnClone] = "false"
+	managedPool.InternalAttributes()[SpaceAllocation] = "true"
+	managedPool.InternalAttributes()[FileSystemType] = "ext4"
+	managedPool.InternalAttributes()[Encryption] = "true"
+	managedPool.InternalAttributes()[SnapshotDir] = "true"
+	managedPool.InternalAttributes()[UnixPermissions] = "0777"
+	managedPool.InternalAttributes()[SecurityStyle] = "unix"
+	managedPool.InternalAttributes()[ExportPolicy] = "default"
+	managedPool.InternalAttributes()[TieringPolicy] = ""
+	managedPool.InternalAttributes()[SkipRecoveryQueue] = "false"
+	managedPool.InternalAttributes()[LUKSEncryption] = "false"
+	managedPool.InternalAttributes()[BalancedPlacement] = "false"
+	managedPool.SetBackend(backend)
+	return managedPool
+}
+
+func getASAManagedPool(backend storage.Backend) storage.Pool {
+	managedPool := getManagedPool(backend)
+	delete(managedPool.InternalAttributes(), SnapshotReserve)
+	delete(managedPool.InternalAttributes(), SnapshotDir)
+	delete(managedPool.InternalAttributes(), UnixPermissions)
+	delete(managedPool.InternalAttributes(), SecurityStyle)
+	delete(managedPool.InternalAttributes(), ExportPolicy)
+	return managedPool
+}
 
 func TestApiGetError(t *testing.T) {
 	ctx := context.Background()
@@ -687,6 +720,15 @@ func newMockOntapAPI(t *testing.T) *mock_ontap.MockOntapAPI {
 	return mockOntapAPI
 }
 
+func newMockOntapAPIWithFlags(t *testing.T, rest, disaggregated, sanOptimized bool) *mock_ontap.MockOntapAPI {
+	mockCtrl := gomock.NewController(t)
+	mockOntapAPI := mock_ontap.NewMockOntapAPI(mockCtrl)
+	mockOntapAPI.EXPECT().IsREST().Return(rest).AnyTimes()
+	mockOntapAPI.EXPECT().IsDisaggregated().Return(disaggregated).AnyTimes()
+	mockOntapAPI.EXPECT().IsSANOptimized().Return(sanOptimized).AnyTimes()
+	return mockOntapAPI
+}
+
 func TestCheckAggregateLimits(t *testing.T) {
 	ctx := context.Background()
 
@@ -710,6 +752,13 @@ func TestCheckAggregateLimits(t *testing.T) {
 
 	err := checkAggregateLimits(ctx, aggr, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
 	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  nil result for managed pool
+	mockOntapAPI = newMockOntapAPI(t)
+
+	err = checkAggregateLimits(ctx, managedStoragePoolName, spaceReserve, uint64(requestedSizeInt), ontapConfig, mockOntapAPI)
+	assert.Nil(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case:  empty result
@@ -885,6 +934,7 @@ func getValidOntapNASPool() *storage.StoragePool {
 			SkipRecoveryQueue: "false",
 			Size:              "1Gi",
 			NameTemplate:      "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+			BalancedPlacement: "false",
 		},
 	)
 	return pool
@@ -913,6 +963,7 @@ func getValidOntapSANPool() *storage.StoragePool {
 			Size:              "1Gi",
 			SpaceAllocation:   "true",
 			FileSystemType:    "ext4",
+			BalancedPlacement: "false",
 		},
 	)
 	return pool
@@ -949,23 +1000,35 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
+	nasDriverFactory := func(rest, disaggregated, sanOptimized, balancedPlacement bool) *NASStorageDriver {
+		storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+			tridentconfig.DriverContext("CSI"), rest, nil)
+		storageDriver.managedPool.InternalAttributes()[BalancedPlacement] = strconv.FormatBool(balancedPlacement)
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		storageDriver.API = mockAPI
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(disaggregated)
+		mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(sanOptimized)
+		mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(balancedPlacement).AnyTimes()
+		return storageDriver
+	}
+
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test no pools, ontap NAS
-	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver := nasDriverFactory(false, false, false, false)
 	physicalPools := map[string]storage.Pool{}
 	virtualPools := map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 1)
+	err := ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 1)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test one valid virtual pool with NASType = NFS
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -973,14 +1036,14 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.Config.NASType = sa.NFS
 	storageDriver.virtualPools["test"].InternalAttributes()[SecurityStyle] = "mixed"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test one valid virtual pool with NASType = SMB
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -988,14 +1051,17 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.Config.NASType = sa.SMB
 	storageDriver.virtualPools["test"].InternalAttributes()[SecurityStyle] = "mixed"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	smbManagedPool := getManagedPool(nil)
+	smbManagedPool.InternalAttributes()[SecurityStyle] = "mixed"
+	smbManagedPool.InternalAttributes()[BalancedPlacement] = "false"
+
+	err = ValidateStoragePools(context.Background(), smbManagedPool, physicalPools, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one valid virtual pool with invalid securityStyle
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1003,117 +1069,117 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.Config.NASType = sa.SMB
 	storageDriver.virtualPools["test"].InternalAttributes()[SecurityStyle] = "invalidValue"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test two valid virtual pools
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool(), "test2": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test with snapshotpolicy empty
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotPolicy] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test with Invalid value of Encryption
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Encryption] = "fakeValue"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test with empty snapshot dir
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotDir] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test Invalid value of snapshot dir
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotDir] = "fakeValue"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with invalid value for label in pool
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, -1)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, -1)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one valid virtual with Invalid value of SecurityStyle attribute
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SecurityStyle] = "fakeValue"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with empty Export Policy
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[ExportPolicy] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with Unix Permission empty
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	storageDriver.Config.NASType = sa.NFS
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1121,46 +1187,47 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[UnixPermissions] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with Invalid value of Tiering policy
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[TieringPolicy] = "fakePolicy"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with Invalid value ofskipRecoveryQueue
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = "asdf"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// Negative case: Test one valid virtual with empty value of skipRecoveryQueue
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -1170,8 +1237,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(false)
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	storageDriver.API = mockAPI
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1179,7 +1245,8 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[AdaptiveQosPolicy] = "fake"
 
-	err = ValidateStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -1191,8 +1258,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(true)
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	storageDriver.API = mockAPI
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1201,7 +1267,8 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools["test"].InternalAttributes()[QosPolicy] = "fake"
 	storageDriver.virtualPools["test"].InternalAttributes()[AdaptiveQosPolicy] = "fake"
 
-	err = ValidateStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -1219,60 +1286,60 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriverQtree.physicalPools = physicalPools
 	storageDriverQtree.virtualPools["test"].InternalAttributes()[AdaptiveQosPolicy] = "fake"
 
-	err = ValidateStoragePools(ctx, physicalPools, virtualPools, storageDriverQtree, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriverQtree, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test with media type set
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Media] = "hdd"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test with Invalid media type
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Media] = "fake"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test with less size of the pool
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Size] = "1000"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test with invalid value for size in pool
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1280,37 +1347,38 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools["test"].InternalAttributes()[Media] = "hdd"
 	storageDriver.virtualPools["test"].InternalAttributes()[Size] = "xyz"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test with invalid value for splitOnClone
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SplitOnClone] = "fake"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test with empty value for splitOnClone
 
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SplitOnClone] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -1328,7 +1396,8 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceAllocation] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriverSAN, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriverSAN, 0)
 
 	assert.Error(t, err)
 
@@ -1339,6 +1408,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
 	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
@@ -1346,7 +1416,8 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceAllocation] = "fake"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriverSAN, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriverSAN, 0)
 
 	assert.Error(t, err)
 
@@ -1364,7 +1435,8 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FileSystemType] = ""
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriverSAN, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriverSAN, 0)
 
 	assert.Error(t, err)
 	// // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1381,14 +1453,14 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FileSystemType] = "fake"
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriverSAN, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriverSAN, 0)
 
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Volume name template invalid, ontap NAS
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	pool1 := getValidOntapNASPool()
 	poolAttribute := pool1.InternalAttributes()
@@ -1401,14 +1473,14 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err, "template is invalid, expected an error")
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: label template invalid
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	storagePool := getValidOntapNASPool()
 
@@ -1424,13 +1496,14 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
+
 	assert.Error(t, err, "template is invalid, expected an error")
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Postive case: Name and label template valid
-	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false, nil)
+	storageDriver = nasDriverFactory(false, false, false, false)
 	physicalPools = map[string]storage.Pool{}
 	storagePool = getValidOntapNASPool()
 
@@ -1446,8 +1519,23 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
+
 	assert.NoError(t, err, "template is valid, expected no error")
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test with nil managed pool
+	storageDriver = nasDriverFactory(false, false, false, false)
+	storageDriver.managedPool = nil
+	virtualPools = map[string]storage.Pool{"test": pool1}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err, "managed pool is nil, expected an error")
 }
 
 func TestValidateStoragePools_LUKS(t *testing.T) {
@@ -1458,9 +1546,11 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	// Positive case: Test one virtual pool, LUKS and ONTAP-SAN allowed
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
+
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool := getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
@@ -1468,16 +1558,18 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	virtualPools := map[string]storage.Pool{"test": pool}
 	sanStorageDriver.virtualPools = virtualPools
 	sanStorageDriver.physicalPools = physicalPools
-	err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanStorageDriver, 0)
+	err := ValidateStoragePools(context.Background(), getManagedPool(nil), physicalPools, virtualPools, sanStorageDriver, 0)
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test one virtual pool, LUKS and ONTAP-SAN-Economy allowed
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
+
 	sanEcoStorageDriver := newTestOntapSanEcoDriver(t, vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
@@ -1485,29 +1577,39 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	virtualPools = map[string]storage.Pool{"test": pool}
 	sanEcoStorageDriver.virtualPools = virtualPools
 	sanEcoStorageDriver.physicalPools = physicalPools
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanEcoStorageDriver, 0)
+	err = ValidateStoragePools(context.Background(), getManagedPool(nil), physicalPools, virtualPools, sanEcoStorageDriver, 0)
 	assert.NoError(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one virtual pool, LUKS and NAS not allowed
+	mockCtrl = gomock.NewController(t)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
+
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
 		false, nil)
+	storageDriver.API = mockAPI
 	pool = getValidOntapNASPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": pool}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateStoragePools(context.Background(), getManagedPool(nil), physicalPools, virtualPools, storageDriver, 0)
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one virtual pool, LUKS and ONTAP-SAN allowed but invalid value
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
+
 	sanStorageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "invalid-not-a-bool"
@@ -1515,7 +1617,165 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	virtualPools = map[string]storage.Pool{"test": pool}
 	sanStorageDriver.virtualPools = virtualPools
 	sanStorageDriver.physicalPools = physicalPools
-	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanStorageDriver, 0)
+	err = ValidateStoragePools(context.Background(), getManagedPool(nil), physicalPools, virtualPools, sanStorageDriver, 0)
+	assert.Error(t, err)
+}
+
+func TestValidateStoragePools_BalancedPlacement(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	nasDriverFactory := func(
+		rest, disaggregated, sanOptimized, useBalancedPlacement, supportsBalancedPlacement bool,
+	) *NASStorageDriver {
+		storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+			tridentconfig.DriverContext("CSI"), rest, nil)
+		storageDriver.managedPool.InternalAttributes()[BalancedPlacement] = strconv.FormatBool(useBalancedPlacement)
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+		storageDriver.API = mockAPI
+		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+		mockAPI.EXPECT().IsREST().AnyTimes().Return(rest)
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(disaggregated)
+		mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(sanOptimized)
+		mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(supportsBalancedPlacement).AnyTimes()
+		return storageDriver
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: useBalancedPlacement = true, not AFX
+
+	storageDriver := nasDriverFactory(true, false, false, true, true)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err := ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, not supported
+
+	storageDriver = nasDriverFactory(true, true, false, true, false)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, not REST
+
+	storageDriver = nasDriverFactory(false, true, false, true, true)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, AFX, aggregates specified
+
+	storageDriver = nasDriverFactory(true, true, false, true, true)
+	storageDriver.managedPool.InternalAttributes()[Aggregates] = "aggr1"
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, AFX, flexgroup aggregates specified
+
+	storageDriver = nasDriverFactory(true, true, false, true, true)
+	storageDriver.Config.FlexGroupAggregateList = []string{"aggr1"}
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: useBalancedPlacement = true, AFX
+
+	storageDriver = nasDriverFactory(true, true, false, true, true)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: useBalancedPlacement = false, not AFX
+
+	storageDriver = nasDriverFactory(true, false, false, false, true)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = false, AFX
+
+	storageDriver = nasDriverFactory(true, true, false, false, true)
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, not AFX, aggregates specified
+
+	storageDriver = nasDriverFactory(true, false, false, true, true)
+	storageDriver.managedPool.InternalAttributes()[Aggregates] = "aggr1"
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, not AFX, flexgroup aggregates specified
+
+	storageDriver = nasDriverFactory(true, false, false, true, true)
+	storageDriver.Config.FlexGroupAggregateList = []string{"aggr1"}
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
+	assert.Error(t, err)
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: useBalancedPlacement = true, not AFX, invalid BP value
+
+	storageDriver = nasDriverFactory(true, false, false, true, true)
+	storageDriver.managedPool.InternalAttributes()[BalancedPlacement] = "invalid"
+	storageDriver.virtualPools = map[string]storage.Pool{}
+	storageDriver.physicalPools = map[string]storage.Pool{}
+
+	err = ValidateStoragePools(context.Background(), storageDriver.managedPool,
+		storageDriver.physicalPools, storageDriver.virtualPools, storageDriver, 1)
+
 	assert.Error(t, err)
 }
 
@@ -5711,7 +5971,7 @@ func TestFilterUnusedTridentIgroups(t *testing.T) {
 	}
 }
 
-func TestGetPoolsForCreate(t *testing.T) {
+func TestGetPoolsForCreate_ManagedPool(t *testing.T) {
 	ctx := context.Background()
 
 	volConfig := &storage.VolumeConfig{
@@ -5721,6 +5981,252 @@ func TestGetPoolsForCreate(t *testing.T) {
 	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool1.SetBackend(backend)
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{}
+	volAttributes := map[string]sa.Request{}
+
+	// Pass managedPool as the storagePool to trigger the managed pool early return
+	pools, err := getPoolsForCreate(ctx, volConfig, managedPool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(pools))
+	assert.Equal(t, managedPool.Name(), pools[0].Name(), "Expected managed pool to be returned")
+}
+
+func TestGetPoolsForCreate_PhysicalPools(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool1.SetBackend(backend)
+
+	pool2 := storage.NewStoragePool(nil, "dummyPool2")
+	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool2.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool2.SetBackend(backend)
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
+	virtualPools := map[string]storage.Pool{}
+	volAttributes := map[string]sa.Request{}
+
+	// Pass a physical pool as the storagePool to trigger the physical pool early return
+	pools, err := getPoolsForCreate(ctx, volConfig, pool1, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(pools))
+	assert.Equal(t, "dummyPool1", pools[0].Name(), "Expected physical pool to be returned")
+}
+
+func TestGetPoolsForCreate_VirtualPools(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	pool := storage.NewStoragePool(nil, "dummyPool")
+	pool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool.InternalAttributes()[Aggregates] = "dummyPool1"
+	pool.SetBackend(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool1.SetBackend(backend)
+
+	pool2 := storage.NewStoragePool(nil, "dummyPool2")
+	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool2.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool2.SetBackend(backend)
+
+	backend.ClearStoragePools()
+	for name, pool := range map[string]storage.Pool{"pool": pool, "pool1": pool1, "pool2": pool2} {
+		backend.StoragePools().Store(name, pool)
+	}
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
+	virtualPools := map[string]storage.Pool{"dummyPool": pool}
+	storagePool := pool
+	volAttributes := map[string]sa.Request{}
+
+	pools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(pools))
+	assert.Equal(t, "dummyPool1", pools[0].Name(), "Pool names do not match")
+}
+
+func TestGetPoolsForCreate_VirtualPoolMissing(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	// Create a storage pool that is neither in physicalPools nor virtualPools
+	unknownPool := storage.NewStoragePool(nil, "unknownPool")
+	unknownPool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	unknownPool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	unknownPool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	unknownPool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	unknownPool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	unknownPool.SetBackend(backend)
+
+	physicalPools := map[string]storage.Pool{}
+	virtualPools := map[string]storage.Pool{}
+	volAttributes := map[string]sa.Request{}
+
+	pools, err := getPoolsForCreate(ctx, volConfig, unknownPool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.Error(t, err)
+	assert.Nil(t, pools)
+	assert.Contains(t, err.Error(), "could not find pool")
+}
+
+func TestGetPoolsForCreate_BalancedPlacement(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	// Create a virtual pool with balanced placement enabled
+	vpool := storage.NewStoragePool(nil, "dummyVPool")
+	vpool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	vpool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	vpool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	vpool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	vpool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	vpool.InternalAttributes()[Aggregates] = "dummyPool1"
+	vpool.InternalAttributes()[BalancedPlacement] = "true"
+	vpool.SetBackend(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1"
+	pool1.SetBackend(backend)
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{"dummyVPool": vpool}
+	volAttributes := map[string]sa.Request{}
+
+	pools, err := getPoolsForCreate(ctx, volConfig, vpool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(pools))
+	assert.Equal(t, managedPool.Name(), pools[0].Name(), "Expected managed pool for balanced placement")
+}
+
+func TestGetPoolsForCreate_VirtualPools_NoPhysicalPools(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	vpool := storage.NewStoragePool(nil, "dummyVPool")
+	vpool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	vpool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	vpool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	vpool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	vpool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	vpool.InternalAttributes()[Aggregates] = ""
+	vpool.InternalAttributes()[BalancedPlacement] = "false"
+	vpool.SetBackend(backend)
+
+	physicalPools := map[string]storage.Pool{}
+	virtualPools := map[string]storage.Pool{"dummyVPool": vpool}
+	volAttributes := map[string]sa.Request{}
+
+	pools, err := getPoolsForCreate(ctx, volConfig, vpool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(pools))
+	assert.Equal(t, managedPool.Name(), pools[0].Name(), "Expected managed pool when no physical pools exist")
+}
+
+func TestGetPoolsForCreate_NoMatchingPoolsByAttributes(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
 
 	pool := storage.NewStoragePool(nil, "dummyPool")
 	pool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
@@ -5736,6 +6242,53 @@ func TestGetPoolsForCreate(t *testing.T) {
 	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
+	pool1.SetBackend(backend)
+
+	backend.ClearStoragePools()
+	backend.StoragePools().Store("pool", pool)
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{"dummyPool": pool}
+	storagePool := pool
+
+	req1 := sa.NewStringRequest("dummy")
+	req2 := sa.NewStringRequest("fake")
+	volAttributes := map[string]sa.Request{"req1": req1, "req2": req2}
+
+	_, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, managedPool, physicalPools, virtualPools)
+
+	assert.Error(t, err)
+}
+
+func TestGetPoolsForCreate_NoMatchingPoolsByAggregate(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+
+	managedPool := getManagedPool(backend)
+
+	pool := storage.NewStoragePool(nil, "dummyPool")
+	pool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool.InternalAttributes()[Aggregates] = "dummyPool3"
+	pool.SetBackend(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
 	pool1.SetBackend(backend)
 
 	pool2 := storage.NewStoragePool(nil, "dummyPool2")
@@ -5744,6 +6297,7 @@ func TestGetPoolsForCreate(t *testing.T) {
 	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool2.InternalAttributes()[Aggregates] = "dummyPool1,dummyPool2"
 	pool2.SetBackend(backend)
 
 	backend.ClearStoragePools()
@@ -5755,43 +6309,10 @@ func TestGetPoolsForCreate(t *testing.T) {
 	storagePool := pool
 	volAttributes := map[string]sa.Request{}
 
-	_, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, physicalPools, virtualPools)
-
-	assert.NoError(t, err)
-}
-
-func TestGetPoolsForCreate_NoMatchingPools(t *testing.T) {
-	ctx := context.Background()
-
-	volConfig := &storage.VolumeConfig{
-		Name:         "fakeVolName",
-		InternalName: "fakeInternalName",
-	}
-	backend := storage.NewTestStorageBackend()
-	backend.SetName("dummybackend")
-	backend.SetOnline(true)
-
-	pool := storage.NewStoragePool(nil, "dummyPool")
-	pool.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-	pool.SetBackend(backend)
-
-	backend.ClearStoragePools()
-	backend.StoragePools().Store("pool", pool)
-	physicalPools := map[string]storage.Pool{}
-	virtualPools := map[string]storage.Pool{"dummyPool": pool}
-	storagePool := pool
-
-	req1 := sa.NewStringRequest("dummy")
-	req2 := sa.NewStringRequest("fake")
-	volAttributes := map[string]sa.Request{"req1": req1, "req2": req2}
-
-	_, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, physicalPools, virtualPools)
+	pools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, managedPool, physicalPools, virtualPools)
 
 	assert.Error(t, err)
+	assert.Nil(t, pools)
 }
 
 func TestGetVolumeOptsCommon_Thin(t *testing.T) {
@@ -7362,12 +7883,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test no pools
 	storageDriver := newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools := map[string]storage.Pool{}
 	virtualPools := map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err := ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err := ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.NoError(t, err)
 
@@ -7376,12 +7895,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
 	storageDriver.Config.NASType = "SMB"
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7390,12 +7907,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
 	storageDriver.Config.AutoExportCIDRs = []string{"10.10.10.10"}
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7404,12 +7919,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
 	storageDriver.Config.SANType = ""
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7417,12 +7930,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test one valid virtual pool
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7430,12 +7941,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test one valid physical pool
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	virtualPools = map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7443,13 +7952,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid spaceReserve
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceReserve] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7457,13 +7964,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid snapshotReserve
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotReserve] = "5"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7471,13 +7976,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid snapshotPolicy
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotPolicy] = "daily"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7485,13 +7988,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid encryption
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Encryption] = "asdf"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7499,13 +8000,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with unsupported encryption
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Encryption] = "false"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7513,13 +8012,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid snapshotDir
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SnapshotDir] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7527,13 +8024,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid securityStyle
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SecurityStyle] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7541,13 +8036,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid exportPolicy
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[ExportPolicy] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7555,13 +8048,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid unixPermissions
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[UnixPermissions] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7569,13 +8060,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid tieringPolicy
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[TieringPolicy] = "invalidValue"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7583,14 +8072,12 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with 2 QoS policies
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[QosPolicy] = "policy1"
 	storageDriver.virtualPools["test"].InternalAttributes()[AdaptiveQosPolicy] = "policy2"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7598,12 +8085,10 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test two valid virtual pools
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool(), "test2": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7611,13 +8096,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test with valid media type set
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Media] = sa.SSD
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7625,13 +8108,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with invalid media type set
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Media] = sa.HDD
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7639,13 +8120,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with too-small size of the pool
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Size] = "1000"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7653,13 +8132,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with invalid size of the pool
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[Size] = "xyz"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7667,13 +8144,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Volume name template valid
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[NameTemplate] = "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_.volume.RequestName}}"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err, "template is invalid, expected no error")
 
@@ -7681,13 +8156,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Volume name template invalid
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[NameTemplate] = "pool_{{.labels.Cluster}}_{{.volume.Namespace}_.volume.RequestName}}"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err, "template is valid, expected an error")
 
@@ -7695,13 +8168,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid label
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].Attributes()[sa.Labels] = sa.NewStringOffer("asdf")
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7709,14 +8180,12 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid label template
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].Attributes()[sa.Labels] = sa.NewLabelOffer(
 		map[string]string{"asdf": "pool_{{.labels.Cluster}}_{{.volume.Namespace}_.volume.RequestName}}"})
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7724,14 +8193,12 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Positive case: Test one valid virtual pool with valid label template
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].Attributes()[sa.Labels] = sa.NewLabelOffer(
 		map[string]string{"asdf": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_.volume.RequestName}}"})
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.NoError(t, err)
 
@@ -7739,13 +8206,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid label
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].Attributes()[sa.Labels] = sa.NewLabelOffer(map[string]string{"key": "value"})
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 1)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 1)
 
 	assert.Error(t, err)
 
@@ -7753,13 +8218,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with empty splitOnClone
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SplitOnClone] = ""
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7767,13 +8230,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid splitOnClone
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SplitOnClone] = "asdf"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7781,13 +8242,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid luksEncryption
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[LUKSEncryption] = "asdf"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7795,13 +8254,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with unsupported luksEncryption
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[LUKSEncryption] = "true"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7809,13 +8266,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with empty spaceAllocation
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceAllocation] = ""
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7823,13 +8278,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with invalid spaceAllocation
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceAllocation] = "asdf"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7837,13 +8290,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test one valid virtual pool with unsupported spaceAllocation
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SpaceAllocation] = "false"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7851,13 +8302,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with empty value for FileSystemType
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FileSystemType] = ""
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7865,13 +8314,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with invalid value for FileSystemType
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FileSystemType] = "fake"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7879,13 +8326,11 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with invalid value for formatOptions
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FormatOptions] = "  "
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 
@@ -7893,29 +8338,48 @@ func TestValidateASAStoragePools(t *testing.T) {
 	// Negative case: Test with invalid value for skipRecoveryQueue
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
-	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
 	storageDriver.virtualPools = virtualPools
-	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = "invalid"
 
-	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test with nil managed pool
+	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
+	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
+	storageDriver.managedPool = nil
+	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = "invalid"
+
+	err = ValidateASAStoragePools(ctx, storageDriver.managedPool, virtualPools, storageDriver, 0)
 
 	assert.Error(t, err)
 }
 
-func TestGetStorageBackendSpecsCommon(t *testing.T) {
+func TestGetStorageBackendSpecsCommon_AllAggregates(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+
 	// Test1: Physical pools provided
 	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 	backend.ClearStoragePools()
+
+	managedPool := getManagedPool(backend)
+
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")
 	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
 	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
 	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = AllAggregates
 
 	pool2 := storage.NewStoragePool(nil, "dummyPool2")
 	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
@@ -7923,21 +8387,173 @@ func TestGetStorageBackendSpecsCommon(t *testing.T) {
 	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool2.InternalAttributes()[Aggregates] = AllAggregates
 
 	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
 	virtualPools := map[string]storage.Pool{}
 
-	err := getStorageBackendSpecsCommon(backend, physicalPools, virtualPools, "dummybackend")
+	err := getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
 
 	assert.NoError(t, err)
+	assert.NotNil(t, pool1.Backend())
+	assert.NotNil(t, pool2.Backend())
+	_, ok := backend.StoragePools().Load("dummyPool1")
+	assert.True(t, ok)
+	_, ok = backend.StoragePools().Load("dummyPool2")
+	assert.True(t, ok)
+}
+
+func TestGetStorageBackendSpecsCommon(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+
+	// Test1: Physical pools provided
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+	backend.ClearStoragePools()
+
+	managedPool := getManagedPool(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool1.InternalAttributes()[Aggregates] = "dummyPool1"
+
+	pool2 := storage.NewStoragePool(nil, "dummyPool2")
+	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	pool2.InternalAttributes()[Aggregates] = "dummyPool1"
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
+	virtualPools := map[string]storage.Pool{}
+
+	err := getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, pool1.Backend())
+	assert.NotNil(t, pool2.Backend())
+	_, ok := backend.StoragePools().Load("dummyPool1")
+	assert.True(t, ok)
+	_, ok = backend.StoragePools().Load("dummyPool2")
+	assert.False(t, ok)
 
 	// Test2: Virtual pools provided
-	virtualPools = map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
-	physicalPools = map[string]storage.Pool{}
+	pool1.SetBackend(nil)
+	pool2.SetBackend(nil)
+	backend.ClearStoragePools()
 
-	err = getStorageBackendSpecsCommon(backend, physicalPools, virtualPools, "dummybackend")
+	physicalPools = map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
+	vPool1 := storage.NewStoragePool(nil, "vPool1")
+	vPool2 := storage.NewStoragePool(nil, "vPool2")
+	virtualPools = map[string]storage.Pool{"vPool1": vPool1, "vPool2": vPool2}
+
+	err = getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
 
 	assert.NoError(t, err)
+	assert.NotNil(t, pool1.Backend())
+	assert.NotNil(t, pool2.Backend())
+	assert.NotNil(t, vPool1.Backend())
+	assert.NotNil(t, vPool1.Backend())
+
+	_, ok = backend.StoragePools().Load("dummyPool1")
+	assert.False(t, ok)
+	_, ok = backend.StoragePools().Load("dummyPool2")
+	assert.False(t, ok)
+	_, ok = backend.StoragePools().Load("vPool1")
+	assert.True(t, ok)
+	_, ok = backend.StoragePools().Load("vPool1")
+	assert.True(t, ok)
+}
+
+func TestGetStorageBackendSpecsCommon_BalancedPlacement(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+	backend.ClearStoragePools()
+
+	managedPool := getManagedPool(backend)
+	managedPool.InternalAttributes()[BalancedPlacement] = "true"
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.InternalAttributes()[Aggregates] = AllAggregates
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{}
+
+	err := getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
+
+	assert.NoError(t, err)
+	// Only managed pool should be added
+	_, ok := backend.StoragePools().Load(managedStoragePoolName)
+	assert.True(t, ok)
+	_, ok = backend.StoragePools().Load("dummyPool1")
+	assert.False(t, ok)
+}
+
+func TestGetStorageBackendSpecsCommon_Disaggregated(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
+
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+	backend.ClearStoragePools()
+
+	managedPool := getManagedPool(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.InternalAttributes()[Aggregates] = AllAggregates
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{}
+
+	err := getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
+
+	assert.NoError(t, err)
+	// Only managed pool should be added for disaggregated
+	_, ok := backend.StoragePools().Load(managedStoragePoolName)
+	assert.True(t, ok)
+	_, ok = backend.StoragePools().Load("dummyPool1")
+	assert.False(t, ok)
+}
+
+func TestGetStorageBackendSpecsCommon_NoMatchingPools(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+
+	backend := storage.NewTestStorageBackend()
+	backend.SetName("dummybackend")
+	backend.SetOnline(true)
+	backend.ClearStoragePools()
+
+	managedPool := getManagedPool(backend)
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool1")
+	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+	pool1.InternalAttributes()[Aggregates] = "nonexistentAggr"
+
+	physicalPools := map[string]storage.Pool{"dummyPool1": pool1}
+	virtualPools := map[string]storage.Pool{}
+
+	err := getStorageBackendSpecsCommon(backend, mockAPI, managedPool, physicalPools, virtualPools, "dummybackend")
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no available pools")
 }
 
 func TestCloneFlexvol(t *testing.T) {
@@ -7970,7 +8586,7 @@ func TestCloneFlexvol(t *testing.T) {
 			DebugTraceFlags:   map[string]bool{"method": true},
 			StorageDriverName: tridentconfig.OntapNASStorageDriverName,
 		},
-		OntapStorageDriverPool: drivers.OntapStorageDriverPool{SANType: sa.NVMe},
+		SANType: sa.NVMe,
 	}
 
 	cloneVolumeConfig := storage.VolumeConfig{
@@ -8595,7 +9211,7 @@ func TestGetVserverAggrAttributes(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestInitializeStoragePoolsCommon(t *testing.T) {
+func TestInitializeAggregatedStoragePoolsCommon(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
@@ -8610,11 +9226,14 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	storageDriver.Config.Aggregate = ""
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")
 	pool1.Attributes()[sa.Media] = sa.NewStringOffer("hdd")
+	pool2 := storage.NewStoragePool(nil, "dummyPool2")
+	pool2.Attributes()[sa.Media] = sa.NewStringOffer("ssd")
 
 	backendName := "dummyBackend"
 	storageDriver.Config.Region = "dummyRegion"
 	storageDriver.Config.Zone = "dummyZone"
 	storageDriver.Config.SkipRecoveryQueue = "false"
+	//storageDriver.Config.Aggregates = []string{"dummyPool1"}
 	CommonConfigDefault := &drivers.CommonStorageDriverConfigDefaults{
 		Size:         "10000",
 		NameTemplate: "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
@@ -8638,6 +9257,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
 		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
 	}
+	storageDriver.Config.SANType = sa.ISCSI
 	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
 			Region: "fakeRegion",
@@ -8649,7 +9269,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 				},
 			},
 			OntapStorageDriverConfigDefaults: *defaults,
-			NASType:                          sa.NFS,
+			//Aggregates:                       []string{"dummyPool2"},
 		},
 	}
 
@@ -8657,166 +9277,185 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
 
-	physicalPool, virtualPool, err := InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+	managedPool, physicalPool, virtualPool, err := InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 
+	assert.NotNil(t, managedPool, "Managed Pool not found when expected")
 	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
 	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	assert.Equal(t, "dummyRegion", managedPool.InternalAttributes()[Region])
 	// Ensure snapshotDir is a lower case value
 	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotDir])
 	assert.Equal(t, "false", physicalPool["dummyPool1"].InternalAttributes()[SkipRecoveryQueue])
 	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SkipRecoveryQueue])
+	//assert.Equal(t, "dummyPool1", physicalPool["dummyPool1"].InternalAttributes()[Aggregates])
+	//assert.Equal(t, "dummyPool2", virtualPool["dummyBackend_pool_0"].InternalAttributes()[Aggregates])
 	assert.NoError(t, err)
 
 	// Test2 - Invalid value of encryption
-	// defaults = &drivers.OntapStorageDriverConfigDefaults{
-	//	SpaceAllocation:                   "fake",
-	//	SpaceReserve:                      "fakeSpaceReserve",
-	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
-	//	SnapshotReserve:                   "fakeSnapshotReserve",
-	//	SplitOnClone:                      "false",
-	//	UnixPermissions:                   "777",
-	//	SnapshotDir:                       "fakeSnapshotDir",
-	//	ExportPolicy:                      "fakeExportPolicy",
-	//	SecurityStyle:                     "fakeSecurityStyle",
-	//	FileSystemType:                    "fakeFileSystem",
-	//	Encryption:                        "fakeValue",
-	//	LUKSEncryption:                    "false",
-	//	TieringPolicy:                     "fakeTieringPolicy",
-	//	QosPolicy:                         "fakeQosPolicy",
-	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
-	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	// }
-	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
-	//	{
-	//		Region: "fakeRegion",
-	//		Zone:   "fakeZone",
-	//		SupportedTopologies: []map[string]string{
-	//			{
-	//				"topology.kubernetes.io/region": "us_east_1",
-	//				"topology.kubernetes.io/zone":   "us_east_1a",
-	//			},
-	//		},
-	//		OntapStorageDriverConfigDefaults: *defaults,
-	//	},
-	// }
-	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
-	//
-	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
-	//
-	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	// assert.Nil(t, virtualPool, "Virtual pool not expected but found")
-	// assert.Error(t, err)
-	//
-	// // Test3 - Invalid value of snapshotDir
-	// defaults = &drivers.OntapStorageDriverConfigDefaults{
-	//	SpaceAllocation:                   "fake",
-	//	SpaceReserve:                      "fakeSpaceReserve",
-	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
-	//	SnapshotReserve:                   "fakeSnapshotReserve",
-	//	SplitOnClone:                      "false",
-	//	UnixPermissions:                   "777",
-	//	SnapshotDir:                       "FaLsE",
-	//	ExportPolicy:                      "fakeExportPolicy",
-	//	SecurityStyle:                     "fakeSecurityStyle",
-	//	FileSystemType:                    "fakeFileSystem",
-	//	Encryption:                        "true",
-	//	LUKSEncryption:                    "false",
-	//	TieringPolicy:                     "fakeTieringPolicy",
-	//	QosPolicy:                         "fakeQosPolicy",
-	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
-	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	// }
-	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
-	//	{
-	//		Region: "fakeRegion",
-	//		Zone:   "fakeZone",
-	//		SupportedTopologies: []map[string]string{
-	//			{
-	//				"topology.kubernetes.io/region": "us_east_1",
-	//				"topology.kubernetes.io/zone":   "us_east_1a",
-	//			},
-	//		},
-	//		OntapStorageDriverConfigDefaults: *defaults,
-	//	},
-	// }
-	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
-	//
-	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
-	//
-	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	// assert.Nil(t, virtualPool, "Virtual pool not expected but found")
-	// assert.Error(t, err)
-	//
-	// // Test 4 - Checking whether the formatOptions are correctly updated or not.
-	// expectedVirtualPoolFormatOptions := "-b 4096 -E stride=256,stripe_width=16"
-	// expectedPhysicalPoolFormatOptions := "-F -K"
-	// storageDriver.Config.OntapStorageDriverPool.FormatOptions = expectedPhysicalPoolFormatOptions
-	// defaults = &drivers.OntapStorageDriverConfigDefaults{
-	//	SpaceAllocation:                   "fake",
-	//	SpaceReserve:                      "fakeSpaceReserve",
-	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
-	//	SnapshotReserve:                   "fakeSnapshotReserve",
-	//	SplitOnClone:                      "false",
-	//	UnixPermissions:                   "777",
-	//	SnapshotDir:                       "TRUE",
-	//	ExportPolicy:                      "fakeExportPolicy",
-	//	SecurityStyle:                     "fakeSecurityStyle",
-	//	FileSystemType:                    "fakeFileSystem",
-	//	Encryption:                        "true",
-	//	LUKSEncryption:                    "false",
-	//	TieringPolicy:                     "fakeTieringPolicy",
-	//	QosPolicy:                         "fakeQosPolicy",
-	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
-	//	FormatOptions:                     expectedVirtualPoolFormatOptions,
-	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	// }
-	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
-	//	{
-	//		Region: "fakeRegion",
-	//		Zone:   "fakeZone",
-	//		SupportedTopologies: []map[string]string{
-	//			{
-	//				"topology.kubernetes.io/region": "us_east_1",
-	//				"topology.kubernetes.io/zone":   "us_east_1a",
-	//			},
-	//		},
-	//		OntapStorageDriverConfigDefaults: *defaults,
-	//		NASType:                          sa.NFS,
-	//	},
-	// }
-	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
-	//
-	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
-	//
-	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	// assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
-	// assert.NoError(t, err)
-	// for _, phyPool := range physicalPool {
-	//	assert.Equal(t, expectedPhysicalPoolFormatOptions, phyPool.InternalAttributes()[FormatOptions])
-	// }
-	// for _, vPool := range virtualPool {
-	//	assert.Equal(t, expectedVirtualPoolFormatOptions, vPool.InternalAttributes()[FormatOptions])
-	// }
-
-	// Test 5 - Check for SANType
+	defaults = &drivers.OntapStorageDriverConfigDefaults{
+		SpaceAllocation:                   "fake",
+		SpaceReserve:                      "fakeSpaceReserve",
+		SnapshotPolicy:                    "fakeSnapshotPolicy",
+		SnapshotReserve:                   "fakeSnapshotReserve",
+		SplitOnClone:                      "false",
+		UnixPermissions:                   "777",
+		SnapshotDir:                       "fakeSnapshotDir",
+		ExportPolicy:                      "fakeExportPolicy",
+		SecurityStyle:                     "fakeSecurityStyle",
+		FileSystemType:                    "fakeFileSystem",
+		Encryption:                        "fakeValue",
+		LUKSEncryption:                    "false",
+		TieringPolicy:                     "fakeTieringPolicy",
+		QosPolicy:                         "fakeQosPolicy",
+		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
+		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
+	}
 	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
-			SANType: sa.ISCSI,
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			OntapStorageDriverConfigDefaults: *defaults,
+		},
+	}
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+
+	managedPool, physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.Nil(t, managedPool, "Managed Pool should be nil on error")
+	assert.Nil(t, physicalPool, "Physical Pool should be nil on error")
+	assert.Nil(t, physicalPool, "Physical Pool should be nil on error")
+	assert.Nil(t, virtualPool, "Virtual pool should be nil on error")
+	assert.Error(t, err)
+
+	// Test3 - Invalid value of snapshotDir
+	defaults = &drivers.OntapStorageDriverConfigDefaults{
+		SpaceAllocation:                   "fake",
+		SpaceReserve:                      "fakeSpaceReserve",
+		SnapshotPolicy:                    "fakeSnapshotPolicy",
+		SnapshotReserve:                   "fakeSnapshotReserve",
+		SplitOnClone:                      "false",
+		UnixPermissions:                   "777",
+		SnapshotDir:                       "FaLsE",
+		ExportPolicy:                      "fakeExportPolicy",
+		SecurityStyle:                     "fakeSecurityStyle",
+		FileSystemType:                    "fakeFileSystem",
+		Encryption:                        "true",
+		LUKSEncryption:                    "false",
+		TieringPolicy:                     "fakeTieringPolicy",
+		QosPolicy:                         "fakeQosPolicy",
+		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
+		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
+	}
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			OntapStorageDriverConfigDefaults: *defaults,
+		},
+	}
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+
+	managedPool, physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.Nil(t, managedPool, "Managed Pool should be nil on error")
+	assert.Nil(t, physicalPool, "Physical Pool should be nil on error")
+	assert.Nil(t, virtualPool, "Virtual pool should be nil on error")
+	assert.Error(t, err)
+
+	// Test 4 - Checking whether the formatOptions are correctly updated.
+	expectedVirtualPoolFormatOptions := "-b 4096 -E stride=256,stripe_width=16"
+	expectedPhysicalPoolFormatOptions := "-F -K"
+	storageDriver.Config.OntapStorageDriverPool.FormatOptions = expectedPhysicalPoolFormatOptions
+	//storageDriver.Config.Aggregates = []string{"dummyPool1", "dummyPool2"}
+	defaults = &drivers.OntapStorageDriverConfigDefaults{
+		SpaceAllocation:                   "fake",
+		SpaceReserve:                      "fakeSpaceReserve",
+		SnapshotPolicy:                    "fakeSnapshotPolicy",
+		SnapshotReserve:                   "fakeSnapshotReserve",
+		SplitOnClone:                      "false",
+		UnixPermissions:                   "777",
+		SnapshotDir:                       "TRUE",
+		ExportPolicy:                      "fakeExportPolicy",
+		SecurityStyle:                     "fakeSecurityStyle",
+		FileSystemType:                    "fakeFileSystem",
+		Encryption:                        "true",
+		LUKSEncryption:                    "false",
+		TieringPolicy:                     "fakeTieringPolicy",
+		QosPolicy:                         "fakeQosPolicy",
+		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
+		FormatOptions:                     expectedVirtualPoolFormatOptions,
+		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
+	}
+	storageDriver.Config.NASType = sa.NFS
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			OntapStorageDriverConfigDefaults: *defaults,
+			//Aggregates:                       []string{"dummyPool1", "dummyPool3"},
+		},
+	}
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1", "dummyPool2"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd", "dummyPool2": "ssd"}, nil)
+
+	managedPool, physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.NotNil(t, managedPool, "Managed Pool not found when expected")
+	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
+	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	assert.NoError(t, err)
+	for _, phyPool := range physicalPool {
+		assert.Equal(t, expectedPhysicalPoolFormatOptions, phyPool.InternalAttributes()[FormatOptions])
+		//assert.Equal(t, "dummyPool1,dummyPool2", phyPool.InternalAttributes()[Aggregates])
+	}
+	for _, vPool := range virtualPool {
+		assert.Equal(t, expectedVirtualPoolFormatOptions, vPool.InternalAttributes()[FormatOptions])
+		//assert.Equal(t, "dummyPool1,dummyPool3", vPool.InternalAttributes()[Aggregates])
+	}
+
+	// Test 5 - Check for aggregates
+	//storageDriver.Config.Aggregates = nil
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
 		},
 	}
 
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
 
-	physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+	_, physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 
-	// TODO (aparna0508): Check why below assertion is failing
-	// assert.Nil(t, physicalPool, "Physical Pool not expected but found")
-	assert.Nil(t, virtualPool, "Virtual pool not exepcted but found")
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, AllAggregates, physicalPool["dummyPool1"].InternalAttributes()[Aggregates])
+	assert.Equal(t, AllAggregates, virtualPool["dummyBackend_pool_0"].InternalAttributes()[Aggregates])
 }
 
 func TestInitializeDisaggregatedStoragePoolsCommon(t *testing.T) {
@@ -8835,6 +9474,7 @@ func TestInitializeDisaggregatedStoragePoolsCommon(t *testing.T) {
 	backendName := "dummyBackend"
 	storageDriver.Config.Region = "us_east_1"
 	storageDriver.Config.Zone = "us_east_1a"
+	storageDriver.Config.SANType = "iscsi"
 
 	vpoolDefaults := drivers.OntapStorageDriverConfigDefaults{
 		CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
@@ -8860,95 +9500,92 @@ func TestInitializeDisaggregatedStoragePoolsCommon(t *testing.T) {
 
 	// Test1 - Positive flow
 
-	physicalPool, virtualPool, err := InitializeManagedStoragePoolsCommon(ctx, storageDriver,
+	managedPool, _, virtualPools, err := initializeManagedStoragePoolsCommon(ctx, storageDriver,
 		storageDriver.getStoragePoolAttributes(ctx), backendName)
-	fmt.Println("physical pool", physicalPool)
 	assert.NoError(t, err)
-	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	assert.NotNil(t, managedPool, "Managed Pool not found when expected")
+	assert.NotNil(t, virtualPools, "Virtual Pool not found when expected")
 
 	// Physical pool attributes
 
-	assert.Equal(t, "ssd", physicalPool[managedStoragePoolName].Attributes()[Media].ToString())
-	assert.Equal(t, "us_east_1", physicalPool[managedStoragePoolName].Attributes()[Region].ToString())
-	assert.Equal(t, "us_east_1a", physicalPool[managedStoragePoolName].Attributes()[Zone].ToString())
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].Attributes()[sa.NASType].ToString())
-	assert.Equal(t, "iscsi", physicalPool[managedStoragePoolName].Attributes()[sa.SANType].ToString())
-	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Encryption].ToString())
-	assert.Equal(t, "false", physicalPool[managedStoragePoolName].Attributes()[Replication].ToString())
-	assert.Equal(t, "ontap-san", physicalPool[managedStoragePoolName].Attributes()[BackendType].ToString())
-	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Clones].ToString())
-	assert.Equal(t, "thin", physicalPool[managedStoragePoolName].Attributes()[ProvisioningType].ToString())
-	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Snapshots].ToString())
+	assert.Equal(t, "ssd", managedPool.Attributes()[Media].ToString())
+	assert.Equal(t, "us_east_1", managedPool.Attributes()[Region].ToString())
+	assert.Equal(t, "us_east_1a", managedPool.Attributes()[Zone].ToString())
+	assert.Equal(t, "iscsi", managedPool.Attributes()[sa.SANType].ToString())
+	assert.Equal(t, "true", managedPool.Attributes()[Encryption].ToString())
+	assert.Equal(t, "false", managedPool.Attributes()[Replication].ToString())
+	assert.Equal(t, "ontap-san", managedPool.Attributes()[BackendType].ToString())
+	assert.Equal(t, "true", managedPool.Attributes()[Clones].ToString())
+	assert.Equal(t, "thin", managedPool.Attributes()[ProvisioningType].ToString())
+	assert.Equal(t, "true", managedPool.Attributes()[Snapshots].ToString())
 
-	assert.Equal(t, "1G", physicalPool[managedStoragePoolName].InternalAttributes()[Size])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[NameTemplate])
-	assert.Equal(t, "us_east_1", physicalPool[managedStoragePoolName].InternalAttributes()[Region])
-	assert.Equal(t, "us_east_1a", physicalPool[managedStoragePoolName].InternalAttributes()[Zone])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotReserve])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotDir])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[ExportPolicy])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[QosPolicy])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[AdaptiveQosPolicy])
-	assert.Equal(t, "ext4", physicalPool[managedStoragePoolName].InternalAttributes()[FileSystemType])
-	assert.Equal(t, "true", physicalPool[managedStoragePoolName].InternalAttributes()[SpaceAllocation])
-	assert.Equal(t, "none", physicalPool[managedStoragePoolName].InternalAttributes()[SpaceReserve])
-	assert.Equal(t, "false", physicalPool[managedStoragePoolName].InternalAttributes()[SplitOnClone])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[UnixPermissions])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SecurityStyle])
-	assert.Equal(t, "none", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotPolicy])
-	assert.Equal(t, "true", physicalPool[managedStoragePoolName].InternalAttributes()[Encryption])
-	assert.Equal(t, "false", physicalPool[managedStoragePoolName].InternalAttributes()[LUKSEncryption])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[TieringPolicy])
-	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[FormatOptions])
+	assert.Equal(t, "1G", managedPool.InternalAttributes()[Size])
+	assert.Equal(t, "", managedPool.InternalAttributes()[NameTemplate])
+	assert.Equal(t, "us_east_1", managedPool.InternalAttributes()[Region])
+	assert.Equal(t, "us_east_1a", managedPool.InternalAttributes()[Zone])
+	assert.Equal(t, "", managedPool.InternalAttributes()[SnapshotReserve])
+	assert.Equal(t, "", managedPool.InternalAttributes()[SnapshotDir])
+	assert.Equal(t, "", managedPool.InternalAttributes()[ExportPolicy])
+	assert.Equal(t, "", managedPool.InternalAttributes()[QosPolicy])
+	assert.Equal(t, "", managedPool.InternalAttributes()[AdaptiveQosPolicy])
+	assert.Equal(t, "ext4", managedPool.InternalAttributes()[FileSystemType])
+	assert.Equal(t, "true", managedPool.InternalAttributes()[SpaceAllocation])
+	assert.Equal(t, "none", managedPool.InternalAttributes()[SpaceReserve])
+	assert.Equal(t, "false", managedPool.InternalAttributes()[SplitOnClone])
+	assert.Equal(t, "", managedPool.InternalAttributes()[UnixPermissions])
+	assert.Equal(t, "", managedPool.InternalAttributes()[SecurityStyle])
+	assert.Equal(t, "none", managedPool.InternalAttributes()[SnapshotPolicy])
+	assert.Equal(t, "true", managedPool.InternalAttributes()[Encryption])
+	assert.Equal(t, "false", managedPool.InternalAttributes()[LUKSEncryption])
+	assert.Equal(t, "", managedPool.InternalAttributes()[TieringPolicy])
+	assert.Equal(t, "", managedPool.InternalAttributes()[FormatOptions])
 
-	assert.Nil(t, physicalPool[managedStoragePoolName].SupportedTopologies())
+	assert.Nil(t, managedPool.SupportedTopologies())
 
 	// Virtual pool attributes
 
-	assert.Equal(t, "ssd", virtualPool["dummyBackend_pool_0"].Attributes()[Media].ToString())
-	assert.Equal(t, "us_east_1", virtualPool["dummyBackend_pool_0"].Attributes()[Region].ToString())
-	assert.Equal(t, "us_east_1b", virtualPool["dummyBackend_pool_0"].Attributes()[Zone].ToString())
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].Attributes()[sa.NASType].ToString())
-	assert.Equal(t, "iscsi", virtualPool["dummyBackend_pool_0"].Attributes()[sa.SANType].ToString())
-	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].Attributes()[Encryption].ToString())
-	assert.Equal(t, "false", virtualPool["dummyBackend_pool_0"].Attributes()[Replication].ToString())
-	assert.Equal(t, "ontap-san", virtualPool["dummyBackend_pool_0"].Attributes()[BackendType].ToString())
-	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].Attributes()[Clones].ToString())
-	assert.Equal(t, "thin", virtualPool["dummyBackend_pool_0"].Attributes()[ProvisioningType].ToString())
-	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].Attributes()[Snapshots].ToString())
+	assert.Equal(t, "ssd", virtualPools["dummyBackend_pool_0"].Attributes()[Media].ToString())
+	assert.Equal(t, "us_east_1", virtualPools["dummyBackend_pool_0"].Attributes()[Region].ToString())
+	assert.Equal(t, "us_east_1b", virtualPools["dummyBackend_pool_0"].Attributes()[Zone].ToString())
+	assert.Equal(t, "iscsi", virtualPools["dummyBackend_pool_0"].Attributes()[sa.SANType].ToString())
+	assert.Equal(t, "true", virtualPools["dummyBackend_pool_0"].Attributes()[Encryption].ToString())
+	assert.Equal(t, "false", virtualPools["dummyBackend_pool_0"].Attributes()[Replication].ToString())
+	assert.Equal(t, "ontap-san", virtualPools["dummyBackend_pool_0"].Attributes()[BackendType].ToString())
+	assert.Equal(t, "true", virtualPools["dummyBackend_pool_0"].Attributes()[Clones].ToString())
+	assert.Equal(t, "thin", virtualPools["dummyBackend_pool_0"].Attributes()[ProvisioningType].ToString())
+	assert.Equal(t, "true", virtualPools["dummyBackend_pool_0"].Attributes()[Snapshots].ToString())
 
-	assert.Equal(t, "10000", virtualPool["dummyBackend_pool_0"].InternalAttributes()[Size])
+	assert.Equal(t, "10000", virtualPools["dummyBackend_pool_0"].InternalAttributes()[Size])
 	assert.Equal(t, "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}",
-		virtualPool["dummyBackend_pool_0"].InternalAttributes()[NameTemplate])
-	assert.Equal(t, "us_east_1", virtualPool["dummyBackend_pool_0"].InternalAttributes()[Region])
-	assert.Equal(t, "us_east_1b", virtualPool["dummyBackend_pool_0"].InternalAttributes()[Zone])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotReserve])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotDir])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[ExportPolicy])
-	assert.Equal(t, "fakeQosPolicy", virtualPool["dummyBackend_pool_0"].InternalAttributes()[QosPolicy])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[AdaptiveQosPolicy])
-	assert.Equal(t, "ext4", virtualPool["dummyBackend_pool_0"].InternalAttributes()[FileSystemType])
-	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SpaceAllocation])
-	assert.Equal(t, "none", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SpaceReserve])
-	assert.Equal(t, "false", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SplitOnClone])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[UnixPermissions])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SecurityStyle])
-	assert.Equal(t, "none", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotPolicy])
-	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[Encryption])
-	assert.Equal(t, "false", virtualPool["dummyBackend_pool_0"].InternalAttributes()[LUKSEncryption])
-	assert.Equal(t, "", virtualPool["dummyBackend_pool_0"].InternalAttributes()[TieringPolicy])
-	assert.Equal(t, "-b 4096", virtualPool["dummyBackend_pool_0"].InternalAttributes()[FormatOptions])
+		virtualPools["dummyBackend_pool_0"].InternalAttributes()[NameTemplate])
+	assert.Equal(t, "us_east_1", virtualPools["dummyBackend_pool_0"].InternalAttributes()[Region])
+	assert.Equal(t, "us_east_1b", virtualPools["dummyBackend_pool_0"].InternalAttributes()[Zone])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SnapshotReserve])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SnapshotDir])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[ExportPolicy])
+	assert.Equal(t, "fakeQosPolicy", virtualPools["dummyBackend_pool_0"].InternalAttributes()[QosPolicy])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[AdaptiveQosPolicy])
+	assert.Equal(t, "ext4", virtualPools["dummyBackend_pool_0"].InternalAttributes()[FileSystemType])
+	assert.Equal(t, "true", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SpaceAllocation])
+	assert.Equal(t, "none", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SpaceReserve])
+	assert.Equal(t, "false", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SplitOnClone])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[UnixPermissions])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SecurityStyle])
+	assert.Equal(t, "none", virtualPools["dummyBackend_pool_0"].InternalAttributes()[SnapshotPolicy])
+	assert.Equal(t, "true", virtualPools["dummyBackend_pool_0"].InternalAttributes()[Encryption])
+	assert.Equal(t, "false", virtualPools["dummyBackend_pool_0"].InternalAttributes()[LUKSEncryption])
+	assert.Equal(t, "", virtualPools["dummyBackend_pool_0"].InternalAttributes()[TieringPolicy])
+	assert.Equal(t, "-b 4096", virtualPools["dummyBackend_pool_0"].InternalAttributes()[FormatOptions])
 
 	assert.ElementsMatch(t, storageDriver.Config.Storage[0].SupportedTopologies,
-		virtualPool["dummyBackend_pool_0"].SupportedTopologies())
+		virtualPools["dummyBackend_pool_0"].SupportedTopologies())
 
 	// Test2 - Invalid value of snapshotDir
 
 	storageDriver2 := cloneTestOntapASADriver(storageDriver)
 	storageDriver2.Config.SnapshotDir = "asdf"
 
-	_, _, err = InitializeManagedStoragePoolsCommon(ctx, storageDriver2,
+	_, _, _, err = initializeManagedStoragePoolsCommon(ctx, storageDriver2,
 		storageDriver2.getStoragePoolAttributes(ctx), backendName)
 
 	assert.Error(t, err)
@@ -9033,6 +9670,8 @@ func TestCheckAggregateLimitsForFlexvol(t *testing.T) {
 func TestPopulateConfigurationDefaults(t *testing.T) {
 	ctx := context.Background()
 
+	mockOntapAPI := newMockOntapAPIWithFlags(t, true, false, false)
+
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
 		StoragePrefix:   new("storagePrefix_"),
@@ -9044,17 +9683,17 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 
 	// Test : Check for SANType case
 	config.SANType = "ISCSI"
-	err := PopulateConfigurationDefaults(ctx, config)
+	err := PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 
 	// Test - verify adAdminUser set
 	config.ADAdminUser = "fakeUser"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 
 	// Test - verify adAdminUser not set
 	config.ADAdminUser = ""
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 	assert.Equal(t, DefaultADAdminUser, config.ADAdminUser)
 
@@ -9062,7 +9701,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.NASType = sa.SMB
 	config.Size = "10000"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.NoError(t, err)
 
@@ -9070,14 +9709,14 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.NASType = sa.NFS
 	config.Size = "10000"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.NoError(t, err)
 
 	// Test3 - Invalid value of Size
 	config.Size = "XYZ"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.Error(t, err)
 
@@ -9085,7 +9724,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.Size = "10000"
 	config.SnapshotPolicy = "dummy"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.Equal(t, DefaultSnapshotReserve, config.SnapshotReserve)
 	assert.NoError(t, err)
@@ -9096,7 +9735,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.DriverContext = "csi"
 	expected := "<automatic>"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.Equal(t, expected, config.ExportPolicy)
 	assert.NoError(t, err)
@@ -9107,7 +9746,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.DriverContext = "docker"
 	expected = "-o nfsvers=3"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.Equal(t, expected, config.NfsMountOptions)
 	assert.NoError(t, err)
@@ -9116,14 +9755,14 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.DriverContext = "csi"
 	config.SplitOnClone = "xyz"
 
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 
 	assert.Error(t, err)
 
 	// Test 8 - Invalid value for cloneSplitDelay
 	config.SplitOnClone = "true"
 	config.CloneSplitDelay = "-123"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.Error(t, err)
 
 	config.SplitOnClone = ""
@@ -9131,20 +9770,20 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 
 	// Test 9a - ext3 / verifying that the correct formatOptions are applied or not
 	config.FileSystemType = "ext3"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 	assert.Equal(t, DefaultExt3FormatOptions, config.FormatOptions)
 
 	// Test 9b - ext4 / verifying that the correct formatOptions are applied or not
 
 	config.FileSystemType = "ext4"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 	assert.Equal(t, DefaultExt4FormatOptions, config.FormatOptions)
 
 	// Test 9c - xfs / verifying that the correct formatOptions are applied or not
 	config.FileSystemType = "xfs"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.NoError(t, err)
 	assert.Equal(t, DefaultXfsFormatOptions, config.FormatOptions)
 
@@ -9152,8 +9791,24 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.SplitOnClone = "false"
 	config.CloneSplitDelay = "123"
 	config.DenyNewVolumePools = "asdf"
-	err = PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
 	assert.Error(t, err)
+
+	// Test 11 - unified balanced placement
+	config.DenyNewVolumePools = "false"
+	config.UseBalancedPlacement = ""
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultUseBalancedPlacementUnified, config.UseBalancedPlacement)
+
+	// Test 12 - disaggregated balanced placement
+	mockOntapAPI = newMockOntapAPIWithFlags(t, true, true, false)
+	mockOntapAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(true).AnyTimes()
+	config.UseBalancedPlacement = ""
+	config.UseREST = new(true)
+	err = PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultUseBalancedPlacementDisaggregated, config.UseBalancedPlacement)
 }
 
 func TestPopulateASAConfigurationDefaults(t *testing.T) {
@@ -10152,7 +10807,7 @@ func TestConstructLabelsFromConfigs(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestConstructLabelsFromConfigs_LablelTemplate(t *testing.T) {
+func TestConstructLabelsFromConfigs_LabelTemplate(t *testing.T) {
 	ctx := context.Background()
 
 	pool1 := storage.NewStoragePool(nil, "dummyPool")
@@ -10221,12 +10876,18 @@ func TestConstructLabelsFromConfigs_LablelTemplate(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestValidateStoragePools_Tempatizedlabels_virtualPool(t *testing.T) {
+func TestValidateStoragePools_Templatizedlabels_virtualPool(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
 		tridentconfig.DriverContext("CSI"), false, nil)
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	storageDriver.API = mockAPI
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
 
 	physicalPools := map[string]storage.Pool{}
 	virtualPools := map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -10253,7 +10914,8 @@ func TestValidateStoragePools_Tempatizedlabels_virtualPool(t *testing.T) {
 			storageDriver.virtualPools = virtualPools
 			storageDriver.physicalPools = physicalPools
 
-			err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+			err := ValidateStoragePools(context.Background(), storageDriver.managedPool,
+				physicalPools, virtualPools, storageDriver, 0)
 			if !c.expectedError {
 				assert.NoError(t, err)
 			} else {
@@ -10269,6 +10931,12 @@ func TestValidateStoragePools_Tempatizedlabels_physicalPool(t *testing.T) {
 
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
 		tridentconfig.DriverContext("CSI"), false, nil)
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	storageDriver.API = mockAPI
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
 
 	virtualPools := map[string]storage.Pool{}
 	physicalPools := map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -10294,7 +10962,7 @@ func TestValidateStoragePools_Tempatizedlabels_physicalPool(t *testing.T) {
 			storageDriver.virtualPools = virtualPools
 			storageDriver.physicalPools = physicalPools
 
-			err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+			err := ValidateStoragePools(context.Background(), getManagedPool(nil), physicalPools, virtualPools, storageDriver, 0)
 			if !c.expectedError {
 				assert.NoError(t, err)
 			} else {
@@ -12603,4 +13271,138 @@ func TestDeleteSubsystemIfEmpty(t *testing.T) {
 			}
 		})
 	}
+}
+func TestCreateFlexvol_BalancedPlacement_Success(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{managedStoragePoolName},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(nil)
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
+}
+
+func TestCreateFlexvol_BalancedPlacement_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{managedStoragePoolName},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(fmt.Errorf("balanced create failed"))
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "balanced create failed")
+}
+
+func TestCreateFlexvol_LegacyCreate_Success(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{"aggr1"},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return(nil)
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
+}
+
+func TestCreateFlexvol_LegacyCreate_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{"aggr1"},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return(fmt.Errorf("create failed"))
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "create failed")
+}
+
+func TestCreateFlexvol_AFX_NoBalancedPlacementSupport(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{managedStoragePoolName},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
+}
+
+func TestCreateFlexvol_AFX_NoBalancedPlacementSupport_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{managedStoragePoolName},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf("legacy create failed"))
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "legacy create failed")
+}
+
+func TestCreateFlexvol_AFX_WithBalancedPlacementSupport(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{managedStoragePoolName},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(nil)
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
+}
+
+func TestCreateFlexvol_NonManagedPool_Disaggregated(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volume := api.Volume{
+		Name:       "testVol",
+		Aggregates: []string{"aggr1"},
+	}
+	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
 }

@@ -46,10 +46,12 @@ func newMockOntapASADriver(t *testing.T) (*mockapi.MockOntapAPI, *ASAStorageDriv
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 
 	driver := newTestOntapASADriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
+	driver.managedPool = getASAManagedPool(nil)
 
 	return mockAPI, driver
 }
@@ -79,7 +81,8 @@ func newTestOntapASADriver(
 	iscsiClient, _ := iscsi.New()
 
 	asaDriver := &ASAStorageDriver{
-		iscsi: iscsiClient,
+		iscsi:       iscsiClient,
+		managedPool: getASAManagedPool(nil),
 	}
 	asaDriver.Config = *config
 
@@ -624,7 +627,22 @@ func TestValidateASA(t *testing.T) {
 
 		_ = PopulateASAConfigurationDefaults(ctx, &driver.Config)
 		driver.virtualPools = map[string]storage.Pool{}
-		driver.physicalPools = map[string]storage.Pool{}
+		driver.managedPool = storage.NewStoragePool(nil, managedStoragePoolName)
+		driver.managedPool.SetInternalAttributes(map[string]string{
+			SpaceReserve:    driver.Config.SpaceReserve,
+			SnapshotPolicy:  driver.Config.SnapshotPolicy,
+			SnapshotReserve: driver.Config.SnapshotReserve,
+			Encryption:      driver.Config.Encryption,
+			SplitOnClone:    driver.Config.SplitOnClone,
+			TieringPolicy:   driver.Config.TieringPolicy,
+			UnixPermissions: driver.Config.UnixPermissions,
+			SnapshotDir:     driver.Config.SnapshotDir,
+			ExportPolicy:    driver.Config.ExportPolicy,
+			SecurityStyle:   driver.Config.SecurityStyle,
+			SpaceAllocation: driver.Config.SpaceAllocation,
+			FileSystemType:  driver.Config.FileSystemType,
+			Size:            driver.Config.Size,
+		})
 	}
 
 	testCases := []testCase{
@@ -716,8 +734,10 @@ func TestCreateASA(t *testing.T) {
 		storagePool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 			"template": `{{.volume.Name}}`,
 		})
-		driver.physicalPools = map[string]storage.Pool{"pool1": storagePool}
 		storagePool.InternalAttributes()[SkipRecoveryQueue] = "true"
+
+		driver.managedPool = storagePool
+
 		volAttrs = map[string]sa.Request{}
 	}
 
@@ -1288,7 +1308,7 @@ func TestCreateCloneASA_NameTemplate(t *testing.T) {
 		storagePool.SetInternalAttributes(map[string]string{
 			SplitOnClone: "false",
 		})
-		driver.physicalPools = map[string]storage.Pool{"pool1": storagePool}
+		driver.managedPool = storagePool
 	}
 	tests := []struct {
 		labelTestName string
@@ -2931,22 +2951,14 @@ func TestGetStorageBackendSpecsASA(t *testing.T) {
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 
-	pool2 := storage.NewStoragePool(nil, "dummyPool2")
-	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-
-	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
-	driver.physicalPools = physicalPools
+	driver.managedPool = pool1
 
 	err := driver.GetStorageBackendSpecs(ctx, backend)
 
 	assert.NoError(t, err)
 	assert.Equal(t, backend.Name(), driver.BackendName(), "Should be equal")
 
-	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
+	expectedPhysicalPoolsName := []string{"dummyPool1"}
 	assert.ElementsMatch(t, expectedPhysicalPoolsName, backend.GetPhysicalPoolNames(ctx), "Physical pool names do not match")
 }
 
@@ -2960,17 +2972,9 @@ func TestGetStorageBackendPhysicalPoolNamesASA(t *testing.T) {
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 
-	pool2 := storage.NewStoragePool(nil, "dummyPool2")
-	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	driver.managedPool = pool1
 
-	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
-	driver.physicalPools = physicalPools
-
-	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
+	expectedPhysicalPoolsName := []string{"dummyPool1"}
 	actualPhysicalPoolsName := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
 	assert.ElementsMatch(t, expectedPhysicalPoolsName, actualPhysicalPoolsName, "Should be equal")
@@ -2978,6 +2982,8 @@ func TestGetStorageBackendPhysicalPoolNamesASA(t *testing.T) {
 
 func TestGetBackendStateASA(t *testing.T) {
 	mockAPI, driver := newMockOntapASADriver(t)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+
 	derivedPools := []string{ONTAPTEST_VSERVER_AGGR_NAME}
 
 	pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
@@ -2986,7 +2992,7 @@ func TestGetBackendStateASA(t *testing.T) {
 	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-	physicalPools := map[string]storage.Pool{ONTAPTEST_VSERVER_AGGR_NAME: pool1}
+	managedPool := pool1
 
 	tests := []struct {
 		name           string
@@ -3003,16 +3009,16 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.Config.SANType = sa.ISCSI
 				driver.ips = []string{"1.2.3.4"}
 				driver.wwpns = []string{}
-				driver.physicalPools = physicalPools
+				driver.managedPool = managedPool
 			},
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"1.2.3.4"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
-				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
-				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+				mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 			},
 			expectedState:  "",
 			expectedReason: "Should be online",
@@ -3024,16 +3030,16 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.Config.SANType = sa.FCP
 				driver.wwpns = []string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}
 				driver.ips = []string{}
-				driver.physicalPools = physicalPools
+				driver.managedPool = managedPool
 			},
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
-				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
-				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+				mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 			},
 			expectedState:  "",
 			expectedReason: "Should be online",
@@ -3045,14 +3051,14 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.Config.SANType = sa.FCP
 				driver.wwpns = []string{}
 				driver.ips = []string{}
-				driver.physicalPools = physicalPools
+				driver.managedPool = managedPool
 			},
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{}, nil).Times(1)
-				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
-				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+				mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 			},
 			expectedState:  StateReasonDataLIFsDown,
 			expectedReason: "Should be offline due to no FCP LIFs",
@@ -3064,16 +3070,16 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.Config.SANType = sa.ISCSI
 				driver.ips = []string{"127.0.0.1"}
 				driver.wwpns = []string{}
-				driver.physicalPools = physicalPools
+				driver.managedPool = managedPool
 			},
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
-				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
-				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+				mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 			},
 			expectedState:  "",
 			expectedReason: "Should be online with explicit iSCSI SANType",
@@ -3222,7 +3228,7 @@ func TestOntapASAStorageDriver_Import_Managed_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as LUN name in ASA driver
 	originalVolumeName := "lun1"
@@ -3272,7 +3278,7 @@ func TestOntapASAStorageDriver_Import_NoRename_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as LUN name in ASA driver
 	originalVolumeName := "lun1"
@@ -3326,7 +3332,7 @@ func TestOntapASAStorageDriver_Import_UnManaged_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as LUN name in ASA driver
 	originalVolumeName := "lun1"
@@ -3369,7 +3375,7 @@ func TestOntapASAStorageDriver_Import_VolumeNotRW(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as LUN name in ASA driver
 	originalVolumeName := "lun1"
@@ -3411,7 +3417,7 @@ func TestOntapASAStorageDriver_Import_LunNotOnline(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as LUN name in ASA driver
 	originalVolumeName := "lun1"
@@ -3493,7 +3499,7 @@ func TestOntapASAStorageDriver_NameTemplateLabel(t *testing.T) {
 			pool1.SetAttributes(map[string]sa.Offer{
 				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
-			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+			driver.managedPool = pool1
 
 			mockAPI.EXPECT().LunGetByName(ctx, originalVolumeName).Return(&lun, nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
@@ -3542,7 +3548,7 @@ func TestOntapASAStorageDriver_NameTemplateLabelLengthExceeding(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	originalVolumeName := "lun1"
 	volConfig := getASAVolumeConfig()

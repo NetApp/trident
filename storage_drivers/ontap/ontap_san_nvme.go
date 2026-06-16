@@ -51,6 +51,7 @@ type NVMeStorageDriver struct {
 	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
 
+	managedPool   storage.Pool
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
@@ -169,7 +170,7 @@ func (d *NVMeStorageDriver) Initialize(
 	}
 
 	// Load default config parameters
-	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+	if err = PopulateConfigurationDefaults(ctx, &d.Config, d.API); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
@@ -188,7 +189,7 @@ func (d *NVMeStorageDriver) Initialize(
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found LIFs.")
 	}
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
@@ -256,7 +257,7 @@ func (d *NVMeStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	err = ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, api.MaxSANLabelLength)
+	err = ValidateStoragePools(ctx, d.managedPool, d.physicalPools, d.virtualPools, d, api.MaxSANLabelLength)
 	if err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
@@ -361,7 +362,8 @@ func (d *NVMeStorageDriver) Create(
 	}
 
 	// Get candidate physical pools.
-	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, d.physicalPools, d.virtualPools)
+	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes,
+		d.managedPool, d.physicalPools, d.virtualPools)
 	if err != nil {
 		return err
 	}
@@ -519,12 +521,10 @@ func (d *NVMeStorageDriver) Create(
 		}
 
 		// Create the volume.
-		err = d.API.VolumeCreate(
-			ctx, api.Volume{
-				AccessType: "",
-				Aggregates: []string{
-					aggregate,
-				},
+		err = createFlexvol(
+			ctx, d.API, api.Volume{
+				AccessType:      "",
+				Aggregates:      []string{aggregate},
 				Comment:         labels,
 				Encrypt:         enableEncryption,
 				ExportPolicy:    exportPolicy,
@@ -1366,7 +1366,7 @@ func (d *NVMeStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeCo
 
 // GetStorageBackendSpecs retrieves storage backend capabilities.
 func (d *NVMeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
+	return getStorageBackendSpecsCommon(backend, d.API, d.managedPool, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools.
@@ -1380,12 +1380,20 @@ func (d *NVMeStorageDriver) getStorageBackendPools(ctx context.Context) []driver
 	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
 
+	allPools := make([]storage.Pool, 0, len(d.physicalPools))
+	if d.managedPool != nil {
+		allPools = append(allPools, d.managedPool)
+	}
+	for _, pool := range d.physicalPools {
+		allPools = append(allPools, pool)
+	}
+
 	// For this driver, a discrete storage pool is composed of the following:
 	// 1. SVM UUID
 	// 2. Aggregate (physical pool)
 	svmUUID := d.GetAPI().GetSVMUUID()
 	backendPools := make([]drivers.OntapStorageBackendPool, 0)
-	for _, pool := range d.physicalPools {
+	for _, pool := range allPools {
 		backendPool := drivers.OntapStorageBackendPool{
 			SvmUUID:   svmUUID,
 			Aggregate: pool.Name(),
@@ -1407,6 +1415,7 @@ func (d *NVMeStorageDriver) getStoragePoolAttributes(ctx context.Context) map[st
 		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.Replication:      sa.NewBoolOffer(mirroring),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+		sa.SANType:          sa.NewStringOffer(d.Config.SANType),
 	}
 }
 

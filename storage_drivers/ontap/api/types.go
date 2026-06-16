@@ -6,6 +6,23 @@ import "time"
 
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
+type Feature string
+
+// Define new version-specific feature constants here
+const (
+	MinimumONTAPIVersion      Feature = "MINIMUM_ONTAPI_VERSION"
+	NetAppFlexGroups          Feature = "NETAPP_FLEXGROUPS"
+	NetAppFlexGroupsClone     Feature = "NETAPP_FLEXGROUPS_CLONE_ONTAPI_MINIMUM"
+	NetAppFabricPoolFlexVol   Feature = "NETAPP_FABRICPOOL_FLEXVOL"
+	NetAppFabricPoolFlexGroup Feature = "NETAPP_FABRICPOOL_FLEXGROUP"
+	LunGeometrySkip           Feature = "LUN_GEOMETRY_SKIP"
+	FabricPoolForSVMDR        Feature = "FABRICPOOL_FOR_SVMDR"
+	QosPolicies               Feature = "QOS_POLICIES"
+	LIFServices               Feature = "LIF_SERVICES"
+	NVMeProtocol              Feature = "NVME_PROTOCOL"
+	BalancedPlacement         Feature = "BALANCED_PLACEMENT"
+)
+
 // ONTAP FlexVol autosize.mode values.
 const (
 	VolumeAutosizeModeOff        = "off"

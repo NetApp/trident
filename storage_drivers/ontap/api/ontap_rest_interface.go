@@ -48,7 +48,18 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 	// -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error
+	VolumeCreate(
+		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+		snapshotReserve int, dpVolume bool,
+	) error
+	VolumeCreateBalanced(
+		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+		snapshotReserve int, dpVolume bool,
+	) error
+	// VolumeModify modifies one or more volume attributes
+	VolumeModify(ctx context.Context, volume Volume) error
 	// VolumeExists tests for the existence of a flexvol
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	// VolumeGetByName gets the flexvol with the specified name
@@ -245,14 +256,27 @@ type RestClientInterface interface {
 	ExportRuleList(ctx context.Context, policy string) (*nas.ExportRuleCollectionGetOK, error)
 	// ExportRuleCreate creates a rule in an export policy
 	// equivalent to filer::> vserver export-policy rule create
-	ExportRuleCreate(ctx context.Context, policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string) (*nas.ExportRuleCreateCreated, error)
+	ExportRuleCreate(
+		ctx context.Context, policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
+	) (*nas.ExportRuleCreateCreated, error)
 	// ExportRuleDestroy deletes the rule at the given index in the given policy
 	ExportRuleDestroy(ctx context.Context, policy string, ruleIndex int) (*nas.ExportRuleDeleteOK, error)
 	// FlexGroupCreate creates a FlexGroup with the specified options
 	// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size
 	// -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none
 	// -security-style unix -encrypt false
-	FlexGroupCreate(ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int) error
+	FlexGroupCreate(
+		ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+		snapshotReserve int,
+	) error
+	FlexGroupCreateBalanced(
+		ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+		snapshotReserve int,
+	) error
+	// FlexgroupModify modifies one or more volume attributes
+	FlexgroupModify(ctx context.Context, volume Volume) error
 	// FlexgroupCloneSplitStart starts splitting the flexgroup clone
 	FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error
 	// FlexGroupDestroy destroys a FlexGroup

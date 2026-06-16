@@ -140,6 +140,10 @@ func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (Ont
 	return result, nil
 }
 
+func (d OntapAPIREST) IsREST() bool {
+	return true
+}
+
 func (d OntapAPIREST) SVMName() string {
 	return d.api.SVMName()
 }
@@ -194,6 +198,36 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 	}
 
 	return nil
+}
+
+func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) error {
+	fields := LogFields{
+		"Method": "VolumeCreateBalanced",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreateBalanced")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreateBalanced")
+
+	// Double-check this API is supported
+	if !d.SupportsFeature(ctx, BalancedPlacement) {
+		return errors.UnsupportedError("ONTAP version does not support balanced placement")
+	}
+
+	creationErr := d.api.VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
+	if creationErr != nil {
+		return fmt.Errorf("error creating volume: %v", creationErr)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) VolumeModify(ctx context.Context, volume Volume) error {
+	return d.api.VolumeModify(ctx, volume)
 }
 
 func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
@@ -654,6 +688,41 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	}
 
 	return nil
+}
+
+func (d OntapAPIREST) FlexgroupCreateBalanced(ctx context.Context, volume Volume) error {
+	fields := LogFields{
+		"Method": "FlexgroupCreateBalanced",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreateBalanced")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreateBalanced")
+
+	// Double-check this API is supported
+	if !d.SupportsFeature(ctx, BalancedPlacement) {
+		return errors.UnsupportedError("ONTAP version does not support balanced placement")
+	}
+
+	volumeSize, err := convert.ToPositiveInt(volume.Size)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
+	}
+
+	creationErr := d.api.FlexGroupCreateBalanced(ctx, volume.Name, volumeSize, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
+		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+	if creationErr != nil {
+		return fmt.Errorf("error creating volume: %v", creationErr)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupModify(ctx context.Context, volume Volume) error {
+	return d.api.FlexgroupModify(ctx, volume)
 }
 
 func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error {

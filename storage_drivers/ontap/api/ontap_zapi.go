@@ -181,24 +181,8 @@ func NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy string) (QosPolicyGroup, err
 // API functions are named in a NounVerb pattern. This reflects how the azgo
 // functions are also named. (i.e. VolumeGet instead of GetVolume)
 
-type Feature string
-
-// Define new version-specific feature constants here
-const (
-	MinimumONTAPIVersion      Feature = "MINIMUM_ONTAPI_VERSION"
-	NetAppFlexGroups          Feature = "NETAPP_FLEXGROUPS"
-	NetAppFlexGroupsClone     Feature = "NETAPP_FLEXGROUPS_CLONE_ONTAPI_MINIMUM"
-	NetAppFabricPoolFlexVol   Feature = "NETAPP_FABRICPOOL_FLEXVOL"
-	NetAppFabricPoolFlexGroup Feature = "NETAPP_FABRICPOOL_FLEXGROUP"
-	LunGeometrySkip           Feature = "LUN_GEOMETRY_SKIP"
-	FabricPoolForSVMDR        Feature = "FABRICPOOL_FOR_SVMDR"
-	QosPolicies               Feature = "QOS_POLICIES"
-	LIFServices               Feature = "LIF_SERVICES"
-	NVMeProtocol              Feature = "NVME_PROTOCOL"
-)
-
 // Indicate the minimum Ontapi version for each feature here
-var features = map[Feature]*versionutils.Version{
+var zapiFeaturesByVersion = map[Feature]*versionutils.Version{
 	MinimumONTAPIVersion:      versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	NetAppFlexGroups:          versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
@@ -209,19 +193,6 @@ var features = map[Feature]*versionutils.Version{
 	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
 	// TODO(sphadnis): Check if all the Zapi calls work on this version once Zapi APIs for NVMe are implemented.
 	NVMeProtocol: versionutils.MustParseSemantic("1.201.0"), // cDOT 9.10.1
-}
-
-// Indicate the minimum Ontap version for each feature here (non-API specific)
-var featuresByVersion = map[Feature]*versionutils.Version{
-	MinimumONTAPIVersion:      versionutils.MustParseSemantic("9.5.0"),
-	NetAppFlexGroups:          versionutils.MustParseSemantic("9.2.0"),
-	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("9.7.0"),
-	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("9.2.0"),
-	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("9.5.0"),
-	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
-	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
-	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
-	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
 }
 
 var MaximumONTAPIVersion = versionutils.MustParseMajorMinorVersion("9.99")
@@ -238,7 +209,7 @@ func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
 		return false
 	}
 
-	if minVersion, ok := features[feature]; ok {
+	if minVersion, ok := zapiFeaturesByVersion[feature]; ok {
 		return ontapiSemVer.AtLeast(minVersion)
 	} else {
 		return false
@@ -808,9 +779,6 @@ func (c Client) FlexGroupCreate(
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 	junctionPath := fmt.Sprintf("/%s", name)
 
-	aggrList := azgo.VolumeCreateAsyncRequestAggrList{}
-	aggrList.SetAggrName(aggrs)
-
 	request := azgo.NewVolumeCreateAsyncRequest().
 		SetVolumeName(name).
 		SetSize(size).
@@ -818,9 +786,17 @@ func (c Client) FlexGroupCreate(
 		SetSpaceReserve(spaceReserve).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
+
+	if len(aggrs) > 0 {
+		aggrList := azgo.VolumeCreateAsyncRequestAggrList{}
+		aggrList.SetAggrName(aggrs)
+		request.SetAggrList(aggrList)
+		request.SetAggrListMultiplier(defaultConstituentsPerAggregate)
+	} else {
+		request.SetAutoProvisionAs("flexgroup")
+	}
 
 	// Set Unix permission for NFS volume only.
 	if unixPermissions != "" {

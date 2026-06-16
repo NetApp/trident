@@ -60,6 +60,7 @@ func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.InternalAttributes()[FileSystemType] = filesystem.Ext4
+	driver.managedPool = getManagedPool(nil)
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -70,6 +71,10 @@ func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockap
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
+
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
@@ -79,6 +84,9 @@ func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockap
 func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
@@ -176,7 +184,7 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New("failed to get aggrs"))
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
@@ -199,7 +207,7 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
@@ -219,7 +227,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -233,6 +241,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
 	d.Config.CommonStorageDriverConfig = nil
 	defer mockCtrl.Finish()
@@ -254,7 +263,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -271,6 +280,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -296,7 +306,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -316,6 +326,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -344,7 +355,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().IsDisaggregated().Return(false)
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -391,7 +402,14 @@ func TestNVMeValidate_SANValidationError(t *testing.T) {
 }
 
 func TestNVMeValidate_StoragePoolError(t *testing.T) {
-	d := newNVMeDriver(nil, nil, nil)
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newNVMeDriver(mockAPI, nil, nil)
+	defer mockCtrl.Finish()
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).Return(false).AnyTimes()
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.InternalAttributes()[SnapshotPolicy] = ""
 	d.virtualPools = map[string]storage.Pool{"pool1": pool1}
@@ -409,7 +427,6 @@ func TestNVMeInitializeStoragePools_NameTemplatesAndLabels(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -538,7 +555,7 @@ func TestNVMeInitializeStoragePools_NameTemplatesAndLabels(t *testing.T) {
 			d.Config.NameTemplate = test.physicalNameTemplate
 			d.Config.Storage[0].Labels = test.virtualPoolLabels
 			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
-			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+			_, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 				test.backendName)
 			assert.NoError(t, err, "Error is not nil")
 
@@ -566,6 +583,7 @@ func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 	backend := storage.StorageBackend{}
 
 	backend.ClearStoragePools()
+	d.managedPool = getManagedPool(nil)
 
 	assert.NoError(t, d.GetStorageBackendSpecs(ctx, &backend), "Backend specs not updated.")
 }
@@ -587,14 +605,19 @@ func TestNVMeGetStorageBackendPools(t *testing.T) {
 	pools := driver.getStorageBackendPools(ctx)
 
 	assert.NotEmpty(t, pools)
-	assert.Equal(t, len(driver.physicalPools), len(pools))
+	assert.Equal(t, 1+len(driver.physicalPools), len(pools))
 
 	pool := pools[0]
+	assert.NotNil(t, driver.managedPool)
+	assert.Equal(t, managedStoragePoolName, pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+
+	pool = pools[1]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
 
-	pool = pools[1]
+	pool = pools[2]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
@@ -847,6 +870,7 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 
 func TestNVMeCreate_CleanupIncompleteNamespace_OrphanedVolumeCleaned(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
+	mAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
@@ -2211,7 +2235,8 @@ func TestNVMeCreatePrepare_NilPool(t *testing.T) {
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	d.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(ctx), d.BackendName())
+	d.managedPool, d.physicalPools, _, _ = InitializeStoragePoolsCommon(
+		ctx, d, d.getStoragePoolAttributes(ctx), d.BackendName())
 
 	d.CreatePrepare(ctx, &volConfig, nil)
 	assert.Equal(t, "newVolume_testNamespace_testSC", volConfig.InternalName, "Incorrect volume internal name.")
@@ -2240,7 +2265,8 @@ func TestNVMeCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	d.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(ctx), d.BackendName())
+	d.managedPool, d.physicalPools, _, _ = InitializeStoragePoolsCommon(
+		ctx, d, d.getStoragePoolAttributes(ctx), d.BackendName())
 
 	d.CreatePrepare(ctx, &volConfig, nil)
 	assert.Equal(t, "testNamespace_testSC_12345", volConfig.InternalName, "Incorrect volume internal name.")

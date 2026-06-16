@@ -203,6 +203,7 @@ func newTestOntapSanEcoDriver(t *testing.T, vserverAdminHost, vserverAdminPort, 
 	sanEcoDriver := &SANEconomyStorageDriver{
 		iscsi:        iscsiClient,
 		flexvolLocks: locks.NewGCNamedMutex(),
+		managedPool:  getManagedPool(nil),
 	}
 	sanEcoDriver.Config = *config
 
@@ -241,6 +242,9 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
@@ -257,6 +261,9 @@ func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyS
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
@@ -602,6 +609,7 @@ func TestDriverValidateInvalidPrefix(t *testing.T) {
 func TestDriverValidateInvalidPools(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[BalancedPlacement] = "false"
 	pool1.InternalAttributes()[SpaceReserve] = "iaminvalid"
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -674,6 +682,8 @@ func TestOntapSANEconomyInitializeStoragePools_NameTemplatesAndLabels(t *testing
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -812,12 +822,16 @@ func TestOntapSANEconomyInitializeStoragePools_NameTemplatesAndLabels(t *testing
 			d.Config.NameTemplate = test.physicalNameTemplate
 			d.Config.Storage[0].Labels = test.virtualPoolLabels
 			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
-			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+			managedPool, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 				test.backendName)
 			assert.NoError(t, err, "Error is not nil")
 
+			label, err := managedPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
+
 			physicalPool := physicalPools["data"]
-			label, err := physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			label, err = physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
 			assert.NoError(t, err, "Error is not nil")
 			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
 
@@ -4415,11 +4429,23 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 func TestOntapSanEconomyGetStorageBackendSpecs(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 	d.ips = []string{"127.0.0.1"}
+	backend := storage.NewTestStorageBackend()
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	result := d.GetStorageBackendSpecs(ctx, backend)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapSanEconomyGetStorageBackendSpecs_NoPools(t *testing.T) {
+	_, d := newMockOntapSanEcoDriver(t)
+	d.ips = []string{"127.0.0.1"}
 	backend := storage.StorageBackend{}
 
 	result := d.GetStorageBackendSpecs(ctx, &backend)
 
-	assert.Nil(t, result)
+	assert.Error(t, result)
 }
 
 func TestOntapSanEconomyGetStorageBackendPhysicalPoolNames(t *testing.T) {
@@ -4446,15 +4472,21 @@ func TestOntapSanEconomyGetStorageBackendPools(t *testing.T) {
 	pools := driver.getStorageBackendPools(ctx)
 
 	assert.NotEmpty(t, pools)
-	assert.Equal(t, len(driver.physicalPools), len(pools))
+	assert.Equal(t, 1+len(driver.physicalPools), len(pools))
 
 	pool := pools[0]
+	assert.NotNil(t, driver.managedPool)
+	assert.Equal(t, managedStoragePoolName, pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+
+	pool = pools[1]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
 	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
 
-	pool = pools[1]
+	pool = pools[2]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
@@ -5351,6 +5383,8 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.Config.CommonStorageDriverConfig = nil
@@ -5412,6 +5446,8 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.Config.CommonStorageDriverConfig = nil
@@ -5480,6 +5516,8 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.Config.CommonStorageDriverConfig = nil
@@ -6135,6 +6173,8 @@ func TestOntapSanEconomyCreatePrepare_NilPool(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -6153,7 +6193,8 @@ func TestOntapSanEconomyCreatePrepare_NilPool(t *testing.T) {
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	d.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.managedPool, d.physicalPools, _, _ = InitializeStoragePoolsCommon(
+		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
 
 	d.CreatePrepare(ctx, &volConfig, nil)
 	assert.Equal(t, volConfig.InternalName, "newVolume_testNamespace_testSC", "volume name is not set correctly")
@@ -6163,6 +6204,8 @@ func TestOntapSanEconomyCreatePrepare_NilPool_templateNotContainVolumeName(t *te
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -6181,7 +6224,8 @@ func TestOntapSanEconomyCreatePrepare_NilPool_templateNotContainVolumeName(t *te
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	d.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.managedPool, d.physicalPools, _, _ = InitializeStoragePoolsCommon(
+		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
 
 	d.CreatePrepare(ctx, &volConfig, nil)
 	assert.Equal(t, volConfig.InternalName, "testNamespace_testSC_12345", "volume name is not set correctly")

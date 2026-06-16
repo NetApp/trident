@@ -134,6 +134,8 @@ type OntapStorageDriverConfig struct {
 	DenyNewVolumePools               string      `json:"denyNewVolumePools"`
 	AutoExportPolicy                 bool        `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string    `json:"autoExportCIDRs"`
+	NASType                          string      `json:"nasType"`
+	SANType                          string      `json:"sanType"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
@@ -155,9 +157,8 @@ type OntapStorageDriverPool struct {
 	Region                           string              `json:"region"`
 	Zone                             string              `json:"zone"`
 	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
-	NASType                          string              `json:"nasType"`
-	SANType                          string              `json:"sanType"`
 	SMBShare                         string              `json:"smbShare"`
+	UseBalancedPlacement             string              `json:"useBalancedPlacement"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }
 

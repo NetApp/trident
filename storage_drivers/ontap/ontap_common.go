@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime/debug"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -81,36 +82,40 @@ const (
 	ADAdminUserPermission           = "full_control" // AD admin user permission
 	DefaultSMBAccessControlUser     = "Everyone"     // Default SMB access control user
 	DefaultSMBAccessControlUserType = "windows"      // Default SMB access control user type
+	AllAggregates                   = "*"
 
 	// Constants for internal pool attributes
-	Size                  = "size"
-	NameTemplate          = "nameTemplate"
-	Region                = "region"
-	Zone                  = "zone"
-	Media                 = "media"
-	SpaceAllocation       = "spaceAllocation"
-	SnapshotDir           = "snapshotDir"
-	SpaceReserve          = "spaceReserve"
-	SnapshotPolicy        = "snapshotPolicy"
-	SnapshotReserve       = "snapshotReserve"
-	UnixPermissions       = "unixPermissions"
-	ExportPolicy          = "exportPolicy"
-	SecurityStyle         = "securityStyle"
-	BackendType           = "backendType"
-	Replication           = "replication"
-	Snapshots             = "snapshots"
-	Clones                = "clones"
-	Encryption            = "encryption"
-	LUKSEncryption        = "LUKSEncryption"
-	FileSystemType        = "fileSystemType"
-	FormatOptions         = "formatOptions"
-	ProvisioningType      = "provisioningType"
-	SplitOnClone          = "splitOnClone"
-	TieringPolicy         = "tieringPolicy"
-	SkipRecoveryQueue     = "skipRecoveryQueue"
-	QosPolicy             = "qosPolicy"
-	AdaptiveQosPolicy     = "adaptiveQosPolicy"
-	ADAdminUser           = "adAdminUser"
+	Size              = "size"
+	NameTemplate      = "nameTemplate"
+	Region            = "region"
+	Zone              = "zone"
+	Media             = "media"
+	SpaceAllocation   = "spaceAllocation"
+	SnapshotDir       = "snapshotDir"
+	SpaceReserve      = "spaceReserve"
+	SnapshotPolicy    = "snapshotPolicy"
+	SnapshotReserve   = "snapshotReserve"
+	UnixPermissions   = "unixPermissions"
+	ExportPolicy      = "exportPolicy"
+	SecurityStyle     = "securityStyle"
+	BackendType       = "backendType"
+	Replication       = "replication"
+	Snapshots         = "snapshots"
+	Clones            = "clones"
+	Encryption        = "encryption"
+	LUKSEncryption    = "LUKSEncryption"
+	FileSystemType    = "fileSystemType"
+	FormatOptions     = "formatOptions"
+	ProvisioningType  = "provisioningType"
+	SplitOnClone      = "splitOnClone"
+	TieringPolicy     = "tieringPolicy"
+	SkipRecoveryQueue = "skipRecoveryQueue"
+	QosPolicy         = "qosPolicy"
+	AdaptiveQosPolicy = "adaptiveQosPolicy"
+	ADAdminUser       = "adAdminUser"
+	Aggregates        = "aggregates"
+	BalancedPlacement = "balancedPlacement"
+
 	maxFlexGroupCloneWait = 120 * time.Second
 	maxFlexvolCloneWait   = 30 * time.Second
 
@@ -1953,10 +1958,17 @@ const (
 	DefaultXfsFormatOptions          = ""
 	DefaultASAEncryption             = "true"
 	DefaultADAdminUser               = ""
+
+	// Use of ONTAP's balanced placement algorithm varies by personality
+	DefaultUseBalancedPlacementUnified       = "false"
+	DefaultUseBalancedPlacementDisaggregated = "true"
 )
 
-// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
-func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
+// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file.
+// This function is used by Unified and AFX personalities.
+func PopulateConfigurationDefaults(
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, ontapi api.OntapAPI,
+) error {
 	fields := LogFields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateConfigurationDefaults")
@@ -2128,6 +2140,16 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.NameTemplate = ensureUniquenessInNameTemplate(config.NameTemplate)
 	}
 
+	if config.UseBalancedPlacement == "" {
+		config.UseBalancedPlacement = DefaultUseBalancedPlacementUnified
+
+		// Always use balanced placement for AFX if possible.
+		afx := ontapi.IsDisaggregated() && !ontapi.IsSANOptimized()
+		if afx && ontapi.SupportsFeature(ctx, api.BalancedPlacement) {
+			config.UseBalancedPlacement = DefaultUseBalancedPlacementDisaggregated
+		}
+	}
+
 	logFields := LogFields{
 		"SpaceAllocation":        config.SpaceAllocation,
 		"SpaceReserve":           config.SpaceReserve,
@@ -2155,6 +2177,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 		"ADAdminUser":            config.ADAdminUser,
 		"NameTemplate":           config.NameTemplate,
+		"UseBalancedPlacement":   config.UseBalancedPlacement,
 	}
 
 	if config.StoragePrefix != nil {
@@ -2969,29 +2992,38 @@ func validateFormatOptions(formatOptions string) error {
 
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
-) (map[string]storage.Pool, map[string]storage.Pool, error) {
+) (storage.Pool, map[string]storage.Pool, map[string]storage.Pool, error) {
 	if d.GetAPI().IsDisaggregated() {
 		// For Disaggregated systems, override media type to reflect all-flash nature
 		poolAttributes[sa.Media] = sa.NewStringOffer(sa.SSD)
-		return InitializeManagedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
+		return initializeManagedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
 	}
-	return InitializeAggregatedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
+	return initializeAggregatedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
 }
 
-func InitializeAggregatedStoragePoolsCommon(
+func initializeAggregatedStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
-) (map[string]storage.Pool, map[string]storage.Pool, error) {
+) (storage.Pool, map[string]storage.Pool, map[string]storage.Pool, error) {
 	config := d.GetOntapConfig()
+
+	var err error
+	var managedPool storage.Pool
 	physicalPools := make(map[string]storage.Pool)
 	virtualPools := make(map[string]storage.Pool)
 
 	// To identify list of media types supported by physical pools
 	mediaOffers := make([]sa.Offer, 0)
 
+	// Create a backend-level managed pool.  If balanced placement is not supported, it will fail validation.
+	managedPool, err = initializeManagedPool(ctx, d, poolAttributes, backendName)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	// Get name of the physical storage pools which in case of ONTAP is list of aggregates
 	physicalStoragePoolNames, err := discoverBackendAggrNamesCommon(ctx, d)
 	if err != nil || len(physicalStoragePoolNames) == 0 {
-		return physicalPools, virtualPools, fmt.Errorf("could not get storage pools from array: %v", err)
+		return nil, nil, nil, fmt.Errorf("could not get storage pools from array: %v", err)
 	}
 
 	// Create a map of Physical storage pool name to their attributes map
@@ -3040,20 +3072,27 @@ func InitializeAggregatedStoragePoolsCommon(
 
 		err = setStoragePoolAttributes(ctx, pool, config, poolAttributes, d.Name())
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		physicalPools[pool.Name()] = pool
 	}
 
 	virtualPools, err = initializeVirtualPools(ctx, d, poolAttributes, backendName, mediaOffers)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
-	return physicalPools, virtualPools, err
+	return managedPool, physicalPools, virtualPools, err
 }
 
 func setStoragePoolAttributes(
 	ctx context.Context, pool storage.Pool, config *drivers.OntapStorageDriverConfig,
 	poolAttributes map[string]sa.Offer, driverName string,
 ) error {
+	// Update pool with attributes set by default for this backend
+	// We do not set internal attributes with these values as this
+	// merely means that pools supports these capabilities like
+	// encryption, cloning, thick/thin provisioning
 	for attrName, offer := range poolAttributes {
 		pool.Attributes()[attrName] = offer
 	}
@@ -3074,8 +3113,6 @@ func setStoragePoolAttributes(
 	}
 
 	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
-	pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
-	pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
 
 	pool.InternalAttributes()[Size] = config.Size
 	pool.InternalAttributes()[NameTemplate] = config.NameTemplate
@@ -3096,6 +3133,8 @@ func setStoragePoolAttributes(
 	pool.InternalAttributes()[QosPolicy] = config.QosPolicy
 	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 	pool.InternalAttributes()[ADAdminUser] = config.ADAdminUser
+	pool.InternalAttributes()[BalancedPlacement] = config.UseBalancedPlacement
+	pool.InternalAttributes()[Aggregates] = AllAggregates
 
 	pool.SetSupportedTopologies(config.SupportedTopologies)
 
@@ -3112,41 +3151,45 @@ func setStoragePoolAttributes(
 	return nil
 }
 
-// InitializeManagedStoragePoolsCommon initializes storage pools for systems where aggregate
+// initializeManagedStoragePoolsCommon initializes storage pools for systems where aggregate
 // selection and placement is managed automatically by the storage system rather than explicitly
 // by Trident. This includes disaggregated ONTAP systems and other unified storage
 // architectures where Trident doesn't need to be aware of individual aggregates.
-func InitializeManagedStoragePoolsCommon(
+func initializeManagedStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
-) (map[string]storage.Pool, map[string]storage.Pool, error) {
-	var err error
-	config := d.GetOntapConfig()
+) (managedPool storage.Pool, physicalPools, virtualPools map[string]storage.Pool, err error) {
+	// Create single managed pool
+	managedPool, err = initializeManagedPool(ctx, d, poolAttributes, backendName)
+	if err != nil {
+		return
+	}
+
+	physicalPools = make(map[string]storage.Pool)
 
 	mediaOffers := make([]sa.Offer, 0)
 	if mediaOffer, ok := poolAttributes[sa.Media]; ok {
 		mediaOffers = append(mediaOffers, mediaOffer)
 	}
 
-	pool := storage.NewStoragePool(nil, managedStoragePoolName)
+	virtualPools, err = initializeVirtualPools(ctx, d, poolAttributes, backendName, mediaOffers)
 
-	// Update pool with attributes set by default for this backend
-	// We do not set internal attributes with these values as this
-	// merely means that pools supports these capabilities like
-	// encryption, cloning, thick/thin provisioning
-	for attrName, offer := range poolAttributes {
-		pool.Attributes()[attrName] = offer
-	}
+	return
+}
 
-	err = setStoragePoolAttributes(ctx, pool, config, poolAttributes, d.Name())
+// initializeManagedPool creates a single storage pool representing an entire backend.
+func initializeManagedPool(
+	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, _ string,
+) (storage.Pool, error) {
+	config := d.GetOntapConfig()
+
+	managedPool := storage.NewStoragePool(nil, managedStoragePoolName)
+
+	err := setStoragePoolAttributes(ctx, managedPool, config, poolAttributes, d.Name())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	physicalPools := map[string]storage.Pool{pool.Name(): pool}
-
-	virtualPools, err := initializeVirtualPools(ctx, d, poolAttributes, backendName, mediaOffers)
-
-	return physicalPools, virtualPools, err
+	return managedPool, nil
 }
 
 func initializeVirtualPools(
@@ -3275,6 +3318,11 @@ func initializeVirtualPools(
 			adAdminUser = vpool.ADAdminUser
 		}
 
+		useBalancedPlacement := config.UseBalancedPlacement
+		if vpool.UseBalancedPlacement != "" {
+			useBalancedPlacement = vpool.UseBalancedPlacement
+		}
+
 		pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), backendName))
 
 		// Update pool with attributes set by default for this backend
@@ -3283,21 +3331,6 @@ func initializeVirtualPools(
 		// encryption, cloning, thick/thin provisioning
 		for attrName, offer := range poolAttributes {
 			pool.Attributes()[attrName] = offer
-		}
-
-		nasType := config.NASType
-		if vpool.NASType != "" {
-			nasType = vpool.NASType
-		}
-
-		sanType := config.SANType
-		if vpool.SANType != "" {
-			sanType = strings.ToLower(vpool.SANType)
-			if config.SANType != sanType {
-				return nil, fmt.Errorf(
-					"trident does not support mixing of %s and %s SAN types", sanType, config.SANType,
-				)
-			}
 		}
 
 		formatOptions := config.FormatOptions
@@ -3309,8 +3342,6 @@ func initializeVirtualPools(
 		}
 
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
-		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
-		pool.Attributes()[sa.SANType] = sa.NewStringOffer(sanType)
 
 		if region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
@@ -3349,6 +3380,8 @@ func initializeVirtualPools(
 		pool.InternalAttributes()[LUKSEncryption] = luksEncryption
 		pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
 		pool.InternalAttributes()[ADAdminUser] = adAdminUser
+		pool.InternalAttributes()[Aggregates] = AllAggregates
+		pool.InternalAttributes()[BalancedPlacement] = useBalancedPlacement
 		pool.SetSupportedTopologies(supportedTopologies)
 
 		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
@@ -3366,13 +3399,19 @@ func initializeVirtualPools(
 // ValidateStoragePools checks that pool attribute values are valid for a traditional ONTAP storage cluster.
 // Any fields not explicitly specified would have been set to default values during pool initialization.
 func ValidateStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
+	ctx context.Context, managedPool storage.Pool, physicalPools, virtualPools map[string]storage.Pool,
+	d StorageDriver, labelLimit int,
 ) error {
 	config := d.GetOntapConfig()
+	afx := d.GetAPI().IsDisaggregated() && !d.GetAPI().IsSANOptimized()
+
+	if managedPool == nil {
+		return errors.New("managedPool must not be nil")
+	}
 
 	// Validate pool-level attributes
-	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
-
+	allPools := make([]storage.Pool, 0, 1+len(physicalPools)+len(virtualPools))
+	allPools = append(allPools, managedPool)
 	for _, pool := range physicalPools {
 		allPools = append(allPools, pool)
 	}
@@ -3383,6 +3422,48 @@ func ValidateStoragePools(
 	for _, pool := range allPools {
 
 		poolName := pool.Name()
+
+		// Validate AFX limitations
+		if afx {
+			aggregatesAttr, aggrsOK := pool.InternalAttributes()[Aggregates]
+			if aggrsOK && (aggregatesAttr != "" && aggregatesAttr != AllAggregates) {
+				return fmt.Errorf("AFX does not support explicit aggregate selection")
+			}
+			if len(config.FlexGroupAggregateList) > 0 {
+				return fmt.Errorf("AFX does not support explicit aggregate selection")
+			}
+		}
+
+		// Validate balanced placement
+		if pool.InternalAttributes()[BalancedPlacement] == "" {
+			return fmt.Errorf("useBalancedPlacement cannot be empty in pool %s", poolName)
+		} else {
+			useBP, err := strconv.ParseBool(pool.InternalAttributes()[BalancedPlacement])
+			if err != nil {
+				return fmt.Errorf("invalid value for useBalancedPlacement in pool %s: %v", poolName, err)
+			}
+			pool.InternalAttributes()[BalancedPlacement] = strconv.FormatBool(useBP)
+		}
+
+		if pool.InternalAttributes()[BalancedPlacement] == "true" {
+			if !d.GetAPI().IsREST() {
+				return fmt.Errorf("balanced placement requires ONTAP REST API")
+			}
+			if !d.GetAPI().SupportsFeature(ctx, api.BalancedPlacement) {
+				return fmt.Errorf("ONTAP version does not support balanced placement")
+			}
+			aggregatesAttr, aggrsOK := pool.InternalAttributes()[Aggregates]
+			if aggrsOK && (aggregatesAttr != "" && aggregatesAttr != AllAggregates) {
+				return fmt.Errorf("balanced placement may not be used with explicit aggregate selection")
+			}
+			if len(config.FlexGroupAggregateList) > 0 {
+				return fmt.Errorf("balanced placement may not be used with FlexGroup aggregate selection")
+			}
+		} else if pool.InternalAttributes()[BalancedPlacement] == "false" {
+			if afx && d.GetAPI().SupportsFeature(ctx, api.BalancedPlacement) {
+				return fmt.Errorf("ONTAP version with AFX personality must use balanced placement")
+			}
+		}
 
 		// Validate SpaceReserve
 		switch pool.InternalAttributes()[SpaceReserve] {
@@ -3536,16 +3617,13 @@ func ValidateStoragePools(
 			}
 		}
 
-		// Cloning is not supported on ONTAP FlexGroups driver
-		if d.Name() != tridentconfig.OntapNASFlexGroupStorageDriverName {
-			// Validate splitOnClone
-			if pool.InternalAttributes()[SplitOnClone] == "" {
-				return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
-			} else {
-				_, err := strconv.ParseBool(pool.InternalAttributes()[SplitOnClone])
-				if err != nil {
-					return fmt.Errorf("invalid value for splitOnClone in pool %s: %v", poolName, err)
-				}
+		// Validate splitOnClone
+		if pool.InternalAttributes()[SplitOnClone] == "" {
+			return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
+		} else {
+			_, err := strconv.ParseBool(pool.InternalAttributes()[SplitOnClone])
+			if err != nil {
+				return fmt.Errorf("invalid value for splitOnClone in pool %s: %v", poolName, err)
 			}
 		}
 
@@ -3592,7 +3670,7 @@ func ValidateStoragePools(
 // ValidateASAStoragePools checks that pool attribute values are valid for an All-SAN Array storage cluster.
 // Any fields not explicitly specified would have been set to default values during pool initialization.
 func ValidateASAStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
+	ctx context.Context, managedPool storage.Pool, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
 	config := d.GetOntapConfig()
 
@@ -3615,12 +3693,13 @@ func ValidateASAStoragePools(
 		return errors.New("invalid value for sanType")
 	}
 
-	// Validate pool-level attributes
-	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
-
-	for _, pool := range physicalPools {
-		allPools = append(allPools, pool)
+	if managedPool == nil {
+		return errors.New("managedPool must not be nil")
 	}
+
+	// Validate pool-level attributes
+	allPools := make([]storage.Pool, 0, 1+len(virtualPools))
+	allPools = append(allPools, managedPool)
 	for _, pool := range virtualPools {
 		allPools = append(allPools, pool)
 	}
@@ -3792,26 +3871,70 @@ func ValidateASAStoragePools(
 	return nil
 }
 
-// getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
+// getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.  These
+// are the pools that get reported to the core and matched against storage classes for incoming
+// provisioning requests.
 func getStorageBackendSpecsCommon(
-	backend storage.Backend, physicalPools, virtualPools map[string]storage.Pool, backendName string,
+	backend storage.Backend, ontapAPI api.OntapAPI, managedPool storage.Pool,
+	physicalPools, virtualPools map[string]storage.Pool, backendName string,
 ) (err error) {
+	if backend == nil || managedPool == nil {
+		return errors.New("must specify backend and managedPool")
+	}
+
 	backend.SetName(backendName)
 
-	virtual := len(virtualPools) > 0
-
+	// Update all pools with backend
+	managedPool.SetBackend(backend)
 	for _, pool := range physicalPools {
 		pool.SetBackend(backend)
-		if !virtual {
-			backend.AddStoragePool(pool)
+	}
+	for _, pool := range virtualPools {
+		pool.SetBackend(backend)
+	}
+
+	// If virtual pools are present, report only those, ignoring any pool-level
+	// physical pool selection (i.e. aggregates) until provisioning time.
+	if len(virtualPools) > 0 {
+		for _, virtualPool := range virtualPools {
+			backend.AddStoragePool(virtualPool)
+		}
+		return nil
+	}
+
+	// Without virtual pools, if balanced placement is configured, then report only
+	// the backend-level managed pool.
+	if managedPool.InternalAttributes()[BalancedPlacement] == "true" {
+		backend.AddStoragePool(managedPool)
+		return nil
+	}
+
+	// Without virtual pools, if the backend is disaggregated, then report only
+	// the backend-level managed pool.
+	if ontapAPI.IsDisaggregated() {
+		backend.AddStoragePool(managedPool)
+		return nil
+	}
+
+	// If only physical pools are present, report only those that pass the physical pool
+	// filter (aggregates) if set.
+	physicalPoolAdded := false
+	for _, physicalPool := range physicalPools {
+
+		aggregatesAttr, aggrsOK := physicalPool.InternalAttributes()[Aggregates]
+		if !aggrsOK {
+			aggregatesAttr = AllAggregates
+		}
+		aggregates := strings.Split(aggregatesAttr, ",")
+
+		if slices.Contains(aggregates, AllAggregates) || slices.Contains(aggregates, physicalPool.Name()) {
+			backend.AddStoragePool(physicalPool)
+			physicalPoolAdded = true
 		}
 	}
 
-	for _, pool := range virtualPools {
-		pool.SetBackend(backend)
-		if virtual {
-			backend.AddStoragePool(pool)
-		}
+	if !physicalPoolAdded {
+		return fmt.Errorf("backend %s has no available pools", backendName)
 	}
 
 	return nil
@@ -3927,18 +4050,38 @@ func getStorageBackendPhysicalPoolNamesCommon(physicalPools map[string]storage.P
 	return physicalPoolNames
 }
 
+// getPoolsForCreate accepts the pool selected for a new volume and returns the physical pool(s)
+// that should be used to create the volume. If a physical pool was selected, it is returned
+// directly. If a virtual pool was selected, the physical pools that satisfy the virtual pool's
+// criteria are returned in random order.
 func getPoolsForCreate(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
-	volAttributes map[string]sa.Request, physicalPools, virtualPools map[string]storage.Pool,
+	volAttributes map[string]sa.Request, managedPool storage.Pool, physicalPools, virtualPools map[string]storage.Pool,
 ) ([]storage.Pool, error) {
+	// If the managed pool was requested, just use it
+	if storagePool.Name() == managedPool.Name() {
+		return []storage.Pool{managedPool}, nil
+	}
+
 	// If a physical pool was requested, just use it
 	if _, ok := physicalPools[storagePool.Name()]; ok {
 		return []storage.Pool{storagePool}, nil
 	}
 
 	// If a virtual pool was requested, find a physical pool to satisfy it
-	if _, ok := virtualPools[storagePool.Name()]; !ok {
+	virtualPool, ok := virtualPools[storagePool.Name()]
+	if !ok {
 		return nil, fmt.Errorf("could not find pool %s", storagePool.Name())
+	}
+
+	// If the virtual pool requires balanced placement, return the managed pool
+	if virtualPool.InternalAttributes()[BalancedPlacement] == "true" {
+		return []storage.Pool{managedPool}, nil
+	}
+
+	// If there are no physical pools before filtering, return the managed pool
+	if len(physicalPools) == 0 {
+		return []storage.Pool{managedPool}, nil
 	}
 
 	// Make a storage class from the volume attributes to simplify pool matching
@@ -3949,12 +4092,25 @@ func getPoolsForCreate(
 	delete(attributesCopy, sa.Selector)
 	storageClass := sc.NewFromAttributes(attributesCopy)
 
+	// Determine the aggregate(s) for the virtual pool
+	aggregatesAttr, aggrsOK := virtualPool.InternalAttributes()[Aggregates]
+	if !aggrsOK {
+		aggregatesAttr = AllAggregates
+	}
+	virtualPoolAggrs := strings.Split(aggregatesAttr, ",")
+
 	// Find matching pools
 	candidatePools := make([]storage.Pool, 0)
 
-	for _, pool := range physicalPools {
-		if storageClass.Matches(ctx, pool) {
-			candidatePools = append(candidatePools, pool)
+	for _, physicalPool := range physicalPools {
+
+		// First match the storage class attributes
+		if storageClass.Matches(ctx, physicalPool) {
+
+			// Then filter on aggregates if specified in the virtual pool's internal attributes
+			if slices.Contains(virtualPoolAggrs, AllAggregates) || slices.Contains(virtualPoolAggrs, physicalPool.Name()) {
+				candidatePools = append(candidatePools, physicalPool)
+			}
 		}
 	}
 
@@ -5858,6 +6014,62 @@ func getUniqueNodeSpecificSubsystemName(
 	}
 
 	return completeSSName, finalSSName, nil
+}
+
+// createFlexvol creates a FlexVol volume using the provided OntapAPI and volume configuration.
+// If the API supports balanced placement and the system is disaggregated, it uses VolumeCreateBalanced
+// with balanced placement; otherwise, it uses the standard VolumeCreate method.  The use of balanced
+// placement is signaled by the use of the virtual aggregate "managed_storage_pool".
+func createFlexvol(ctx context.Context, ontapAPI api.OntapAPI, volume api.Volume) error {
+	Logc(ctx).WithFields(LogFields{"Method": "createFlexvol", "Name": volume.Name}).Debug(">>>> createFlexvol")
+	defer Logc(ctx).WithFields(LogFields{"Method": "createFlexvol", "Name": volume.Name}).Debug("<<<< createFlexvol")
+
+	useBalancedPlacement := len(volume.Aggregates) > 0 && volume.Aggregates[0] == managedStoragePoolName
+
+	// AFX systems always select the managed pool, but we can only use balanced placement on 9.19.1+.
+	// If AFX ONTAP is older, we have to use the legacy volume API without specifying aggregates.
+	afx := ontapAPI.IsDisaggregated() && !ontapAPI.IsSANOptimized()
+	if afx && !ontapAPI.SupportsFeature(ctx, api.BalancedPlacement) {
+		useBalancedPlacement = false
+		volume.Aggregates = []string{}
+	}
+
+	if useBalancedPlacement {
+		if err := ontapAPI.VolumeCreateBalanced(ctx, volume); err != nil {
+			return err
+		}
+	} else {
+		if err := ontapAPI.VolumeCreate(ctx, volume); err != nil {
+			return err
+		}
+	}
+
+	Logc(ctx).WithField("name", volume.Name).Debug("Created flexvol.")
+
+	return nil
+}
+
+// createFlexgroup creates a FlexGroup volume using the provided OntapAPI and volume configuration.
+// If the API supports balanced placement and the system is disaggregated, it uses FlexgroupCreateBalanced
+// with balanced placement; otherwise, it uses the standard FlexgroupCreate method.  The calling driver
+// signals use of balanced placement via an explicit parameter.
+func createFlexgroup(ctx context.Context, ontapAPI api.OntapAPI, volume api.Volume, useBalancedPlacement bool) error {
+	Logc(ctx).WithFields(LogFields{"Method": "createFlexgroup", "Name": volume.Name}).Debug(">>>> createFlexgroup")
+	defer Logc(ctx).WithFields(LogFields{"Method": "createFlexgroup", "Name": volume.Name}).Debug("<<<< createFlexgroup")
+
+	if useBalancedPlacement {
+		if err := ontapAPI.FlexgroupCreateBalanced(ctx, volume); err != nil {
+			return err
+		}
+	} else {
+		if err := ontapAPI.FlexgroupCreate(ctx, volume); err != nil {
+			return err
+		}
+	}
+
+	Logc(ctx).WithField("name", volume.Name).Debug("Created flexgroup.")
+
+	return nil
 }
 
 // lockNamespaceAndSubsystem acquires the namespace lock first and then the subsystem lock.

@@ -6,8 +6,8 @@
 //	mockgen -destination=../../../../../mocks/mock_frontend/mock_autogrow/mock_scheduler/mock_assorter/mock_assorter.go github.com/netapp/trident/frontend/autogrow/scheduler/assorter/types Assorter
 //
 
-// Package mock_assorter is a generated GoMock package.
-package mock_assorter
+// Package mock_types is a generated GoMock package.
+package mock_types
 
 import (
 	context "context"
@@ -42,45 +42,45 @@ func (m *MockAssorter) EXPECT() *MockAssorterMockRecorder {
 }
 
 // Activate mocks base method.
-func (m *MockAssorter) Activate(arg0 context.Context) error {
+func (m *MockAssorter) Activate(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Activate", arg0)
+	ret := m.ctrl.Call(m, "Activate", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Activate indicates an expected call of Activate.
-func (mr *MockAssorterMockRecorder) Activate(arg0 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) Activate(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockAssorter)(nil).Activate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockAssorter)(nil).Activate), ctx)
 }
 
 // AddVolume mocks base method.
-func (m *MockAssorter) AddVolume(arg0 context.Context, arg1 string) error {
+func (m *MockAssorter) AddVolume(ctx context.Context, volumeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddVolume", ctx, volumeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddVolume indicates an expected call of AddVolume.
-func (mr *MockAssorterMockRecorder) AddVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) AddVolume(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockAssorter)(nil).AddVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockAssorter)(nil).AddVolume), ctx, volumeName)
 }
 
 // Deactivate mocks base method.
-func (m *MockAssorter) Deactivate(arg0 context.Context) error {
+func (m *MockAssorter) Deactivate(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Deactivate", arg0)
+	ret := m.ctrl.Call(m, "Deactivate", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Deactivate indicates an expected call of Deactivate.
-func (mr *MockAssorterMockRecorder) Deactivate(arg0 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) Deactivate(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockAssorter)(nil).Deactivate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockAssorter)(nil).Deactivate), ctx)
 }
 
 // GetVolumeCount mocks base method.
@@ -112,43 +112,43 @@ func (mr *MockAssorterMockRecorder) IsRunning() *gomock.Call {
 }
 
 // RemoveVolume mocks base method.
-func (m *MockAssorter) RemoveVolume(arg0 context.Context, arg1 string) error {
+func (m *MockAssorter) RemoveVolume(ctx context.Context, volumeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveVolume", ctx, volumeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveVolume indicates an expected call of RemoveVolume.
-func (mr *MockAssorterMockRecorder) RemoveVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) RemoveVolume(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveVolume", reflect.TypeOf((*MockAssorter)(nil).RemoveVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveVolume", reflect.TypeOf((*MockAssorter)(nil).RemoveVolume), ctx, volumeName)
 }
 
 // StartScheduleLoop mocks base method.
-func (m *MockAssorter) StartScheduleLoop(arg0 context.Context) error {
+func (m *MockAssorter) StartScheduleLoop(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartScheduleLoop", arg0)
+	ret := m.ctrl.Call(m, "StartScheduleLoop", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartScheduleLoop indicates an expected call of StartScheduleLoop.
-func (mr *MockAssorterMockRecorder) StartScheduleLoop(arg0 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) StartScheduleLoop(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartScheduleLoop", reflect.TypeOf((*MockAssorter)(nil).StartScheduleLoop), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartScheduleLoop", reflect.TypeOf((*MockAssorter)(nil).StartScheduleLoop), ctx)
 }
 
 // UpdateVolumePeriodicity mocks base method.
-func (m *MockAssorter) UpdateVolumePeriodicity(arg0 context.Context, arg1 string, arg2 time.Duration) error {
+func (m *MockAssorter) UpdateVolumePeriodicity(ctx context.Context, volumeName string, period time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumePeriodicity", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateVolumePeriodicity", ctx, volumeName, period)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateVolumePeriodicity indicates an expected call of UpdateVolumePeriodicity.
-func (mr *MockAssorterMockRecorder) UpdateVolumePeriodicity(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockAssorterMockRecorder) UpdateVolumePeriodicity(ctx, volumeName, period any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePeriodicity", reflect.TypeOf((*MockAssorter)(nil).UpdateVolumePeriodicity), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePeriodicity", reflect.TypeOf((*MockAssorter)(nil).UpdateVolumePeriodicity), ctx, volumeName, period)
 }

@@ -30,6 +30,10 @@ import (
 // Example path: /vol/<flexvol>/.snapshot/<snapshot>/<lun>
 var lunSnapPathRegex = regexp.MustCompile(`^/vol/(?P<flexvol>[^/]+)/\.snapshot/(?P<snapshot>[^/]+)/(?P<lun>.+)$`)
 
+func (d OntapAPIZAPI) IsREST() bool {
+	return false
+}
+
 func (d OntapAPIZAPI) SVMName() string {
 	return d.api.SVMName()
 }
@@ -96,6 +100,10 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 	return err
 }
 
+func (d OntapAPIZAPI) VolumeCreateBalanced(ctx context.Context, volume Volume) error {
+	return errors.UnsupportedError("ZAPI does not support balanced placement")
+}
+
 // VolumeDestroy deletes a flexvol via ONTAP ZAPI.
 //
 // force and skipRecoveryQueue are not the same on ZAPI:
@@ -132,6 +140,10 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force, ski
 	_ = d.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
 
 	return nil
+}
+
+func (d OntapAPIZAPI) VolumeModify(ctx context.Context, volume Volume) error {
+	return errors.UnsupportedError("VolumeModify is not supported by ZAPI")
 }
 
 func (d OntapAPIZAPI) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
@@ -1368,6 +1380,14 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	}
 
 	return err
+}
+
+func (d OntapAPIZAPI) FlexgroupCreateBalanced(ctx context.Context, volume Volume) error {
+	return errors.UnsupportedError("ZAPI does not support balanced placement")
+}
+
+func (d OntapAPIZAPI) FlexgroupModify(ctx context.Context, volume Volume) error {
+	return errors.UnsupportedError("FlexgroupModify is not supported by ZAPI")
 }
 
 func (d OntapAPIZAPI) FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error {

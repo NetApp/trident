@@ -211,13 +211,13 @@ func getEmptyStorageDriver(driverName, driverProtocol string) (storage.Driver, e
 // GetDriverProtocol returns the protocol type for SAN Drivers using the backend config.
 // This function can be extended for NAS drivers if required.
 func GetDriverProtocol(driverName, configJSON string) (string, error) {
-	pool := drivers.OntapStorageDriverPool{}
-	if err := json.Unmarshal([]byte(configJSON), &pool); err != nil {
-		return "", fmt.Errorf("failed to get pool values: %v", err)
+	cfg := drivers.OntapStorageDriverConfig{}
+	if err := json.Unmarshal([]byte(configJSON), &cfg); err != nil {
+		return "", fmt.Errorf("failed to get config values: %v", err)
 	}
 
 	if driverName == config.OntapSANStorageDriverName {
-		SANType := strings.ToLower(pool.SANType)
+		SANType := strings.ToLower(cfg.SANType)
 		switch SANType {
 		case sa.ISCSI, sa.NVMe, sa.FCP:
 			return SANType, nil

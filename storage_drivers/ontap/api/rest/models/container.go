@@ -2036,7 +2036,7 @@ type ContainerInlineVolumesInlineArrayItemInlineNasInlineExportPolicy struct {
 	Name *string `json:"name,omitempty"`
 
 	// The set of rules that govern the export policy.
-	Rules []*ExportRules `json:"rules"`
+	Rules []*ExportRules `json:"rules,omitempty"`
 }
 
 // Validate validates this container inline volumes inline array item inline nas inline export policy

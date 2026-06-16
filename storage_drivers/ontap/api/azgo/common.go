@@ -276,7 +276,7 @@ func (o *ZapiRunner) ExecuteUsingWithContext(ctx context.Context, z ZAPIRequest,
 	// Copy the v interface, in case we need a clean version for a retry
 	o.m.RLock()
 	var vCopy interface{}
-	if reflect.TypeOf(v).Kind() == reflect.Ptr {
+	if reflect.TypeOf(v).Kind() == reflect.Pointer {
 		vCopy = reflect.New(reflect.ValueOf(v).Elem().Type()).Interface()
 	} else {
 		vCopy = reflect.New(reflect.TypeOf(v)).Elem().Interface()
@@ -353,7 +353,7 @@ func (o *ZapiRunner) executeWithoutIterationWithContext(ctx context.Context, z Z
 
 // ToString implements a String() function via reflection
 func ToString(val reflect.Value) string {
-	if reflect.TypeOf(val).Kind() == reflect.Ptr {
+	if reflect.TypeOf(val).Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 
@@ -366,7 +366,7 @@ func ToString(val reflect.Value) string {
 			fieldValue := val.Field(i)
 
 			switch val.Field(i).Kind() {
-			case reflect.Ptr:
+			case reflect.Pointer:
 				fieldValue = reflect.Indirect(val.Field(i))
 			default:
 				fieldValue = val.Field(i)
@@ -436,7 +436,7 @@ func NewZapiError(zapiResult interface{}) (err ZapiError) {
 
 	if zapiResult != nil {
 		val := NewZapiResultValue(zapiResult)
-		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+		if reflect.TypeOf(zapiResult).Kind() == reflect.Pointer {
 			val = reflect.Indirect(val)
 		}
 
@@ -469,7 +469,7 @@ func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result Zap
 	var errorCode int64
 
 	val := NewZapiResultValue(zapiResult)
-	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+	if reflect.TypeOf(zapiResult).Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 
@@ -521,7 +521,7 @@ func NewZapiResultValue(zapiResult interface{}) reflect.Value {
 	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
 	// embedded Result struct extracted via reflection.
 	val := reflect.ValueOf(zapiResult)
-	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+	if reflect.TypeOf(zapiResult).Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 	if testResult := val.FieldByName("Result"); testResult.IsValid() {
@@ -616,7 +616,7 @@ func GetError(ctx context.Context, zapiResult interface{}, errorIn error) (error
 	// embedded Result struct extracted via reflection.
 	if zapiResult != nil {
 		val := reflect.ValueOf(zapiResult)
-		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+		if reflect.TypeOf(zapiResult).Kind() == reflect.Pointer {
 			val = reflect.Indirect(val)
 			if val.IsValid() {
 				if testResult := val.FieldByName("Result"); testResult.IsValid() {

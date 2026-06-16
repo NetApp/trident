@@ -216,6 +216,7 @@ type SANEconomyStorageDriver struct {
 	flexvolLocks        locks.NamedLocker // Locks for FlexVol-level operations
 	flexvolCreationLock sync.Mutex        // Global lock for FlexVol find-or-create decisions
 
+	managedPool   storage.Pool
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 }
@@ -319,7 +320,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	// Load default config parameters
-	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+	if err = PopulateConfigurationDefaults(ctx, &d.Config, d.API); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %w", err)
 	}
 
@@ -378,7 +379,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 		},
 	).Debugf("SAN Economy driver settings.")
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
 		ctx, d, d.getStoragePoolAttributes(), d.BackendName(),
 	)
 	if err != nil {
@@ -455,7 +456,7 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.managedPool, d.physicalPools, d.virtualPools, d, 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %w", err)
 	}
 
@@ -497,7 +498,8 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 
 	// Get candidate physical pools
-	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, d.physicalPools, d.virtualPools)
+	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes,
+		d.managedPool, d.physicalPools, d.virtualPools)
 	if err != nil {
 		return err
 	}
@@ -2418,12 +2420,10 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	).Debug("Creating Flexvol for LUNs.")
 
 	// Create the flexvol
-	err = d.API.VolumeCreate(
-		ctx, api.Volume{
-			AccessType: "",
-			Aggregates: []string{
-				volumeAttributes.Aggregates[0],
-			},
+	err = createFlexvol(
+		ctx, d.API, api.Volume{
+			AccessType:      "",
+			Aggregates:      []string{volumeAttributes.Aggregates[0]},
 			Comment:         "",
 			Encrypt:         encryption,
 			ExportPolicy:    exportPolicy,
@@ -2583,7 +2583,7 @@ func (d *SANEconomyStorageDriver) getTotalLUNSize(ctx context.Context, flexvol s
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
+	return getStorageBackendSpecsCommon(backend, d.API, d.managedPool, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
@@ -2597,6 +2597,14 @@ func (d *SANEconomyStorageDriver) getStorageBackendPools(ctx context.Context) []
 	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
 
+	allPools := make([]storage.Pool, 0, len(d.physicalPools))
+	if d.managedPool != nil {
+		allPools = append(allPools, d.managedPool)
+	}
+	for _, pool := range d.physicalPools {
+		allPools = append(allPools, pool)
+	}
+
 	// For this driver, a discrete storage pool is composed of the following:
 	// 1. SVM UUID
 	// 2. Aggregate (physical pool)
@@ -2604,7 +2612,7 @@ func (d *SANEconomyStorageDriver) getStorageBackendPools(ctx context.Context) []
 	svmUUID := d.GetAPI().GetSVMUUID()
 	flexVolPrefix := d.FlexvolNamePrefix()
 	backendPools := make([]drivers.OntapEconomyStorageBackendPool, 0)
-	for _, pool := range d.physicalPools {
+	for _, pool := range allPools {
 		backendPool := drivers.OntapEconomyStorageBackendPool{
 			SvmUUID:       svmUUID,
 			Aggregate:     pool.Name(),
@@ -2624,6 +2632,7 @@ func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer
 		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.Replication:      sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+		sa.SANType:          sa.NewStringOffer(d.Config.SANType),
 	}
 }
 

@@ -31,7 +31,7 @@ func TestGetDriverProtocol(t *testing.T) {
 		expectError  bool
 		errorMessage string
 	}{
-		{"Unmarshal error", config.OntapSANStorageDriverName, `{"SANType"}`, "", true, "failed to get pool values"},
+		{"Unmarshal error", config.OntapSANStorageDriverName, `{"SANType"}`, "", true, "failed to get config values"},
 		{"SANType as NVMe", config.OntapSANStorageDriverName, `{"SANType": "nvme"}`, sa.NVMe, false, ""},
 		{"SANType as FCP", config.OntapSANStorageDriverName, `{"SANType": "fcp"}`, sa.FCP, false, ""},
 		{"Empty SANType", config.OntapSANStorageDriverName, `{}`, sa.ISCSI, false, ""},

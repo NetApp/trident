@@ -1520,6 +1520,57 @@ func TestVolumeCreate(t *testing.T) {
 	assert.Error(t, err, "no error returned while creating volume")
 }
 
+func TestVolumeCreateBalanced(t *testing.T) {
+	encrypt := false
+	volume := api.Volume{
+		Name:            "vol1",
+		Aggregates:      []string{"aggr1"},
+		Size:            "1g",
+		SpaceReserve:    "10",
+		SnapshotPolicy:  "none",
+		UnixPermissions: "777",
+		ExportPolicy:    "",
+		SecurityStyle:   "unix",
+		TieringPolicy:   "",
+		SnapshotReserve: 10,
+		Comment:         "",
+		DPVolume:        true,
+		Encrypt:         &encrypt,
+		Qos:             api.QosPolicyGroup{},
+	}
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Create volume balanced, ONTAP version does not support balanced placement
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
+	err := oapi.VolumeCreateBalanced(ctx, volume)
+	assert.Error(t, err, "no error returned while creating volume with unsupported feature")
+
+	// case 2: Create volume balanced, returned No error
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		Return(nil)
+	err = oapi.VolumeCreateBalanced(ctx, volume)
+	assert.NoError(t, err, "error returned while creating volume balanced")
+
+	// case 3: Create volume balanced, volume creation failed
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		Return(errors.New("Volume create balanced failed"))
+	err = oapi.VolumeCreateBalanced(ctx, volume)
+	assert.Error(t, err, "no error returned while creating volume balanced")
+}
+
 func TestVolumeDestroy(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
@@ -1675,6 +1726,55 @@ func TestFlexgroupCreate(t *testing.T) {
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a flexgroup volume")
+}
+
+func TestFlexgroupCreateBalanced(t *testing.T) {
+	encrypt := false
+	volume := api.Volume{
+		Name:            "vol1",
+		Aggregates:      []string{"aggr1"},
+		Size:            "1073741824000",
+		SpaceReserve:    "10",
+		SnapshotPolicy:  "none",
+		UnixPermissions: "777",
+		ExportPolicy:    "",
+		SecurityStyle:   "unix",
+		TieringPolicy:   "",
+		SnapshotReserve: 10,
+		Comment:         "",
+		Encrypt:         &encrypt,
+		Qos:             api.QosPolicyGroup{},
+	}
+	oapi, rsi := newMockOntapAPIREST(t)
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Unsupported feature
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
+	err := oapi.FlexgroupCreateBalanced(ctx, volume)
+	assert.Error(t, err, "no error returned when balanced placement is unsupported")
+
+	// case 2: Flexgroup create balanced, positive test case
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	rsi.EXPECT().FlexGroupCreateBalanced(ctx, volume.Name, 1073741824000, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(nil)
+	err = oapi.FlexgroupCreateBalanced(ctx, volume)
+	assert.NoError(t, err, "error returned while creating a balanced flexgroup volume")
+
+	// case 3: Flexgroup create balanced, negative test case
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	rsi.EXPECT().FlexGroupCreateBalanced(ctx, volume.Name, 1073741824000, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(errors.New("flexgroup volume creation failed"))
+	err = oapi.FlexgroupCreateBalanced(ctx, volume)
+	assert.Error(t, err, "no error returned while creating a balanced flexgroup volume")
 }
 
 func TestFlexgroupCloneSplitStart(t *testing.T) {

@@ -52,7 +52,9 @@ func newTestOntapNASFlexgroupDriver(
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	nasDriver := &NASFlexGroupStorageDriver{}
+	nasDriver := &NASFlexGroupStorageDriver{
+		managedPool: getManagedPool(nil),
+	}
 	nasDriver.Config = *config
 
 	numRecords := api.DefaultZapiRecords
@@ -95,6 +97,11 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).AnyTimes().Return("none")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
@@ -127,9 +134,8 @@ func getOntapStorageDriverConfigJson(encryption, spaceReserve, QosPolicy, adapti
 	}
 	ontapStorageDriverPool := []drivers.OntapStorageDriverPool{
 		{
-			Region:  "us_east_1",
-			Zone:    "us_east_1a",
-			NASType: sa.NFS,
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
 
 			SupportedTopologies: []map[string]string{
 				{
@@ -159,6 +165,7 @@ func getOntapStorageDriverConfigJson(encryption, spaceReserve, QosPolicy, adapti
 		Storage:                   ontapStorageDriverPool,
 		OntapStorageDriverPool:    ontapStorageDriverPool[0],
 		FlexGroupAggregateList:    flexGroupAggregateList,
+		NASType:                   sa.NFS,
 	}
 
 	return json.Marshal(ontapStorageDriverConfig)
@@ -390,7 +397,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 	err := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 	assert.NoError(t, err)
-	assert.Equal(t, driver.physicalPool.InternalAttributes()[NameTemplate], nameTemplate)
+	assert.Equal(t, driver.managedPool.InternalAttributes()[NameTemplate], nameTemplate)
 }
 
 func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
@@ -542,8 +549,8 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			driver.Config.CommonStorageDriverConfig = nil
-			SVMAggregateNames := []string{"aggr1", "aggr2"}
-			SVMAggregateAttributes := map[string]string{SVMAggregateNames[0]: "hybrid", SVMAggregateNames[1]: "hdd"}
+			SVMAggregateNames := []string{"data", "aggr1", "aggr2"}
+			SVMAggregateAttributes := map[string]string{SVMAggregateNames[0]: "hybrid", SVMAggregateNames[1]: "hdd", SVMAggregateNames[2]: "hdd"}
 			var configJSON []byte
 
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -712,7 +719,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplatesAndLabels(t *test
 			d.Config.NameTemplate = test.physicalNameTemplate
 			d.Config.Storage[0].Labels = test.virtualPoolLabels
 			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
-			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+			_, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 				test.backendName)
 			assert.NoError(t, err, "Error is not nil")
 
@@ -808,9 +815,9 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "AggregatesListEmpty" {
 				var aggrList []string
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(aggrList, nil)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(aggrList, nil)
 			} else {
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New(test.err))
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, errors.New(test.err))
 			}
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
@@ -969,7 +976,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(aggrList, nil)
 	result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 	assert.Error(t, result, "FlexGroup driver initialization succeeded even with no aggregates present on SVM")
-	assert.Contains(t, result.Error(), "no assigned aggregates found")
+	assert.Contains(t, result.Error(), "SVM SVM1 has no assigned aggregates")
 }
 
 func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
@@ -1081,13 +1088,13 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate(t *testing.T) {
 		SkipRecoveryQueue: "false",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 
@@ -1111,7 +1118,7 @@ func TestNASFlexGroupStorageDriverGetBackendState(t *testing.T) {
 	mockApi, mockDriver := newMockOntapNASFlexgroupDriver(t)
 
 	// set fake values
-	mockDriver.physicalPool = storage.NewStoragePool(nil, "pool1")
+	mockDriver.managedPool = storage.NewStoragePool(nil, "pool1")
 	mockApi.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
@@ -1143,14 +1150,14 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 		TieringPolicy:     "",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	driver.timeout = 1 * time.Second
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(errors.New("volume creation failed"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -1183,13 +1190,13 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.
 		TieringPolicy:     "",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().FlexgroupModifySnapshotDirectoryAccess(ctx, "vol1", false).Return(
 		errors.New("failed to disable snapshot directory access"))
@@ -1225,13 +1232,13 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_MountFailure(t *testing.T) {
 		TieringPolicy:     "",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(errors.New("volume mount failed"))
 
@@ -1265,6 +1272,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_LabelLengthExceeding(t *test
 		TieringPolicy:     "",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
 	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud": "anf",
@@ -1284,12 +1292,11 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_LabelLengthExceeding(t *test
 			"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
 			"lthQFQfHVgPpUZdzZMjXry": "dev-test-cluster-1",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1321,8 +1328,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SMBShareCreatefail(t *testin
 		TieringPolicy:     "",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
 	volAttrs := map[string]sa.Request{}
@@ -1340,7 +1348,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SMBShareCreatefail(t *testin
 		t.Run(test.name, func(t *testing.T) {
 			driver.Config.SMBShare = test.smbShareName
 			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 			mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 			mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 
@@ -1406,48 +1413,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 	}
 }
 
-func TestOntapNasStorageFlexgroupDriverVolumeCreate_GetSVMAggregateNamesFailure(t *testing.T) {
-	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
-	volConfig := &storage.VolumeConfig{
-		Size:             "400g",
-		Encryption:       "false",
-		FileSystem:       "nfs",
-		InternalName:     "vol1",
-		PeerVolumeHandle: "fakevol",
-	}
-	pool1 := storage.NewStoragePool(nil, "pool1")
-	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy": "none",
-		SnapshotDir:     "true",
-	})
-	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
-	volAttrs := map[string]sa.Request{}
-
-	tests := []struct {
-		name       string
-		errMessage string
-	}{
-		{"AggregatesListEmpty", ""},
-		{"AggregatesNotFound", "Failed to get aggregates"},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
-			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-
-			if test.name == "AggregatesListEmpty" {
-				var aggrList []string
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(aggrList, nil)
-			} else {
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New(test.errMessage))
-			}
-			driver.Config.FlexGroupAggregateList = nil
-			result := driver.Create(ctx, volConfig, pool1, volAttrs)
-			assert.Error(t, result, "Get the SVM aggregates")
-		})
-	}
-}
-
 func TestOntapNasStorageFlexgroupDriverVolumeCreate_StoragePoolFailure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	volConfig := &storage.VolumeConfig{
@@ -1479,7 +1444,6 @@ func TestOntapNasStorageFlexgroupDriverVolumeCreate_StoragePoolFailure(t *testin
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 
 			driver.Config.FlexGroupAggregateList = nil
 
@@ -1539,10 +1503,11 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy": "none",
-		SnapshotDir:     "true",
+		"tieringPolicy":   "none",
+		SnapshotDir:       "true",
+		BalancedPlacement: "false",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 
 	tests := []struct {
 		volumeSize string
@@ -1563,7 +1528,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 			}
 
 			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 			if !test.expectErr {
 				mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
@@ -1590,7 +1554,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_InvalidSkipRecoveryQueue(t *
 		"tieringPolicy":   "none",
 		SkipRecoveryQueue: "true",
 	})
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 
 	tests := []struct {
 		skipRecoveryQueue string
@@ -1611,7 +1575,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_InvalidSkipRecoveryQueue(t *
 			}
 
 			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 			if !test.expectErr {
 				mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
@@ -1940,7 +1903,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone(t *testing.T) {
 				"type": "clone",
 			})
 
-			driver.physicalPool = pool1
+			driver.managedPool = pool1
 			driver.Config.AutoExportPolicy = true
 			driver.Config.Labels = pool1.GetLabels(ctx, "")
 
@@ -1981,7 +1944,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_storagePoolUnset(t *testing.T
 	})
 
 	driver.Config.Labels = pool1.GetLabels(ctx, "")
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.AutoExportPolicy = true
 	driver.Config.SplitOnClone = "false"
 	volume := api.Volume{}
@@ -2069,7 +2032,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			})
 
 			driver.Config.Labels = pool1.GetLabels(ctx, "")
-			driver.physicalPool = pool1
+			driver.managedPool = pool1
 			driver.Config.AutoExportPolicy = true
 
 			volume := api.Volume{}
@@ -2240,214 +2203,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 	}
 }
 
-/*
-func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.T) {
-	tests := []struct {
-		name       string
-		errMessage string
-	}{
-		{"FlexgroupInfoFailed", "volume not found"},
-		{"FlexgroupInfoNil", ""}, // backend return empty list
-		{"SupportsFeatureFailed", ""},
-		{"FlexgroupVolumeExists", ""}, // Volume is present with clone name
-		{"FlexgroupVolumeExistsFailed", "failed to get volume"},
-		{"FlexgroupSnapshotCreateFailed", "failed to create snapshot"},
-		{"FlexgroupSetCommentFailed", "failed to set comment on flexgroup volume"},
-		{"FlexgroupMountFailed", "failed to mount flexgroup volume"},
-		{"FlexgroupSetQosPolicyGroupNameFailed", "failed to set QosPolicy on flexgroup volume"},
-		{"FlexgroupCloneSplitStartFailed", "error in splitting clone"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
-
-			pool1 := storage.NewStoragePool(nil, "pool1")
-			pool1.SetInternalAttributes(map[string]string{
-				SpaceReserve:      "none",
-				SnapshotPolicy:    "fake-snap-policy",
-				SnapshotReserve:   "10",
-				UnixPermissions:   "0755",
-				SnapshotDir:       "true",
-				ExportPolicy:      "fake-export-policy",
-				SecurityStyle:     "mixed",
-				Encryption:        "false",
-				TieringPolicy:     "",
-				QosPolicy:         "fake-qos-policy",
-				AdaptiveQosPolicy: "",
-				SplitOnClone:      "false",
-			})
-			driver.physicalPool = pool1
-			driver.Config.AutoExportPolicy = true
-
-			volume := api.Volume{}
-			volume.Comment = "ontap"
-
-			volConfig := &storage.VolumeConfig{
-				Size:         "400g",
-				Encryption:   "false",
-				FileSystem:   "nfs",
-				Name:         "sourceVol",
-				InternalName: "sourceVol-internal",
-			}
-
-			cloneConfig := &storage.VolumeConfig{
-				Size:                      "400g",
-				Encryption:                "false",
-				FileSystem:                "nfs",
-				CloneSourceVolume:         volConfig.Name,
-				CloneSourceVolumeInternal: volConfig.InternalName,
-				CloneSourceSnapshot:       "",
-				Name:                      "clone1",
-				InternalName:              "clone1-internal",
-			}
-
-			flexgroup := api.Volume{
-				Name:    "flexgroup",
-				Comment: "flexgroup",
-			}
-
-			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-
-			if test.name == "FlexgroupInfoFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, errors.New(test.errMessage))
-
-				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
-
-				assert.Error(t, result, "Original Flexgroup volume is found")
-
-			} else if test.name == "FlexgroupInfoNil" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, nil)
-
-				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
-
-				assert.Error(t, result, "Original Flexgroup volume is found")
-
-			} else if test.name == "SupportsFeatureFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(false)
-
-				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone feature supported")
-				assert.Contains(t, result.Error(), "the ONTAPI version does not support FlexGroup cloning")
-
-			} else if test.name == "FlexgroupVolumeExists" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
-
-				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone created despite clone volume present")
-				assert.Contains(t, result.Error(), "volume "+cloneConfig.InternalName+" already exists")
-
-			} else if test.name == "FlexgroupVolumeExistsFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, errors.New(test.errMessage))
-
-				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone created despite error in checking for existing volume")
-				assert.Contains(t, result.Error(), test.errMessage)
-
-			} else if test.name == "FlexgroupSnapshotCreateFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(),
-					gomock.Any()).Return(errors.New(test.errMessage))
-
-				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone created despite failed to create snapshot")
-				assert.Contains(t, result.Error(), "failed to create snapshot")
-
-			} else if test.name == "FlexgroupSetCommentFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-
-				// the first lookup should fail, the second should succeed
-				gomock.InOrder(
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
-				)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(errors.New(test.errMessage))
-
-				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone created even with failed to set comment on flexgroup volume")
-				assert.Contains(t, result.Error(), "failed to set comment on flexgroup volume")
-
-			} else if test.name == "FlexgroupMountFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				// the first lookup should fail, the second should succeed
-				gomock.InOrder(
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
-				)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
-					gomock.Any()).Return(errors.New(test.errMessage))
-
-				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
-
-				assert.Error(t, result, "Clone volume mounted")
-				assert.Contains(t, result.Error(), test.errMessage)
-
-			} else if test.name == "FlexgroupSetQosPolicyGroupNameFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				// the first lookup should fail, the second should succeed
-				gomock.InOrder(
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
-				)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(),
-					gomock.Any()).Return(errors.New(test.errMessage))
-
-				cloneConfig.QosPolicy = "fake-qos-policy"
-				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
-				assert.Error(t, result, "QosPolicy set on flexgroup volume")
-				assert.Contains(t, result.Error(), test.errMessage)
-
-			} else if test.name == "FlexgroupCloneSplitStartFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				// the first lookup should fail, the second should succeed
-				gomock.InOrder(
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
-					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
-				)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(errors.New(
-					test.errMessage))
-
-				cloneConfig.SplitOnClone = "true"
-				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
-				assert.Error(t, result, "Clone created while error in splitting clone")
-				assert.Contains(t, result.Error(), "error splitting clone: error in splitting clone")
-			}
-		})
-	}
-}
-*/
-
 func TestOntapNasSFlexgrouptorageDriverVolumeClone_BothQosPolicy(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2602,7 +2357,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 			pool1.SetAttributes(map[string]sa.Offer{
 				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
-			driver.physicalPool = pool1
+			driver.managedPool = pool1
 
 			// the first lookup should fail, the second should succeed
 			gomock.InOrder(
@@ -2659,7 +2414,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_NameTemplateLabelLengthExceed
 
 	driver.Config.SplitOnClone = "false"
 
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 
 	driver.Config.Labels = map[string]string{
@@ -2970,7 +2725,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_ModifyComment(t *testing.T) 
 		"tieringPolicy": "none",
 	})
 
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 
 	volConfig := &storage.VolumeConfig{
 		Size:             "400g",
@@ -3083,7 +2838,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_NameTemplateLabel(t *testing
 
 	driver.Config.SplitOnClone = "false"
 
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 
 	volConfig := &storage.VolumeConfig{
@@ -3176,7 +2931,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_NameTemplateLabelLengthExcee
 
 	driver.Config.SplitOnClone = "false"
 
-	driver.physicalPool = pool1
+	driver.managedPool = pool1
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 
 	driver.Config.Labels = map[string]string{
@@ -3726,7 +3481,7 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendSpecs(t *testing.T) {
 	backend := storage.StorageBackend{}
 
 	pool := storage.NewStoragePool(nil, "pool1")
-	driver.physicalPool = pool
+	driver.managedPool = pool
 
 	backend.ClearStoragePools()
 	backend.AddStoragePool(pool)
@@ -3746,10 +3501,10 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendSpecs(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	_, driver := newMockOntapNASFlexgroupDriver(t)
-	physicalPool := make(map[string]storage.Pool)
+	physicalPools := make(map[string]storage.Pool)
 	pool := storage.NewStoragePool(nil, "pool1")
-	physicalPool[pool.Name()] = pool
-	driver.physicalPool = pool
+	physicalPools[pool.Name()] = pool
+	driver.physicalPools = physicalPools
 
 	poolNames := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
@@ -3759,14 +3514,12 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendPhysicalPoolNames(t *tes
 func TestOntapNasFlexgroupStorageDriverGetStorageBackendPools(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	svmUUID := "SVM1-uuid"
-	pool := storage.NewStoragePool(nil, "pool1")
-	driver.physicalPool = pool
+
 	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
 
 	pools := driver.getStorageBackendPools(ctx)
-	backendPool := pools[0]
 	assert.NotEmpty(t, pools)
-	assert.Equal(t, svmUUID, backendPool.SvmUUID)
+	assert.Equal(t, svmUUID, pools[0].SvmUUID)
 }
 
 func TestOntapNasFlexgroupStorageDriverGetInternalVolumeName(t *testing.T) {
@@ -4029,9 +3782,11 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_WithJunctionPath_NASType_S
 }
 
 func TestOntapNasFlexgroupStorageDriverCreateFollowup_GetStoragePoolAttributes(t *testing.T) {
-	_, driver := newMockOntapNASFlexgroupDriver(t)
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "hdd"}, nil)
 
-	poolAttr := driver.getStoragePoolAttributes()
+	poolAttr := driver.getStoragePoolAttributes(ctx)
 
 	assert.NotNil(t, poolAttr)
 	assert.Equal(t, driver.Name(), poolAttr[BackendType].ToString())
@@ -4078,9 +3833,8 @@ func TestOntapNasFlexgroupStorageDriverCreatePrepare_NilPool(t *testing.T) {
 		map[string]string{"aggr1": ONTAPTEST_VSERVER_AGGR_NAME}, nil,
 	)
 
-	physicalPools, _, _ := InitializeStoragePoolsCommon(ctx, driver, poolAttributes,
-		"testBackend")
-	driver.physicalPool = physicalPools[ONTAPTEST_VSERVER_AGGR_NAME]
+	managedPool, _, _, _ := InitializeStoragePoolsCommon(ctx, driver, poolAttributes, "testBackend")
+	driver.managedPool = managedPool
 	driver.CreatePrepare(ctx, &volConfig, nil)
 	assert.Equal(t, volConfig.InternalName, "newVolume_testNamespace", "volume name is not set correctly")
 }
@@ -4474,6 +4228,7 @@ func TestOntapNasFlexgroupStorageDriverEnsureSMBShare(t *testing.T) {
 
 func TestOntapNasFlexgroupGetVserverAggrMediaType(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{"aggr1"}, nil)
 	aggrList := map[string]string{"aggr1": "vmdisk"}
 
 	tests := []struct {
@@ -4489,18 +4244,18 @@ func TestOntapNasFlexgroupGetVserverAggrMediaType(t *testing.T) {
 			if test.name == "AggregateNameNotMatched" {
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(aggrList, nil)
 
-				_, err := driver.getVserverAggrMediaType(ctx, []string{"aggr3"})
+				_, err := driver.getVserverAggrMediaType(ctx)
 				assert.NoError(t, err)
 			} else if test.name == "GetSVMAggregateAttributes_Failed" {
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(
 					nil, errors.New(test.errMessage))
 
-				_, err := driver.getVserverAggrMediaType(ctx, []string{"aggr2"})
+				_, err := driver.getVserverAggrMediaType(ctx)
 				assert.Error(t, err, "Get the SVM aggregate")
 			} else if test.name == "Aggregate" {
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(aggrList, nil)
 
-				_, err := driver.getVserverAggrMediaType(ctx, []string{"aggr1"})
+				_, err := driver.getVserverAggrMediaType(ctx)
 				assert.NoError(t, err, "Failed to get SVM aggregate")
 			}
 		})
@@ -4511,6 +4266,8 @@ func TestPublishShare(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
@@ -4539,6 +4296,8 @@ func TestPublishShare(t *testing.T) {
 	ruleList := make(map[string]int)
 	ruleList["0.0.0.1/0"] = 0
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(false, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(errors.New("Error Creating Policy"))
 

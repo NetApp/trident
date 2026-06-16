@@ -131,7 +131,9 @@ func newTestOntapNASDriver(
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	nasDriver := &NASStorageDriver{}
+	nasDriver := &NASStorageDriver{
+		managedPool: getManagedPool(nil),
+	}
 	nasDriver.Config = *config
 
 	var ontapAPI api.OntapAPI
@@ -155,6 +157,8 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, nil)
 	d.API = mockAPI
 
@@ -227,12 +231,16 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	for _, c := range cases {
 		d.Config.Labels = c.physicalPoolLabels
 		d.Config.Storage[0].Labels = c.virtualPoolLabels
-		physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+		managedPool, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 			c.backendName)
 		assert.NoError(t, err, "Error is not nil")
 
+		label, err := managedPool.GetLabelsJSON(ctx, "provisioning", 1023)
+		assert.NoError(t, err, "Error is not nil")
+		assert.Equal(t, c.physicalExpected, label, c.physicalErrorMessage)
+
 		physicalPool := physicalPools["data"]
-		label, err := physicalPool.GetLabelsJSON(ctx, "provisioning", 1023)
+		label, err = physicalPool.GetLabelsJSON(ctx, "provisioning", 1023)
 		assert.NoError(t, err, "Error is not nil")
 		assert.Equal(t, c.physicalExpected, label, c.physicalErrorMessage)
 
@@ -335,6 +343,9 @@ func newMockAWSOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 func newMockOntapNASDriverWithSVM(t *testing.T, svmName string) (*mockapi.MockOntapAPI, *NASStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
@@ -345,8 +356,7 @@ func newMockOntapNASDriverWithSVM(t *testing.T, svmName string) (*mockapi.MockOn
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-	driver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false, new(FSX_ID))
+	driver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, new(FSX_ID))
 	driver.API = mockAPI
 	return mockAPI, driver
 }
@@ -2781,16 +2791,28 @@ func TestOntapNasStorageDriverVolumeGet_DoesNotExist(t *testing.T) {
 
 func TestOntapNasStorageDriverGetStorageBackendSpecs(t *testing.T) {
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	backend := storage.NewTestStorageBackend()
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	result := driver.GetStorageBackendSpecs(ctx, backend)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverGetStorageBackendSpecs_NoPools(t *testing.T) {
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	backend := storage.StorageBackend{}
 
 	result := driver.GetStorageBackendSpecs(ctx, &backend)
 
-	assert.NoError(t, result)
+	assert.Error(t, result)
 }
 
 func TestOntapNasStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	poolNames := driver.GetStorageBackendPhysicalPoolNames(ctx)
@@ -2801,44 +2823,44 @@ func TestOntapNasStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 func TestOntapNasStorageDriverGetStorageBackendPools(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	svmUUID := "SVM1-uuid"
+
 	driver.physicalPools = map[string]storage.Pool{
 		"pool1": storage.NewStoragePool(nil, "pool1"),
 		"pool2": storage.NewStoragePool(nil, "pool2"),
 	}
 	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pools := driver.getStorageBackendPools(ctx)
 
-	assert.NotEmpty(t, pools)
-	assert.Equal(t, len(driver.physicalPools), len(pools))
+	// Expected pool count: managedPool + physicalPools
+	expectedCount := len(driver.physicalPools) + 1
+	assert.Equal(t, expectedCount, len(pools))
 
-	pool := pools[0]
-	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
-	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
-	assert.Equal(t, svmUUID, pools[0].SvmUUID)
+	// Build a lookup of all known pool names (physical + managed)
+	allPools := make(map[string]storage.Pool)
+	for k, v := range driver.physicalPools {
+		allPools[k] = v
+	}
+	allPools[driver.managedPool.Name()] = driver.managedPool
 
-	pool = pools[1]
-	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
-	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
-	assert.Equal(t, svmUUID, pools[1].SvmUUID)
+	for _, pool := range pools {
+		assert.NotNil(t, allPools[pool.Aggregate])
+		assert.Equal(t, allPools[pool.Aggregate].Name(), pool.Aggregate)
+		assert.Equal(t, svmUUID, pool.SvmUUID)
+	}
 }
 
 func TestOntapAFXNasStorageDriverGetStorageBackendPools(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	svmUUID := "SVM1-uuid"
-	driver.physicalPools = map[string]storage.Pool{
-		managedStoragePoolName: storage.NewStoragePool(nil, managedStoragePoolName),
-	}
+
 	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
-	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
 
 	pools := driver.getStorageBackendPools(ctx)
 
-	assert.NotEmpty(t, pools)
 	assert.Equal(t, len(pools), 1)
 	assert.Equal(t, svmUUID, pools[0].SvmUUID)
+	assert.Equal(t, managedStoragePoolName, pools[0].Aggregate)
 }
 
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
@@ -2870,6 +2892,8 @@ func TestInitializeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
@@ -3001,12 +3025,16 @@ func TestInitializeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 			d.Config.NameTemplate = test.physicalNameTemplate
 			d.Config.Storage[0].Labels = test.virtualPoolLabels
 			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
-			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+			managedPool, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 				test.backendName)
 			assert.NoError(t, err, "Error is not nil")
 
+			label, err := managedPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
+
 			physicalPool := physicalPools["data"]
-			label, err := physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			label, err = physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
 			assert.NoError(t, err, "Error is not nil")
 			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
 
@@ -3324,6 +3352,8 @@ func TestOntapNasStorageDriverCreatePrepareNilPool(t *testing.T) {
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
@@ -3347,7 +3377,8 @@ func TestOntapNasStorageDriverCreatePrepareNilPool(t *testing.T) {
 	)
 
 	var err error
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, poolAttributes, "testBackend")
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
+		ctx, d, poolAttributes, "testBackend")
 	assert.NoError(t, err, "Error is not nil")
 
 	d.CreatePrepare(ctx, &volume, nil)
@@ -3359,6 +3390,8 @@ func TestOntapNasStorageDriverCreatePrepareNilPool_templateNotContainVolumeName(
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, new(FSX_ID))
 	d.API = mockAPI
 
@@ -3382,7 +3415,8 @@ func TestOntapNasStorageDriverCreatePrepareNilPool_templateNotContainVolumeName(
 	)
 
 	var err error
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, poolAttributes, "testBackend")
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
+		ctx, d, poolAttributes, "testBackend")
 	assert.NoError(t, err, "Error is not nil")
 
 	d.CreatePrepare(ctx, &volume, nil)
@@ -3942,6 +3976,7 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -4021,6 +4056,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBEnabled(t *testing.T) {
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -4093,6 +4129,7 @@ func TestOntapNasStorageDriverVolumeCreate_VolumeExistsScenarios(t *testing.T) {
 		"tieringPolicy": "none",
 		SnapshotDir:     "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volAttrs := map[string]sa.Request{}
 
@@ -4135,6 +4172,7 @@ func TestOntapNasStorageDriverVolumeCreate_PeerVolumeHandleFailure(t *testing.T)
 		"tieringPolicy": "none",
 		SnapshotDir:     "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volAttrs := map[string]sa.Request{}
 
@@ -4161,6 +4199,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoPhysicalPool(t *testing.T) {
 		"tieringPolicy": "none",
 		SnapshotDir:     "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
@@ -4190,6 +4229,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotReserve(t *testing.T) 
 		SnapshotDir:     "true",
 		SnapshotReserve: "fake",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	volAttrs := map[string]sa.Request{}
@@ -4221,6 +4261,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSkipRecoveryQueue(t *testing.T
 		SnapshotDir:       "true",
 		SkipRecoveryQueue: "asdf",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	volAttrs := map[string]sa.Request{}
@@ -4267,6 +4308,7 @@ func TestOntapNasStorageDriverVolumeCreate_ValidationScenarios(t *testing.T) {
 				"tieringPolicy": "none",
 				SnapshotDir:     "true",
 			})
+			driver.managedPool = getManagedPool(nil)
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 			volAttrs := map[string]sa.Request{}
 
@@ -4304,6 +4346,7 @@ func TestOntapNasStorageDriverVolumeCreate_LimitVolumeSize(t *testing.T) {
 		"tieringPolicy": "none",
 		SnapshotDir:     "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.CommonStorageDriverConfig.LimitVolumeSize = "invalid" // invalid int value
 	volAttrs := map[string]sa.Request{}
@@ -4333,6 +4376,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotDir(t *testing.T) {
 		"tieringPolicy": "none",
 		SnapshotDir:     "invalid", // invalid bool value
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volAttrs := map[string]sa.Request{}
 
@@ -4361,6 +4405,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidEncryptionValue(t *testing.T) 
 		"tieringPolicy": "none",
 		SnapshotDir:     "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volAttrs := map[string]sa.Request{}
 
@@ -4391,6 +4436,7 @@ func TestOntapNasStorageDriverVolumeCreate_BothQosPolicies(t *testing.T) {
 		QosPolicy:         "fake",
 		AdaptiveQosPolicy: "fake",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volAttrs := map[string]sa.Request{}
 
@@ -4420,6 +4466,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoAggregate(t *testing.T) {
 		TieringPolicy: "none",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.LimitAggregateUsage = "invalid"
 	volAttrs := map[string]sa.Request{}
@@ -4460,6 +4507,7 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 		TieringPolicy: "",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -4514,6 +4562,7 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 		TieringPolicy: "",
 		SnapshotDir:   "false",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -4552,6 +4601,7 @@ func TestOntapNasStorageDriverVolumeCreate_IsMirrorDestination(t *testing.T) {
 		TieringPolicy: "",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -4587,6 +4637,7 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 		TieringPolicy: "",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -4643,6 +4694,7 @@ func TestOntapNasStorageDriverVolumeCreate_LabelLengthExceeding(t *testing.T) {
 			"lthQFQfHVgPpUZdzZMjXry": "dev-test-cluster-1",
 	})
 
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -4679,6 +4731,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareScenarios(t *testing.T) {
 		TieringPolicy: "",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -4736,6 +4789,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsScenarios(t *testing.T)
 		TieringPolicy: "",
 		SnapshotDir:   "true",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -4797,6 +4851,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlCreateFail(t *t
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -4850,6 +4905,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlDeleteFail(t *t
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -5227,6 +5283,7 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplateInvalidLabel(t *testing.T
 
 	driver.Config.SplitOnClone = "false"
 
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 	volConfig := &storage.VolumeConfig{
@@ -5303,6 +5360,7 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplate(t *testing.T) {
 
 	driver.Config.SplitOnClone = "false"
 
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 
@@ -5427,6 +5485,7 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplateLabelLengthExceeding(t *t
 
 	driver.Config.SplitOnClone = "false"
 
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
 

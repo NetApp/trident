@@ -361,6 +361,20 @@ func (mr *MockRestClientInterfaceMockRecorder) FlexGroupCreate(ctx, name, size, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreate", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupCreate), ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
 }
 
+// FlexGroupCreateBalanced mocks base method.
+func (m *MockRestClientInterface) FlexGroupCreateBalanced(ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlexGroupCreateBalanced", ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlexGroupCreateBalanced indicates an expected call of FlexGroupCreateBalanced.
+func (mr *MockRestClientInterfaceMockRecorder) FlexGroupCreateBalanced(ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreateBalanced", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupCreateBalanced), ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
+}
+
 // FlexGroupDestroy mocks base method.
 func (m *MockRestClientInterface) FlexGroupDestroy(ctx context.Context, name string, force bool) error {
 	m.ctrl.T.Helper()
@@ -532,6 +546,20 @@ func (m *MockRestClientInterface) FlexgroupCloneSplitStart(ctx context.Context, 
 func (mr *MockRestClientInterfaceMockRecorder) FlexgroupCloneSplitStart(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupCloneSplitStart", reflect.TypeOf((*MockRestClientInterface)(nil).FlexgroupCloneSplitStart), ctx, volumeName)
+}
+
+// FlexgroupModify mocks base method.
+func (m *MockRestClientInterface) FlexgroupModify(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlexgroupModify", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlexgroupModify indicates an expected call of FlexgroupModify.
+func (mr *MockRestClientInterfaceMockRecorder) FlexgroupModify(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupModify", reflect.TypeOf((*MockRestClientInterface)(nil).FlexgroupModify), ctx, volume)
 }
 
 // FlexgroupModifyExportPolicy mocks base method.
@@ -2669,6 +2697,20 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregate
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
 }
 
+// VolumeCreateBalanced mocks base method.
+func (m *MockRestClientInterface) VolumeCreateBalanced(ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeCreateBalanced", ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeCreateBalanced indicates an expected call of VolumeCreateBalanced.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeCreateBalanced(ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreateBalanced", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCreateBalanced), ctx, name, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+}
+
 // VolumeDestroy mocks base method.
 func (m *MockRestClientInterface) VolumeDestroy(ctx context.Context, name string, force bool) error {
 	m.ctrl.T.Helper()
@@ -2756,6 +2798,20 @@ func (m *MockRestClientInterface) VolumeListByAttrs(ctx context.Context, volumeA
 func (mr *MockRestClientInterfaceMockRecorder) VolumeListByAttrs(ctx, volumeAttrs, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListByAttrs", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeListByAttrs), ctx, volumeAttrs, fields)
+}
+
+// VolumeModify mocks base method.
+func (m *MockRestClientInterface) VolumeModify(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeModify", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeModify indicates an expected call of VolumeModify.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeModify(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModify", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeModify), ctx, volume)
 }
 
 // VolumeModifyExportPolicy mocks base method.

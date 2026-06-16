@@ -40,9 +40,10 @@ type NASFlexGroupStorageDriver struct {
 	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
 
-	physicalPool storage.Pool
-	virtualPools map[string]storage.Pool
-	timeout      time.Duration
+	managedPool   storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
+	timeout       time.Duration
 
 	cloneSplitTimers *sync.Map
 }
@@ -123,12 +124,13 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 
 	// Load default config parameters
-	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+	if err = PopulateConfigurationDefaults(ctx, &d.Config, d.API); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
-	// Identify Virtual Pools
-	if err := d.initializeStoragePools(ctx); err != nil {
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
+		d.getStoragePoolAttributes(ctx), d.BackendName())
+	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
 
@@ -179,10 +181,12 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 	d.initialized = false
 }
 
-func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) error {
+// getVserverAggrMediaType gets vservers' media type attribute using vserver-show-aggr-get-iter,
+// which will only succeed on Data ONTAP 9 and later.
+func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(ctx context.Context) (mediaOffers []sa.Offer, err error) {
 	vserverAggrs, err := d.vserverAggregates(ctx, d.API.SVMName())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -190,221 +194,10 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 		"aggregates": vserverAggrs,
 	}).Debug("Read aggregates assigned to SVM.")
 
-	// Get list of media types supported by the Vserver aggregates
-	mediaOffers, err := d.getVserverAggrMediaType(ctx, vserverAggrs)
-	if len(mediaOffers) > 1 {
-		Logc(ctx).Info(
-			"All the aggregates do not have same media type, which is desirable for consistent FlexGroup performance.")
-	}
-
-	// Define physical pools
-	// For a FlexGroup all aggregates that belong to the SVM represent the storage pool.
-	pool := storage.NewStoragePool(nil, d.API.SVMName())
-
-	// Update pool with attributes set by default for this backend
-	// We do not set internal attributes with these values as this
-	// merely means that pools supports these capabilities like
-	// encryption, cloning, thick/thin provisioning
-	for attrName, offer := range d.getStoragePoolAttributes() {
-		pool.Attributes()[attrName] = offer
-	}
-
-	if d.Config.Region != "" {
-		pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
-	}
-	if d.Config.Zone != "" {
-		pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
-	}
-
-	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
-	pool.Attributes()[sa.NASType] = sa.NewStringOffer(d.Config.NASType)
-
-	if len(mediaOffers) > 0 {
-		pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
-		pool.InternalAttributes()[Media] = pool.Attributes()[sa.Media].ToString()
-	}
-
-	pool.InternalAttributes()[Size] = d.Config.Size
-	pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(d.Config.NameTemplate)
-	pool.InternalAttributes()[Region] = d.Config.Region
-	pool.InternalAttributes()[Zone] = d.Config.Zone
-	pool.InternalAttributes()[SpaceReserve] = d.Config.SpaceReserve
-	pool.InternalAttributes()[SnapshotPolicy] = d.Config.SnapshotPolicy
-	pool.InternalAttributes()[SnapshotReserve] = d.Config.SnapshotReserve
-	pool.InternalAttributes()[Encryption] = d.Config.Encryption
-	pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
-	pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
-	pool.InternalAttributes()[SplitOnClone] = d.Config.SplitOnClone
-	pool.InternalAttributes()[ExportPolicy] = d.Config.ExportPolicy
-	pool.InternalAttributes()[SecurityStyle] = d.Config.SecurityStyle
-	pool.InternalAttributes()[TieringPolicy] = d.Config.TieringPolicy
-	pool.InternalAttributes()[SkipRecoveryQueue] = d.Config.SkipRecoveryQueue
-	pool.InternalAttributes()[QosPolicy] = d.Config.QosPolicy
-	pool.InternalAttributes()[AdaptiveQosPolicy] = d.Config.AdaptiveQosPolicy
-
-	d.physicalPool = pool
-
-	d.virtualPools = make(map[string]storage.Pool)
-
-	if len(d.Config.Storage) != 0 {
-		Logc(ctx).Debug("Defining Virtual Pools based on Virtual Pools definition in the backend file.")
-
-		for index, vpool := range d.Config.Storage {
-			region := d.Config.Region
-			if vpool.Region != "" {
-				region = vpool.Region
-			}
-
-			zone := d.Config.Zone
-			if vpool.Zone != "" {
-				zone = vpool.Zone
-			}
-
-			size := d.Config.Size
-			if vpool.Size != "" {
-				size = vpool.Size
-			}
-
-			nameTemplate := d.Config.NameTemplate
-			if vpool.NameTemplate != "" {
-				nameTemplate = vpool.NameTemplate
-			}
-
-			spaceReserve := d.Config.SpaceReserve
-			if vpool.SpaceReserve != "" {
-				spaceReserve = vpool.SpaceReserve
-			}
-
-			snapshotPolicy := d.Config.SnapshotPolicy
-			if vpool.SnapshotPolicy != "" {
-				snapshotPolicy = vpool.SnapshotPolicy
-			}
-
-			snapshotReserve := d.Config.SnapshotReserve
-			if vpool.SnapshotReserve != "" {
-				snapshotReserve = vpool.SnapshotReserve
-			}
-
-			splitOnClone := d.Config.SplitOnClone
-			if vpool.SplitOnClone != "" {
-				splitOnClone = vpool.SplitOnClone
-			}
-
-			unixPermissions := d.Config.UnixPermissions
-			if vpool.UnixPermissions != "" {
-				unixPermissions = vpool.UnixPermissions
-			}
-
-			snapshotDir := d.Config.SnapshotDir
-			if vpool.SnapshotDir != "" {
-				snapshotDir = vpool.SnapshotDir
-			}
-
-			exportPolicy := d.Config.ExportPolicy
-			if vpool.ExportPolicy != "" {
-				exportPolicy = vpool.ExportPolicy
-			}
-
-			securityStyle := d.Config.SecurityStyle
-			if vpool.SecurityStyle != "" {
-				securityStyle = vpool.SecurityStyle
-			}
-
-			encryption := d.Config.Encryption
-			if vpool.Encryption != "" {
-				encryption = vpool.Encryption
-			}
-
-			tieringPolicy := d.Config.TieringPolicy
-			if vpool.TieringPolicy != "" {
-				tieringPolicy = vpool.TieringPolicy
-			}
-
-			skipRecoveryQueue := d.Config.SkipRecoveryQueue
-			if vpool.SkipRecoveryQueue != "" {
-				skipRecoveryQueue = vpool.SkipRecoveryQueue
-			}
-
-			qosPolicy := d.Config.QosPolicy
-			if vpool.QosPolicy != "" {
-				qosPolicy = vpool.QosPolicy
-			}
-
-			adaptiveQosPolicy := d.Config.AdaptiveQosPolicy
-			if vpool.AdaptiveQosPolicy != "" {
-				adaptiveQosPolicy = vpool.AdaptiveQosPolicy
-			}
-
-			pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), d.BackendName()))
-
-			// Update pool with attributes set by default for this backend
-			// We do not set internal attributes with these values as this
-			// merely means that pools supports these capabilities like
-			// encryption, cloning, thick/thin provisioning
-			for attrName, offer := range d.getStoragePoolAttributes() {
-				pool.Attributes()[attrName] = offer
-			}
-
-			nasType := d.Config.NASType
-			if vpool.NASType != "" {
-				nasType = vpool.NASType
-			}
-
-			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
-			pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
-
-			if region != "" {
-				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
-			}
-			if zone != "" {
-				pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
-			}
-			if len(mediaOffers) > 0 {
-				pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
-				pool.InternalAttributes()[Media] = pool.Attributes()[sa.Media].ToString()
-			}
-			if encryption != "" {
-				enableEncryption, err := strconv.ParseBool(encryption)
-				if err != nil {
-					return fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err, pool.Name())
-				}
-				pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(enableEncryption)
-				pool.InternalAttributes()[Encryption] = encryption
-			}
-
-			pool.InternalAttributes()[Size] = size
-			pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(nameTemplate)
-			pool.InternalAttributes()[Region] = region
-			pool.InternalAttributes()[Zone] = zone
-			pool.InternalAttributes()[SpaceReserve] = spaceReserve
-			pool.InternalAttributes()[SnapshotPolicy] = snapshotPolicy
-			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
-			pool.InternalAttributes()[SplitOnClone] = splitOnClone
-			pool.InternalAttributes()[UnixPermissions] = unixPermissions
-			pool.InternalAttributes()[SnapshotDir] = snapshotDir
-			pool.InternalAttributes()[ExportPolicy] = exportPolicy
-			pool.InternalAttributes()[SecurityStyle] = securityStyle
-			pool.InternalAttributes()[TieringPolicy] = tieringPolicy
-			pool.InternalAttributes()[SkipRecoveryQueue] = skipRecoveryQueue
-			pool.InternalAttributes()[QosPolicy] = qosPolicy
-			pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
-
-			d.virtualPools[pool.Name()] = pool
-		}
-	}
-
-	return nil
-}
-
-// getVserverAggrMediaType gets vservers' media type attribute using vserver-show-aggr-get-iter,
-// which will only succeed on Data ONTAP 9 and later.
-func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(
-	ctx context.Context, aggrNames []string,
-) (mediaOffers []sa.Offer, err error) {
 	aggrMediaTypes := make(map[sa.Offer]struct{})
 
 	aggrMap := make(map[string]struct{})
-	for _, s := range aggrNames {
+	for _, s := range vserverAggrs {
 		aggrMap[s] = struct{}{}
 	}
 
@@ -450,7 +243,7 @@ func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(
 		mediaOffers = append(mediaOffers, key)
 	}
 
-	return
+	return mediaOffers, err
 }
 
 // Validate the driver configuration and execution environment
@@ -471,12 +264,8 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	// Create a list `physicalPools` containing 1 entry
-	physicalPools := map[string]storage.Pool{
-		d.physicalPool.Name(): d.physicalPool,
-	}
-	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d,
-		api.MaxNASLabelLength); err != nil {
+	err := ValidateStoragePools(ctx, d.managedPool, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength)
+	if err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -493,8 +282,8 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	if len(d.Config.FlexGroupAggregateList) > 0 {
 		containsAll, _ := collection.ContainsElements(vserverAggrs, d.Config.FlexGroupAggregateList)
 		if !containsAll {
-			return fmt.Errorf("not all aggregates specified in the flexgroupAggregateList are assigned to the SVM;  flexgroupAggregateList: %v assigned aggregates: %v",
-				d.Config.FlexGroupAggregateList, vserverAggrs)
+			return fmt.Errorf("not all aggregates specified in the flexgroupAggregateList are assigned to the SVM;  "+
+				"flexgroupAggregateList: %v assigned aggregates: %v", d.Config.FlexGroupAggregateList, vserverAggrs)
 		}
 	}
 
@@ -524,32 +313,6 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if volExists {
 		return drivers.NewVolumeExistsError(name)
 	}
-
-	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.GetSVMAggregateNames(ctx)
-	if err != nil {
-		return err
-	}
-
-	if len(vserverAggrs) == 0 {
-		err = fmt.Errorf("no assigned aggregates found")
-		return err
-	}
-
-	var flexGroupAggregateList []string
-	if len(d.Config.FlexGroupAggregateList) == 0 {
-		// by default, the list of aggregates to use when creating the FlexGroup is derived from those assigned to the SVM
-		vserverAggrNames := make([]azgo.AggrNameType, 0)
-		vserverAggrNames = append(vserverAggrNames, vserverAggrs...)
-		flexGroupAggregateList = vserverAggrNames
-	} else {
-		// allow the user to override the list of aggregates to use when creating the FlexGroup
-		flexGroupAggregateList = d.Config.FlexGroupAggregateList
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"aggregates": vserverAggrs,
-	}).Debug("Read aggregates assigned to SVM.")
 
 	// Get options
 	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
@@ -608,7 +371,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	if tieringPolicy == "" {
-		tieringPolicy = "none"
+		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
 	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
@@ -622,6 +385,11 @@ func (d *NASFlexGroupStorageDriver) Create(
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
+	}
+
+	useBalancedPlacement, err := strconv.ParseBool(storagePool.InternalAttributes()[BalancedPlacement])
+	if err != nil {
+		return fmt.Errorf("invalid boolean value for useBalancedPlacement: %v", err)
 	}
 
 	// Update config to reflect values used to create volume
@@ -647,7 +415,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"unixPermissions":   unixPermissions,
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
-		"aggregates":        flexGroupAggregateList,
+		"aggregates":        d.Config.FlexGroupAggregateList,
 		"securityStyle":     securityStyle,
 		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
 		"skipRecoveryQueue": skipRecoveryQueue,
@@ -655,8 +423,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}).Debug("Creating FlexGroup.")
 
 	createErrors := make([]error, 0)
-	physicalPoolNames := make([]string, 0)
-	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name())
+	physicalPoolNames := []string{d.managedPool.Name()}
 
 	// Make comment field from labels
 	labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
@@ -666,9 +433,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// Create the FlexGroup
-	err = d.API.FlexgroupCreate(
-		ctx, api.Volume{
-			Aggregates:      flexGroupAggregateList,
+	err = createFlexgroup(
+		ctx, d.API, api.Volume{
+			Aggregates:      d.Config.FlexGroupAggregateList,
 			Comment:         labels,
 			Encrypt:         enableEncryption,
 			ExportPolicy:    exportPolicy,
@@ -682,7 +449,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 			TieringPolicy:   tieringPolicy,
 			UnixPermissions: unixPermissions,
 			DPVolume:        volConfig.IsMirrorDestination,
-		})
+		}, useBalancedPlacement)
 	if err != nil {
 		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
 		createErrors = append(createErrors, errors.New(errMessage))
@@ -956,7 +723,7 @@ func (d *NASFlexGroupStorageDriver) Import(
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexgroup.Comment) {
-			storagePool := d.physicalPool
+			storagePool := d.managedPool
 
 			var labels string
 			var labelErr error
@@ -1443,28 +1210,32 @@ func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, volConfig *storage.
 func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	backend.SetName(d.BackendName())
 
-	virtual := len(d.virtualPools) > 0
-
-	if !virtual {
-		d.physicalPool.SetBackend(backend)
-		backend.AddStoragePool(d.physicalPool)
+	// Update all pools with backend
+	d.managedPool.SetBackend(backend)
+	for _, pool := range d.physicalPools {
+		pool.SetBackend(backend)
 	}
-
 	for _, pool := range d.virtualPools {
 		pool.SetBackend(backend)
-		if virtual {
-			backend.AddStoragePool(pool)
-		}
 	}
 
+	// If virtual pools are present, report only those, ignoring any pool-level
+	// physical pool selection (i.e. aggregates) until provisioning time.
+	if len(d.virtualPools) > 0 {
+		for _, virtualPool := range d.virtualPools {
+			backend.AddStoragePool(virtualPool)
+		}
+		return nil
+	}
+
+	// The only other option for this driver is the managed pool
+	backend.AddStoragePool(d.managedPool)
 	return nil
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
-	physicalPoolNames := make([]string, 0)
-	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name())
-	return physicalPoolNames
+	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
 // getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
@@ -1497,15 +1268,33 @@ func (d *NASFlexGroupStorageDriver) vserverAggregates(ctx context.Context, svmNa
 	return vserverAggrs, nil
 }
 
-func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
-	return map[string]sa.Offer{
+func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
+	attrs := map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.Replication:      sa.NewBoolOffer(false),
 		sa.Clones:           sa.NewBoolOffer(true),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+		sa.NASType:          sa.NewStringOffer(d.Config.NASType),
 	}
+
+	if !d.API.IsDisaggregated() {
+		// Get media types supported by the Vserver aggregates
+
+		mediaOffers, err := d.getVserverAggrMediaType(ctx)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not determine SVM aggregates.")
+		} else {
+			attrs[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+		}
+		if len(mediaOffers) > 1 {
+			Logc(ctx).Info(
+				"All the aggregates do not have same media type, which is desirable for consistent FlexGroup performance.")
+		}
+	}
+
+	return attrs
 }
 
 func (d *NASFlexGroupStorageDriver) GetVolumeOpts(
@@ -1524,8 +1313,8 @@ func (d *NASFlexGroupStorageDriver) CreatePrepare(
 	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
 ) {
 	// The process of generating a custom volume name necessitates a name template and label.
-	if storage.IsStoragePoolUnset(pool) && d.physicalPool.InternalAttributes()[NameTemplate] != "" {
-		pool = d.physicalPool
+	if storage.IsStoragePoolUnset(pool) && d.managedPool.InternalAttributes()[NameTemplate] != "" {
+		pool = d.managedPool
 	}
 	createPrepareCommon(ctx, d, volConfig, pool)
 }

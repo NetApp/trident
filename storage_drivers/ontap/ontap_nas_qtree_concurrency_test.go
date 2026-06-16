@@ -168,6 +168,7 @@ func TestConcurrency_ReapDeletedQtreesGroupsByFlexvol(t *testing.T) {
 func TestConcurrency_CreateNoDeadlock(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.DataLIF = "1.1.1.1"
+	driver.managedPool = getManagedPool(nil)
 
 	// Create multiple qtree configs for different FlexVols
 	configs := []*storage.VolumeConfig{

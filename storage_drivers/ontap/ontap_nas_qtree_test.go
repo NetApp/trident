@@ -60,6 +60,7 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 
 	nasqtreeDriver := &NASQtreeStorageDriver{}
 	nasqtreeDriver.Config = *config
+	nasqtreeDriver.managedPool = getManagedPool(nil)
 	nasqtreeDriver.qtreesPerFlexvol = defaultQtreesPerFlexvol
 	nasqtreeDriver.quotaResizeMap = newQuotaResizeMap()
 	nasqtreeDriver.flexvolLocks = locks.NewGCNamedMutex()
@@ -73,6 +74,9 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
@@ -580,6 +584,7 @@ func getStructsForInitializeDriver() (*drivers.CommonStorageDriverConfig, *strin
 }
 
 func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
+	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return(uuid.New().String())
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -2075,6 +2080,8 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 }
 
 func addExpectForCreateFlexvolForQtree(mockAPI *mockapi.MockOntapAPI) {
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
@@ -2963,7 +2970,7 @@ func TestInitialize_QtreeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 			d.Config.NameTemplate = test.physicalNameTemplate
 			d.Config.Storage[0].Labels = test.virtualPoolLabels
 			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
-			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+			_, physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 				test.backendName)
 			assert.NoError(t, err, "Error is not nil")
 
@@ -3159,8 +3166,8 @@ func TestCreatePrepare_NilPool(t *testing.T) {
 	)
 
 	var err error
-	driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(ctx, driver, poolAttributes,
-		"testBackend")
+	driver.managedPool, driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(
+		ctx, driver, poolAttributes, "testBackend")
 	assert.NoError(t, err, "Error is not nil")
 
 	driver.CreatePrepare(ctx, &volume, nil)
@@ -3195,8 +3202,8 @@ func TestCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
 	)
 
 	var err error
-	driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(ctx, driver, poolAttributes,
-		"testBackend")
+	driver.managedPool, driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(
+		ctx, driver, poolAttributes, "testBackend")
 	assert.NoError(t, err, "Error is not nil")
 
 	driver.CreatePrepare(ctx, &volume, nil)
@@ -4706,13 +4713,14 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_ErrorCreatingRules(
 	}
 }
 
-func TestGetStorageBackendSpecs_Success(t *testing.T) {
+func TestGetStorageBackendSpecs_NoMatchingPools(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	backend := storage.StorageBackend{}
+	driver.managedPool = getManagedPool(nil)
 
 	result := driver.GetStorageBackendSpecs(ctx, &backend)
 
-	assert.NoError(t, result, "Expected no error, got error")
+	assert.Error(t, result, "Expected error, got none")
 }
 
 func TestOntapNasQtreeStorageDriverGetStorageBackendPools(t *testing.T) {
@@ -4729,15 +4737,21 @@ func TestOntapNasQtreeStorageDriverGetStorageBackendPools(t *testing.T) {
 	pools := driver.getStorageBackendPools(ctx)
 
 	assert.NotEmpty(t, pools)
-	assert.Equal(t, len(driver.physicalPools), len(pools))
+	assert.Equal(t, 1+len(driver.physicalPools), len(pools))
 
 	pool := pools[0]
+	assert.NotNil(t, driver.managedPool)
+	assert.Equal(t, managedStoragePoolName, pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+
+	pool = pools[1]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
 	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
 
-	pool = pools[1]
+	pool = pools[2]
 	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
 	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
 	assert.Equal(t, svmUUID, pool.SvmUUID)
@@ -4945,6 +4959,7 @@ func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(sb)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -5025,6 +5040,7 @@ func TestCreate_WithVirtualPoolAndNoMatchingPhysicalPool(t *testing.T) {
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool2 := storage.NewStoragePool(sb, "pool2")
+	driver.managedPool = getManagedPool(nil)
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -5047,6 +5063,7 @@ func TestCreate_WithQtreeAlreadyExists(t *testing.T) {
 	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	volAttrs := map[string]sa.Request{}
@@ -5134,6 +5151,7 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			mockAPI, driver := newMockOntapNasQtreeDriver(t)
 			// Set common config of driver
+			driver.managedPool = getManagedPool(nil)
 			driver.physicalPools = map[string]storage.Pool{"pool1": commonStoragePool}
 			driver.Config.AutoExportPolicy = true
 
@@ -5180,6 +5198,7 @@ func TestCreate_OverSizeLimit(t *testing.T) {
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -5223,6 +5242,7 @@ func TestCreate_OverPoolSizeLimit(t *testing.T) {
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
@@ -5261,6 +5281,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 
 	// CASE 1: Physical pool for which error in getting aggregate space
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.LimitAggregateUsage = "50%"
@@ -5276,6 +5297,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 
 	// CASE 2: Physical pool for which error in getting volume list
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 
@@ -5290,6 +5312,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 
 	// CASE 3: Physical pool for which error in setting volume size
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 
@@ -5330,6 +5353,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 
 	// Case 1: Error while checking qtree existence
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, "*").Return(false, "", mockError)
 
@@ -5338,6 +5362,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 
 	// Case 2: Error in creating qtree
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	addCommonExpectForQtreeCreate(mockAPI, flexvol, flexvolName, sizeBytesStr)
 	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, "*").Return(false, "", nil)
@@ -5349,6 +5374,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 
 	// Case 3: Error in setting quota for qtree
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, gomock.Any()).Return(false, "", nil)
 	addCommonExpectForQtreeCreate(mockAPI, flexvol, flexvolName, sizeBytesStr)
@@ -5361,6 +5387,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 
 	// Case 4: Error in ensuring SMB share
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.managedPool = getManagedPool(nil)
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.NASType = sa.SMB
 	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, gomock.Any()).Return(false, "", nil)

@@ -41,10 +41,13 @@ import (
 const (
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
 	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
+
+	defaultConstituentsPerAggregate = 4
 )
 
 type OntapAPI interface {
 	APIVersion(ctx context.Context, cached bool) (string, error)
+	IsREST() bool
 	SVMName() string
 	IsSANOptimized() bool
 	IsDisaggregated() bool
@@ -65,6 +68,8 @@ type OntapAPI interface {
 	ExportRuleList(ctx context.Context, policyName string) (map[int]string, error)
 
 	FlexgroupCreate(ctx context.Context, volume Volume) error
+	FlexgroupCreateBalanced(ctx context.Context, volume Volume) error
+	FlexgroupModify(ctx context.Context, volume Volume) error
 	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)
 	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
 	FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
@@ -202,6 +207,8 @@ type OntapAPI interface {
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
 	VolumeCreate(ctx context.Context, volume Volume) error
+	VolumeCreateBalanced(ctx context.Context, volume Volume) error
+	VolumeModify(ctx context.Context, volume Volume) error
 	// VolumeDestroy keeps both flags in the shared abstraction because ZAPI and REST expose
 	// delete semantics differently. ZAPI consumes force directly and may need a follow-up
 	// recovery-queue purge when skipRecoveryQueue is true. REST only exposes one delete flag at

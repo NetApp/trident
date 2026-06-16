@@ -37,8 +37,8 @@ type ASAStorageDriver struct {
 	telemetry   *Telemetry
 	iscsi       iscsi.ISCSI
 
-	physicalPools map[string]storage.Pool
-	virtualPools  map[string]storage.Pool
+	managedPool  storage.Pool
+	virtualPools map[string]storage.Pool
 
 	cloneSplitTimers *sync.Map
 }
@@ -146,7 +146,7 @@ func (d *ASAStorageDriver) Initialize(
 			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 		}
 	}
-	d.physicalPools, d.virtualPools, err = InitializeManagedStoragePoolsCommon(ctx, d,
+	d.managedPool, _, d.virtualPools, err = initializeManagedStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
@@ -223,7 +223,7 @@ func (d *ASAStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateASAStoragePools(ctx, d.physicalPools, d.virtualPools, d, api.MaxSANLabelLength); err != nil {
+	if err := ValidateASAStoragePools(ctx, d.managedPool, d.virtualPools, d, api.MaxSANLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -975,12 +975,12 @@ func (d *ASAStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeCon
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *ASAStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
+	return getStorageBackendSpecsCommon(backend, d.API, d.managedPool, nil, d.virtualPools, d.BackendName())
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *ASAStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
-	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
+	return getStorageBackendPhysicalPoolNamesCommon(map[string]storage.Pool{d.managedPool.Name(): d.managedPool})
 }
 
 // getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
@@ -1005,6 +1005,7 @@ func (d *ASAStorageDriver) getStoragePoolAttributes(_ context.Context) map[strin
 		sa.Replication:      sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thin"),
 		sa.Media:            sa.NewStringOffer(sa.SSD),
+		sa.SANType:          sa.NewStringOffer(d.Config.SANType),
 	}
 }
 

@@ -256,6 +256,20 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupCreate(ctx, volume any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupCreate", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupCreate), ctx, volume)
 }
 
+// FlexgroupCreateBalanced mocks base method.
+func (m *MockOntapAPI) FlexgroupCreateBalanced(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlexgroupCreateBalanced", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlexgroupCreateBalanced indicates an expected call of FlexgroupCreateBalanced.
+func (mr *MockOntapAPIMockRecorder) FlexgroupCreateBalanced(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupCreateBalanced", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupCreateBalanced), ctx, volume)
+}
+
 // FlexgroupDestroy mocks base method.
 func (m *MockOntapAPI) FlexgroupDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error {
 	m.ctrl.T.Helper()
@@ -313,6 +327,20 @@ func (m *MockOntapAPI) FlexgroupListByPrefix(ctx context.Context, prefix string)
 func (mr *MockOntapAPIMockRecorder) FlexgroupListByPrefix(ctx, prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupListByPrefix", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupListByPrefix), ctx, prefix)
+}
+
+// FlexgroupModify mocks base method.
+func (m *MockOntapAPI) FlexgroupModify(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlexgroupModify", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlexgroupModify indicates an expected call of FlexgroupModify.
+func (mr *MockOntapAPIMockRecorder) FlexgroupModify(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupModify", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupModify), ctx, volume)
 }
 
 // FlexgroupModifyExportPolicy mocks base method.
@@ -703,6 +731,20 @@ func (m *MockOntapAPI) IsDisaggregated() bool {
 func (mr *MockOntapAPIMockRecorder) IsDisaggregated() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDisaggregated", reflect.TypeOf((*MockOntapAPI)(nil).IsDisaggregated))
+}
+
+// IsREST mocks base method.
+func (m *MockOntapAPI) IsREST() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsREST")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsREST indicates an expected call of IsREST.
+func (mr *MockOntapAPIMockRecorder) IsREST() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsREST", reflect.TypeOf((*MockOntapAPI)(nil).IsREST))
 }
 
 // IsSANOptimized mocks base method.
@@ -2190,6 +2232,20 @@ func (mr *MockOntapAPIMockRecorder) VolumeCreate(ctx, volume any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockOntapAPI)(nil).VolumeCreate), ctx, volume)
 }
 
+// VolumeCreateBalanced mocks base method.
+func (m *MockOntapAPI) VolumeCreateBalanced(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeCreateBalanced", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeCreateBalanced indicates an expected call of VolumeCreateBalanced.
+func (mr *MockOntapAPIMockRecorder) VolumeCreateBalanced(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreateBalanced", reflect.TypeOf((*MockOntapAPI)(nil).VolumeCreateBalanced), ctx, volume)
+}
+
 // VolumeDestroy mocks base method.
 func (m *MockOntapAPI) VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error {
 	m.ctrl.T.Helper()
@@ -2277,6 +2333,20 @@ func (m *MockOntapAPI) VolumeListBySnapshotParent(ctx context.Context, snapshotN
 func (mr *MockOntapAPIMockRecorder) VolumeListBySnapshotParent(ctx, snapshotName, sourceVolume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListBySnapshotParent", reflect.TypeOf((*MockOntapAPI)(nil).VolumeListBySnapshotParent), ctx, snapshotName, sourceVolume)
+}
+
+// VolumeModify mocks base method.
+func (m *MockOntapAPI) VolumeModify(ctx context.Context, volume api.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeModify", ctx, volume)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeModify indicates an expected call of VolumeModify.
+func (mr *MockOntapAPIMockRecorder) VolumeModify(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModify", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModify), ctx, volume)
 }
 
 // VolumeModifyExportPolicy mocks base method.

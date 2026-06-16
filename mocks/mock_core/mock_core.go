@@ -448,21 +448,6 @@ func (mr *MockOrchestratorMockRecorder) GetBackendByBackendUUID(ctx, backendUUID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).GetBackendByBackendUUID), ctx, backendUUID)
 }
 
-// GetResizeDeltaForBackend mocks base method.
-func (m *MockOrchestrator) GetResizeDeltaForBackend(arg0 context.Context, arg1 string) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetResizeDeltaForBackend", arg0, arg1)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetResizeDeltaForBackend indicates an expected call of GetResizeDeltaForBackend.
-func (mr *MockOrchestratorMockRecorder) GetResizeDeltaForBackend(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResizeDeltaForBackend", reflect.TypeOf((*MockOrchestrator)(nil).GetResizeDeltaForBackend), arg0, arg1)
-}
-
 // GetCHAP mocks base method.
 func (m *MockOrchestrator) GetCHAP(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
@@ -583,6 +568,21 @@ func (m *MockOrchestrator) GetReplicationDetails(ctx context.Context, backendUUI
 func (mr *MockOrchestratorMockRecorder) GetReplicationDetails(ctx, backendUUID, localInternalVolumeName, remoteVolumeHandle any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicationDetails", reflect.TypeOf((*MockOrchestrator)(nil).GetReplicationDetails), ctx, backendUUID, localInternalVolumeName, remoteVolumeHandle)
+}
+
+// GetResizeDeltaForBackend mocks base method.
+func (m *MockOrchestrator) GetResizeDeltaForBackend(ctx context.Context, backendUUID string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResizeDeltaForBackend", ctx, backendUUID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResizeDeltaForBackend indicates an expected call of GetResizeDeltaForBackend.
+func (mr *MockOrchestratorMockRecorder) GetResizeDeltaForBackend(ctx, backendUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResizeDeltaForBackend", reflect.TypeOf((*MockOrchestrator)(nil).GetResizeDeltaForBackend), ctx, backendUUID)
 }
 
 // GetSelectedLogLayers mocks base method.
@@ -1059,18 +1059,6 @@ func (mr *MockOrchestratorMockRecorder) PromoteMirror(ctx, backendUUID, volumeNa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromoteMirror", reflect.TypeOf((*MockOrchestrator)(nil).PromoteMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
-// SyncVolumePublications mocks base method.
-func (m *MockOrchestrator) SyncVolumePublications(ctx context.Context, vpsToBeSynced []*models.VolumePublication) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SyncVolumePublications", ctx, vpsToBeSynced)
-}
-
-// SyncVolumePublications indicates an expected call of SyncVolumePublications.
-func (mr *MockOrchestratorMockRecorder) SyncVolumePublications(ctx, vpsToBeSynced any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).SyncVolumePublications), ctx, vpsToBeSynced)
-}
-
 // PublishVolume mocks base method.
 func (m *MockOrchestrator) PublishVolume(ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
@@ -1252,6 +1240,18 @@ func (mr *MockOrchestratorMockRecorder) Stop() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockOrchestrator)(nil).Stop))
 }
 
+// SyncVolumePublications mocks base method.
+func (m *MockOrchestrator) SyncVolumePublications(ctx context.Context, vpsToBeSynced []*models.VolumePublication) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SyncVolumePublications", ctx, vpsToBeSynced)
+}
+
+// SyncVolumePublications indicates an expected call of SyncVolumePublications.
+func (mr *MockOrchestratorMockRecorder) SyncVolumePublications(ctx, vpsToBeSynced any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).SyncVolumePublications), ctx, vpsToBeSynced)
+}
+
 // UnpublishVolume mocks base method.
 func (m *MockOrchestrator) UnpublishVolume(ctx context.Context, volumeName, nodeName string) error {
 	m.ctrl.T.Helper()
@@ -1398,17 +1398,17 @@ func (mr *MockOrchestratorMockRecorder) UpdateVolumeAutogrowPolicy(ctx, volumeNa
 }
 
 // UpdateVolumeAutogrowStatus mocks base method.
-func (m *MockOrchestrator) UpdateVolumeAutogrowStatus(arg0 context.Context, arg1 string, arg2 *models.VolumeAutogrowStatus) error {
+func (m *MockOrchestrator) UpdateVolumeAutogrowStatus(ctx context.Context, volumeName string, status *models.VolumeAutogrowStatus) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumeAutogrowStatus", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateVolumeAutogrowStatus", ctx, volumeName, status)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateVolumeAutogrowStatus indicates an expected call of UpdateVolumeAutogrowStatus.
-func (mr *MockOrchestratorMockRecorder) UpdateVolumeAutogrowStatus(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) UpdateVolumeAutogrowStatus(ctx, volumeName, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeAutogrowStatus", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumeAutogrowStatus), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeAutogrowStatus", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumeAutogrowStatus), ctx, volumeName, status)
 }
 
 // UpdateVolumeLUKSPassphraseNames mocks base method.

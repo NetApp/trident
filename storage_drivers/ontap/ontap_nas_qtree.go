@@ -73,6 +73,7 @@ type NASQtreeStorageDriver struct {
 	qtreesPerFlexvol                 int
 	denyNewFlexvols                  bool
 
+	managedPool   storage.Pool
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
@@ -171,7 +172,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 
 	// Load default config parameters
-	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+	if err = PopulateConfigurationDefaults(ctx, &d.Config, d.API); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
@@ -221,7 +222,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 		"QtreesPerFlexvol":    d.qtreesPerFlexvol,
 	}).Debugf("Qtree driver settings.")
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
+	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
@@ -315,7 +316,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.managedPool, d.physicalPools, d.virtualPools, d, 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -370,7 +371,8 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	// Get candidate physical pools
-	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes, d.physicalPools, d.virtualPools)
+	physicalPools, err := getPoolsForCreate(ctx, volConfig, storagePool, volAttributes,
+		d.managedPool, d.physicalPools, d.virtualPools)
 	if err != nil {
 		return err
 	}
@@ -1712,10 +1714,8 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	}).Debug("Creating Flexvol for qtrees.")
 
 	// Create the Flexvol
-	err = d.API.VolumeCreate(ctx, api.Volume{
-		Aggregates: []string{
-			aggregate,
-		},
+	err = createFlexvol(ctx, d.API, api.Volume{
+		Aggregates:      []string{aggregate},
 		Encrypt:         enableEncryption,
 		ExportPolicy:    exportPolicy,
 		Name:            flexvol,
@@ -2244,7 +2244,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Contex
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
+	return getStorageBackendSpecsCommon(backend, d.API, d.managedPool, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
@@ -2258,6 +2258,14 @@ func (d *NASQtreeStorageDriver) getStorageBackendPools(ctx context.Context) []dr
 	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
 
+	allPools := make([]storage.Pool, 0, len(d.physicalPools))
+	if d.managedPool != nil {
+		allPools = append(allPools, d.managedPool)
+	}
+	for _, pool := range d.physicalPools {
+		allPools = append(allPools, pool)
+	}
+
 	// For this driver, a discrete storage pool is composed of the following:
 	// 1. SVM UUID
 	// 2. Aggregate (physical pool)
@@ -2265,7 +2273,7 @@ func (d *NASQtreeStorageDriver) getStorageBackendPools(ctx context.Context) []dr
 	svmUUID := d.GetAPI().GetSVMUUID()
 	flexVolPrefix := d.FlexvolNamePrefix()
 	backendPools := make([]drivers.OntapEconomyStorageBackendPool, 0)
-	for _, pool := range d.physicalPools {
+	for _, pool := range allPools {
 		backendPool := drivers.OntapEconomyStorageBackendPool{
 			SvmUUID:       svmUUID,
 			Aggregate:     pool.Name(),
@@ -2285,6 +2293,7 @@ func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.Replication:      sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+		sa.NASType:          sa.NewStringOffer(d.Config.NASType),
 	}
 }
 

@@ -50,6 +50,7 @@ func newMockOntapASANVMeDriver(t *testing.T) (*mockapi.MockOntapAPI, *ASANVMeSto
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 
 	driver := newTestOntapASANVMeDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
 	driver.API = mockAPI
@@ -535,7 +536,22 @@ func TestValidateASANVMe(t *testing.T) {
 
 		_ = PopulateASAConfigurationDefaults(ctx, &driver.Config)
 		driver.virtualPools = map[string]storage.Pool{}
-		driver.physicalPools = map[string]storage.Pool{}
+		driver.managedPool = storage.NewStoragePool(nil, managedStoragePoolName)
+		driver.managedPool.SetInternalAttributes(map[string]string{
+			SpaceReserve:    driver.Config.SpaceReserve,
+			SnapshotPolicy:  driver.Config.SnapshotPolicy,
+			SnapshotReserve: driver.Config.SnapshotReserve,
+			Encryption:      driver.Config.Encryption,
+			SplitOnClone:    driver.Config.SplitOnClone,
+			TieringPolicy:   driver.Config.TieringPolicy,
+			UnixPermissions: driver.Config.UnixPermissions,
+			SnapshotDir:     driver.Config.SnapshotDir,
+			ExportPolicy:    driver.Config.ExportPolicy,
+			SecurityStyle:   driver.Config.SecurityStyle,
+			SpaceAllocation: driver.Config.SpaceAllocation,
+			FileSystemType:  driver.Config.FileSystemType,
+			Size:            driver.Config.Size,
+		})
 	}
 
 	testCases := []testCase{
@@ -659,7 +675,7 @@ func TestCreateASANVMe(t *testing.T) {
 		})
 		storagePool.InternalAttributes()[FormatOptions] = formatOptions
 		storagePool.InternalAttributes()[SkipRecoveryQueue] = "true"
-		driver.physicalPools = map[string]storage.Pool{"pool1": storagePool}
+		driver.managedPool = storagePool
 		volAttrs = map[string]sa.Request{}
 	}
 
@@ -1250,7 +1266,7 @@ func TestCreateCloneASANVMe_NameTemplate(t *testing.T) {
 		storagePool.SetInternalAttributes(map[string]string{
 			SplitOnClone: "false",
 		})
-		driver.physicalPools = map[string]storage.Pool{"pool1": storagePool}
+		driver.managedPool = storagePool
 	}
 
 	tests := []struct {
@@ -2805,14 +2821,14 @@ func TestCreatePrepareASANVMe_NilPool(t *testing.T) {
 	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	driver.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, driver, driver.getStoragePoolAttributes(ctx), driver.BackendName())
+	driver.managedPool, _, _, _ = InitializeStoragePoolsCommon(ctx, driver, driver.getStoragePoolAttributes(ctx), driver.BackendName())
 
 	driver.CreatePrepare(ctx, &volConfig, nil)
 
@@ -2832,14 +2848,14 @@ func TestCreatePrepareASANVMe_NilPool_TemplateNotContainVolumeName(t *testing.T)
 	driver.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 
-	driver.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, driver, driver.getStoragePoolAttributes(ctx), driver.BackendName())
+	driver.managedPool, _, _, _ = InitializeStoragePoolsCommon(ctx, driver, driver.getStoragePoolAttributes(ctx), driver.BackendName())
 
 	driver.CreatePrepare(ctx, &volConfig, nil)
 
@@ -2942,22 +2958,14 @@ func TestGetStorageBackendSpecsASANVMe(t *testing.T) {
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 
-	pool2 := storage.NewStoragePool(nil, "dummyPool2")
-	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-
-	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
-	driver.physicalPools = physicalPools
+	driver.managedPool = pool1
 
 	err := driver.GetStorageBackendSpecs(ctx, backend)
 
 	assert.NoError(t, err)
 	assert.Equal(t, backend.Name(), driver.BackendName(), "Should be equal")
 
-	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
+	expectedPhysicalPoolsName := []string{"dummyPool1"}
 	actualPhysicalPoolsName := backend.GetPhysicalPoolNames(ctx)
 
 	sort.Strings(expectedPhysicalPoolsName)
@@ -2976,17 +2984,9 @@ func TestGetStorageBackendPhysicalPoolNamesASANVMe(t *testing.T) {
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 
-	pool2 := storage.NewStoragePool(nil, "dummyPool2")
-	pool2.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool2.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool2.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+	driver.managedPool = pool1
 
-	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
-	driver.physicalPools = physicalPools
-
-	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
+	expectedPhysicalPoolsName := []string{"dummyPool1"}
 
 	actualPhysicalPoolsName := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
@@ -3007,12 +3007,11 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-	physicalPools := map[string]storage.Pool{ONTAPTEST_VSERVER_AGGR_NAME: pool1}
-	driver.physicalPools = physicalPools
+	driver.managedPool = pool1
 
 	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
@@ -3167,7 +3166,7 @@ func TestImportASANVMe_Managed_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3247,7 +3246,7 @@ func TestImportASANVMe_NoRename_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3329,7 +3328,7 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3459,7 +3458,7 @@ func TestImportASANVMe_UnManaged_Success(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3509,7 +3508,7 @@ func TestImportASANVMe_VolumeNotRW(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3557,7 +3556,7 @@ func TestImportASANVMe_NamespaceNotOnline(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3606,7 +3605,7 @@ func TestImportASANVMe_DifferentLabels(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"
@@ -3674,7 +3673,7 @@ func TestImportASANVMe_DifferentLabels(t *testing.T) {
 			pool1.SetAttributes(map[string]sa.Offer{
 				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
-			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+			driver.managedPool = pool1
 
 			// Generate the comment to be set
 			nsCommentToBeSet := map[string]string{
@@ -3730,7 +3729,7 @@ func TestImportASANVMe_LabelLengthExceeding(t *testing.T) {
 	pool1.SetAttributes(map[string]sa.Offer{
 		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.managedPool = pool1
 
 	// originalVolumeName will be same as NVMe namespace name in ASA driver
 	originalVolumeName := "namespace1"

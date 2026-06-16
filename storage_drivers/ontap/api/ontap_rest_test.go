@@ -5043,6 +5043,232 @@ func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	server.Close()
 }
 
+func TestOntapREST_VolumeCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockRequestAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			encrypt := true
+			server := getHttpServerPollCreateVolumeJob(test.mockFunction, mockGetVolumeResponse)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "spaceReserve",
+				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create a volume")
+			} else {
+				assert.Error(t, err, "volume created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func getHttpServerPollCreateContainerJob(
+	mockPostRequest func(w http.ResponseWriter, r *http.Request),
+	mockGetRequest func(w http.ResponseWriter, r *http.Request),
+) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" && r.URL.Path == "/api/application/containers" {
+			mockPostRequest(w, r)
+		} else if r.Method == "GET" && r.URL.Path == "/api/cluster/jobs/1234" {
+			mockJobResponse(w, r)
+		} else if r.Method == "GET" && r.URL.Path == "/api/storage/volumes" {
+			mockGetRequest(w, r)
+		} else {
+			mockResourceNotFound(w, r)
+		}
+	}))
+}
+
+func TestOntapREST_VolumeCreateBalanced(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockRequestAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			encrypt := true
+			server := getHttpServerPollCreateContainerJob(test.mockFunction, mockGetVolumeResponse)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeCreateBalanced(ctx, "fakeVolume", "1g", "spaceReserve",
+				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create a balanced volume")
+			} else {
+				assert.Error(t, err, "balanced volume created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestCreateApplicationContainerByStyle_Success(t *testing.T) {
+	encrypt := true
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 10, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_FlexgroupStyle(t *testing.T) {
+	encrypt := true
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 10, false,
+		models.VolumeStyleFlexgroup)
+	assert.NoError(t, err, "expected container create with flexgroup style to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_DPVolume(t *testing.T) {
+	encrypt := false
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, &encrypt, NumericalValueNotSet, true,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create for DP volume to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_InvalidUnixPermissions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockRequestAccepted))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.Error(t, err, "expected error for invalid unix permissions")
+	assert.Contains(t, err.Error(), "cannot process unix permissions")
+}
+
+func TestCreateApplicationContainerByStyle_EncryptNil(t *testing.T) {
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create with nil encrypt to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_NoNASOptions(t *testing.T) {
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create with no NAS options to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_WithTieringPolicy(t *testing.T) {
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"", "", "", "", "auto",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create with tiering policy to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_BackendError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"fakeSnapshotPolicy", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.Error(t, err, "expected error from backend")
+}
+
+func TestCreateApplicationContainerByStyle_NilAcceptedResponse(t *testing.T) {
+	// Return 200 OK (not 202 Accepted) so the client gets nil for the accepted response
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode("")
+	}))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
+		models.VolumeStyleFlexvol)
+	assert.Error(t, err, "expected error for nil accepted response")
+}
+
+func TestCreateApplicationContainerByStyle_WithQoSPolicy(t *testing.T) {
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"", "---rwxr-xr-x", "default", "unix", "",
+		"test comment", QosPolicyGroup{Name: "myQos", Kind: QosPolicyGroupKind}, nil, 5, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create with QoS policy to succeed")
+}
+
+func TestCreateApplicationContainerByStyle_WithSnapshotReserve(t *testing.T) {
+	server := getHttpServerPollCreateContainerJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	defer server.Close()
+
+	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
+		"daily", "", "", "", "",
+		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, 20, false,
+		models.VolumeStyleFlexvol)
+	assert.NoError(t, err, "expected container create with snapshot reserve to succeed")
+}
+
 func TestOntapRESTVolumeList(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -5448,7 +5674,7 @@ func getHttpServerPollCreateVolumeJob(
 	}))
 }
 
-func TestOntapREST_CreateFlexGroup(t *testing.T) {
+func TestOntapREST_FlexGroupCreate(t *testing.T) {
 	tests := []struct {
 		name            string
 		mockFunction    func(w http.ResponseWriter, r *http.Request)
@@ -5473,6 +5699,35 @@ func TestOntapREST_CreateFlexGroup(t *testing.T) {
 				assert.NoError(t, err, "could not create a flexgroup volume")
 			} else {
 				assert.Error(t, err, "flexgroup volume created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupCreateBalanced(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockRequestAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			encrypt := true
+			server := getHttpServerPollCreateContainerJob(test.mockFunction, mockGetVolumeResponse)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupCreateBalanced(ctx, "fakeVolume", 1073741824, "spaceReserve",
+				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create a balanced flexgroup volume")
+			} else {
+				assert.Error(t, err, "balanced flexgroup volume created")
 			}
 			server.Close()
 		})
