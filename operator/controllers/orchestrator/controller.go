@@ -95,10 +95,10 @@ type Controller struct {
 	// simultaneously in two different workers.
 	workqueue workqueue.RateLimitingInterface
 
-	// crdUpdateNeeded is a temporary flag that is set true when a new orchestrator controller is created,
-	// and false when operations that need to happen exactly once during installs are successful.
-	// TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
-	// re-evaluate if this is necessary.
+	// crdUpdateNeeded is set true when a new orchestrator controller starts and cleared after the first
+	// successful install reconcile. Together with Trident/K8s version-change detection in the installer,
+	// it controls whether existing internal CRD schemas (e.g. TridentVolumePublication autogrow fields)
+	// are merge-patched during operator-driven installs and upgrades.
 	crdUpdateNeeded bool
 }
 

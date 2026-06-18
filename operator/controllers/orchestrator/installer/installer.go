@@ -925,8 +925,9 @@ func (i *Installer) InstallOrPatchTrident(
 		return nil, "", "", returnError
 	}
 
-	// Create CRDs and ensure they are established
-	returnError = i.createAndEnsureCRDs(crdUpdateNeeded)
+	// Create CRDs and ensure they are established. Patch existing CRD schemas on first
+	// orchestrator reconcile or when Trident/Kubernetes versions change (e.g. autogrow TVP fields).
+	returnError = i.createAndEnsureCRDs(crdUpdateNeeded || shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 		return nil, "", "", returnError
@@ -1076,86 +1077,82 @@ func (i *Installer) InstallOrPatchTrident(
 	return &identifiedSpecValues, labels[TridentVersionLabelKey], acpVersion, nil
 }
 
-// createCRDs creates and establishes each of the CRDs individually
-func (i *Installer) createCRDs(performOperationOnce bool) error {
+// createCRDs creates and establishes each of the CRDs individually.
+// When patchExistingCRDs is true, existing CRD OpenAPI schemas are merge-patched to the current manifest.
+func (i *Installer) createCRDs(patchExistingCRDs bool) error {
 	var err error
 
-	if err = i.CreateOrPatchCRD(VersionCRDName, k8sclient.GetVersionCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(VersionCRDName, k8sclient.GetVersionCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(BackendCRDName, k8sclient.GetBackendCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(BackendCRDName, k8sclient.GetBackendCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(SnapshotInfoCRDName, k8sclient.GetSnapshotInfoCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(SnapshotInfoCRDName, k8sclient.GetSnapshotInfoCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(VolumePublicationCRDName, k8sclient.GetVolumePublicationCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(VolumePublicationCRDName, k8sclient.GetVolumePublicationCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(NodeRemediationCRDName, k8sclient.GetNodeRemediationCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(NodeRemediationCRDName, k8sclient.GetNodeRemediationCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(NodeRemediationTemplateCRDName, k8sclient.GetNodeRemediationTemplateCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(NodeRemediationTemplateCRDName, k8sclient.GetNodeRemediationTemplateCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(GroupSnapshotCRDName, k8sclient.GetGroupSnapshotCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(GroupSnapshotCRDName, k8sclient.GetGroupSnapshotCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(VolumeReferenceCRDName, k8sclient.GetVolumeReferenceCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(VolumeReferenceCRDName, k8sclient.GetVolumeReferenceCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(),
-		performOperationOnce); err != nil {
+		patchExistingCRDs); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(ActionMirrorUpdateCRDName, k8sclient.GetActionMirrorUpdateCRDYAML(),
-		performOperationOnce); err != nil {
+		patchExistingCRDs); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(ActionSnapshotRestoreCRDName, k8sclient.GetActionSnapshotRestoreCRDYAML(),
-		false); err != nil {
+		patchExistingCRDs); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(ConfiguratorCRDName, k8sclient.GetConfiguratorCRDYAML(), false); err != nil {
-		return err
-	}
-
-	if err = i.CreateOrPatchCRD(AutogrowPolicyCRDName, k8sclient.GetAutogrowPolicyCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(ConfiguratorCRDName, k8sclient.GetConfiguratorCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
 
-	if err = i.CreateOrPatchCRD(AutogrowRequestInternalCRDName, k8sclient.GetAutogrowRequestInternalCRDYAML(), false); err != nil {
+	if err = i.CreateOrPatchCRD(AutogrowPolicyCRDName, k8sclient.GetAutogrowPolicyCRDYAML(), patchExistingCRDs); err != nil {
+		return err
+	}
+
+	if err = i.CreateOrPatchCRD(AutogrowRequestInternalCRDName, k8sclient.GetAutogrowRequestInternalCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
 
 	return err
 }
 
-// CreateOrPatchCRD creates and establishes a CRD or patches an existing one.
-// TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
-//
-//	re-evaluate if performOperationOnce is necessary.
-//
-// TODO (victorir): use this to patch version CRD after bootstrap
-func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error {
+// CreateOrPatchCRD creates and establishes a CRD or patches an existing one when patchExistingCRDs is true.
+func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, patchExistingCRDs bool) error {
 	var currentCRD *apiextensionv1.CustomResourceDefinition
 	var err error
 
@@ -1166,8 +1163,7 @@ func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOn
 	}
 
 	if crdExists {
-		// Avoid patching the CRD iff the CRD already exists and performOperationOnce is false.
-		if !performOperationOnce {
+		if !patchExistingCRDs {
 			Log().WithFields(LogFields{
 				"CRD":       crdName,
 				"crdExists": crdExists,
@@ -1554,8 +1550,8 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	return nil
 }
 
-func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError error) {
-	returnError = i.createCRDs(performOperationOnce)
+func (i *Installer) createAndEnsureCRDs(patchExistingCRDs bool) (returnError error) {
+	returnError = i.createCRDs(patchExistingCRDs)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}
