@@ -2411,16 +2411,17 @@ func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, t
 	return execOutput, nil
 }
 
-// mergeAnnotationsFromExistingDeployment preserves annotations from an existing deployment into a new deployment
-// during trident-controller upgrade.
+// mergeAnnotationsFromExistingDeployment preserves deployment- and pod-template-level annotations from an
+// existing deployment into a new deployment during trident-controller upgrade.
 func mergeAnnotationsFromExistingDeployment(existingDeployment *appsv1.Deployment, newDeploymentYAML string) (string,
 	error) {
 	if existingDeployment == nil {
 		return newDeploymentYAML, nil
 	}
 
-	existingAnnotations := existingDeployment.GetAnnotations()
-	if len(existingAnnotations) == 0 {
+	existingDeploymentAnnotations := existingDeployment.GetAnnotations()
+	existingTemplateAnnotations := existingDeployment.Spec.Template.GetAnnotations()
+	if len(existingDeploymentAnnotations) == 0 && len(existingTemplateAnnotations) == 0 {
 		return newDeploymentYAML, nil
 	}
 
@@ -2430,15 +2431,9 @@ func mergeAnnotationsFromExistingDeployment(existingDeployment *appsv1.Deploymen
 		return "", fmt.Errorf("failed to unmarshal new deployment yaml: %w", err)
 	}
 
-	if newDeployment.Annotations == nil {
-		newDeployment.Annotations = existingAnnotations
-	} else {
-		for annotationKey, annotationValue := range existingAnnotations {
-			if _, exists := newDeployment.Annotations[annotationKey]; !exists {
-				newDeployment.Annotations[annotationKey] = annotationValue
-			}
-		}
-	}
+	newDeployment.Annotations = mergeAnnotationMaps(existingDeploymentAnnotations, newDeployment.Annotations)
+	newDeployment.Spec.Template.Annotations = mergeAnnotationMaps(existingTemplateAnnotations,
+		newDeployment.Spec.Template.Annotations)
 
 	// Convert updated new deployment object back to YAML
 	updatedNewDeploymentYAMLBytes, err := yaml.Marshal(newDeployment)
@@ -2447,4 +2442,20 @@ func mergeAnnotationsFromExistingDeployment(existingDeployment *appsv1.Deploymen
 	}
 
 	return string(updatedNewDeploymentYAMLBytes), nil
+}
+
+// mergeAnnotationMaps copies keys from existing into target without overriding keys already in target.
+func mergeAnnotationMaps(existing, target map[string]string) map[string]string {
+	if len(existing) == 0 {
+		return target
+	}
+	if target == nil {
+		target = make(map[string]string, len(existing))
+	}
+	for annotationKey, annotationValue := range existing {
+		if _, exists := target[annotationKey]; !exists {
+			target[annotationKey] = annotationValue
+		}
+	}
+	return target
 }

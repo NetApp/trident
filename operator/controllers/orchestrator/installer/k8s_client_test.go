@@ -6727,6 +6727,61 @@ spec:
 		},
 	}
 
+	existingDeploymentWithTemplateAnnotations := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-controller",
+			Namespace: "trident",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"custom/pod-annotation-1": "pod-value-1",
+						"custom/pod-annotation-2": "pod-value-2",
+						"existing-pod-annotation": "should-not-override",
+					},
+				},
+			},
+		},
+	}
+
+	existingDeploymentWithBothAnnotationLevels := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-controller",
+			Namespace: "trident",
+			Annotations: map[string]string{
+				"deployment-annotation": "deployment-value",
+			},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"template-annotation": "template-value",
+					},
+				},
+			},
+		},
+	}
+
+	newDeploymentYAMLWithTemplateAnnotations := `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-controller
+  namespace: trident
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        openshift.io/required-scc: trident-csi
+        existing-pod-annotation: "new-pod-value"
+    spec:
+      containers:
+      - name: trident-main
+        image: netapp/trident:v25.01.0
+`
+
 	invalidYAML := `invalid: yaml: content: [unclosed`
 
 	type input struct {
@@ -6936,6 +6991,89 @@ spec:
 				assert.Equal(t, int32(1), *updatedDeployment.Spec.Replicas)
 			},
 		},
+		"existing deployment with template annotations only merges pod template annotations": {
+			input: input{
+				existingDeployment: existingDeploymentWithTemplateAnnotations,
+				newDeploymentYAML: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-controller
+  namespace: trident
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller.csi.trident.netapp.io
+  template:
+    metadata:
+      labels:
+        app: controller.csi.trident.netapp.io
+    spec:
+      containers:
+      - name: trident-main
+        image: netapp/trident:v25.01.0
+`,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+				assert.NotEqual(t, newDeploymentYAML, result)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				assert.Empty(t, updatedDeployment.Annotations)
+				assert.Equal(t, "pod-value-1", updatedDeployment.Spec.Template.Annotations["custom/pod-annotation-1"])
+				assert.Equal(t, "pod-value-2", updatedDeployment.Spec.Template.Annotations["custom/pod-annotation-2"])
+				assert.Equal(t, "should-not-override",
+					updatedDeployment.Spec.Template.Annotations["existing-pod-annotation"])
+				assert.Equal(t, 3, len(updatedDeployment.Spec.Template.Annotations))
+			},
+		},
+		"existing deployment with template annotations does not override new template annotations": {
+			input: input{
+				existingDeployment: existingDeploymentWithTemplateAnnotations,
+				newDeploymentYAML:  newDeploymentYAMLWithTemplateAnnotations,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				assert.Equal(t, "trident-csi",
+					updatedDeployment.Spec.Template.Annotations["openshift.io/required-scc"])
+				assert.Equal(t, "new-pod-value",
+					updatedDeployment.Spec.Template.Annotations["existing-pod-annotation"])
+				assert.Equal(t, "pod-value-1", updatedDeployment.Spec.Template.Annotations["custom/pod-annotation-1"])
+				assert.Equal(t, "pod-value-2", updatedDeployment.Spec.Template.Annotations["custom/pod-annotation-2"])
+				assert.Equal(t, 4, len(updatedDeployment.Spec.Template.Annotations))
+			},
+		},
+		"existing deployment merges deployment and template annotations": {
+			input: input{
+				existingDeployment: existingDeploymentWithBothAnnotationLevels,
+				newDeploymentYAML:  newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				assert.Equal(t, "deployment-value", updatedDeployment.Annotations["deployment-annotation"])
+				assert.Equal(t, "existing-value", updatedDeployment.Annotations["existing-annotation"])
+				assert.Equal(t, 2, len(updatedDeployment.Annotations))
+
+				assert.Equal(t, "template-value", updatedDeployment.Spec.Template.Annotations["template-annotation"])
+				assert.Equal(t, 1, len(updatedDeployment.Spec.Template.Annotations))
+			},
+		},
 	}
 
 	for testName, test := range tests {
@@ -6954,6 +7092,55 @@ spec:
 			if test.validate != nil {
 				test.validate(t, result, err)
 			}
+		})
+	}
+}
+
+func TestMergeAnnotationMaps(t *testing.T) {
+	tests := map[string]struct {
+		existing map[string]string
+		target   map[string]string
+		expected map[string]string
+	}{
+		"empty existing returns target unchanged": {
+			existing: nil,
+			target: map[string]string{
+				"keep": "value",
+			},
+			expected: map[string]string{
+				"keep": "value",
+			},
+		},
+		"nil target copies all existing keys": {
+			existing: map[string]string{
+				"one": "1",
+				"two": "2",
+			},
+			target: nil,
+			expected: map[string]string{
+				"one": "1",
+				"two": "2",
+			},
+		},
+		"does not override keys already in target": {
+			existing: map[string]string{
+				"shared": "old",
+				"new":    "added",
+			},
+			target: map[string]string{
+				"shared": "new",
+			},
+			expected: map[string]string{
+				"shared": "new",
+				"new":    "added",
+			},
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			result := mergeAnnotationMaps(test.existing, test.target)
+			assert.Equal(t, test.expected, result)
 		})
 	}
 }
