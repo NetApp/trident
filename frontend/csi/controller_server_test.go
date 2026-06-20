@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -12,6 +12,7 @@ import (
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -1240,6 +1241,123 @@ func TestControllerPublishVolume(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
 			assert.Equal(t, tc.expectedResponse.PublishContext, resp.PublishContext)
+		})
+	}
+}
+
+// TestControllerPublishVolume_VolumeMoveGate exercises the volume-move gate
+// from the CSI frontend's perspective. The gate itself now lives in the core
+// (orchestrator_core.PublishVolume / concurrent_core.PublishVolume): when a
+// move makes the volume unsafe to publish, core returns a VolumeStateError,
+// which the CSI frontend maps to codes.Aborted. This test asserts that
+// mapping plus the pass-through and generic-error contracts the Kubernetes
+// retry loop relies on.
+func TestControllerPublishVolume_VolumeMoveGate(t *testing.T) {
+	const (
+		volumeID = "vol-id"
+		nodeID   = "Node-id"
+	)
+
+	req := &csi.ControllerPublishVolumeRequest{
+		VolumeId: volumeID,
+		NodeId:   nodeID,
+		VolumeCapability: &csi.VolumeCapability{
+			AccessType: &csi.VolumeCapability_Mount{
+				Mount: &csi.VolumeCapability_MountVolume{FsType: "ext4"},
+			},
+			AccessMode: &csi.VolumeCapability_AccessMode{
+				Mode: csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+			},
+		},
+	}
+
+	// assertBlocked checks that the gate short-circuited the request with
+	// codes.Aborted, the contract Kubernetes relies on to trigger an
+	// orderly retry rather than a fatal failure.
+	assertBlocked := func(t *testing.T, resp *csi.ControllerPublishVolumeResponse, err error) {
+		t.Helper()
+		require.Error(t, err)
+		assert.Nil(t, resp)
+		st, ok := status.FromError(err)
+		require.True(t, ok, "expected gRPC status error, got %T", err)
+		assert.Equal(t, codes.Aborted, st.Code())
+	}
+
+	// assertPassedThrough checks the gate allowed the request through and
+	// the rest of the pipeline produced a successful response.
+	assertPassedThrough := func(t *testing.T, resp *csi.ControllerPublishVolumeResponse, err error) {
+		t.Helper()
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+	}
+
+	// assertGenericError checks that a non-VolumeStateError surfaced from
+	// core is propagated as something other than codes.Aborted, so the
+	// caller treats it as "infrastructure failure, don't proceed" rather
+	// than as the orderly move-in-progress signal.
+	assertGenericError := func(t *testing.T, resp *csi.ControllerPublishVolumeResponse, err error) {
+		t.Helper()
+		require.Error(t, err)
+		assert.Nil(t, resp)
+		st, ok := status.FromError(err)
+		require.True(t, ok, "expected gRPC status error, got %T", err)
+		assert.NotEqual(t, codes.Aborted, st.Code(),
+			"non-move errors must not masquerade as the move-in-progress signal")
+	}
+
+	tests := []struct {
+		name             string
+		publishVolumeErr error
+		assertResp       func(t *testing.T, resp *csi.ControllerPublishVolumeResponse, err error)
+	}{
+		{
+			// Nil from core means "publish is safe" — including the
+			// no-move case and the IsPublishSafe move states
+			// (Moving/Succeeded/Failed). The CSI frontend cannot
+			// distinguish these and shouldn't try to.
+			name:       "core allows publish (no move or IsPublishSafe state)",
+			assertResp: assertPassedThrough,
+		},
+		{
+			// Core returns VolumeStateError whenever volume.Config.MoveInfo
+			// fails IsPublishSafe (Pending, ControllerStaging,
+			// NodeStaging, ControllerUnstaging, NodeUnstaging). The
+			// frontend's only job is to map that to codes.Aborted.
+			name:             "core blocks publish with VolumeStateError",
+			publishVolumeErr: errors.VolumeStateError("volume is not safe for publish"),
+			assertResp:       assertBlocked,
+		},
+		{
+			// Generic core errors (e.g. backend lookup failure) must
+			// not be confused with the move gate. The CSI sidecar
+			// retries codes.Aborted as if it were a transient move,
+			// which is wrong for infrastructure failures.
+			name:             "core returns generic error: not Aborted",
+			publishVolumeErr: errors.New("backend exploded"),
+			assertResp:       assertGenericError,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+			mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+			controllerServer := generateController(mockOrchestrator, mockHelper)
+
+			mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).
+				Return(generateFakeVolumeExternal(volumeID), nil).AnyTimes()
+			mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeID).
+				Return(generateFakeNode(nodeID).ConstructExternal(), nil).AnyTimes()
+
+			mockOrchestrator.EXPECT().
+				PublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(tc.publishVolumeErr).Times(1)
+
+			resp, err := controllerServer.ControllerPublishVolume(ctx, req)
+			tc.assertResp(t, resp, err)
 		})
 	}
 }

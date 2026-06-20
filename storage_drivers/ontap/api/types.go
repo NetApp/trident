@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -57,6 +57,27 @@ type (
 	Volumes        []*Volume
 	VolumeNameList []string
 )
+
+type Node struct {
+	Name string
+	UUID string
+}
+
+type JobState string
+
+const (
+	JobStateSuccess JobState = "success"
+	JobStateFailure JobState = "failure"
+	JobStateRunning JobState = "running"
+)
+
+type Job struct {
+	State     JobState
+	Error     string
+	Message   string
+	StartTime *time.Time
+	EndTime   *time.Time
+}
 
 type Snapshot struct {
 	CreateTime string

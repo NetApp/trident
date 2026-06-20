@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -57,6 +58,11 @@ func TestNewControllerPlugin(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Reset the singleton state between subtests.
+			readAESKeysOnce = sync.Once{}
+			aesKeySingleton = nil
+			aesKeyError = nil
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -164,6 +170,11 @@ func TestNewNodePlugin(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Reset the singleton state between subtests.
+			readAESKeysOnce = sync.Once{}
+			aesKeySingleton = nil
+			aesKeyError = nil
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -282,6 +293,11 @@ func TestNewAllInOnePlugin(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Reset the singleton state between subtests.
+			readAESKeysOnce = sync.Once{}
+			aesKeySingleton = nil
+			aesKeyError = nil
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -991,6 +1007,11 @@ func TestReadAESKey(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Reset the singleton state between subtests.
+			readAESKeysOnce = sync.Once{}
+			aesKeySingleton = nil
+			aesKeyError = nil
+
 			var aesKeyFile string
 			if tc.createFile {
 				tmpFile, err := os.CreateTemp("", "test-key-*")
@@ -1260,6 +1281,8 @@ func TestPlugin_InitializeNodeLimiter(t *testing.T) {
 				NodeStageNVMeVolume,
 				NodeUnstageNVMeVolume,
 				NodePublishNVMeVolume,
+				NodeGraftISCSIAttachment,
+				NodePruneISCSIAttachment,
 			}
 
 			for _, limiterName := range expectedLimiters {

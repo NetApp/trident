@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -46,3 +46,12 @@ type ChapCredentials struct {
 }
 
 type ontapPerformanceClass string
+
+type VolumeMoveContext struct {
+	JobID        string       `json:"jobID,omitempty"`
+	JobState     api.JobState `json:"jobState,omitempty"`
+	JobStartTime time.Time    `json:"jobStartTime,omitempty"`
+	JobEndTime   time.Time    `json:"jobEndTime,omitempty"`
+	SVMName      string       `json:"svmName,omitempty"`
+	BackendName  string       `json:"backendName,omitempty"`
+}

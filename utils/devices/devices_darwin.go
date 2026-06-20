@@ -5,7 +5,7 @@
 package devices
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
@@ -68,6 +68,18 @@ func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).Debug(">>>> devices_darwin.CloseLUKSDevice")
 	defer Logc(ctx).Debug("<<<< devices_darwin.CloseLUKSDevice")
 	return errors.UnsupportedError("CloseLUKSDevice is not supported for darwin")
+}
+
+func (c *Client) AddMultipathPath(ctx context.Context, _ string) error {
+	Logc(ctx).Debug(">>>> devices_darwin.AddMultipathPath")
+	defer Logc(ctx).Debug("<<<< devices_darwin.AddMultipathPath")
+	return errors.UnsupportedError("AddMultipathPath is not supported for darwin")
+}
+
+func (c *Client) FailMultipathPath(ctx context.Context, _ string) error {
+	Logc(ctx).Debug(">>>> devices_darwin.FailMultipathPath")
+	defer Logc(ctx).Debug("<<<< devices_darwin.FailMultipathPath")
+	return errors.UnsupportedError("FailMultipathPath is not supported for darwin")
 }
 
 func (c *Client) ExpandMultipathDevice(

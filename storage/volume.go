@@ -1,9 +1,10 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package storage
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,54 +12,60 @@ import (
 	"github.com/brunoga/deep"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/models"
 )
 
 type VolumeConfig struct {
-	Version                     string                  `json:"version"`
-	Name                        string                  `json:"name"`
-	InternalName                string                  `json:"internalName"`
-	Size                        string                  `json:"size"`
-	Protocol                    config.Protocol         `json:"protocol"`
-	SpaceReserve                string                  `json:"spaceReserve"`
-	SecurityStyle               string                  `json:"securityStyle"`
-	SnapshotPolicy              string                  `json:"snapshotPolicy,omitempty"`
-	SnapshotReserve             string                  `json:"snapshotReserve,omitempty"`
-	SnapshotDir                 string                  `json:"snapshotDirectory,omitempty"`
-	ExportPolicy                string                  `json:"exportPolicy,omitempty"`
-	UnixPermissions             string                  `json:"unixPermissions,omitempty"`
-	StorageClass                string                  `json:"storageClass,omitempty"`
-	AccessMode                  config.AccessMode       `json:"accessMode,omitempty"`
-	VolumeMode                  config.VolumeMode       `json:"volumeMode,omitempty"`
-	AccessInfo                  models.VolumeAccessInfo `json:"accessInformation"`
-	BlockSize                   string                  `json:"blockSize"`
-	FileSystem                  string                  `json:"fileSystem"`
-	FormatOptions               string                  `json:"formatOptions,omitempty"`
-	Encryption                  string                  `json:"encryption"`
-	LUKSEncryption              string                  `json:"LUKSEncryption,omitempty"`
-	CloneSourceVolume           string                  `json:"cloneSourceVolume"`
-	CloneSourceVolumeInternal   string                  `json:"cloneSourceVolumeInternal"`
-	CloneSourceSnapshot         string                  `json:"cloneSourceSnapshot"`
-	CloneSourceSnapshotInternal string                  `json:"cloneSourceSnapshotInternal"`
-	SplitOnClone                string                  `json:"splitOnClone"`
-	ReadOnlyClone               bool                    `json:"readOnlyClone"`
-	QosPolicy                   string                  `json:"qosPolicy,omitempty"`
-	AdaptiveQosPolicy           string                  `json:"adaptiveQosPolicy,omitempty"`
-	Qos                         string                  `json:"qos,omitempty"`
-	QosType                     string                  `json:"type,omitempty"`
-	ServiceLevel                string                  `json:"serviceLevel,omitempty"`
-	CVSStorageClass             string                  `json:"cvsStorageClass,omitempty"`
-	Network                     string                  `json:"network,omitempty"`
-	Zone                        string                  `json:"zone,omitempty"`
-	ImportOriginalName          string                  `json:"importOriginalName,omitempty"`
-	ImportBackendUUID           string                  `json:"importBackendUUID,omitempty"`
-	ImportNotManaged            bool                    `json:"importNotManaged,omitempty"`
-	ImportNoRename              bool                    `json:"importNoRename,omitempty"`
-	MountOptions                string                  `json:"mountOptions,omitempty"`
-	RequisiteTopologies         []map[string]string     `json:"requisiteTopologies,omitempty"`
-	PreferredTopologies         []map[string]string     `json:"preferredTopologies,omitempty"`
-	AllowedTopologies           []map[string]string     `json:"allowedTopologies,omitempty"`
-	LUKSPassphraseNames         []string                `json:"luksPassphraseNames,omitempty"`
+	Version         string                  `json:"version"`
+	Name            string                  `json:"name"`
+	InternalName    string                  `json:"internalName"`
+	Size            string                  `json:"size"`
+	Protocol        config.Protocol         `json:"protocol"`
+	SpaceReserve    string                  `json:"spaceReserve"`
+	SecurityStyle   string                  `json:"securityStyle"`
+	SnapshotPolicy  string                  `json:"snapshotPolicy,omitempty"`
+	SnapshotReserve string                  `json:"snapshotReserve,omitempty"`
+	SnapshotDir     string                  `json:"snapshotDirectory,omitempty"`
+	ExportPolicy    string                  `json:"exportPolicy,omitempty"`
+	UnixPermissions string                  `json:"unixPermissions,omitempty"`
+	StorageClass    string                  `json:"storageClass,omitempty"`
+	AccessMode      config.AccessMode       `json:"accessMode,omitempty"`
+	VolumeMode      config.VolumeMode       `json:"volumeMode,omitempty"`
+	AccessInfo      models.VolumeAccessInfo `json:"accessInformation"`
+	// MoveInfo is the operational status of an ongoing volume
+	// move operation. It is never persisted on the volume.
+	// Instead, it is populated on the volume references in memory
+	// at bootstrap from the store and move operations in the core.
+	MoveInfo                    *models.VolumeMoveInfo `json:"-"`
+	BlockSize                   string                 `json:"blockSize"`
+	FileSystem                  string                 `json:"fileSystem"`
+	FormatOptions               string                 `json:"formatOptions,omitempty"`
+	Encryption                  string                 `json:"encryption"`
+	LUKSEncryption              string                 `json:"LUKSEncryption,omitempty"`
+	CloneSourceVolume           string                 `json:"cloneSourceVolume"`
+	CloneSourceVolumeInternal   string                 `json:"cloneSourceVolumeInternal"`
+	CloneSourceSnapshot         string                 `json:"cloneSourceSnapshot"`
+	CloneSourceSnapshotInternal string                 `json:"cloneSourceSnapshotInternal"`
+	SplitOnClone                string                 `json:"splitOnClone"`
+	ReadOnlyClone               bool                   `json:"readOnlyClone"`
+	QosPolicy                   string                 `json:"qosPolicy,omitempty"`
+	AdaptiveQosPolicy           string                 `json:"adaptiveQosPolicy,omitempty"`
+	Qos                         string                 `json:"qos,omitempty"`
+	QosType                     string                 `json:"type,omitempty"`
+	ServiceLevel                string                 `json:"serviceLevel,omitempty"`
+	CVSStorageClass             string                 `json:"cvsStorageClass,omitempty"`
+	Network                     string                 `json:"network,omitempty"`
+	Zone                        string                 `json:"zone,omitempty"`
+	ImportOriginalName          string                 `json:"importOriginalName,omitempty"`
+	ImportBackendUUID           string                 `json:"importBackendUUID,omitempty"`
+	ImportNotManaged            bool                   `json:"importNotManaged,omitempty"`
+	ImportNoRename              bool                   `json:"importNoRename,omitempty"`
+	MountOptions                string                 `json:"mountOptions,omitempty"`
+	RequisiteTopologies         []map[string]string    `json:"requisiteTopologies,omitempty"`
+	PreferredTopologies         []map[string]string    `json:"preferredTopologies,omitempty"`
+	AllowedTopologies           []map[string]string    `json:"allowedTopologies,omitempty"`
+	LUKSPassphraseNames         []string               `json:"luksPassphraseNames,omitempty"`
 	// IsMirrorDestination is whether the volume is currently the destination in a mirror relationship
 	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
@@ -100,6 +107,16 @@ func (c *VolumeConfig) Validate() error {
 		)
 	}
 	return nil
+}
+
+// String redacts sensitive fields when VolumeConfig is printed or logged.
+func (c VolumeConfig) String() string {
+	return convert.ToStringRedacted(&c, []string{"AccessInfo"}, nil)
+}
+
+// GoString redacts sensitive fields when VolumeConfig is printed with %#v.
+func (c VolumeConfig) GoString() string {
+	return c.String()
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
@@ -201,8 +218,22 @@ func (v *VolumeExternal) GetCHAPSecretName() string {
 }
 
 func (v *Volume) ConstructExternal() *VolumeExternal {
+	// Clone the config and redact CHAP credentials so they are never
+	// exposed via the REST API or tridentctl output. The real credentials
+	// remain in v.Config.AccessInfo for use by the publish workflow.
+	var externalConfig *VolumeConfig
+	if v.Config != nil {
+		externalConfig = v.Config.ConstructClone()
+		if externalConfig.AccessInfo.UseCHAP {
+			externalConfig.AccessInfo.IscsiUsername = config.REDACTED
+			externalConfig.AccessInfo.IscsiInitiatorSecret = config.REDACTED
+			externalConfig.AccessInfo.IscsiTargetUsername = config.REDACTED
+			externalConfig.AccessInfo.IscsiTargetSecret = config.REDACTED
+		}
+	}
+
 	return &VolumeExternal{
-		Config:                  v.Config,
+		Config:                  externalConfig,
 		BackendUUID:             v.BackendUUID,
 		Pool:                    v.Pool,
 		Orphaned:                v.Orphaned,
@@ -240,6 +271,49 @@ func (v *Volume) GetUniqueKey() string {
 type VolumeExternalWrapper struct {
 	Volume *VolumeExternal
 	Error  error
+}
+
+type VolumeMoveExternal struct {
+	State              models.VolumeMoveState
+	VolumeName         string
+	SourcePool         string
+	SourceNode         string
+	TargetPool         string
+	TargetNode         string
+	BackendContext     json.RawMessage
+	InitialAccessInfo  *models.VolumeAccessInfo
+	TargetAccessInfo   *models.VolumeAccessInfo
+	DeleteAfterSuccess *time.Duration
+	DryRun             bool
+}
+
+func (v *VolumeMoveExternal) VolumeMoveInfo() *models.VolumeMoveInfo {
+	if v == nil {
+		return nil
+	}
+	return &models.VolumeMoveInfo{
+		State:              v.State,
+		VolumeName:         v.VolumeName,
+		SourcePool:         v.SourcePool,
+		SourceNode:         v.SourceNode,
+		TargetPool:         v.TargetPool,
+		TargetNode:         v.TargetNode,
+		BackendContext:     v.BackendContext,
+		InitialAccessInfo:  v.InitialAccessInfo,
+		TargetAccessInfo:   v.TargetAccessInfo,
+		DeleteAfterSuccess: v.DeleteAfterSuccess,
+		DryRun:             v.DryRun,
+	}
+}
+
+// IsActive defers to models.VolumeMoveInfo IsActive().
+// If the move info nil, this returns false.
+func (v *VolumeMoveExternal) IsActive() bool {
+	if v == nil {
+		return false
+	}
+	mv := v.VolumeMoveInfo()
+	return mv != nil && mv.State.IsActive()
 }
 
 type ImportVolumeRequest struct {

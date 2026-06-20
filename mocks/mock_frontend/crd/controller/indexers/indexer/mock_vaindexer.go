@@ -80,6 +80,21 @@ func (mr *MockVolumeAttachmentIndexerMockRecorder) GetCachedVolumeAttachmentsByN
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCachedVolumeAttachmentsByNode", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).GetCachedVolumeAttachmentsByNode), ctx, nodeName)
 }
 
+// GetCachedVolumeAttachmentsByVolume mocks base method.
+func (m *MockVolumeAttachmentIndexer) GetCachedVolumeAttachmentsByVolume(ctx context.Context, pvName string) ([]*v1.VolumeAttachment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCachedVolumeAttachmentsByVolume", ctx, pvName)
+	ret0, _ := ret[0].([]*v1.VolumeAttachment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCachedVolumeAttachmentsByVolume indicates an expected call of GetCachedVolumeAttachmentsByVolume.
+func (mr *MockVolumeAttachmentIndexerMockRecorder) GetCachedVolumeAttachmentsByVolume(ctx, pvName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCachedVolumeAttachmentsByVolume", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).GetCachedVolumeAttachmentsByVolume), ctx, pvName)
+}
+
 // WaitForCacheSync mocks base method.
 func (m *MockVolumeAttachmentIndexer) WaitForCacheSync(ctx context.Context) bool {
 	m.ctrl.T.Helper()

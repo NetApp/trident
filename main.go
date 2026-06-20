@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -466,11 +466,9 @@ func main() {
 			Log().Fatal("CSI is enabled but csi_node_name was not specified.")
 		}
 
-		var hybridControllerFrontend frontend.Plugin
-		var hybridNodeFrontend frontend.Plugin
+		var hybridControllerFrontend, hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath,
-				*enableForceDetach)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath, *enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
 			}
@@ -629,7 +627,7 @@ func main() {
 		if err := f.Activate(); err != nil {
 			// Terminal errors only come from application states that are unrecoverable or may lead to
 			// significant but unintentional changes in behavior.
-			if csi.IsTerminalReconciliationError(err) {
+			if errors.IsTerminalReconciliationError(err) {
 				Log().WithError(err).Fatal("Activation failed for one or more helper frontends")
 			}
 		}

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -50,6 +50,7 @@ const (
 	uidIndex  = "uid"
 	nameIndex = "name"
 	vrefIndex = "vref"
+	vmovIndex = "vmov"
 
 	eventAdd    = "add"
 	eventUpdate = "update"
@@ -116,6 +117,11 @@ type helper struct {
 	vrefController         cache.SharedIndexInformer
 	vrefControllerStopChan chan struct{}
 	vrefSource             cache.ListerWatcher
+
+	tvmIndexer            cache.Indexer
+	tvmController         cache.SharedIndexInformer
+	tvmControllerStopChan chan struct{}
+	tvmSource             cache.ListerWatcher
 }
 
 // NewHelper instantiates this plugin when running outside a pod.
@@ -154,6 +160,7 @@ func NewHelper(
 		nodeControllerStopChan: make(chan struct{}),
 		mrControllerStopChan:   make(chan struct{}),
 		vrefControllerStopChan: make(chan struct{}),
+		tvmControllerStopChan:  make(chan struct{}),
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -309,6 +316,14 @@ func NewHelper(
 	)
 	p.vrefIndexer = p.vrefController.GetIndexer()
 
+	p.tvmController = cache.NewSharedIndexInformer(
+		p.tvmSource,
+		&netappv1.TridentVolumeMove{},
+		CacheSyncPeriod,
+		cache.Indexers{vmovIndex: TridentVolumeMoveReferenceKeyFunc},
+	)
+	p.tvmIndexer = p.tvmController.GetIndexer()
+
 	Logc(ctx).Info("K8S helper frontend initialized.")
 
 	return p, nil
@@ -384,6 +399,25 @@ func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
 	return []string{vref.CacheKey()}, nil
 }
 
+func TridentVolumeMoveReferenceKeyFunc(obj interface{}) ([]string, error) {
+	Logc(context.Background()).Trace(">>>> TridentVolumeMoveReferenceKeyFunc")
+	defer Logc(context.Background()).Trace("<<<< TridentVolumeMoveReferenceKeyFunc")
+
+	if key, ok := obj.(string); ok {
+		return []string{key}, nil
+	}
+
+	tvm, ok := obj.(*netappv1.TridentVolumeMove)
+	if !ok {
+		return []string{""}, fmt.Errorf("object is not a TridentVolumeMove CR")
+	}
+	if tvm.Name == "" {
+		return []string{""}, fmt.Errorf("TridentVolumeMove CR has no PVCName set")
+	}
+
+	return []string{tvm.GetName()}, nil
+}
+
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
@@ -397,14 +431,14 @@ func (h *helper) Activate() error {
 	// At that point, all supported Trident versions will include volume publications.
 	reconcileRequired, err := h.isPublicationReconcileRequired(ctx)
 	if err != nil {
-		return csi.TerminalReconciliationError(err.Error())
+		return errors.TerminalReconciliationError(err.Error())
 	}
 	if reconcileRequired {
 		Logc(ctx).Debug("Publication reconciliation is required.")
 		// This call expects the Trident orchestrator core to bootstrapped successfully.
 		if err := h.reconcileVolumePublications(ctx); err != nil {
 			Logc(ctx).Errorf("Error reconciling legacy volumes; %v", err)
-			return csi.TerminalReconciliationError(err.Error())
+			return errors.TerminalReconciliationError(err.Error())
 		}
 	} else {
 		Logc(ctx).Debug("Publication reconciliation is unnecessary.")

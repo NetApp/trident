@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package csi
 
 type invalidTrackingFileError struct {
@@ -15,23 +17,5 @@ func IsInvalidTrackingFileError(err error) bool {
 		return false
 	}
 	_, ok := err.(*invalidTrackingFileError)
-	return ok
-}
-
-type terminalReconciliationError struct {
-	message string
-}
-
-func (e *terminalReconciliationError) Error() string { return e.message }
-
-func TerminalReconciliationError(message string) error {
-	return &terminalReconciliationError{message}
-}
-
-func IsTerminalReconciliationError(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*terminalReconciliationError)
 	return ok
 }

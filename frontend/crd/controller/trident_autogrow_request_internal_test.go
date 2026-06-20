@@ -51,8 +51,7 @@ func setupTagriTest(t *testing.T) (*TridentCrdController, *gomock.Controller, *m
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 
 	controller.recorder = record.NewFakeRecorder(100)
@@ -540,8 +539,7 @@ func TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryUpdateFails(t *testin
 
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -868,8 +866,7 @@ func TestProcessTagriFirstTime_GetResizeDeltaForBackendError_RetryWithBackoff(t 
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -1547,8 +1544,7 @@ func TestProcessTagriFirstTime_UpdateStatusToInProgressFails(t *testing.T) {
 		return true, nil, fmt.Errorf("status update rejected")
 	})
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -1596,8 +1592,7 @@ func TestProcessTagriFirstTime_PatchPVC_FailsRetry(t *testing.T) {
 	tridentNamespace := "trident"
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -1644,8 +1639,7 @@ func TestProcessTagriFirstTime_PatchPVC_MaxRetriesExceeded(t *testing.T) {
 	tridentNamespace := "trident"
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -2252,8 +2246,7 @@ func TestUpdateVolumeAutogrowStatus_OrchestratorReturnsError(t *testing.T) {
 	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -2280,8 +2273,7 @@ func TestUpdateVolumeAutogrowStatus_Success(t *testing.T) {
 	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -2751,8 +2743,7 @@ func TestGetPVCForVolume_UsesK8sHelperFromGetFrontend(t *testing.T) {
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(mockK8s, nil)
 	mockK8s.EXPECT().GetPVCForPV(gomock.Any(), "test-pv").Return(wantPVC, nil)
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -3283,8 +3274,7 @@ func TestUpdateTagriStatus_ConflictUIDInObjectMeta_ReturnsNilNil(t *testing.T) {
 			fmt.Errorf("Operation cannot be fulfilled: UID in object meta: object has been modified"))
 	})
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -3363,8 +3353,7 @@ func TestDeleteTagriNow_DeleteError(t *testing.T) {
 		return true, nil, k8sapierrors.NewInternalError(fmt.Errorf("API server error"))
 	})
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", kubeClient, snapClient, crdClient, nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -3488,8 +3477,7 @@ func TestRejectTagri_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -3521,8 +3509,7 @@ func TestFailTagri_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 
@@ -3554,8 +3541,7 @@ func TestMarkTagriCompleteAndDelete_TvolUpdateFails_StillReturnsNil(t *testing.T
 	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
 	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
-	controller, err := newTridentCrdControllerImpl(
-		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), GetTestCrdClientset(), nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(100)
 

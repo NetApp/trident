@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -743,4 +743,70 @@ type TridentAutogrowRequestInternalStatus struct {
 	FinalCapacityBytes string       `json:"finalCapacityBytes,omitempty"`
 	ProcessedAt        *metav1.Time `json:"processedAt,omitempty"` // Time when TAGRI moved to terminal phase (Completed/Failed/Rejected)
 	RetryCount         int          `json:"retryCount,omitempty"`
+}
+
+// TridentVolumeMove defines where a volume should be moved to in a storage backend.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumeMove struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for TridentVolumeMove
+	Spec TridentVolumeMoveSpec `json:"spec"`
+
+	// Completion status for TridentVolumeMove
+	Status TridentVolumeMoveStatus `json:"status"`
+}
+
+// TridentVolumeMoveSpec defines the arguments of TridentVolumeMove
+type TridentVolumeMoveSpec struct {
+	// SourceNode is the name of the storage node from which the volume should be moved.
+	SourceNode string `json:"sourceNode"`
+	// SourcePool is the name of the storage pool from which the volume should be moved.
+	SourcePool string `json:"sourcePool"`
+	// TargetNode is the name of the storage node to which the volume should be moved.
+	TargetNode string `json:"targetNode"`
+	// TargetPool is the name of the storage pool to which the volume should be moved.
+	TargetPool string `json:"targetPool"`
+	// DeleteAfterSuccess deletes the TridentVolumeMove CR after this duration once the move succeeds
+	// (for example "10m" or "30s"). Zero deletes immediately. Omitted means the CR is retained.
+	// Failed moves are not deleted.
+	DeleteAfterSuccess *metav1.Duration `json:"deleteAfterSuccess,omitempty"`
+}
+
+// TridentVolumeMoveStatus defines the result of TridentVolumeMove
+type TridentVolumeMoveStatus struct {
+	State             models.VolumeMoveState               `json:"state,omitempty"`
+	Message           string                               `json:"message,omitempty"`
+	InitialAccessInfo *models.VolumeAccessInfo             `json:"initialAccessInfo,omitempty"`
+	TargetAccessInfo  *models.VolumeAccessInfo             `json:"targetAccessInfo,omitempty"`
+	Attachments       []*TridentVolumeMoveAttachmentStatus `json:"attachments,omitempty"`
+	BackendContext    runtime.RawExtension                 `json:"backendContext,omitempty"`
+	StartTime         *metav1.Time                         `json:"startTime,omitempty"`
+	CompletionTime    *metav1.Time                         `json:"completionTime,omitempty"`
+}
+
+// TridentVolumeMoveAttachmentStatus defines the status of a single volume attachment on a node during a volume move
+// action.
+type TridentVolumeMoveAttachmentStatus struct {
+	// State is the current state of an attachment on a node.
+	State models.VolumeMoveAttachmentState `json:"state"`
+	// Message contains any errors messages.
+	Message string `json:"message"`
+	// NodeName is the name of a node where a volume being moved is published.
+	NodeName string `json:"node"`
+}
+
+// TridentVolumeMoveList is a list of TridentVolumeMove objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumeMoveList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentVolumeMove objects
+	Items []*TridentVolumeMove `json:"items"`
 }

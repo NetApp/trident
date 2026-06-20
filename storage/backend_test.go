@@ -2114,38 +2114,66 @@ func TestVolumeExternal_GetCHAPSecretName(t *testing.T) {
 }
 
 func TestVolume_ConstructExternal(t *testing.T) {
-	config := &VolumeConfig{
-		Version:      "v1.0",
-		Name:         "test-volume-external",
-		InternalName: "internal-test-volume-external",
-		Size:         "10Gi",
-		Protocol:     tridentconfig.File,
-		AccessInfo: models.VolumeAccessInfo{
-			IscsiAccessInfo: models.IscsiAccessInfo{
-				IscsiChapInfo: models.IscsiChapInfo{
-					IscsiUsername: "iscsi-user-external",
+	t.Run("non-CHAP volume clones config without redaction", func(t *testing.T) {
+		config := &VolumeConfig{
+			Version:      "v1.0",
+			Name:         "test-volume-external",
+			InternalName: "internal-test-volume-external",
+			Size:         "10Gi",
+			Protocol:     tridentconfig.File,
+			AccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiChapInfo: models.IscsiChapInfo{
+						IscsiUsername: "iscsi-user-external",
+					},
 				},
 			},
-		},
-	}
+		}
 
-	volume := &Volume{
-		Config:      config,
-		BackendUUID: "backend-external-uuid",
-		Pool:        "pool-external",
-		Orphaned:    true,
-		State:       VolumeStateOnline,
-	}
+		volume := &Volume{
+			Config:      config,
+			BackendUUID: "backend-external-uuid",
+			Pool:        "pool-external",
+			Orphaned:    true,
+			State:       VolumeStateOnline,
+		}
 
-	external := volume.ConstructExternal()
+		external := volume.ConstructExternal()
 
-	assert.NotNil(t, external, "ConstructExternal() should return non-nil VolumeExternal")
+		assert.NotNil(t, external)
+		assert.Equal(t, volume.Config, external.Config, "external config should have equal values")
+		assert.NotSame(t, volume.Config, external.Config, "external config should be a clone, not the same pointer")
+	})
 
-	// Verify fields are copied correctly
-	assert.Equal(t, volume.Config, external.Config, "External should have same config")
+	t.Run("CHAP credentials are redacted in external config", func(t *testing.T) {
+		config := &VolumeConfig{
+			Name: "chap-volume",
+			AccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiChapInfo: models.IscsiChapInfo{
+						UseCHAP:              true,
+						IscsiUsername:        "chap-user",
+						IscsiInitiatorSecret: "chap-secret",
+						IscsiTargetUsername:  "chap-target-user",
+						IscsiTargetSecret:    "chap-target-secret",
+					},
+				},
+			},
+		}
 
-	// Verify it's the same config reference (not a deep copy)
-	assert.Same(t, volume.Config, external.Config, "ConstructExternal() should reference the same config, not clone it")
+		volume := &Volume{Config: config, State: VolumeStateOnline}
+		external := volume.ConstructExternal()
+
+		assert.NotNil(t, external)
+		assert.Equal(t, tridentconfig.REDACTED, external.Config.AccessInfo.IscsiUsername)
+		assert.Equal(t, tridentconfig.REDACTED, external.Config.AccessInfo.IscsiInitiatorSecret)
+		assert.Equal(t, tridentconfig.REDACTED, external.Config.AccessInfo.IscsiTargetUsername)
+		assert.Equal(t, tridentconfig.REDACTED, external.Config.AccessInfo.IscsiTargetSecret)
+
+		// Original config must not be modified.
+		assert.Equal(t, "chap-user", config.AccessInfo.IscsiUsername)
+		assert.Equal(t, "chap-secret", config.AccessInfo.IscsiInitiatorSecret)
+	})
 }
 
 func TestImportVolumeRequest_Validate(t *testing.T) {

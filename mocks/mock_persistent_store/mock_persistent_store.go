@@ -13,12 +13,13 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	config "github.com/netapp/trident/config"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	models "github.com/netapp/trident/utils/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockStoreClient is a mock of Client interface.
@@ -591,6 +592,21 @@ func (m *MockStoreClient) GetVolume(ctx context.Context, volName string) (*stora
 func (mr *MockStoreClientMockRecorder) GetVolume(ctx, volName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockStoreClient)(nil).GetVolume), ctx, volName)
+}
+
+// GetVolumeMoves mocks base method.
+func (m *MockStoreClient) GetVolumeMoves(ctx context.Context) ([]*storage.VolumeMoveExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeMoves", ctx)
+	ret0, _ := ret[0].([]*storage.VolumeMoveExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeMoves indicates an expected call of GetVolumeMoves.
+func (mr *MockStoreClientMockRecorder) GetVolumeMoves(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeMoves", reflect.TypeOf((*MockStoreClient)(nil).GetVolumeMoves), ctx)
 }
 
 // GetVolumePublication mocks base method.

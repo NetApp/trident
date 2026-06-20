@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -25,6 +25,8 @@ type InMemoryClient struct {
 	volumeTxnsAdded         int
 	volumePublications      map[string]*models.VolumePublication
 	volumePublicationsAdded int
+	volumeMoves             map[string]*storage.VolumeMoveExternal
+	volumeMovesAdded        int
 	version                 *config.PersistentStateVersion
 	nodes                   map[string]*models.Node
 	nodesAdded              int
@@ -201,6 +203,18 @@ func (c *InMemoryClient) GetVolumes(context.Context) ([]*storage.VolumeExternal,
 		return ret, nil
 	}
 	for _, v := range c.volumes {
+		ret = append(ret, v)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) GetVolumeMoves(_ context.Context) ([]*storage.VolumeMoveExternal, error) {
+	ret := make([]*storage.VolumeMoveExternal, 0, len(c.volumeMoves))
+	if c.volumeMovesAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return ret, nil
+	}
+	for _, v := range c.volumeMoves {
 		ret = append(ret, v)
 	}
 	return ret, nil

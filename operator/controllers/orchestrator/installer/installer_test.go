@@ -1741,6 +1741,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
 			MirrorRelationshipCRDName, ActionMirrorUpdateCRDName, ActionSnapshotRestoreCRDName,
 			ConfiguratorCRDName, AutogrowPolicyCRDName, AutogrowRequestInternalCRDName,
+			VolumeMoveCRDName,
 		}
 
 		for _, crdName := range crdNames {
@@ -1771,6 +1772,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
 			MirrorRelationshipCRDName, ActionMirrorUpdateCRDName, ActionSnapshotRestoreCRDName,
 			ConfiguratorCRDName, AutogrowPolicyCRDName, AutogrowRequestInternalCRDName,
+			VolumeMoveCRDName,
 		}
 
 		for _, crdName := range crdNames {

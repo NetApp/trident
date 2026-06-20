@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	log "github.com/sirupsen/logrus"
-
 )
 
 // CifsShareAccessControlCreateRequest is a structure to represent a cifs-share-access-control-create Request ZAPI object

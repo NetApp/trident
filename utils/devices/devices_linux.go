@@ -32,6 +32,8 @@ const (
 	luksCloseDeviceAlreadyClosedExitCode = 4
 
 	scsiDeviceStateRunning = "running"
+
+	defaultMultipathdCmdTimeout = 10 * time.Second
 )
 
 var (
@@ -307,7 +309,7 @@ func (c *Client) resizeMultipathMap(ctx context.Context, mapperName string) erro
 	// "resize map <device>" → resize_map(device)
 	const resizeCmd = "-kresize map %s"
 	resizeDeviceCmd := fmt.Sprintf(resizeCmd, mapperName)
-	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", 10*time.Second, true, resizeDeviceCmd)
+	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", defaultMultipathdCmdTimeout, true, resizeDeviceCmd)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"output": string(out),
@@ -315,6 +317,50 @@ func (c *Client) resizeMultipathMap(ctx context.Context, mapperName string) erro
 		return fmt.Errorf("failed to resize multipath map %s: %w", mapperName, err)
 	}
 
+	return nil
+}
+
+// AddMultipathPath tells multipathd to adopt a block device as a path in its multipath map.
+// The device should be the bare sysfs block device name (e.g. "sda", not "/dev/sda").
+// This is synchronous — when it returns, multipathd has processed the request.
+func (c *Client) AddMultipathPath(ctx context.Context, blockDevice string) error {
+	fields := LogFields{"blockDevice": blockDevice}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.AddMultipathPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.AddMultipathPath")
+
+	const addPathCmd = "-kadd path %s"
+	addCmd := fmt.Sprintf(addPathCmd, blockDevice)
+	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", defaultMultipathdCmdTimeout, true, addCmd)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"output": string(out),
+		}).WithError(err).Warn("Failed to add path to multipathd.")
+		return fmt.Errorf("multipathd add path %s failed: %w", blockDevice, err)
+	}
+
+	Logc(ctx).WithFields(fields).Debug("Successfully added path to multipathd.")
+	return nil
+}
+
+// FailMultipathPath tells multipathd to mark a block device path as failed.
+// This gives multipathd a chance to failover I/O to other paths before the device is removed.
+// The device should be the bare sysfs block device name (e.g. "sda", not "/dev/sda").
+func (c *Client) FailMultipathPath(ctx context.Context, blockDevice string) error {
+	fields := LogFields{"blockDevice": blockDevice}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.FailMultipathPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.FailMultipathPath")
+
+	const failPathCmd = "-kfail path %s"
+	failCmd := fmt.Sprintf(failPathCmd, blockDevice)
+	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", defaultMultipathdCmdTimeout, true, failCmd)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"output": string(out),
+		}).WithError(err).Warn("Failed to fail path in multipathd.")
+		return fmt.Errorf("multipathd fail path %s failed: %w", blockDevice, err)
+	}
+
+	Logc(ctx).WithFields(fields).Debug("Successfully failed path in multipathd.")
 	return nil
 }
 

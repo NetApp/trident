@@ -70,6 +70,18 @@ func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 	return errors.UnsupportedError("CloseLUKSDevice is not supported for windows")
 }
 
+func (c *Client) AddMultipathPath(ctx context.Context, _ string) error {
+	Logc(ctx).Debug(">>>> devices_windows.AddMultipathPath")
+	defer Logc(ctx).Debug("<<<< devices_windows.AddMultipathPath")
+	return errors.UnsupportedError("AddMultipathPath is not supported for windows")
+}
+
+func (c *Client) FailMultipathPath(ctx context.Context, _ string) error {
+	Logc(ctx).Debug(">>>> devices_windows.FailMultipathPath")
+	defer Logc(ctx).Debug("<<<< devices_windows.FailMultipathPath")
+	return errors.UnsupportedError("FailMultipathPath is not supported for windows")
+}
+
 func (c *Client) ExpandMultipathDevice(
 	ctx context.Context, _ models.SCSIDeviceInfoGetter, _ int64,
 ) error {

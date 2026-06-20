@@ -13,10 +13,11 @@ import (
 	context "context"
 	reflect "reflect"
 
-	storage "github.com/netapp/trident/storage"
-	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
 	v1 "k8s.io/api/core/v1"
+
+	storage "github.com/netapp/trident/storage"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockK8SControllerHelperPlugin is a mock of K8SControllerHelperPlugin interface.

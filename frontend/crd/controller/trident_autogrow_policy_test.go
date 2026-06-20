@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package controller
 
@@ -363,8 +363,7 @@ func setupAutogrowPolicyTest(t *testing.T) (*TridentCrdController, error) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(nil, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(nil, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -483,8 +482,7 @@ func setupAutogrowPolicyTestWithMock(t *testing.T) (*TridentCrdController, *gomo
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}

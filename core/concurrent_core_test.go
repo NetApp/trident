@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -549,10 +550,12 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetSnapshots(gomock.Any()).Return(snapshots, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -645,10 +648,12 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetSnapshots(gomock.Any()).Return(snapshots, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -21403,4 +21408,460 @@ func TestDeleteCloneSnapshotsConcurrentCore(t *testing.T) {
 		imported := getSnapshotByIDFromCache(t, snapID)
 		assert.NotNil(t, imported, "Snapshot import should succeed after cleanup lock is released")
 	})
+}
+
+// ---------------------------------------------------------------------------
+// MoveInfo (volume move) tests for ConcurrentTridentOrchestrator.
+//
+// The concurrent core takes a per-volume Upsert lock for the whole
+// operation. On success, upserter(volume) is called to update the cache.
+// On failure, the cache keeps the previous version.
+// ---------------------------------------------------------------------------
+
+// uniqMoveNames returns deterministic per-test volume/backend identifiers so
+// concurrent_cache state from one test row never bleeds into another.
+func uniqMoveNames(t *testing.T) (volName, backendUUID string) {
+	t.Helper()
+	safe := strings.ReplaceAll(t.Name(), "/", "_")
+	safe = strings.ReplaceAll(safe, " ", "_")
+	return "tvm-vol-" + safe, "tvm-backend-uuid-" + safe
+}
+
+// setupConcurrentMoveInfoFixture installs a real volume in the cache plus
+// a mock backend reachable through that volume's BackendUUID. It returns
+// the orchestrator (with the storeClient swapped for a mock) and the volume
+// it just installed.
+func setupConcurrentMoveInfoFixture(
+	t *testing.T,
+) (
+	*ConcurrentTridentOrchestrator,
+	*storage.Volume,
+	*mockstorage.MockBackend,
+	*mockpersistentstore.MockStoreClient,
+	*gomock.Controller,
+) {
+	t.Helper()
+
+	volName, backendUUID := uniqMoveNames(t)
+
+	mockCtrl := gomock.NewController(t)
+	o := getConcurrentOrchestrator()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o.storeClient = mockStoreClient
+
+	mockBackend := getMockBackend(mockCtrl, "tvm-backend-"+volName, backendUUID)
+	addBackendsToCache(t, mockBackend)
+
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+		BackendUUID: backendUUID,
+		State:       storage.VolumeStateOnline,
+	}
+	addVolumesToCache(t, vol)
+
+	t.Cleanup(func() {
+		removeVolumeFromCache(t, volName)
+		removeBackendFromCache(t, backendUUID)
+	})
+	return o, vol, mockBackend, mockStoreClient, mockCtrl
+}
+
+func TestConcurrentTridentOrchestrator_StageVolumeMove(t *testing.T) {
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.StageVolumeMove(testCtx, newConcMoveInfo("vol", models.VolumeMoveStateControllerStaging))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		err := o.StageVolumeMove(testCtx, nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		volName, _ := uniqMoveNames(t)
+		err := o.StageVolumeMove(testCtx, newConcMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("non-online volume returns VolumeStateError", func(t *testing.T) {
+		o, vol, _, _, _ := setupConcurrentMoveInfoFixture(t)
+		vol.State = storage.VolumeStateDeleting
+		addVolumesToCache(t, vol)
+
+		err := o.StageVolumeMove(testCtx,
+			newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+	})
+
+	t.Run("backend failure does not set MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+
+		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("backend rejected stage")).Times(1)
+
+		_ = mockStoreClient
+
+		err := o.StageVolumeMove(testCtx,
+			newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		assert.Nil(t, cached.Config.MoveInfo, "backend stage failure must not set MoveInfo")
+	})
+
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+
+		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).Times(1)
+		_ = mockStoreClient
+
+		err := o.StageVolumeMove(testCtx,
+			newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerStaging))
+		require.NoError(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		require.NotNil(t, cached.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateControllerStaging, cached.Config.MoveInfo.State)
+	})
+}
+
+func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.MoveVolume(testCtx, newConcMoveInfo("vol", models.VolumeMoveStateMoving))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		err := o.MoveVolume(testCtx, nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		volName, _ := uniqMoveNames(t)
+		err := o.MoveVolume(testCtx, newConcMoveInfo(volName, models.VolumeMoveStateMoving))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("dry-run on non-online volume returns VolumeStateError", func(t *testing.T) {
+		o, vol, _, _, _ := setupConcurrentMoveInfoFixture(t)
+		vol.State = storage.VolumeStateDeleting
+		addVolumesToCache(t, vol)
+
+		info := newConcMoveInfo(vol.Config.Name, models.VolumeMoveStatePending)
+		info.DryRun = true
+
+		err := o.MoveVolume(testCtx, info)
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+	})
+
+	t.Run("backend transient error still updates MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+		vol.Pool = "pool-original"
+		addVolumesToCache(t, vol)
+
+		mockBackend.EXPECT().MoveVolume(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("ontap still working")).Times(1)
+		_ = mockStoreClient
+
+		err := o.MoveVolume(testCtx, newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateMoving))
+		require.Error(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		require.NotNil(t, cached.Config.MoveInfo, "transient error must still update MoveInfo")
+		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
+		assert.Equal(t, "pool-original", cached.Pool, "pool should not change on transient move errors")
+	})
+
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+		vol.Pool = "pool-original"
+		addVolumesToCache(t, vol)
+		moveInfo := newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateMoving)
+		moveInfo.TargetPool = "pool-target"
+
+		mockBackend.EXPECT().MoveVolume(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).Times(1)
+		mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		err := o.MoveVolume(testCtx, moveInfo)
+		require.NoError(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		require.NotNil(t, cached.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
+		assert.Equal(t, "pool-target", cached.Pool, "pool should be updated to move target on success")
+	})
+}
+
+func TestConcurrentTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.UnstageVolumeMove(testCtx, newConcMoveInfo("vol", models.VolumeMoveStateControllerUnstaging))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		err := o.UnstageVolumeMove(testCtx, nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getConcurrentOrchestrator()
+		volName, _ := uniqMoveNames(t)
+		err := o.UnstageVolumeMove(testCtx, newConcMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("backend failure does not clear MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+
+		vol.Config.MoveInfo = newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging)
+		addVolumesToCache(t, vol)
+
+		mockBackend.EXPECT().UnstageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("backend rejected unstage")).Times(1)
+		_ = mockStoreClient
+
+		err := o.UnstageVolumeMove(testCtx,
+			newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging))
+		require.Error(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		assert.NotNil(t, cached.Config.MoveInfo,
+			"backend unstage failure must leave MoveInfo untouched")
+	})
+
+	t.Run("happy path clears MoveInfo", func(t *testing.T) {
+		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
+
+		vol.Config.MoveInfo = newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging)
+		addVolumesToCache(t, vol)
+
+		mockBackend.EXPECT().UnstageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).Times(1)
+		_ = mockStoreClient
+
+		err := o.UnstageVolumeMove(testCtx,
+			newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging))
+		require.NoError(t, err)
+
+		cached := getVolumeByNameFromCache(t, vol.Config.Name)
+		require.NotNil(t, cached)
+		assert.Nil(t, cached.Config.MoveInfo,
+			"successful unstage must clear MoveInfo")
+	})
+}
+
+// newConcMoveInfo mirrors newMoveInfo from orchestrator_core_test.go but lives
+// here to keep this file's tests self-contained.
+func newConcMoveInfo(volName string, state models.VolumeMoveState) *models.VolumeMoveInfo {
+	return &models.VolumeMoveInfo{
+		VolumeName: volName,
+		State:      state,
+		SourceNode: "node-a",
+		SourcePool: "pool-a",
+		TargetNode: "node-b",
+		TargetPool: "pool-b",
+	}
+}
+
+func TestBootstrapVolumeMovesConcurrentCore(t *testing.T) {
+	const (
+		volName    = "pvc-move-bootstrap"
+		sourceNode = "ontap-node-src"
+		targetNode = "ontap-node-tgt"
+	)
+
+	tests := []struct {
+		name       string
+		setupMocks func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verify     func(t *testing.T, err error)
+	}{
+		{
+			name: "store error propagates",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, failed)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name: "no volume moves returns nil",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "active move projects MoveInfo onto volume in cache",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+					BackendUUID: "backend-uuid",
+					State:       storage.VolumeStateOnline,
+				}
+				addVolumesToCache(t, vol)
+
+				moves := []*storage.VolumeMoveExternal{
+					{
+						VolumeName: volName,
+						State:      models.VolumeMoveStateMoving,
+						SourceNode: sourceNode,
+						TargetNode: targetNode,
+					},
+				}
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				result := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, result)
+				require.NotNil(t, result.Config.MoveInfo)
+				assert.Equal(t, models.VolumeMoveStateMoving, result.Config.MoveInfo.State)
+				assert.Equal(t, sourceNode, result.Config.MoveInfo.SourceNode)
+				assert.Equal(t, targetNode, result.Config.MoveInfo.TargetNode)
+			},
+		},
+		{
+			name: "inactive move does not project MoveInfo",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+					BackendUUID: "backend-uuid",
+					State:       storage.VolumeStateOnline,
+				}
+				addVolumesToCache(t, vol)
+
+				moves := []*storage.VolumeMoveExternal{
+					{
+						VolumeName: volName,
+						State:      models.VolumeMoveStateSucceeded,
+						SourceNode: sourceNode,
+						TargetNode: targetNode,
+					},
+				}
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				result := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, result)
+				assert.Nil(t, result.Config.MoveInfo)
+			},
+		},
+		{
+			name: "move for missing volume is skipped without error",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				moves := []*storage.VolumeMoveExternal{
+					{
+						VolumeName: "no-such-volume",
+						State:      models.VolumeMoveStateMoving,
+						SourceNode: sourceNode,
+						TargetNode: targetNode,
+					},
+				}
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "multiple moves only active one projects onto volume",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+					BackendUUID: "backend-uuid",
+					State:       storage.VolumeStateOnline,
+				}
+				addVolumesToCache(t, vol)
+
+				moves := []*storage.VolumeMoveExternal{
+					{
+						VolumeName: volName,
+						State:      models.VolumeMoveStateFailed,
+						SourceNode: "old-src",
+						TargetNode: "old-tgt",
+					},
+					{
+						VolumeName: volName,
+						State:      models.VolumeMoveStateMoving,
+						SourceNode: sourceNode,
+						TargetNode: targetNode,
+					},
+				}
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				result := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, result)
+				require.NotNil(t, result.Config.MoveInfo)
+				assert.Equal(t, models.VolumeMoveStateMoving, result.Config.MoveInfo.State)
+				assert.Equal(t, sourceNode, result.Config.MoveInfo.SourceNode)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.bootstrapVolumeMoves(testCtx)
+
+			if tt.verify != nil {
+				tt.verify(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
 }

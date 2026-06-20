@@ -36,6 +36,7 @@ const (
 	logNameTridentBackendConfig         = "tridentBackendConfig"
 	logNameTridentActionMirrorUpdate    = "tridentActionMirrorUpdate"
 	logNameTridentActionSnapshotRestore = "tridentActionSnapshotRestore"
+	logNameTridentVolumeMove            = "tridentVolumeMove"
 	logNameTridentBackend               = "tridentBackend"
 	logNameTridentMirrorRelationship    = "tridentMirrorRelationship"
 	logNameTridentNode                  = "tridentNode"
@@ -547,6 +548,10 @@ var getAllTridentResources = func() {
 		logErrors = appendErrorf(logErrors, "error retrieving TridentActionSnapshotRestore logs : %v", err)
 	}
 
+	if err := getAllTridentVolumeMoves(logNameTridentVolumeMove); err != nil {
+		logErrors = appendErrorf(logErrors, "error retrieving TridentVolumeMove logs : %v", err)
+	}
+
 	if err := getAllTridentBackends(logNameTridentBackend); err != nil {
 		logErrors = appendErrorf(logErrors, "error retrieving TridentBackend logs : %v", err)
 	}
@@ -699,6 +704,40 @@ func getAllTridentActionSnapshotRestores(logName string) error {
 
 		describeCommand := []string{"describe", "tridentactionsnapshotrestore", tasr.Name, "-n", tasr.Namespace}
 		describeCommandFileName := logName + "/" + "describe-" + tasr.Name
+
+		commands := map[string][]string{getCommandFileName: getCommand, describeCommandFileName: describeCommand}
+		for fileName, logsCommand := range commands {
+			logBytes, err := execKubernetesCLI(logsCommand...)
+			if err != nil {
+				logErrors = appendError(logErrors, logBytes)
+			} else {
+				if err = writeLogs(fileName, logBytes); err != nil {
+					logErrors = appendErrorf(logErrors, "could not write log %s; %v", logName, err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func getAllTridentVolumeMoves(logName string) error {
+	tvms, err := crdClientset.TridentV1().TridentVolumeMoves(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return fmt.Errorf("error listing TridentVolumeMove; %v", err)
+	}
+
+	if len(tvms.Items) == 0 {
+		fmt.Println("resources of type 'TridentVolumeMove' not present")
+		return nil
+	}
+
+	for _, tvm := range tvms.Items {
+		getCommand := []string{"get", "tridentvolumemoves", tvm.Name, "-o", "yaml", "-n", tvm.Namespace}
+		getCommandFileName := logName + "/" + "get-" + tvm.Name
+
+		describeCommand := []string{"describe", "tridentvolumemoves", tvm.Name, "-n", tvm.Namespace}
+		describeCommandFileName := logName + "/" + "describe-" + tvm.Name
 
 		commands := map[string][]string{getCommandFileName: getCommand, describeCommandFileName: describeCommand}
 		for fileName, logsCommand := range commands {

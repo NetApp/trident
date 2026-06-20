@@ -14,8 +14,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
+
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockISCSI is a mock of ISCSI interface.
@@ -138,6 +139,36 @@ func (m *MockISCSI) GetDeviceInfoForLUN(ctx context.Context, hostSessionMap map[
 func (mr *MockISCSIMockRecorder) GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, needFSType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockISCSI)(nil).GetDeviceInfoForLUN), ctx, hostSessionMap, lunID, iSCSINodeName, needFSType)
+}
+
+// GraftAttachment mocks base method.
+func (m *MockISCSI) GraftAttachment(ctx context.Context, publishInfo *models.VolumePublishInfo) (*models.AttachmentInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GraftAttachment", ctx, publishInfo)
+	ret0, _ := ret[0].(*models.AttachmentInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GraftAttachment indicates an expected call of GraftAttachment.
+func (mr *MockISCSIMockRecorder) GraftAttachment(ctx, publishInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GraftAttachment", reflect.TypeOf((*MockISCSI)(nil).GraftAttachment), ctx, publishInfo)
+}
+
+// GraftAttachmentRetry mocks base method.
+func (m *MockISCSI) GraftAttachmentRetry(ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration) (*models.AttachmentInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GraftAttachmentRetry", ctx, publishInfo, timeout)
+	ret0, _ := ret[0].(*models.AttachmentInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GraftAttachmentRetry indicates an expected call of GraftAttachmentRetry.
+func (mr *MockISCSIMockRecorder) GraftAttachmentRetry(ctx, publishInfo, timeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GraftAttachmentRetry", reflect.TypeOf((*MockISCSI)(nil).GraftAttachmentRetry), ctx, publishInfo, timeout)
 }
 
 // ISCSIActiveOnHost mocks base method.
@@ -285,6 +316,36 @@ func (mr *MockISCSIMockRecorder) PrepareDeviceForRemoval(ctx, deviceInfo, publis
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockISCSI)(nil).PrepareDeviceForRemoval), ctx, deviceInfo, publishInfo, allPublishInfos, ignoreErrors, force)
 }
 
+// PruneAttachment mocks base method.
+func (m *MockISCSI) PruneAttachment(ctx context.Context, publishInfo *models.VolumePublishInfo) (*models.AttachmentInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PruneAttachment", ctx, publishInfo)
+	ret0, _ := ret[0].(*models.AttachmentInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PruneAttachment indicates an expected call of PruneAttachment.
+func (mr *MockISCSIMockRecorder) PruneAttachment(ctx, publishInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PruneAttachment", reflect.TypeOf((*MockISCSI)(nil).PruneAttachment), ctx, publishInfo)
+}
+
+// PruneAttachmentRetry mocks base method.
+func (m *MockISCSI) PruneAttachmentRetry(ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration) (*models.AttachmentInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PruneAttachmentRetry", ctx, publishInfo, timeout)
+	ret0, _ := ret[0].(*models.AttachmentInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PruneAttachmentRetry indicates an expected call of PruneAttachmentRetry.
+func (mr *MockISCSIMockRecorder) PruneAttachmentRetry(ctx, publishInfo, timeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PruneAttachmentRetry", reflect.TypeOf((*MockISCSI)(nil).PruneAttachmentRetry), ctx, publishInfo, timeout)
+}
+
 // RemoveLUNFromSessions mocks base method.
 func (m *MockISCSI) RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions) {
 	m.ctrl.T.Helper()
@@ -307,6 +368,20 @@ func (m *MockISCSI) RemovePortalsFromSession(ctx context.Context, publishInfo *m
 func (mr *MockISCSIMockRecorder) RemovePortalsFromSession(ctx, publishInfo, sessions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePortalsFromSession", reflect.TypeOf((*MockISCSI)(nil).RemovePortalsFromSession), ctx, publishInfo, sessions)
+}
+
+// RescanDevices mocks base method.
+func (m *MockISCSI) RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RescanDevices", ctx, targetIQN, lunID, minSize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RescanDevices indicates an expected call of RescanDevices.
+func (mr *MockISCSIMockRecorder) RescanDevices(ctx, targetIQN, lunID, minSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockISCSI)(nil).RescanDevices), ctx, targetIQN, lunID, minSize)
 }
 
 // SafeToLogOut mocks base method.

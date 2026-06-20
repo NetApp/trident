@@ -44,6 +44,8 @@ type Interface interface {
 	TridentVersions() TridentVersionInformer
 	// TridentVolumes returns a TridentVolumeInformer.
 	TridentVolumes() TridentVolumeInformer
+	// TridentVolumeMoves returns a TridentVolumeMoveInformer.
+	TridentVolumeMoves() TridentVolumeMoveInformer
 	// TridentVolumePublications returns a TridentVolumePublicationInformer.
 	TridentVolumePublications() TridentVolumePublicationInformer
 	// TridentVolumeReferences returns a TridentVolumeReferenceInformer.
@@ -144,6 +146,11 @@ func (v *version) TridentVersions() TridentVersionInformer {
 // TridentVolumes returns a TridentVolumeInformer.
 func (v *version) TridentVolumes() TridentVolumeInformer {
 	return &tridentVolumeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentVolumeMoves returns a TridentVolumeMoveInformer.
+func (v *version) TridentVolumeMoves() TridentVolumeMoveInformer {
+	return &tridentVolumeMoveInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentVolumePublications returns a TridentVolumePublicationInformer.

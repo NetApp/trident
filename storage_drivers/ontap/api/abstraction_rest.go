@@ -262,6 +262,12 @@ func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, ski
 	return nil
 }
 
+func (d OntapAPIREST) VolumeMove(
+	ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
+) (string, error) {
+	return d.api.VolumeMove(ctx, volumeName, destinationAggregateName, dryRun)
+}
+
 func (d OntapAPIREST) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
 	purgeErr := d.api.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
 	if purgeErr != nil {
@@ -939,6 +945,58 @@ func (d OntapAPIREST) FlexgroupUnmount(ctx context.Context, name string, _ bool)
 	}
 
 	return nil
+}
+
+func (d OntapAPIREST) GetNodeForAggregate(ctx context.Context, aggregate string) (*Node, error) {
+	fields := []string{"node.uuid", "node.name"}
+	response, err := d.api.AggregateList(ctx, aggregate, fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if response == nil || response.Payload == nil {
+		return nil, fmt.Errorf("error looking up aggregate: %s", aggregate)
+	}
+
+	// Find the target aggregate
+	var aggrObject *models.Aggregate
+	for _, aggr := range response.Payload.AggregateResponseInlineRecords {
+		if aggr == nil || aggr.Name == nil {
+			Logc(ctx).Debug("Skipping empty record")
+			continue
+		}
+
+		if *aggr.Name == aggregate {
+			aggrObject = aggr
+			break
+		}
+	}
+
+	if aggrObject == nil {
+		return nil, fmt.Errorf("aggregate %s not found", aggregate)
+	}
+
+	// Extract node information with consolidated nil checks
+	if aggrObject.Node == nil {
+		return nil, fmt.Errorf("node information for aggregate %s is missing", aggregate)
+	}
+
+	var nodeName, nodeUUID string
+	if aggrObject.Node.Name != nil {
+		nodeName = *aggrObject.Node.Name
+	}
+	if aggrObject.Node.UUID != nil {
+		nodeUUID = *aggrObject.Node.UUID
+	}
+
+	if nodeName == "" || nodeUUID == "" {
+		return nil, fmt.Errorf("node information for aggregate %s is incomplete", aggregate)
+	}
+
+	return &Node{
+		Name: nodeName,
+		UUID: nodeUUID,
+	}, nil
 }
 
 func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList map[string]string, err error) {
@@ -2254,6 +2312,77 @@ func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule
 	return d.api.JobScheduleExists(ctx, replicationSchedule)
 }
 
+func (d OntapAPIREST) JobGet(ctx context.Context, jobID string) (*Job, error) {
+	jobResult, err := d.api.JobGet(ctx, jobID, []string{})
+	if err != nil {
+		return nil, fmt.Errorf("error getting job %s: %v", jobID, err)
+	}
+
+	if jobResult == nil || jobResult.Payload == nil {
+		return nil, fmt.Errorf("unexpected nil job result for job %s", jobID)
+	}
+
+	jobState := jobResult.Payload.State
+	if jobState == nil {
+		return nil, fmt.Errorf("unexpected nil job state")
+	}
+
+	jobMessage := ""
+	if jobResult.Payload.Message != nil {
+		jobMessage = *jobResult.Payload.Message
+	}
+
+	jobError := ""
+	if jobResult.Payload.Error != nil {
+		if jobResult.Payload.Error.Message != nil {
+			jobError = *jobResult.Payload.Error.Message
+		}
+	}
+
+	var startTime, endTime *time.Time
+	if jobResult.Payload.StartTime != nil {
+		t := time.Time(*jobResult.Payload.StartTime).UTC()
+		if !t.IsZero() {
+			startTime = &t
+		}
+	}
+	if jobResult.Payload.EndTime != nil {
+		t := time.Time(*jobResult.Payload.EndTime).UTC()
+		if !t.IsZero() {
+			endTime = &t
+		}
+	}
+
+	switch *jobState {
+	case models.JobStateSuccess:
+		return &Job{
+			State:     JobStateSuccess,
+			Message:   jobMessage,
+			Error:     jobError,
+			StartTime: startTime,
+			EndTime:   endTime,
+		}, nil
+	case models.JobStateFailure:
+		return &Job{
+			State:     JobStateFailure,
+			Message:   jobMessage,
+			Error:     jobError,
+			StartTime: startTime,
+			EndTime:   endTime,
+		}, nil
+	case models.JobStateRunning, models.JobStateQueued, models.JobStatePaused:
+		return &Job{
+			State:     JobStateRunning,
+			Message:   jobMessage,
+			Error:     jobError,
+			StartTime: startTime,
+			EndTime:   endTime,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unexpected job state %s for job %s", *jobState, jobID)
+	}
+}
+
 func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
 	return d.api.GetPeeredVservers(ctx)
 }
@@ -2760,6 +2889,16 @@ func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 	return d.api.LunMapGetReportingNodes(ctx, initiatorGroupName, lunPath)
 }
 
+// LunMapAddReportingNode adds the node to the lun map's reporting nodes
+func (d OntapAPIREST) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
+	return d.api.LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeName)
+}
+
+// LunMapRemoveReportingNode removes the node from the lun map's reporting nodes
+func (d OntapAPIREST) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
+	return d.api.LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeName)
+}
+
 func (d OntapAPIREST) LunSize(ctx context.Context, lunPath string) (int, error) {
 	// lunPath is either an actual LUN name or a path in the form of /vol/<flexvol>/<lun>.
 	// The caller is responsible for ensuring that the path is in the correct format.
@@ -2948,7 +3087,7 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 			Logc(ctx).WithError(err).WithField("igroup", initiatorGroupName).Error("Unable to delete igroup")
 			return err
 		}
-		Logc(ctx).WithError(err).WithField("igroup", initiatorGroupName).Warn("Unable to delete igroup")
+		Logc(ctx).WithError(err).WithField("igroup", initiatorGroupName).Warn("Could not delete igroup; igroup not found")
 	}
 	return nil
 }

@@ -28,4 +28,5 @@ const (
 	ObjectTypeTridentActionSnapshotRestore   ObjectType = "TridentActionSnapshotRestore"
 	ObjectTypeTridentNodeRemediation         ObjectType = "TridentNodeRemediation"
 	ObjectTypeTridentAutogrowRequestInternal ObjectType = "TridentAutogrowRequestInternal"
+	ObjectTypeTridentVolumeMove              ObjectType = "TridentVolumeMove"
 )

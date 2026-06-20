@@ -1,9 +1,9 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package luks
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"

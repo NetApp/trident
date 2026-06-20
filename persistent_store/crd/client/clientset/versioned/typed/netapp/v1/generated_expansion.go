@@ -38,6 +38,8 @@ type TridentVersionExpansion interface{}
 
 type TridentVolumeExpansion interface{}
 
+type TridentVolumeMoveExpansion interface{}
+
 type TridentVolumePublicationExpansion interface{}
 
 type TridentVolumeReferenceExpansion interface{}

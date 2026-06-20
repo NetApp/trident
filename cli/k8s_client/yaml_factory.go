@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -194,7 +194,8 @@ rules:
 "tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
 "tridentgroupsnapshots", "tridentgroupsnapshots/status",
 "tridentautogrowpolicies", "tridentautogrowpolicies/status",
-"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status"]
+"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status",
+"tridentvolumemoves", "tridentvolumemoves/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -224,6 +225,9 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentautogrowrequestinternals"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentvolumemoves", "tridentvolumemoves/status"]
+    verbs: ["get", "list", "watch", "update", "patch"]
 `
 
 func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {
@@ -2015,6 +2019,12 @@ func GetActionMirrorUpdateCRDYAML() string {
 	return tridentActionMirrorUpdateCRDYAMLv1
 }
 
+func GetVolumeMoveCRDYAML() string {
+	Log().Trace(">>>> GetVolumeMoveCRDYAML")
+	defer func() { Log().Trace("<<<< GetVolumeMoveCRDYAML") }()
+	return tridentVolumeMoveCRDYAMLv1
+}
+
 func GetSnapshotInfoCRDYAML() string {
 	Log().Trace(">>>> GetSnapshotInfoCRDYAML")
 	defer func() { Log().Trace("<<<< GetSnapshotInfoCRDYAML") }()
@@ -2121,6 +2131,7 @@ kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentgroupsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
 kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io --wait=false
+kubectl delete crd tridentvolumemoves.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -2136,6 +2147,7 @@ kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizer
 kubectl patch crd tridentgroupsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentactionsnapshotrestores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentvolumemoves.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
@@ -2151,6 +2163,7 @@ kubectl delete crd tridentsnapshots.trident.netapp.io
 kubectl delete crd tridentgroupsnapshots.trident.netapp.io
 kubectl delete crd tridentvolumereferences.trident.netapp.io
 kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io
+kubectl delete crd tridentvolumemoves.trident.netapp.io
 */
 
 const tridentVersionCRDYAMLv1 = `
@@ -2382,6 +2395,156 @@ spec:
     categories:
     - trident
     - trident-external
+`
+
+const tridentVolumeMoveCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumemoves.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - sourceNode
+                - sourcePool
+                - targetNode
+                - targetPool
+              properties:
+                sourceNode:
+                  type: string
+                  description: The source storage backend node.
+                sourcePool:
+                  type: string
+                  description: The source storage backend pool.
+                targetNode:
+                  type: string
+                  description: The target storage backend node.
+                targetPool:
+                  type: string
+                  description: The target storage backend pool.
+                deleteAfterSuccess:
+                  type: string
+                  format: duration
+                  description: >-
+                    When set, this CR will be automatically deleted after this interval after the move is 
+                    completed successfully (for example 10m or 30s). If set to 0, the CR is deleted 
+                    immediately. If omitted, the CR is retained. Failed moves are not deleted.
+            status:
+              type: object
+              properties:
+                state:
+                  type: string
+                  description: Current state of the volume move operation.
+                message:
+                  type: string
+                  description: Details about the current state or failure.
+                initialAccessInfo:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  description: >-
+                    Access info captured before the move began.
+                    Set once during controller staging and never modified.
+                targetAccessInfo:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  description: >-
+                    Updated access info capturing the desired attachment information throughout the volume move.
+                attachments:
+                  type: array
+                  description: Live attachments that must be updated.
+                  items:
+                    type: object
+                    required:
+                      - node
+                      - state
+                    properties:
+                      node:
+                        type: string
+                        description: The node where this volume is attached.
+                      state:
+                        type: string
+                        description: Current state of this node's attachment during the move.
+                      message:
+                        type: string
+                        description: Human-readable detail about this attachment's state.
+                backendContext:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  description: Backend-specific context for the volume move.
+                startTime:
+                  type: string
+                  format: date-time
+                  description: When the move operation started.
+                completionTime:
+                  type: string
+                  format: date-time
+                  description: When the move operation finished.
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Volume
+          type: string
+          description: The PV being moved
+          jsonPath: .metadata.name
+          priority: 0
+        - name: State
+          type: string
+          description: Current move state
+          jsonPath: .status.state
+          priority: 0
+        - name: Age 
+          type: date
+          description: Time since creation
+          jsonPath: .metadata.creationTimestamp
+          priority: 0
+        - name: Message
+          type: string
+          description: Status detail or error
+          jsonPath: .status.message
+          priority: 1
+        - name: SourceNode
+          type: string
+          description: Source node
+          jsonPath: .spec.sourceNode
+          priority: 1
+        - name: SourcePool
+          type: string
+          description: Source pool
+          jsonPath: .spec.sourcePool
+          priority: 1
+        - name: TargetNode
+          type: string
+          description: Target node
+          jsonPath: .spec.targetNode
+          priority: 1
+        - name: TargetPool
+          type: string
+          description: Target pool
+          jsonPath: .spec.targetPool
+          priority: 1
+  scope: Namespaced
+  names:
+    plural: tridentvolumemoves
+    singular: tridentvolumemove
+    kind: TridentVolumeMove
+    shortNames:
+      - tvm
+      - tvmove
+      - tvolmove
+      - tvolumemove
+    categories:
+      - trident
+      - trident-external
 `
 
 const tridentSnapshotInfoCRDYAMLv1 = `
@@ -3347,9 +3510,10 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentGroupSnapshotCRDYAMLv1 +
 	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
 	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 +
-	"\n---" + tridentConfiguratorCRDYAMLv1 +
 	"\n---" + tridentAutogrowPolicyCRDYAMLv1 +
-	"\n---" + tridentAutogrowRequestInternalCRDYAMLv1 + "\n"
+	"\n---" + tridentAutogrowRequestInternalCRDYAMLv1 +
+	"\n---" + tridentVolumeMoveCRDYAMLv1 +
+	"\n---" + tridentConfiguratorCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name, fsGroupPolicy string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{

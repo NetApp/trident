@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -1188,6 +1188,28 @@ func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *stora
 	}
 
 	return err
+}
+
+func (k *CRDClientV1) GetVolumeMoves(ctx context.Context) (vols []*storage.VolumeMoveExternal, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
+	ttvms, err := k.crdClient.TridentV1().TridentVolumeMoves(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	vols = make([]*storage.VolumeMoveExternal, 0)
+	for _, item := range ttvms.Items {
+		// Consider all TVMs, even those that are deleting or inactive.
+		// Let the core decide if the move should be ignored or not.
+		persistentVolume, err := item.Persistent()
+		if err != nil {
+			return nil, err
+		}
+		vols = append(vols, persistentVolume)
+	}
+
+	return vols, nil
 }
 
 func (k *CRDClientV1) AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {

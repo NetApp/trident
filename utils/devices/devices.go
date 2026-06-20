@@ -7,6 +7,7 @@ package devices
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/spf13/afero"
-	"golang.org/x/net/context"
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
@@ -59,6 +59,7 @@ type Devices interface {
 	VerifyMultipathDeviceSize(ctx context.Context, multipathDevice, device string) (int64, bool, error)
 	GetDiskSize(ctx context.Context, devicePath string) (int64, error)
 	MultipathFlushDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) error
+	GetUnhealthyDevices(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) ([]string, error)
 	RemoveDevice(ctx context.Context, devices []string, ignoreErrors bool) error
 	VerifyMultipathDevice(
 		ctx context.Context, publishInfo *models.VolumePublishInfo,
@@ -73,14 +74,19 @@ type Devices interface {
 	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
 	EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error
 	RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error
-	WaitForDevicesRemoval(ctx context.Context, devicePathPrefix string, deviceNames []string,
+	WaitForDevicesRemoval(
+		ctx context.Context, devicePathPrefix string, deviceNames []string,
 		maxWaitTime time.Duration,
 	) error
-	RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
-		sleep time.Duration) error
+	RemoveMultipathDeviceMappingWithRetries(
+		ctx context.Context, devicePath string, retries uint64,
+		sleep time.Duration,
+	) error
 	ClearFormatting(ctx context.Context, devicePath string) error
 	GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error)
 	RemoveGhostMultipathDevice(ctx context.Context, multipathDevice, expectedLUNSerial string) error
+	AddMultipathPath(ctx context.Context, blockDevice string) error
+	FailMultipathPath(ctx context.Context, blockDevice string) error
 	// ExpandMultipathDevice expands a multipath device by resizing all dm-slaves then
 	// resizing the multipath device-mapper and waiting for all devices sizes to converge.
 	ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error
@@ -174,7 +180,8 @@ func (c *Client) IsDeviceUnformatted(ctx context.Context, device string) (bool, 
 }
 
 // WaitForDevicesRemoval waits for devices to be removed from the system.
-func (c *Client) WaitForDevicesRemoval(ctx context.Context, devicePathPrefix string, deviceNames []string,
+func (c *Client) WaitForDevicesRemoval(
+	ctx context.Context, devicePathPrefix string, deviceNames []string,
 	maxWaitTime time.Duration,
 ) error {
 	startTime := time.Now()
@@ -293,7 +300,59 @@ func (c *Client) MultipathFlushDevice(ctx context.Context, deviceInfo *models.Sc
 	return nil
 }
 
-// flushDevice flushes any outstanding I/O to all paths to a device.
+// GetUnhealthyDevices checks device states for all known SCSI disks on a host for a single LUN.
+// This should check and report if multipath paths are invalid.
+func (c *Client) GetUnhealthyDevices(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) ([]string, error) {
+	mpathDevice := deviceInfo.MultipathDevice
+	Logc(ctx).WithField("multipathDevice", mpathDevice).Debug(">>>> devices.GetUnhealthyDevices")
+	defer Logc(ctx).Debug("<<<< devices.GetUnhealthyDevices")
+
+	const deviceStateRunning = "running"
+
+	badDevices := make([]string, 0)
+	for _, device := range deviceInfo.Devices {
+		// "/sys/block/sdd/device/state"
+		path := c.chrootPathPrefix + fmt.Sprintf("/sys/block/%s/device/state", device)
+		contents, err := c.osFs.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				Logc(ctx).WithField(
+					"devicePath", path,
+				).Warn("Device state file does not exist; device may have been removed.")
+				continue
+			}
+			return nil, err
+		}
+		state := strings.TrimSpace(string(contents))
+
+		// Check for faulty device states. Running is considered healthy / active.
+		if state != deviceStateRunning {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath":      path,
+				"deviceState":     state,
+				"multipathDevice": mpathDevice,
+			}).Warn("Device is not running.")
+			badDevices = append(badDevices, path)
+		}
+	}
+
+	// Some paths being unhealthy don't matter; multipath should attempt to rectify unhealthy paths on its own.
+	if len(badDevices) != 0 {
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice":  deviceInfo.MultipathDevice,
+			"unhealthyDevices": badDevices,
+		}).Warn("Some devices for multipath device are not healthy.")
+	}
+
+	// If all paths are unhealthy, no I/O can be active.
+	if len(badDevices) == len(deviceInfo.Devices) {
+		return badDevices, fmt.Errorf("devices [%v] for device '%s' are unhealthy", badDevices, mpathDevice)
+	}
+
+	return badDevices, nil
+}
+
+// FlushDevice flushes any outstanding I/O to all paths to a device.
 func (c *Client) FlushDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, force bool) error {
 	Logc(ctx).Debug(">>>> devices.FlushDevice")
 	defer Logc(ctx).Debug("<<<< devices.FlushDevice")
@@ -564,7 +623,8 @@ func (c *Client) RemoveMultipathDeviceMapping(ctx context.Context, devicePath st
 }
 
 // RemoveMultipathDeviceMappingWithRetries calls RemoveMultipathDeviceMapping with retries.
-func (c *Client) RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
+func (c *Client) RemoveMultipathDeviceMappingWithRetries(
+	ctx context.Context, devicePath string, retries uint64,
 	sleep time.Duration,
 ) error {
 	operation := func() error {
@@ -773,7 +833,7 @@ func (c *Client) GetMultipathDeviceUUID(multipathDevicePath string) (string, err
 	return strings.TrimSpace(string(UUID)), nil
 }
 
-// removeDevice tells Linux that a device will be removed.
+// RemoveDevice tells Linux that a device will be removed.
 func (c *Client) RemoveDevice(ctx context.Context, devices []string, ignoreErrors bool) error {
 	Logc(ctx).Debug(">>>> devices.removeDevice")
 	defer Logc(ctx).Debug("<<<< devices.removeDevice")
@@ -830,7 +890,7 @@ func (c *Client) GetLunSerial(ctx context.Context, path string) (string, error) 
 	// information. Linux helpfully provides this through sysfs
 	// so we don't need to open the device and send the ioctl
 	// ourselves.
-	filename := path + "/vpd_pg80"
+	filename := filepath.Join(path, "vpd_pg80")
 	b, err := c.osFs.ReadFile(filename)
 	if err != nil {
 		return "", err

@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package controller
 
@@ -28,8 +28,7 @@ func TestUpdateTSI(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -66,8 +65,7 @@ func TestHandleTridentSnapshotInfo_EdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -179,8 +177,7 @@ func TestGetSnapshotHandle_EdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}

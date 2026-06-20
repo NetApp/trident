@@ -90,6 +90,11 @@ type RestClientInterface interface {
 	// the cli does not support passing in the UUID of the verver instead of the name. This will not work with
 	// a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to
 	// directly purge the volume from the recovery queue.
+	// VolumeMove moves a volume from source aggregate to destination aggregate
+	VolumeMove(
+		ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
+	) (string, error)
+	// VolumeRecoveryQueuePurge purges the specified volume from the recovery queue
 	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
 	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
 	// ConsistencyGroupCreateAndWait creates a CG and waits on the job to complete
@@ -206,6 +211,10 @@ type RestClientInterface interface {
 	// LunMapGetReportingNodes
 	// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
+	// LunMapAddReportingNode adds the node to the lun map's reporting nodes
+	LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error
+	// LunMapRemoveReportingNode removes the node from the lun map's reporting nodes
+	LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error
 	// LunSize gets the size for a given LUN.
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	// LunSetSize sets the size for a given LUN.

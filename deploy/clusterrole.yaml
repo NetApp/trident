@@ -259,6 +259,8 @@ rules:
       - tridentnoderemediations/status
       - tridentnoderemediationtemplates
       - tridentnoderemediationtemplates/status
+      - tridentvolumemoves
+      - tridentvolumemoves/status
       - tridentprovisioners # Required for Tprov
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for Torc

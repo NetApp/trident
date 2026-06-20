@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -54,6 +54,11 @@ type Orchestrator interface {
 	UnpublishVolume(ctx context.Context, volumeName, nodeName string) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
 	ReloadVolumes(ctx context.Context) error
+
+	ReconcileVolumeMove(ctx context.Context, volumeName string, volumeMoveInfo *models.VolumeMoveInfo) error
+	StageVolumeMove(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error
+	MoveVolume(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error
+	UnstageVolumeMove(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error
 
 	ListSubordinateVolumes(ctx context.Context, sourceVolumeName string) ([]*storage.VolumeExternal, error)
 	GetSubordinateSourceVolume(ctx context.Context, subordinateVolumeName string) (*storage.VolumeExternal, error)

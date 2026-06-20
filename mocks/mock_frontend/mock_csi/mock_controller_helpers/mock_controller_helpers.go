@@ -13,11 +13,12 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	config "github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	storage "github.com/netapp/trident/storage"
 	models "github.com/netapp/trident/utils/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockControllerHelper is a mock of ControllerHelper interface.
@@ -132,6 +133,21 @@ func (m *MockControllerHelper) GetVolumeConfig(ctx context.Context, name string,
 func (mr *MockControllerHelperMockRecorder) GetVolumeConfig(ctx, name, sizeBytes, parameters, protocol, accessModes, volumeMode, fsType, requisiteTopology, preferredTopology, accessibleTopology, secrets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeConfig), ctx, name, sizeBytes, parameters, protocol, accessModes, volumeMode, fsType, requisiteTopology, preferredTopology, accessibleTopology, secrets)
+}
+
+// GetVolumeMoveInfo mocks base method.
+func (m *MockControllerHelper) GetVolumeMoveInfo(ctx context.Context, name string) (*models.VolumeMoveInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeMoveInfo", ctx, name)
+	ret0, _ := ret[0].(*models.VolumeMoveInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeMoveInfo indicates an expected call of GetVolumeMoveInfo.
+func (mr *MockControllerHelperMockRecorder) GetVolumeMoveInfo(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeMoveInfo", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeMoveInfo), ctx, name)
 }
 
 // IsTopologyInUse mocks base method.

@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/afero/mem"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
@@ -5963,4 +5964,676 @@ func TestClient_EnsureVolumeFormattedAndMounted(t *testing.T) {
 			}
 		})
 	}
+}
+
+// setupSysfsSession creates the sysfs directory structure for a single iSCSI session on a memFs.
+// Paths are absolute (e.g. /sys/class/scsi_host/host3/...) to match what the production code reads.
+// connectionAddress should match the portal string the code will use for comparison (e.g. "10.0.0.1").
+func setupSysfsSession(memFs afero.Fs, host, session, targetIQN, connectionAddress string) {
+	sessionPath := filepath.Join("/sys/class/scsi_host", host, "device", session, "iscsi_session", session)
+	connName := "connection1:0"
+	connPath := filepath.Join(sessionPath, "device", connName, "iscsi_connection", connName)
+	_ = memFs.MkdirAll(connPath, 0o755)
+	_ = afero.WriteFile(memFs, filepath.Join(sessionPath, "targetname"), []byte(targetIQN), 0o644)
+	_ = afero.WriteFile(memFs, filepath.Join(connPath, "address"), []byte(connectionAddress), 0o644)
+}
+
+// addSysfsTargetDevice adds a SCSI target device directory under an existing session for serial checking.
+func addSysfsTargetDevice(memFs afero.Fs, host, session, targetAddr, scsiAddr string) string {
+	sessionPath := filepath.Join("/sys/class/scsi_host", host, "device", session, "iscsi_session", session)
+	targetDevPath := filepath.Join(sessionPath, "device", targetAddr, scsiAddr)
+	_ = memFs.MkdirAll(targetDevPath, 0o755)
+	return targetDevPath
+}
+
+func TestClient_ensureMultipathDeviceHasPaths(t *testing.T) {
+	const multipathDevice = "dm-0"
+
+	t.Run("error when multipathDevice is empty", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), "", []string{"sda", "sdb"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("error when expectedDevices is empty", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("error when multipathDevice is empty and expectedDevices is nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), "", nil)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("all expected devices already present as slaves", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+			gomock.Any(), multipathDevice,
+		).Return([]string{"sda", "sdb"})
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sda", "sdb"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"sda", "sdb"}, result)
+	})
+
+	t.Run("some devices missing and add path succeeds", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		gomock.InOrder(
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda"}),
+			mockDevicesClient.EXPECT().AddMultipathPath(
+				gomock.Any(), "sdb",
+			).Return(nil),
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda", "sdb"}),
+		)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sda", "sdb"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"sda", "sdb"}, result)
+	})
+
+	t.Run("add path fails but device appears in re-read", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		gomock.InOrder(
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda"}),
+			mockDevicesClient.EXPECT().AddMultipathPath(
+				gomock.Any(), "sdb",
+			).Return(fmt.Errorf("exit status 1")),
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda", "sdb"}),
+		)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sda", "sdb"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"sda", "sdb"}, result)
+	})
+
+	t.Run("add path fails and device still missing - partial success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		gomock.InOrder(
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda"}),
+			mockDevicesClient.EXPECT().AddMultipathPath(
+				gomock.Any(), "sdb",
+			).Return(fmt.Errorf("exit status 1")),
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{"sda"}),
+		)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sda", "sdb"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"sda"}, result)
+	})
+
+	t.Run("zero expected devices present after add attempts", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		gomock.InOrder(
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{}),
+			mockDevicesClient.EXPECT().AddMultipathPath(
+				gomock.Any(), "sdc",
+			).Return(fmt.Errorf("exit status 1")),
+			mockDevicesClient.EXPECT().AddMultipathPath(
+				gomock.Any(), "sdd",
+			).Return(fmt.Errorf("exit status 1")),
+			mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+				gomock.Any(), multipathDevice,
+			).Return([]string{}),
+		)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sdc", "sdd"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("slaves contain extra devices not in expected list", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(
+			gomock.Any(), multipathDevice,
+		).Return([]string{"sda", "sdb", "sdc"})
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.ensureMultipathDeviceHasPaths(
+			context.Background(), multipathDevice, []string{"sda"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"sda"}, result)
+	})
+}
+
+func TestClient_GraftAttachment(t *testing.T) {
+	t.Run("error when publishInfo is nil", func(t *testing.T) {
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.GraftAttachment(context.Background(), nil)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+}
+
+func TestClient_PruneAttachment(t *testing.T) {
+	const (
+		targetIQN       = "iqn.2010-01.com.netapp:target-1"
+		newPortalIP     = "10.0.0.2"
+		newPortalFull   = "10.0.0.2:3260"
+		oldPortalIP     = "10.0.0.1"
+		lunID           = int32(0)
+		lunSerial       = "SERIAL123"
+		multipathDevice = "dm-0"
+	)
+
+	makePublishInfo := func() *models.VolumePublishInfo {
+		return &models.VolumePublishInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiLunNumber:    lunID,
+					IscsiTargetIQN:    targetIQN,
+					IscsiTargetPortal: newPortalFull,
+					IscsiPortals:      []string{},
+					IscsiLunSerial:    lunSerial,
+				},
+			},
+		}
+	}
+
+	t.Run("error when publishInfo is nil", func(t *testing.T) {
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		result, err := client.PruneAttachment(context.Background(), nil)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("error when new portal device info has no multipath device", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host5", "session2", targetIQN, newPortalFull)
+
+		newHostSessionMap := map[int]int{5: 2}
+
+		mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(int(lunID), newHostSessionMap).
+			Return([]string{"/sys/block/sdc"})
+		mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/sys/block/sdc"}).
+			Return([]string{"sdc"}, nil)
+		mockDevicesClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sdc").Return("")
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.PruneAttachment(context.Background(), makePublishInfo())
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("error when new portal devices not in multipath slaves", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host5", "session2", targetIQN, newPortalFull)
+
+		newHostSessionMap := map[int]int{5: 2}
+
+		mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(int(lunID), newHostSessionMap).
+			Return([]string{"/sys/block/sdc"})
+		mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/sys/block/sdc"}).
+			Return([]string{"sdc"}, nil)
+		mockDevicesClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sdc").
+			Return(multipathDevice)
+
+		mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(gomock.Any(), multipathDevice).
+			Return([]string{"sda", "sdb"})
+		mockDevicesClient.EXPECT().AddMultipathPath(gomock.Any(), "sdc").
+			Return(fmt.Errorf("exit status 1"))
+		mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(gomock.Any(), multipathDevice).
+			Return([]string{"sda", "sdb"})
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.PruneAttachment(context.Background(), makePublishInfo())
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("error when no device info for new portals", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host5", "session2", targetIQN, newPortalFull)
+
+		newHostSessionMap := map[int]int{5: 2}
+
+		mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(int(lunID), newHostSessionMap).
+			Return([]string{"/sys/block/sdc"})
+		mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/sys/block/sdc"}).
+			Return([]string{}, nil)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.PruneAttachment(context.Background(), makePublishInfo())
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("no-op when all sessions are on kept portals", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host5", "session2", targetIQN, newPortalFull)
+
+		newHostSessionMap := map[int]int{5: 2}
+
+		mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(int(lunID), newHostSessionMap).
+			Return([]string{"/sys/block/sdc"})
+		mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/sys/block/sdc"}).
+			Return([]string{"sdc"}, nil)
+		mockDevicesClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sdc").
+			Return(multipathDevice)
+		mockDevicesClient.EXPECT().FindDevicesForMultipathDevice(gomock.Any(), multipathDevice).
+			Return([]string{"sda", "sdb", "sdc"})
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.PruneAttachment(context.Background(), makePublishInfo())
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Equal(t, "", result.VolumePublishInfo.IscsiTargetPortal)
+		assert.Nil(t, result.VolumePublishInfo.IscsiPortals)
+	})
+
+	_ = newPortalIP
+	_ = oldPortalIP
+}
+
+func TestClient_discoverHostSessionMapByTargetAndInPortals(t *testing.T) {
+	const targetIQN = "iqn.2010-01.com.netapp:target-1"
+
+	t.Run("error when scsi_host dir is unreadable", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1")
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("empty result when no hosts exist", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		_ = memFs.MkdirAll("/sys/class/scsi_host", 0o755)
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1")
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("ignores sessions with wrong target IQN", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", "iqn.2010-01.com.netapp:different-target", "10.0.0.1")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1")
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("ignores sessions with connections not in portal set", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.99")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1")
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("finds matching session with correct target and portal", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1")
+
+		require.NoError(t, err)
+		assert.Equal(t, map[int]int{3: 1}, result)
+	})
+
+	t.Run("finds multiple sessions across hosts", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+		setupSysfsSession(memFs, "host5", "session2", targetIQN, "10.0.0.2")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1", "10.0.0.2")
+
+		require.NoError(t, err)
+		assert.Len(t, result, 2)
+		assert.Equal(t, 1, result[3])
+		assert.Equal(t, 2, result[5])
+	})
+
+	t.Run("matches portals with ports", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1:3260")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapByTargetAndInPortals(
+			context.Background(), targetIQN, "10.0.0.1:3260")
+
+		require.NoError(t, err)
+		assert.Equal(t, map[int]int{3: 1}, result)
+	})
+}
+
+func TestClient_discoverHostSessionMapBySerialTargetAndExPortals(t *testing.T) {
+	const (
+		targetIQN = "iqn.2010-01.com.netapp:target-1"
+		lunSerial = "SERIAL123"
+	)
+
+	t.Run("error when scsi_host dir is unreadable", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("empty result when no hosts match", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		_ = memFs.MkdirAll("/sys/class/scsi_host", 0o755)
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("excludes sessions whose connections are in the excluded portal set", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.2")
+		targetDevPath := addSysfsTargetDevice(memFs, "host3", "session1", "target3:0:0", "3:0:0:0")
+
+		mockDevicesClient.EXPECT().GetLunSerial(gomock.Any(), targetDevPath).Return(lunSerial, nil)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil, nil,
+			afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("excludes sessions when excluded portal uses default port format", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.2")
+		targetDevPath := addSysfsTargetDevice(memFs, "host3", "session1", "target3:0:0", "3:0:0:0")
+
+		mockDevicesClient.EXPECT().GetLunSerial(gomock.Any(), targetDevPath).Return(lunSerial, nil)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil, nil,
+			afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2:3260"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("includes sessions not in excluded portal set with matching serial", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+		targetDevPath := addSysfsTargetDevice(memFs, "host3", "session1", "target3:0:0", "3:0:0:0")
+
+		mockDevicesClient.EXPECT().GetLunSerial(gomock.Any(), targetDevPath).Return(lunSerial, nil)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil, nil,
+			afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Equal(t, map[int]int{3: 1}, result)
+	})
+
+	t.Run("excludes sessions with mismatched LUN serial", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+		targetDevPath := addSysfsTargetDevice(memFs, "host3", "session1", "target3:0:0", "3:0:0:0")
+
+		mockDevicesClient.EXPECT().GetLunSerial(gomock.Any(), targetDevPath).Return("DIFFERENT_SERIAL", nil)
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil, nil,
+			afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("excludes sessions with GetLunSerial error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+		targetDevPath := addSysfsTargetDevice(memFs, "host3", "session1", "target3:0:0", "3:0:0:0")
+
+		mockDevicesClient.EXPECT().GetLunSerial(gomock.Any(), targetDevPath).
+			Return("", fmt.Errorf("vpd read error"))
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil, nil,
+			afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("includes sessions with no targets for logout", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", targetIQN, "10.0.0.1")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Equal(t, map[int]int{3: 1}, result)
+	})
+
+	t.Run("ignores sessions with wrong target IQN", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		setupSysfsSession(memFs, "host3", "session1", "iqn.2010-01.com.netapp:wrong-target", "10.0.0.1")
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.discoverHostSessionMapBySerialTargetAndExPortals(
+			context.Background(), lunSerial, targetIQN, []string{"10.0.0.2"})
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+}
+
+func TestClient_determinePortalsSafeForLogout(t *testing.T) {
+	t.Run("returns nil when no portals are safe", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+
+		sessionDevicePath := "/sys/class/scsi_host/host3/device/session1/iscsi_session/session1/device"
+		connPath := filepath.Join(sessionDevicePath, "connection1:0/iscsi_connection/connection1:0")
+		_ = memFs.MkdirAll(connPath, 0o755)
+		_ = afero.WriteFile(memFs, filepath.Join(connPath, "address"), []byte("10.0.0.1"), 0o644)
+
+		targetPath := "/sys/class/iscsi_host/host3/device/session1/target3:0:0/3:0:0:0"
+		_ = memFs.MkdirAll(targetPath, 0o755)
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.determinePortalsSafeForLogout(context.Background(), map[int]int{3: 1})
+
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("returns portals when sessions have no block devices", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+
+		sessionDevicePath := "/sys/class/scsi_host/host3/device/session1/iscsi_session/session1/device"
+		connPath := filepath.Join(sessionDevicePath, "connection1:0/iscsi_connection/connection1:0")
+		_ = memFs.MkdirAll(connPath, 0o755)
+		_ = afero.WriteFile(memFs, filepath.Join(connPath, "address"), []byte("10.0.0.1"), 0o644)
+
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.determinePortalsSafeForLogout(context.Background(), map[int]int{3: 1})
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Contains(t, result, "10.0.0.1")
+	})
+
+	t.Run("empty host session map returns nil", func(t *testing.T) {
+		memFs := afero.NewMemMapFs()
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: memFs}, nil)
+
+		result, err := client.determinePortalsSafeForLogout(context.Background(), map[int]int{})
+
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
 }

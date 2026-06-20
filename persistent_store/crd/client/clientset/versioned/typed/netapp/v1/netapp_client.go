@@ -5,9 +5,10 @@
 package v1
 
 import (
+	rest "k8s.io/client-go/rest"
+
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 type TridentV1Interface interface {
@@ -29,6 +30,7 @@ type TridentV1Interface interface {
 	TridentTransactionsGetter
 	TridentVersionsGetter
 	TridentVolumesGetter
+	TridentVolumeMovesGetter
 	TridentVolumePublicationsGetter
 	TridentVolumeReferencesGetter
 }
@@ -104,6 +106,10 @@ func (c *TridentV1Client) TridentVersions(namespace string) TridentVersionInterf
 
 func (c *TridentV1Client) TridentVolumes(namespace string) TridentVolumeInterface {
 	return newTridentVolumes(c, namespace)
+}
+
+func (c *TridentV1Client) TridentVolumeMoves(namespace string) TridentVolumeMoveInterface {
+	return newTridentVolumeMoves(c, namespace)
 }
 
 func (c *TridentV1Client) TridentVolumePublications(namespace string) TridentVolumePublicationInterface {

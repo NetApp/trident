@@ -13,9 +13,11 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	autogrow "github.com/netapp/trident/frontend/autogrow"
 	cache "github.com/netapp/trident/frontend/autogrow/cache"
-	gomock "go.uber.org/mock/gomock"
+	types "github.com/netapp/trident/frontend/crd/types"
 )
 
 // MockAutogrowOrchestrator is a mock of AutogrowOrchestrator interface.
@@ -99,7 +101,7 @@ func (mr *MockAutogrowOrchestratorMockRecorder) GetState() *gomock.Call {
 }
 
 // HandleStorageClassEvent mocks base method.
-func (m *MockAutogrowOrchestrator) HandleStorageClassEvent(ctx context.Context, eventType autogrow.EventType, name string) {
+func (m *MockAutogrowOrchestrator) HandleStorageClassEvent(ctx context.Context, eventType types.EventType, name string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "HandleStorageClassEvent", ctx, eventType, name)
 }
@@ -111,7 +113,7 @@ func (mr *MockAutogrowOrchestratorMockRecorder) HandleStorageClassEvent(ctx, eve
 }
 
 // HandleTBEEvent mocks base method.
-func (m *MockAutogrowOrchestrator) HandleTBEEvent(ctx context.Context, eventType autogrow.EventType, key string) {
+func (m *MockAutogrowOrchestrator) HandleTBEEvent(ctx context.Context, eventType types.EventType, key string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "HandleTBEEvent", ctx, eventType, key)
 }
@@ -123,7 +125,7 @@ func (mr *MockAutogrowOrchestratorMockRecorder) HandleTBEEvent(ctx, eventType, k
 }
 
 // HandleTVPEvent mocks base method.
-func (m *MockAutogrowOrchestrator) HandleTVPEvent(ctx context.Context, eventType autogrow.EventType, key string) {
+func (m *MockAutogrowOrchestrator) HandleTVPEvent(ctx context.Context, eventType types.EventType, key string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "HandleTVPEvent", ctx, eventType, key)
 }

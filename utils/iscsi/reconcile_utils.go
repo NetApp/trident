@@ -84,7 +84,7 @@ func (h *IscsiReconcileHelper) DiscoverSCSIAddressMapForTarget(
 	deviceMap := make(map[string]models.ScsiDeviceAddress)
 
 	// Read in everything under: '/sys/class/scsi_host/'.
-	scsiHostPath := filepath.Join(h.chrootPathPrefix, "sys", "class", "scsi_host")
+	scsiHostPath := h.chrootPathPrefix + "/sys/class/scsi_host/"
 	hostEntries, err := h.osFs.ReadDir(scsiHostPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list hosts; %w", err)

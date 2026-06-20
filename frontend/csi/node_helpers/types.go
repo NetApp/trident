@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package nodehelpers
 
@@ -19,6 +19,7 @@ const (
 type NodeHelper interface {
 	AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error
 	RemovePublishedPath(ctx context.Context, volumeID, pathToRemove string) error
+	UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error
 	VolumePublishManager
 	VolumeStatsManager
 }

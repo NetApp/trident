@@ -14,12 +14,13 @@ import (
 	reflect "reflect"
 	time "time"
 
+	gomock "go.uber.org/mock/gomock"
+
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	models "github.com/netapp/trident/utils/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockOrchestrator is a mock of Orchestrator interface.
@@ -1020,6 +1021,20 @@ func (mr *MockOrchestratorMockRecorder) ListVolumes(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumes", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumes), ctx)
 }
 
+// MoveVolume mocks base method.
+func (m *MockOrchestrator) MoveVolume(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveVolume", ctx, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveVolume indicates an expected call of MoveVolume.
+func (mr *MockOrchestratorMockRecorder) MoveVolume(ctx, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveVolume", reflect.TypeOf((*MockOrchestrator)(nil).MoveVolume), ctx, volumeMoveInfo)
+}
+
 // PeriodicallyReconcileBackendState mocks base method.
 func (m *MockOrchestrator) PeriodicallyReconcileBackendState(pollInterval time.Duration) {
 	m.ctrl.T.Helper()
@@ -1086,6 +1101,20 @@ func (m *MockOrchestrator) ReadSnapshotsForVolume(ctx context.Context, volumeNam
 func (mr *MockOrchestratorMockRecorder) ReadSnapshotsForVolume(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadSnapshotsForVolume", reflect.TypeOf((*MockOrchestrator)(nil).ReadSnapshotsForVolume), ctx, volumeName)
+}
+
+// ReconcileVolumeMove mocks base method.
+func (m *MockOrchestrator) ReconcileVolumeMove(ctx context.Context, volumeName string, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVolumeMove", ctx, volumeName, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVolumeMove indicates an expected call of ReconcileVolumeMove.
+func (mr *MockOrchestratorMockRecorder) ReconcileVolumeMove(ctx, volumeName, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeMove", reflect.TypeOf((*MockOrchestrator)(nil).ReconcileVolumeMove), ctx, volumeName, volumeMoveInfo)
 }
 
 // ReconcileVolumePublications mocks base method.
@@ -1228,6 +1257,20 @@ func (mr *MockOrchestratorMockRecorder) SetLoggingWorkflows(ctx, workflows any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLoggingWorkflows", reflect.TypeOf((*MockOrchestrator)(nil).SetLoggingWorkflows), ctx, workflows)
 }
 
+// StageVolumeMove mocks base method.
+func (m *MockOrchestrator) StageVolumeMove(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StageVolumeMove", ctx, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StageVolumeMove indicates an expected call of StageVolumeMove.
+func (mr *MockOrchestratorMockRecorder) StageVolumeMove(ctx, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StageVolumeMove", reflect.TypeOf((*MockOrchestrator)(nil).StageVolumeMove), ctx, volumeMoveInfo)
+}
+
 // Stop mocks base method.
 func (m *MockOrchestrator) Stop() {
 	m.ctrl.T.Helper()
@@ -1264,6 +1307,20 @@ func (m *MockOrchestrator) UnpublishVolume(ctx context.Context, volumeName, node
 func (mr *MockOrchestratorMockRecorder) UnpublishVolume(ctx, volumeName, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockOrchestrator)(nil).UnpublishVolume), ctx, volumeName, nodeName)
+}
+
+// UnstageVolumeMove mocks base method.
+func (m *MockOrchestrator) UnstageVolumeMove(ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnstageVolumeMove", ctx, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnstageVolumeMove indicates an expected call of UnstageVolumeMove.
+func (mr *MockOrchestratorMockRecorder) UnstageVolumeMove(ctx, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnstageVolumeMove", reflect.TypeOf((*MockOrchestrator)(nil).UnstageVolumeMove), ctx, volumeMoveInfo)
 }
 
 // UpdateAutogrowPolicy mocks base method.

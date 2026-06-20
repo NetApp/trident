@@ -4,6 +4,7 @@ package ontap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -931,6 +932,10 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
+	if moveInfo := volConfig.MoveInfo; moveInfo != nil && moveInfo.State.IsActive() {
+		return errors.VolumeStateError(fmt.Sprintf("cannot delete volume %q while in the %q move state", volConfig.Name, moveInfo.State))
+	}
+
 	var (
 		lunID         int
 		iSCSINodeName string
@@ -1042,6 +1047,10 @@ func (d *SANStorageDriver) Publish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
+	if moveInfo := volConfig.MoveInfo; moveInfo != nil && !moveInfo.State.IsMoving() {
+		return errors.VolumeStateError(fmt.Sprintf("cannot publish volume %q while in the %q move state", volConfig.Name, moveInfo.State))
+	}
+
 	// Check if the volume is DP or RW and don't publish if DP
 	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), name)
 	if err != nil {
@@ -1116,6 +1125,10 @@ func (d *SANStorageDriver) Unpublish(
 
 	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		return nil
+	}
+
+	if moveInfo := volConfig.MoveInfo; moveInfo != nil && moveInfo.State.IsControllerStaging() {
+		return errors.VolumeStateError(fmt.Sprintf("cannot unpublish volume %q while in the %q move state", volConfig.Name, moveInfo.State))
 	}
 
 	// Attempt to unmap the LUN from the per-node igroup.
@@ -1586,6 +1599,12 @@ func (d *SANStorageDriver) Resize(
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
+	if moveInfo := volConfig.MoveInfo; moveInfo != nil && !moveInfo.State.HasMoved() {
+		// Resize is not allowed at any point before we have moved the volume.
+		// This protects against device size divergence between the source and target paths.
+		return errors.VolumeStateError(fmt.Sprintf("cannot resize volume %q while in the %q move state", volConfig.Name, moveInfo.State))
+	}
+
 	if requestedSizeBytes > math.MaxInt64 {
 		Logc(ctx).WithFields(fields).Error("Invalid volume size.")
 		return errors.New("invalid volume size")
@@ -1907,4 +1926,364 @@ func (d *SANStorageDriver) CanEnablePublishEnforcement() bool {
 
 func (d *SANStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
 	return HealSANPublishEnforcement(ctx, d, volume)
+}
+
+func (d *SANStorageDriver) StageVolumeMove(
+	ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	Logc(ctx).Debug(">>>> StageVolumeMove")
+	defer Logc(ctx).Debug("<<<< StageVolumeMove")
+
+	internalLUN := lunPath(volConfig.InternalName)
+	lunMutex.Lock(internalLUN)
+	defer lunMutex.Unlock(internalLUN)
+
+	// Ensure the specified source pool is the aggregate this volume is on.
+	volumeInfo, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
+	if err != nil {
+		if api.IsVolumeReadError(err) {
+			return errors.NotFoundError(fmt.Sprintf("specified volume %q not found", volConfig.InternalName))
+		}
+		return fmt.Errorf("failed to get volume info for %s: %v", volConfig.InternalName, err)
+	}
+	if volumeInfo == nil || len(volumeInfo.Aggregates) == 0 {
+		return fmt.Errorf("failed to get aggregates for volume %s", volConfig.InternalName)
+	}
+	if len(volumeInfo.Aggregates) > 1 {
+		return fmt.Errorf("volume %s is in multiple aggregates: %v",
+			volConfig.InternalName, volumeInfo.Aggregates)
+	}
+
+	// Do not let a volume move proceed if the specified source pool isn't what the API reports.
+	if volumeInfo.Aggregates[0] != volumeMoveInfo.SourcePool {
+		return errors.InvalidInputError(fmt.Sprintf("known source pool %q is different than specified pool %q", volumeInfo.Aggregates[0], volumeMoveInfo.SourcePool))
+	}
+
+	// RWO LUNs store the igroups as a simple string. e.g. "igroup-A"
+	// RWX LUNs store the igroups as a comma-delimited list. e.g. "igroup-A,igroupB,..."
+	igroups := strings.Split(volConfig.AccessInfo.IscsiIgroup, ",")
+	if len(igroups) == 1 && igroups[0] == "" {
+		Logc(ctx).WithFields(LogFields{
+			"volume": volConfig.Name,
+		}).Debug("Volume has no igroups. Continuing with move.")
+		return nil
+	}
+
+	// Build the initial access info before adding any nodes.
+	if volumeMoveInfo.InitialAccessInfo == nil {
+		volumeMoveInfo.InitialAccessInfo = volConfig.AccessInfo.DeepCopy()
+
+		// Read the original data LIFs before adding any nodes.
+		reportingNodes, err := d.API.LunMapGetReportingNodes(ctx, igroups[0], internalLUN)
+		if err != nil {
+			return fmt.Errorf("failed to get reporting nodes for igroup %s: %v", igroups[0], err)
+		}
+
+		// Do not let a volume move proceed if the specified source node is a reporting node.
+		if !collection.ContainsString(reportingNodes, volumeMoveInfo.SourceNode) {
+			return errors.InvalidInputError(fmt.Sprintf("specified source node %q is not a reporting node", volumeMoveInfo.SourceNode))
+		}
+
+		oldLIFs, err := d.API.GetSLMDataLifs(ctx, d.ips, reportingNodes)
+		if err != nil {
+			return fmt.Errorf("failed to get pre-move reporting node data LIFs for %s: %v", volConfig.Name, err)
+		}
+		if len(oldLIFs) == 0 {
+			return fmt.Errorf("no reporting LIFs found for volume %s before adding target nodes", volConfig.InternalName)
+		}
+
+		// Replace the initial access info with the pre-move data LIFs.
+		volumeMoveInfo.InitialAccessInfo.IscsiTargetPortal = oldLIFs[0]
+		oldLIFs = oldLIFs[1:]
+		volumeMoveInfo.InitialAccessInfo.IscsiPortals = oldLIFs
+	}
+
+	// Add the destination reporting node and build a list of unique LIFs using the target node and igroups.
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(igroups))
+	targetNode := volumeMoveInfo.TargetNode
+	for _, igroup := range igroups {
+		wg.Go(func() {
+			igroupMutex.Lock(igroup)
+			defer igroupMutex.Unlock(igroup)
+
+			if err := d.API.LunMapAddReportingNode(ctx, igroup, internalLUN, targetNode); err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"volume":     volConfig.Name,
+					"igroup":     igroup,
+					"lunPath":    internalLUN,
+					"targetNode": targetNode,
+				}).Trace("Could not add reporting node to LUN igroup mapping.")
+				errChan <- fmt.Errorf("failed to add reporting node %s for LUN %s: %v", targetNode, internalLUN, err)
+			}
+		})
+	}
+	wg.Wait()
+	close(errChan)
+
+	var errs error
+	for res := range errChan {
+		if res != nil {
+			errs = errors.Join(errs, res)
+		}
+	}
+	if errs != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":     volConfig.Name,
+			"lunPath":    internalLUN,
+			"targetNode": targetNode,
+		}).WithError(errs).Error("Failed to add target node to LUN igroup mapping(s).")
+		return fmt.Errorf("failed to add target node %s for volume %s: %v", targetNode, volConfig.Name, errs)
+	}
+
+	// Copy the initial access info.
+	// This includes all original LIFs and iSCSI access info.
+	volumeMoveInfo.TargetAccessInfo = volumeMoveInfo.InitialAccessInfo.DeepCopy()
+
+	// Build a unique set of LIFs from the initial access info.
+	oldLIFs := make(map[string]struct{}, len(volumeMoveInfo.InitialAccessInfo.IscsiPortals)+1)
+	oldLIFs[volumeMoveInfo.InitialAccessInfo.IscsiTargetPortal] = struct{}{}
+	for _, lif := range volumeMoveInfo.InitialAccessInfo.IscsiPortals {
+		oldLIFs[lif] = struct{}{}
+	}
+
+	// The data LIFs may have changed now due to new reporting nodes.
+	// Rediscover the updated data LIFs for the volume and discover
+	// what the target access info data LIFs should be.
+	reportingNodes, err := d.API.LunMapGetReportingNodes(ctx, igroups[0], internalLUN)
+	if err != nil {
+		return fmt.Errorf("failed to get reporting nodes for igroup %s: %v", igroups[0], err)
+	}
+	allLIFs, err := d.API.GetSLMDataLifs(ctx, d.ips, reportingNodes)
+	if err != nil {
+		return fmt.Errorf("failed to get new reporting node data LIFs for %s: %v", volConfig.Name, err)
+	}
+	if len(allLIFs) == 0 {
+		return fmt.Errorf("no reporting LIFs found for volume %s", volConfig.InternalName)
+	}
+
+	// Find the delta between the old LIFs and the new LIFs.
+	// If no delta exists, default to the LIFs we read from ONTAP.
+	newLIFs := make([]string, 0, len(allLIFs))
+	for _, lif := range allLIFs {
+		if _, exists := oldLIFs[lif]; !exists {
+			newLIFs = append(newLIFs, lif)
+		}
+	}
+	if len(newLIFs) < 1 {
+		Logc(ctx).WithFields(LogFields{
+			"volume":     volConfig.Name,
+			"sourceNode": volumeMoveInfo.SourceNode,
+			"targetNode": targetNode,
+			"sourceLIFs": oldLIFs,
+			"targetLIFs": allLIFs,
+		}).Info("No new reporting node data LIFs post-filtering; using all discovered LIFs as target LIFs.")
+		newLIFs = allLIFs
+	}
+
+	volumeMoveInfo.TargetAccessInfo.IscsiTargetPortal = newLIFs[0]
+	newLIFs = newLIFs[1:]
+	volumeMoveInfo.TargetAccessInfo.IscsiPortals = newLIFs
+
+	// The CHAP credentials may have changed from the time of attachment
+	// to the time of TVM happening. Update the CHAP credentials.
+	if volConfig.AccessInfo.UseCHAP {
+		volumeMoveInfo.TargetAccessInfo.IscsiUsername = d.Config.ChapUsername
+		volumeMoveInfo.TargetAccessInfo.IscsiInitiatorSecret = d.Config.ChapInitiatorSecret
+		volumeMoveInfo.TargetAccessInfo.IscsiTargetUsername = d.Config.ChapTargetUsername
+		volumeMoveInfo.TargetAccessInfo.IscsiTargetSecret = d.Config.ChapTargetInitiatorSecret
+	}
+
+	return nil
+}
+
+// MoveVolume moves a FlexVol and LUN in ONTAP.
+// This function treats a nil return as a special value.
+// Nil returns should be reserved for when a job is truly finished.
+// All other errors are either deferred or terminal reconciliation errors.
+func (d *SANStorageDriver) MoveVolume(
+	ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	Logc(ctx).Debug(">>>> MoveVolume")
+	defer Logc(ctx).Debug("<<<< MoveVolume")
+
+	internalLUN := lunPath(volConfig.InternalName)
+	lunMutex.Lock(internalLUN)
+	defer lunMutex.Unlock(internalLUN)
+
+	var moveContext VolumeMoveContext
+	if volumeMoveInfo.BackendContext != nil {
+		if err := json.Unmarshal(volumeMoveInfo.BackendContext, &moveContext); err != nil {
+			return fmt.Errorf("failed to unmarshal move context: %v", err)
+		}
+	}
+
+	defer func() {
+		if rawBytes, mErr := json.Marshal(moveContext); mErr == nil {
+			volumeMoveInfo.BackendContext = rawBytes
+		} else {
+			Logc(ctx).WithError(mErr).Warn("Failed to serialize volume move backend context.")
+		}
+	}()
+
+	// First check if the jobID is already set in the VolumeMoveInfo.
+	// If so, check the job status and update the volumeMoveInfo.
+	if moveContext.JobID != "" {
+		jobID := moveContext.JobID
+		Logc(ctx).WithField("jobID", jobID).Debug("Checking existing job status.")
+
+		job, err := d.API.JobGet(ctx, jobID)
+		if err != nil {
+			return fmt.Errorf("failed to get job status for jobID %s: %v", jobID, err)
+		}
+
+		// Record the start and ending timestamps for the job if they are set.
+		if job.StartTime != nil {
+			moveContext.JobStartTime = *job.StartTime
+		}
+		if job.EndTime != nil {
+			moveContext.JobEndTime = *job.EndTime
+		}
+
+		switch job.State {
+		case api.JobStateSuccess:
+			// The volume is now moved to the target node.
+			// Update the volume with the new access info.
+			if volumeMoveInfo.TargetAccessInfo != nil {
+				volConfig.AccessInfo = *volumeMoveInfo.TargetAccessInfo.DeepCopy()
+			}
+			moveContext.JobState = api.JobStateSuccess
+			return nil
+		case api.JobStateRunning:
+			moveContext.JobState = api.JobStateRunning
+			return errors.ReconcileDeferredError(fmt.Sprintf("ONTAP volume move job state: %s", api.JobStateRunning))
+		case api.JobStateFailure:
+			moveContext.JobState = api.JobStateFailure
+			return errors.TerminalReconciliationError(fmt.Sprintf("ONTAP volume move job failed: %s", job.Message))
+		}
+		return errors.ReconcileDeferredError(fmt.Sprintf("Awaiting ONTAP volume move job %s completion", jobID))
+	}
+
+	jobID, err := d.API.VolumeMove(ctx, volConfig.InternalName, volumeMoveInfo.TargetPool, volumeMoveInfo.DryRun)
+	if volumeMoveInfo.DryRun {
+		if err != nil {
+			return errors.TerminalReconciliationError(fmt.Sprintf("Dry run failed: %s", err))
+		}
+		Logc(ctx).WithField("jobID", jobID).Debug("Dry run successful, no volume move performed.")
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to move volume %s: %v", volConfig.InternalName, err)
+	}
+
+	// Update the volume move context.
+	moveContext.JobID = jobID
+	moveContext.JobState = api.JobStateRunning // Initialize to running always.
+	moveContext.SVMName = d.Config.SVM
+	moveContext.BackendName = d.Config.BackendName
+
+	return errors.ReconcileDeferredError(fmt.Sprintf("ONTAP volume move job %s submitted; awaiting completion", jobID))
+}
+
+func (d *SANStorageDriver) UnstageVolumeMove(
+	ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	Logc(ctx).Debug(">>>> UnstageVolumeMove")
+	defer Logc(ctx).Debug("<<<< UnstageVolumeMove")
+
+	internalLUN := lunPath(volConfig.InternalName)
+	lunMutex.Lock(internalLUN)
+	defer lunMutex.Unlock(internalLUN)
+
+	sourceNode, targetNode := volumeMoveInfo.SourceNode, volumeMoveInfo.TargetNode
+
+	if volumeMoveInfo.InitialAccessInfo == nil || volumeMoveInfo.TargetAccessInfo == nil {
+		Logc(ctx).Warn("InitialAccessInfo or TargetAccessInfo is nil; skipping unstage.")
+		return nil
+	}
+
+	oldLIFs := make([]string, 0, len(volumeMoveInfo.InitialAccessInfo.IscsiPortals)+1)
+	oldLIFs = append(oldLIFs, volumeMoveInfo.InitialAccessInfo.IscsiTargetPortal)
+	for _, lif := range volumeMoveInfo.InitialAccessInfo.IscsiPortals {
+		oldLIFs = append(oldLIFs, lif)
+	}
+
+	newLIFs := make([]string, 0, len(volumeMoveInfo.TargetAccessInfo.IscsiPortals)+1)
+	newLIFs = append(newLIFs, volumeMoveInfo.TargetAccessInfo.IscsiTargetPortal)
+	for _, lif := range volumeMoveInfo.TargetAccessInfo.IscsiPortals {
+		newLIFs = append(newLIFs, lif)
+	}
+
+	// Nothing to do if the old and new LIFs are equivalent.
+	if collection.EqualValues(oldLIFs, newLIFs) {
+		Logc(ctx).WithFields(LogFields{
+			"volume":     volConfig.Name,
+			"sourceNode": sourceNode,
+			"targetNode": targetNode,
+			"sourceLIFs": oldLIFs,
+			"targetLIFs": newLIFs,
+		}).Info("Initial and target LIFs are equivalent; skipping source reporting node removal.")
+		return nil
+	}
+
+	// RWO LUNs store the igroups as a simple string. e.g. "igroup-A"
+	// RWX LUNs store the igroups as a comma-delimited list. e.g. "igroup-A,igroupB,..."
+	igroups := strings.Split(volConfig.AccessInfo.IscsiIgroup, ",")
+	if len(igroups) == 1 && igroups[0] == "" {
+		Logc(ctx).WithFields(LogFields{
+			"volume": volConfig.Name,
+		}).Debug("Volume has no igroups; skipping unstage.")
+		return nil
+	}
+
+	// Unmap the source node.
+	// Remove the source reporting node using the source node.
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(igroups))
+	for _, igroup := range igroups {
+		wg.Go(func() {
+			igroupMutex.Lock(igroup)
+			defer igroupMutex.Unlock(igroup)
+
+			if err := d.API.LunMapRemoveReportingNode(ctx, igroup, internalLUN, sourceNode); err != nil {
+				if errors.IsNotFoundError(err) {
+					Logc(ctx).WithFields(LogFields{
+						"volume":     volConfig.Name,
+						"igroup":     igroup,
+						"lunPath":    internalLUN,
+						"sourceNode": sourceNode,
+					}).Warning("Source reporting node already removed or igroup no longer exists; skipping.")
+					return
+				}
+
+				Logc(ctx).WithFields(LogFields{
+					"volume":     volConfig.Name,
+					"igroup":     igroup,
+					"lunPath":    internalLUN,
+					"sourceNode": sourceNode,
+				}).WithError(err).Error("Could not remove source node from LUN igroup mapping.")
+				errChan <- fmt.Errorf("failed to remove reporting node %s for LUN %s: %v", sourceNode, internalLUN, err)
+			}
+		})
+	}
+	wg.Wait()
+	close(errChan)
+
+	// Reduce the errors into a single error.
+	var errs error
+	for res := range errChan {
+		if res != nil {
+			errs = errors.Join(errs, res)
+		}
+	}
+	if errs != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":     volConfig.Name,
+			"lunPath":    internalLUN,
+			"sourceNode": sourceNode,
+		}).Error("Failed to remove source node from LUN igroup mapping(s).")
+		return errs
+	}
+
+	return nil
 }

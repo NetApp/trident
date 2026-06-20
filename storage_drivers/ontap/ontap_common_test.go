@@ -7611,6 +7611,242 @@ func TestPublishLun(t *testing.T) {
 	assert.Equal(t, "ext4", publishInfo.FilesystemType)
 }
 
+// TestPublishLun_VolumeMove exercises the branch at ontap_common.go:1224-1262
+// where PublishLUN observes an in-flight TVM (volConfig.MoveInfo set)
+// and must add the target ONTAP node to this igroup's reporting set so the
+// subsequent getISCSIDataLIFsForReportingNodes call returns target LIFs in
+// addition to source LIFs.
+//
+// Background: by the time a publish reaches this branch, the CSI controller
+// gate has already filtered out unsafe TVM states (Pending, *Staging,
+// *Unstaging), so the move is necessarily in Moving / Succeeded / Failed.
+// StageVolumeMove already swept the igroups that existed when the move
+// started; this branch backfills igroups created by *this* publish for hosts
+// that joined mid-move.
+func TestPublishLun_VolumeMove(t *testing.T) {
+	const (
+		lunPath       = "fakeLunPath"
+		igroupName    = "fakeigroupName"
+		iSCSINodeName = "fakeiSCSINodeName"
+		sourceNode    = "ontap-node-source"
+		targetNode    = "ontap-node-target"
+	)
+	ips := []string{"1.1.1.1", "2.2.2.2"}
+	nodeList := []*tridentmodels.Node{{IPs: ips}}
+	dummyLun := &api.Lun{SerialNumber: "testSerialNumber"}
+
+	newConfig := func(sanType string) *drivers.OntapStorageDriverConfig {
+		cfg := &drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+				DriverContext:   "csi",
+			},
+			SVM: "testSVM",
+		}
+		cfg.SANType = sanType // promoted field via OntapStorageDriverPool
+		return cfg
+	}
+
+	newPublishInfo := func() *tridentmodels.VolumePublishInfo {
+		return &tridentmodels.VolumePublishInfo{
+			BackendUUID: "fakeBackendUUID",
+			Localhost:   false,
+			Unmanaged:   true,
+			Nodes:       nodeList,
+			HostIQN:     []string{"host_iqn"},
+		}
+	}
+
+	// expectCommonISCSIPublishCalls sets up the per-call mocks shared by
+	// every iSCSI happy-path row (everything up to and including the
+	// reporting-node + SLM lookup that follows the move-block).
+	expectCommonISCSIPublishCalls := func(m *mockapi.MockOntapAPI) {
+		m.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+		m.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+		m.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+		m.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+		m.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+	}
+
+	tests := []struct {
+		name      string
+		sanType   string
+		moveInfo  *tridentmodels.VolumeMoveInfo
+		setupMock func(m *mockapi.MockOntapAPI)
+		assertErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:     "no move info skips LunMapAddReportingNode",
+			sanType:  sa.ISCSI,
+			moveInfo: nil,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				expectCommonISCSIPublishCalls(m)
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "iSCSI move in Moving state grafts target and prunes source reporting node",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				expectCommonISCSIPublishCalls(m)
+				m.EXPECT().
+					LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupName, lunPath, sourceNode).
+					Return(nil)
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "iSCSI move in Succeeded state grafts target and prunes source reporting node",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateSucceeded,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				expectCommonISCSIPublishCalls(m)
+				m.EXPECT().
+					LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupName, lunPath, sourceNode).
+					Return(nil)
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "LunMapRemoveReportingNode not-found is tolerated gracefully",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				expectCommonISCSIPublishCalls(m)
+				m.EXPECT().
+					LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupName, lunPath, sourceNode).
+					Return(errors.NotFoundError("igroup not found"))
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "LunMapRemoveReportingNode real error fails publish",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+				m.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+				m.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+				m.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+				m.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+				m.EXPECT().
+					LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupName, lunPath, sourceNode).
+					Return(fmt.Errorf("ONTAP connection refused"))
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:    "empty target node returns error before ONTAP call",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: "",
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+				m.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+				m.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+				m.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+				m.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:    "empty source node returns error before ONTAP call",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: "",
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+				m.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+				m.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+				m.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+				m.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:    "LunMapAddReportingNode failure surfaces as publish error",
+			sanType: sa.ISCSI,
+			moveInfo: &tridentmodels.VolumeMoveInfo{
+				VolumeName: "pvc-1",
+				State:      tridentmodels.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+				m.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+				m.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+				m.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+				m.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+				m.EXPECT().
+					LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode).
+					Return(errors.New("ONTAP rejected the reporting-node add"))
+			},
+			assertErr: assert.Error,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+			tt.setupMock(mockAPI)
+
+			cfg := newConfig(tt.sanType)
+			pubInfo := newPublishInfo()
+			volCfg := &storage.VolumeConfig{MoveInfo: tt.moveInfo}
+
+			err := PublishLUN(ctx, mockAPI, cfg, ips, pubInfo, lunPath, igroupName, iSCSINodeName, volCfg)
+			tt.assertErr(t, err)
+		})
+	}
+}
+
 func TestValidateSANDriver(t *testing.T) {
 	ctx := context.Background()
 

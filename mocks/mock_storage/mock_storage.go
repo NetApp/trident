@@ -16,11 +16,12 @@ import (
 	time "time"
 
 	roaring "github.com/RoaringBitmap/roaring/v2"
+	gomock "go.uber.org/mock/gomock"
+
 	config "github.com/netapp/trident/config"
 	storage "github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	models "github.com/netapp/trident/utils/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockBackend is a mock of Backend interface.
@@ -142,6 +143,20 @@ func (m *MockBackend) CanMirror() bool {
 func (mr *MockBackendMockRecorder) CanMirror() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanMirror", reflect.TypeOf((*MockBackend)(nil).CanMirror))
+}
+
+// CanMoveVolume mocks base method.
+func (m *MockBackend) CanMoveVolume() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanMoveVolume")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CanMoveVolume indicates an expected call of CanMoveVolume.
+func (mr *MockBackendMockRecorder) CanMoveVolume() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanMoveVolume", reflect.TypeOf((*MockBackend)(nil).CanMoveVolume))
 }
 
 // CanSnapshot mocks base method.
@@ -727,6 +742,20 @@ func (mr *MockBackendMockRecorder) MarshalDriverConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalDriverConfig", reflect.TypeOf((*MockBackend)(nil).MarshalDriverConfig))
 }
 
+// MoveVolume mocks base method.
+func (m *MockBackend) MoveVolume(ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveVolume", ctx, volConfig, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveVolume indicates an expected call of MoveVolume.
+func (mr *MockBackendMockRecorder) MoveVolume(ctx, volConfig, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveVolume", reflect.TypeOf((*MockBackend)(nil).MoveVolume), ctx, volConfig, volumeMoveInfo)
+}
+
 // Name mocks base method.
 func (m *MockBackend) Name() string {
 	m.ctrl.T.Helper()
@@ -1033,6 +1062,20 @@ func (mr *MockBackendMockRecorder) SmartCopy() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SmartCopy", reflect.TypeOf((*MockBackend)(nil).SmartCopy))
 }
 
+// StageVolumeMove mocks base method.
+func (m *MockBackend) StageVolumeMove(ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StageVolumeMove", ctx, volConfig, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StageVolumeMove indicates an expected call of StageVolumeMove.
+func (mr *MockBackendMockRecorder) StageVolumeMove(ctx, volConfig, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StageVolumeMove", reflect.TypeOf((*MockBackend)(nil).StageVolumeMove), ctx, volConfig, volumeMoveInfo)
+}
+
 // State mocks base method.
 func (m *MockBackend) State() storage.BackendState {
 	m.ctrl.T.Helper()
@@ -1111,6 +1154,20 @@ func (m *MockBackend) UpdateBackendState(ctx context.Context, stateReason string
 func (mr *MockBackendMockRecorder) UpdateBackendState(ctx, stateReason any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockBackend)(nil).UpdateBackendState), ctx, stateReason)
+}
+
+// UnstageVolumeMove mocks base method.
+func (m *MockBackend) UnstageVolumeMove(ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnstageVolumeMove", ctx, volConfig, volumeMoveInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnstageVolumeMove indicates an expected call of UnstageVolumeMove.
+func (mr *MockBackendMockRecorder) UnstageVolumeMove(ctx, volConfig, volumeMoveInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnstageVolumeMove", reflect.TypeOf((*MockBackend)(nil).UnstageVolumeMove), ctx, volConfig, volumeMoveInfo)
 }
 
 // UpdateMirror mocks base method.

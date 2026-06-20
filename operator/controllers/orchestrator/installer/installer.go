@@ -60,6 +60,7 @@ const (
 	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 	AutogrowPolicyCRDName          = "tridentautogrowpolicies.trident.netapp.io"
 	AutogrowRequestInternalCRDName = "tridentautogrowrequestinternals.trident.netapp.io"
+	VolumeMoveCRDName              = "tridentvolumemoves.trident.netapp.io"
 
 	DefaultTimeout = 180
 )
@@ -1134,6 +1135,9 @@ func (i *Installer) createCRDs(patchExistingCRDs bool) error {
 	}
 	if err = i.CreateOrPatchCRD(ActionSnapshotRestoreCRDName, k8sclient.GetActionSnapshotRestoreCRDYAML(),
 		patchExistingCRDs); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(VolumeMoveCRDName, k8sclient.GetVolumeMoveCRDYAML(), false); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(ConfiguratorCRDName, k8sclient.GetConfiguratorCRDYAML(), patchExistingCRDs); err != nil {

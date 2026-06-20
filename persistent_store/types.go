@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -51,6 +51,8 @@ type Client interface {
 	UpdateVolume(ctx context.Context, vol *storage.Volume) error
 	DeleteVolume(ctx context.Context, vol *storage.Volume) error
 	DeleteVolumes(ctx context.Context) error
+
+	GetVolumeMoves(ctx context.Context) ([]*storage.VolumeMoveExternal, error)
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -345,7 +345,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		if !isFileValidJSON(err) {
 			return true, nil
 		}
-		return false, TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
+		return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
 	}
 
 	// If the tracking file is the old kind, the filesystem type will be set to the zero value for the string type
@@ -370,7 +370,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 			v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
 			return true, nil
 		}
-		return false, TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
+		return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
 	}
 
 	_, err = getVolumeProtocolFromPublishInfo(publishInfo)
@@ -393,7 +393,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	Logc(ctx).WithField("publishInfoLocation", volumeTrackingInfo).Debug("Publish info location found.")
 	err = v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo)
 	if err != nil {
-		return false, TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
+		return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
 	}
 
 	// Remove the old file in the staging path now that its contents have been moved to the new tracking file.
@@ -417,7 +417,7 @@ func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeI
 		if !isFileValidJSON(err) {
 			return true, nil
 		}
-		return false, TerminalReconciliationError(err.Error())
+		return false, errors.TerminalReconciliationError(err.Error())
 	}
 
 	stagePath := trackingInfo.StagingTargetPath
@@ -435,7 +435,7 @@ func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeI
 		// If the stat failed for any reason other than it not existing, we need to return a failed validation error so
 		// that the node plugin will be restarted, and validation can be retried.
 		if !errors.Is(err, fs.ErrNotExist) {
-			return false, TerminalReconciliationError(err.Error())
+			return false, errors.TerminalReconciliationError(err.Error())
 		}
 		// If the staging path for the volume doesn't exist, that does not automatically mean that the volume is gone.
 		// Therefore, we have to check protocol specific conditions to be sure.
@@ -446,7 +446,7 @@ func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeI
 			if IsInvalidTrackingFileError(err) {
 				return true, nil
 			}
-			return false, TerminalReconciliationError(err.Error())
+			return false, errors.TerminalReconciliationError(err.Error())
 		}
 		if !volumeMayExist {
 			return true, nil

@@ -11,6 +11,7 @@ import (
 
 	"github.com/brunoga/deep"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -32,6 +33,151 @@ type VolumeAccessInfo struct {
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
 	AccessMode int32 `json:"accessMode,omitempty"`
+}
+
+func (in *VolumeAccessInfo) DeepCopyInto(out *VolumeAccessInfo) {
+	if in == nil {
+		return
+	}
+	*out = *deep.MustCopy(in)
+}
+
+func (v *VolumeAccessInfo) DeepCopy() *VolumeAccessInfo {
+	return deep.MustCopy(v)
+}
+
+func (v *VolumeAccessInfo) SmartCopy() interface{} {
+	return deep.MustCopy(v)
+}
+
+type VolumeMoveState string
+
+func (v VolumeMoveState) String() string {
+	return string(v)
+}
+
+const (
+	VolumeMoveStatePending             VolumeMoveState = "Pending"
+	VolumeMoveStateControllerStaging   VolumeMoveState = "ControllerStaging"
+	VolumeMoveStateNodeStaging         VolumeMoveState = "NodeStaging"
+	VolumeMoveStateMoving              VolumeMoveState = "Moving"
+	VolumeMoveStateControllerUnstaging VolumeMoveState = "ControllerUnstaging"
+	VolumeMoveStateNodeUnstaging       VolumeMoveState = "NodeUnstaging"
+	VolumeMoveStateSucceeded           VolumeMoveState = "Succeeded"
+	VolumeMoveStateFailed              VolumeMoveState = "Failed"
+)
+
+func (v VolumeMoveState) IsEmpty() bool               { return v == "" }
+func (v VolumeMoveState) IsPending() bool             { return v == VolumeMoveStatePending }
+func (v VolumeMoveState) IsControllerStaging() bool   { return v == VolumeMoveStateControllerStaging }
+func (v VolumeMoveState) IsNodeStaging() bool         { return v == VolumeMoveStateNodeStaging }
+func (v VolumeMoveState) IsMoving() bool              { return v == VolumeMoveStateMoving }
+func (v VolumeMoveState) IsControllerUnstaging() bool { return v == VolumeMoveStateControllerUnstaging }
+func (v VolumeMoveState) IsNodeUnstaging() bool       { return v == VolumeMoveStateNodeUnstaging }
+func (v VolumeMoveState) IsFailed() bool              { return v == VolumeMoveStateFailed }
+func (v VolumeMoveState) IsSucceeded() bool           { return v == VolumeMoveStateSucceeded }
+func (v VolumeMoveState) IsTerminal() bool            { return v.IsSucceeded() || v.IsFailed() }
+
+func (v VolumeMoveState) IsActive() bool {
+	if v == "" {
+		return false
+	}
+	switch v {
+	case VolumeMoveStatePending,
+		VolumeMoveStateControllerStaging,
+		VolumeMoveStateNodeStaging,
+		VolumeMoveStateMoving,
+		VolumeMoveStateControllerUnstaging,
+		VolumeMoveStateNodeUnstaging:
+		return true
+	case VolumeMoveStateSucceeded, VolumeMoveStateFailed:
+		return false
+	default:
+		return false
+	}
+}
+
+func (v VolumeMoveState) HasMoved() bool {
+	if v == "" {
+		return false
+	}
+	switch v {
+	case VolumeMoveStatePending,
+		VolumeMoveStateControllerStaging,
+		VolumeMoveStateNodeStaging,
+		VolumeMoveStateMoving:
+		return false
+	}
+	return true
+}
+
+type VolumeMoveAttachmentState string
+
+func (v VolumeMoveAttachmentState) String() string {
+	return string(v)
+}
+
+const (
+	VolumeMoveAttachmentStatePending  VolumeMoveAttachmentState = "Pending"
+	VolumeMoveAttachmentStateBridged  VolumeMoveAttachmentState = "Bridged"
+	VolumeMoveAttachmentStateMigrated VolumeMoveAttachmentState = "Migrated"
+	VolumeMoveAttachmentStateDetached VolumeMoveAttachmentState = "Detached"
+	VolumeMoveAttachmentStateCleaned  VolumeMoveAttachmentState = "Cleaned"
+	VolumeMoveAttachmentStateFailed   VolumeMoveAttachmentState = "Failed"
+)
+
+type VolumeMoveInfo struct {
+	// State is the current VolumeMoveState.
+	State VolumeMoveState `json:"moveState,omitempty"`
+	// VolumeName is the name of the Trident volume being moved.
+	VolumeName string `json:"volumeName,omitempty"`
+	// SourcePool is an opaque storage pool identifier from which the volume is being moved (backend-specific).
+	SourcePool string `json:"sourcePool,omitempty"`
+	// SourceNode is an opaque pool identifier from which the volume is being moved (backend-specific).
+	SourceNode string `json:"sourceNode,omitempty"`
+	// TargetPool is an opaque pool identifier to which the volume is being moved (backend-specific).
+	TargetPool string `json:"targetPool,omitempty"`
+	// TargetNode is an opaque node identifier to which the volume is being moved (backend-specific).
+	TargetNode string `json:"targetNode,omitempty"`
+	// BackendContext is an opaque context needed to monitor and complete the move (backend-specific).
+	BackendContext json.RawMessage `json:"backendContext,omitempty"`
+	// InitialAccessInfo is the access information for the volume before the move.
+	InitialAccessInfo *VolumeAccessInfo `json:"initialAccessInfo,omitempty"`
+	// TargetAccessInfo is the access information for the volume after the move.
+	TargetAccessInfo *VolumeAccessInfo `json:"targetAccessInfo,omitempty"`
+	// DeleteAfterSuccess is the duration after which the TVM CR should be automatically deleted if the move succeeds.
+	DeleteAfterSuccess *time.Duration `json:"deleteAfterSuccess,omitempty"`
+	// DryRun validates a move but does not actually stage or perform it.
+	DryRun bool `json:"dryRun,omitempty"`
+}
+
+// Equals compares the meaningful state changes to values in a VolumeMoveInfo.
+// Two VolumeMoveInfo's are equivalent if all values are equivalent.
+func (i *VolumeMoveInfo) Equals(other *VolumeMoveInfo) bool {
+	if i == nil {
+		return other == nil
+	}
+	if other == nil {
+		return false
+	}
+
+	if i.State != other.State {
+		return false
+	}
+	if i.TargetNode != other.TargetNode {
+		return false
+	}
+	if i.TargetPool != other.TargetPool {
+		return false
+	}
+	if !collection.EqualValues(i.BackendContext, other.BackendContext) {
+		return false
+	}
+	return true
+}
+
+func (i *VolumeMoveInfo) DeepCopy() *VolumeMoveInfo {
+	return deep.MustCopy(i)
 }
 
 // AutogrowPolicyReason indicates why the effective Autogrow policy is in its current state
@@ -299,6 +445,10 @@ type VolumePublishInfo struct {
 	Pool                   string   `json:"pool,omitempty"`
 	StorageClass           string   `json:"storageClass,omitempty"`
 	VolumeAccessInfo
+}
+
+func (v *VolumePublishInfo) DeepCopy() *VolumePublishInfo {
+	return deep.MustCopy(v)
 }
 
 type VolumeTrackingPublishInfo struct {
@@ -1189,4 +1339,34 @@ type MountInfo struct {
 
 func GenerateVolumePublishName(volumeID, nodeID string) string {
 	return fmt.Sprintf("%s.%s", volumeID, nodeID)
+}
+
+// TODO: Refine these request and response objects.
+type GraftAttachmentRequest struct {
+	VolumeAccessInfo `json:"volumeAccessInfo"`
+	VolumeName       string          `json:"volumeName"`
+	Protocol         config.Protocol `json:"protocol"`
+}
+
+type GraftAttachmentResponse struct {
+	VolumeAccessInfo `json:"volumeAccessInfo"`
+	VolumeName       string          `json:"volumeName"`
+	Protocol         config.Protocol `json:"protocol"`
+}
+
+type PruneAttachmentRequest struct {
+	VolumeAccessInfo `json:"volumeAccessInfo"`
+	VolumeName       string          `json:"volumeName"`
+	Protocol         config.Protocol `json:"protocol"`
+}
+
+type PruneAttachmentResponse struct {
+	VolumeAccessInfo `json:"volumeAccessInfo"`
+	VolumeName       string          `json:"volumeName"`
+	Protocol         config.Protocol `json:"protocol"`
+}
+
+type AttachmentInfo struct {
+	*VolumePublishInfo `json:"volumePublishInfo"`
+	*ScsiDeviceInfo    `json:"scsiDeviceInfo,omitempty"`
 }

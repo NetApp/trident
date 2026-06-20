@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 package controller
 
 import (
@@ -315,8 +315,7 @@ func TestCRHandlersTableDriven(t *testing.T) {
 			kubeClient := GetTestKubernetesClientset()
 			snapClient := GetTestSnapshotClientset()
 			crdClient := GetTestCrdClientset()
-			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-				crdClient, nil, nil)
+			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 			if err != nil {
 				t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 			}
@@ -360,8 +359,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -552,8 +550,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -719,8 +716,7 @@ func TestCrdControllerBackendOperations(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -880,8 +876,7 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1126,8 +1121,7 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1289,8 +1283,7 @@ func TestGetName_Core(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1310,8 +1303,7 @@ func TestUpdateTridentBackendConfigCR(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1517,8 +1509,7 @@ func TestRemoveFinalizersTableDriven(t *testing.T) {
 			snapClient := GetTestSnapshotClientset()
 			crdClient := GetTestCrdClientset()
 
-			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-				crdClient, nil, nil)
+			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 			if err != nil {
 				t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 			}
@@ -1554,8 +1545,7 @@ func TestUpdateTSICR(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1589,8 +1579,7 @@ func TestHandleTridentSnapshotInfo(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1630,8 +1619,7 @@ func TestGetSnapshotHandle(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1666,8 +1654,7 @@ func TestGetSnapshotHandle_WithSnapshot(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1753,8 +1740,7 @@ func TestProcessNextWorkItem_EdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1780,8 +1766,7 @@ func TestRemoveFinalizers_VariousTypes(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1828,8 +1813,7 @@ func TestUpdateTMRStatus(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1904,8 +1888,7 @@ func TestGetCurrentMirrorStateTableDriven(t *testing.T) {
 			snapClient := GetTestSnapshotClientset()
 			crdClient := GetTestCrdClientset()
 
-			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-				crdClient, nil, nil)
+			crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 			if err != nil {
 				t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 			}
@@ -1944,8 +1927,7 @@ func TestEnsureMirrorReadyForDeletion(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -1998,8 +1980,7 @@ func TestHandleTridentBackendConfig_NilKeyItem_Enhanced(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2021,8 +2002,7 @@ func TestRemoveFinalizers_NilObject(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2046,8 +2026,7 @@ func TestProcessNextWorkItem_AdditionalEdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2071,8 +2050,7 @@ func TestGetSnapshotHandle_AdditionalEdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2113,8 +2091,7 @@ func TestCRHandlers_NilObject(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2143,8 +2120,7 @@ func TestControllerLifecycle_Activate(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2172,8 +2148,7 @@ func TestControllerLifecycle_Deactivate(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2190,8 +2165,7 @@ func TestControllerLifecycle_Deactivate(t *testing.T) {
 	// Create a new controller to test deactivate with nil channel
 	indexers = mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController2, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController2, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create second Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2212,8 +2186,7 @@ func TestControllerLifecycle_GetName(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2233,8 +2206,7 @@ func TestControllerLifecycle_Version(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2255,8 +2227,7 @@ func TestControllerLifecycle_Run(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2286,8 +2257,7 @@ func TestControllerLifecycle_RunWorker(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2310,8 +2280,7 @@ func TestControllerLifecycle_AddEventToWorkqueue(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2366,8 +2335,7 @@ func TestControllerLifecycle_ProcessNextWorkItem_EmptyQueue(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2390,8 +2358,7 @@ func TestControllerLifecycle_RunWithDifferentThreadiness(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2426,8 +2393,7 @@ func TestControllerLifecycle_ActivateDeactivateNilStopChannel(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, indexers, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2454,8 +2420,7 @@ func TestControllerLifecycle_WorkqueueOperations(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, nil)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -2509,8 +2474,7 @@ func TestNewTridentCrdController_Success(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, controller)
@@ -2531,8 +2495,7 @@ func TestActivateDeactivate_FullCycle(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	indexers := mockindexers.NewMockIndexers(mockCtrl)
 	indexers.EXPECT().Deactivate()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		indexers, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, indexers, nil)
 	assert.NoError(t, err)
 
 	// Test GetName and Version first
@@ -2563,8 +2526,7 @@ func TestRun_CacheSyncAndWorkerManagement(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
@@ -2601,8 +2563,7 @@ func TestRunWorker_ProcessingLoop(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	// Add a test item to the workqueue
@@ -2634,8 +2595,7 @@ func TestAddEventToWorkqueue_VariousEvents(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
@@ -2695,8 +2655,7 @@ func TestRemoveFinalizers_AllTypes(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
@@ -2731,8 +2690,7 @@ func TestProcessNextWorkItem_ErrorHandling(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
@@ -2768,8 +2726,7 @@ func TestGetTridentBackend_EdgeCases(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
-		nil, nil)
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)

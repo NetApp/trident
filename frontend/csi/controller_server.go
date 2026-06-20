@@ -329,16 +329,6 @@ func (p *Plugin) DeleteVolume(
 	return &csi.DeleteVolumeResponse{}, nil
 }
 
-func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *models.VolumePublishInfo) {
-	count := 1 + len(volumePublishInfo.IscsiPortals)
-	publishInfo["iscsiTargetPortalCount"] = strconv.Itoa(count)
-	publishInfo["p1"] = volumePublishInfo.IscsiTargetPortal
-	for i, p := range volumePublishInfo.IscsiPortals {
-		key := fmt.Sprintf("p%d", i+2)
-		publishInfo[key] = p
-	}
-}
-
 func (p *Plugin) ControllerPublishVolume(
 	ctx context.Context, req *csi.ControllerPublishVolumeRequest,
 ) (res *csi.ControllerPublishVolumeResponse, err error) {

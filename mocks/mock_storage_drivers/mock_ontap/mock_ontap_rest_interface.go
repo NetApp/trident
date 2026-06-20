@@ -13,6 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
 	application "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/application"
 	cluster "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
@@ -24,7 +26,6 @@ import (
 	storage "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	svm "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	models "github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRestClientInterface is a mock of RestClientInterface interface.
@@ -1072,6 +1073,20 @@ func (mr *MockRestClientInterfaceMockRecorder) LunMap(ctx, initiatorGroupName, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMap", reflect.TypeOf((*MockRestClientInterface)(nil).LunMap), ctx, initiatorGroupName, lunPath, lunID)
 }
 
+// LunMapAddReportingNode mocks base method.
+func (m *MockRestClientInterface) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunMapAddReportingNode indicates an expected call of LunMapAddReportingNode.
+func (mr *MockRestClientInterfaceMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+}
+
 // LunMapGetReportingNodes mocks base method.
 func (m *MockRestClientInterface) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -1115,6 +1130,20 @@ func (m *MockRestClientInterface) LunMapList(ctx context.Context, initiatorGroup
 func (mr *MockRestClientInterfaceMockRecorder) LunMapList(ctx, initiatorGroupName, lunPath, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapList", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapList), ctx, initiatorGroupName, lunPath, fields)
+}
+
+// LunMapRemoveReportingNode mocks base method.
+func (m *MockRestClientInterface) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunMapRemoveReportingNode indicates an expected call of LunMapRemoveReportingNode.
+func (mr *MockRestClientInterfaceMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
 }
 
 // LunRename mocks base method.
@@ -2868,6 +2897,21 @@ func (m *MockRestClientInterface) VolumeMount(ctx context.Context, volumeName, j
 func (mr *MockRestClientInterfaceMockRecorder) VolumeMount(ctx, volumeName, junctionPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeMount), ctx, volumeName, junctionPath)
+}
+
+// VolumeMove mocks base method.
+func (m *MockRestClientInterface) VolumeMove(ctx context.Context, volumeName, destinationAggregateName string, dryRun bool) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeMove", ctx, volumeName, destinationAggregateName, dryRun)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeMove indicates an expected call of VolumeMove.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeMove(ctx, volumeName, destinationAggregateName, dryRun any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMove", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeMove), ctx, volumeName, destinationAggregateName, dryRun)
 }
 
 // VolumeRecoveryQueueGetName mocks base method.

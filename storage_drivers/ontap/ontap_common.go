@@ -1228,6 +1228,56 @@ func PublishLUN(
 
 	var filteredIPs []string
 	if config.SANType == sa.ISCSI {
+		// If this publish happens mid-move, the publish info will have the necessary
+		// information present so the publish workflow can discover the correct target LIFs.
+		if moveInfo := volConfig.MoveInfo; moveInfo != nil {
+			fields := LogFields{
+				"volume":  volConfig.Name,
+				"igroup":  igroupName,
+				"lunPath": lunPath,
+			}
+			if moveInfo.TargetNode == "" {
+				// Failing is correct in this situation.
+				// The volume is moving, but there is no target node, which
+				// means attaching with the reporting node LIFs may be unsafe.
+				return fmt.Errorf("volume move info set but missing target node")
+			}
+			if moveInfo.SourceNode == "" {
+				return fmt.Errorf("volume move info set but missing source node")
+			}
+			sourceNode, targetNode := moveInfo.SourceNode, moveInfo.TargetNode
+
+			// DO NOT rely on moveInfo.TargetAccessInfo!!!
+			// ONTAP may not include the target node in the reporting nodes in a new igroup + LUN map.
+			// Ensure the new igroup + LUN map has the target node as a reporting node.
+			if err := clientAPI.LunMapAddReportingNode(ctx, igroupName, lunPath, targetNode); err != nil {
+				Logc(ctx).WithFields(fields).WithField(
+					"targetNode", targetNode,
+				).Trace("Could not add reporting node to LUN igroup mapping.")
+				return fmt.Errorf("failed to add reporting node %s for LUN %s: %v", targetNode, lunPath, err)
+			}
+
+			// Additionally, remove the old reporting node from the new LUN igroup mapping.
+			// Tolerate not-found: igroup or mapping may already be gone due to a concurrent detach.
+			if err := clientAPI.LunMapRemoveReportingNode(ctx, igroupName, lunPath, sourceNode); err != nil {
+				if errors.IsNotFoundError(err) {
+					Logc(ctx).WithFields(fields).WithFields(LogFields{
+						"sourceNode": sourceNode,
+						"igroupName": igroupName,
+					}).Warning("Source reporting node already removed or igroup no longer exists; skipping.")
+				} else {
+					Logc(ctx).WithFields(fields).WithField(
+						"sourceNode", sourceNode,
+					).WithError(err).Error("Could not remove reporting node from LUN igroup mapping.")
+					return fmt.Errorf("failed to remove reporting node %s for LUN %s: %v", sourceNode, lunPath, err)
+				}
+			}
+		}
+
+		// This finds ALL LIFs from ALL reporting nodes for the lun igroup mapping.
+		// For normal RWO use-cases this will be stable.
+		// For RWX use-cases, where a volume is being moved, this relies on the logic above
+		// to ensure only the correct target LIFs are added.
 		filteredIPs, err = getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
 			publishInfo.Unmanaged)
 		if err != nil {

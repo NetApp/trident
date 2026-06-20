@@ -1,4 +1,5 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package indexers
 
 //go:generate mockgen -destination=../../../../mocks/mock_frontend/crd/controller/indexers/indexer/mock_vaindexer.go -package=mock_indexer github.com/netapp/trident/frontend/crd/controller/indexers VolumeAttachmentIndexer
@@ -21,7 +22,7 @@ type Indexers interface {
 	VolumeAttachmentIndexer() VolumeAttachmentIndexer
 }
 
-// Generic indexer interface that all specific indexers implement
+// Indexer is a generic interface that all specific indexers implement
 type Indexer interface {
 	Activate()
 	Deactivate()
@@ -32,6 +33,7 @@ type Indexer interface {
 type VolumeAttachmentIndexer interface {
 	Indexer
 	GetCachedVolumeAttachmentsByNode(ctx context.Context, nodeName string) ([]*k8sstoragev1.VolumeAttachment, error)
+	GetCachedVolumeAttachmentsByVolume(ctx context.Context, pvName string) ([]*k8sstoragev1.VolumeAttachment, error)
 }
 
 type K8sIndexers struct {

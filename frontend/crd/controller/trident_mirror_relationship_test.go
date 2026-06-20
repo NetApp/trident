@@ -380,28 +380,23 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 	}
 }
 
-// ===============================
+// ========================
 // Comprehensive Tests for Phase 1 - TridentMirrorRelationship
 // ===============================
-
 func setupMirrorRelationshipTest(t *testing.T) (*TridentCrdController, *gomock.Controller, *mockcore.MockOrchestrator) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
 		crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
-
 	return crdController, mockCtrl, orchestrator
 }
-
 func createTestTMR(name, namespace string) *netappv1.TridentMirrorRelationship {
 	return &netappv1.TridentMirrorRelationship{
 		ObjectMeta: metav1.ObjectMeta{
@@ -433,12 +428,10 @@ func createTestTMR(name, namespace string) *netappv1.TridentMirrorRelationship {
 		},
 	}
 }
-
 func TestHandleTridentMirrorRelationship_EdgeCases(t *testing.T) {
 	t.Run("InvalidKey", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		keyItem := &KeyItem{
 			key:        "invalid-key-format",
@@ -446,15 +439,12 @@ func TestHandleTridentMirrorRelationship_EdgeCases(t *testing.T) {
 			ctx:        ctx,
 			objectType: ObjectTypeTridentMirrorRelationship,
 		}
-
 		err := controller.handleTridentMirrorRelationship(keyItem)
 		assert.NoError(t, err) // Invalid key should return nil
 	})
-
 	t.Run("TMRNotFound", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		keyItem := &KeyItem{
 			key:        "default/non-existent-tmr",
@@ -462,108 +452,87 @@ func TestHandleTridentMirrorRelationship_EdgeCases(t *testing.T) {
 			ctx:        ctx,
 			objectType: ObjectTypeTridentMirrorRelationship,
 		}
-
 		err := controller.handleTridentMirrorRelationship(keyItem)
 		assert.NoError(t, err) // Not found should return nil
 	})
-
 	t.Run("TMRWithoutFinalizers", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		tmr := createTestTMR("test-tmr", "default")
 		tmr.Finalizers = nil // Remove finalizers
-
 		// Create the TMR
 		_, err := controller.crdClientset.TridentV1().TridentMirrorRelationships("default").Create(ctx, tmr, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		keyItem := &KeyItem{
 			key:        "default/test-tmr",
 			event:      EventAdd,
 			ctx:        ctx,
 			objectType: ObjectTypeTridentMirrorRelationship,
 		}
-
 		// This will not find the TMR in lister (cache not populated in test)
 		err = controller.handleTridentMirrorRelationship(keyItem)
 		assert.NoError(t, err)
 	})
-
 	t.Run("TMRDeletingWithFinalizers", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		tmr := createTestTMR("test-tmr", "default")
-		tmr.DeletionTimestamp = new(metav1.Now()) // Mark for deletion
-
+		now := metav1.Now()
+		tmr.DeletionTimestamp = &now // Mark for deletion
 		// Create the TMR
 		_, err := controller.crdClientset.TridentV1().TridentMirrorRelationships("default").Create(ctx, tmr, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		keyItem := &KeyItem{
 			key:        "default/test-tmr",
 			event:      EventAdd,
 			ctx:        ctx,
 			objectType: ObjectTypeTridentMirrorRelationship,
 		}
-
 		// This will not find the TMR in lister (cache not populated in test)
 		err = controller.handleTridentMirrorRelationship(keyItem)
 		assert.NoError(t, err)
 	})
-
 	t.Run("InvalidTMR", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		tmr := createTestTMR("test-tmr", "default")
 		tmr.Spec.VolumeMappings = nil // Make it invalid
-
 		// Create the TMR
 		_, err := controller.crdClientset.TridentV1().TridentMirrorRelationships("default").Create(ctx, tmr, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		keyItem := &KeyItem{
 			key:        "default/test-tmr",
 			event:      EventAdd,
 			ctx:        ctx,
 			objectType: ObjectTypeTridentMirrorRelationship,
 		}
-
 		err = controller.handleTridentMirrorRelationship(keyItem)
 		assert.NoError(t, err)
 	})
 }
-
 func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 	t.Run("PVCNotFound", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.Nil(t, result)
 		assert.Error(t, err)
 		assert.True(t, errors.IsReconcileDeferredError(err))
 		assert.Contains(t, err.Error(), "Local PVC for TridentMirrorRelationship does not yet exist")
 	})
-
 	t.Run("PVCExistsButPVNotFound", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create PVC without PV
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -576,26 +545,21 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.Nil(t, result)
 		assert.Error(t, err)
 		assert.True(t, errors.IsReconcileDeferredError(err))
 		assert.Contains(t, err.Error(), "PV for local PVC for TridentMirrorRelationship does not yet exist")
 	})
-
 	t.Run("PVExistsWithoutCSI", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create PV without CSI
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -607,7 +571,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -620,26 +583,21 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.Nil(t, result)
 		assert.Error(t, err)
 		assert.True(t, errors.IsReconcileDeferredError(err))
 		assert.Contains(t, err.Error(), "PV for local PVC for TridentMirrorRelationship does not yet exist")
 	})
-
 	t.Run("PVExistsWithoutInternalName", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create PV with CSI but without internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -659,7 +617,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -672,26 +629,21 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.Nil(t, result)
 		assert.Error(t, err)
 		assert.True(t, errors.IsReconcileDeferredError(err))
 		assert.Contains(t, err.Error(), "does not yet have an internal volume name set")
 	})
-
 	t.Run("VolumeNotFoundInOrchestrator", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -711,7 +663,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -724,28 +675,22 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator to return volume not found
 		orchestrator.EXPECT().GetVolume(ctx, "test-volume-handle").Return(nil, errors.NotFoundError("volume not found"))
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.NotNil(t, result)
 		assert.NoError(t, err)
 		assert.Equal(t, netappv1.MirrorStateFailed, result.MirrorState)
 	})
-
 	t.Run("BackendCannotMirror", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -765,7 +710,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -778,7 +722,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator to return volume but backend cannot mirror
 		mockVolume := &storage.VolumeExternal{
 			BackendUUID: "test-backend-uuid",
@@ -788,26 +731,21 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		orchestrator.EXPECT().GetVolume(ctx, "test-volume-handle").Return(mockVolume, nil)
 		orchestrator.EXPECT().CanBackendMirror(ctx, "test-backend-uuid").Return(false, nil)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.NotNil(t, result)
 		assert.NoError(t, err)
 		assert.Equal(t, netappv1.MirrorStateInvalid, result.MirrorState)
 		assert.Contains(t, result.Message, "backend does not support mirroring")
 	})
-
 	t.Run("PromotedMirrorSkipsBackendCheck", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -827,7 +765,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -840,7 +777,6 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator to return volume
 		mockVolume := &storage.VolumeExternal{
 			BackendUUID: "test-backend-uuid",
@@ -852,95 +788,73 @@ func TestHandleIndividualVolumeMapping_EdgeCases(t *testing.T) {
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("promoted", nil)
 		// For promoted mirrors, also expect GetReplicationDetails call
 		orchestrator.EXPECT().GetReplicationDetails(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("MirrorAllSnapshots", "5min", "svm1", nil)
-
 		tmr := createTestTMR("test-tmr", "default")
 		tmr.Spec.MirrorState = netappv1.MirrorStatePromoted // Set to promoted
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName: "test-pvc",
 		}
-
 		result, err := controller.handleIndividualVolumeMapping(ctx, tmr, volumeMapping, condition)
 		assert.NotNil(t, result)
 		assert.NoError(t, err)
 		// Should not call CanBackendMirror for promoted mirrors
 	})
 }
-
 func TestGetCurrentMirrorState_EdgeCases(t *testing.T) {
 	t.Run("UnsupportedError", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Mock orchestrator to return unsupported error
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "backend-uuid", "local-volume", "remote-handle").
 			Return("", errors.UnsupportedError("mirroring not supported"))
-
 		state, err := controller.getCurrentMirrorState(ctx, netappv1.MirrorStateEstablished, "backend-uuid", "local-volume", "remote-handle")
 		assert.NoError(t, err)
 		assert.Equal(t, "promoted", state) // Should return "promoted" for unsupported error
 	})
-
 	t.Run("OtherError", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Mock orchestrator to return other error
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "backend-uuid", "local-volume", "remote-handle").
 			Return("", fmt.Errorf("some other error"))
-
 		state, err := controller.getCurrentMirrorState(ctx, netappv1.MirrorStateEstablished, "backend-uuid", "local-volume", "remote-handle")
 		assert.Error(t, err)
 		assert.Equal(t, "", state)
 	})
-
 	t.Run("SuccessfulStatus", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Mock orchestrator to return successful status
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "backend-uuid", "local-volume", "remote-handle").
 			Return("established", nil)
-
 		state, err := controller.getCurrentMirrorState(ctx, netappv1.MirrorStateEstablished, "backend-uuid", "local-volume", "remote-handle")
 		assert.NoError(t, err)
 		assert.Equal(t, "established", state)
 	})
 }
-
 func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 	t.Run("VolumeNotFoundIsReadyForDeletion", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
 			LocalPVCName:      "test-pvc",
 			LocalVolumeHandle: "svm1:test-volume",
 		}
-
 		// This test will try to handleIndividualVolumeMapping but since we don't have PVC, it will defer
-
 		ready, err := controller.ensureMirrorReadyForDeletion(ctx, tmr, volumeMapping, condition)
 		assert.NoError(t, err)
 		assert.True(t, ready) // Should be ready when volume doesn't exist (reconcile deferred)
 	})
-
 	t.Run("MirrorInPromotedState", func(t *testing.T) {
 		controller, mockCtrl, _ := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
@@ -948,20 +862,15 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 			LocalVolumeHandle: "svm1:test-volume",
 			MirrorState:       netappv1.MirrorStatePromoted,
 		}
-
 		// This test will try to handleIndividualVolumeMapping but since we don't have PVC, it will defer
-
 		ready, err := controller.ensureMirrorReadyForDeletion(ctx, tmr, volumeMapping, condition)
 		assert.NoError(t, err)
 		assert.True(t, ready) // Should be ready when already promoted
 	})
-
 	t.Run("MirrorNotPromotedNeedsPVCCreation", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -981,7 +890,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -994,7 +902,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator calls for promotion workflow
 		mockVolume := &storage.VolumeExternal{
 			BackendUUID: "test-backend-uuid",
@@ -1005,7 +912,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		orchestrator.EXPECT().GetVolume(ctx, "test-volume-handle").Return(mockVolume, nil)
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("promoted", nil)
 		orchestrator.EXPECT().GetReplicationDetails(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("MirrorAllSnapshots", "5min", "svm1", nil)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
@@ -1013,18 +919,14 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 			LocalVolumeHandle: "svm1:test-volume",
 			MirrorState:       netappv1.MirrorStateEstablished,
 		}
-
 		ready, err := controller.ensureMirrorReadyForDeletion(ctx, tmr, volumeMapping, condition)
 		assert.NoError(t, err)
 		assert.True(t, ready) // Should be ready when status is promoted
 	})
-
 	t.Run("MirrorNotReadyForDeletion", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -1044,7 +946,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -1057,7 +958,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator calls for promotion that results in "promoting" state (not ready for deletion)
 		mockVolume := &storage.VolumeExternal{
 			BackendUUID: "test-backend-uuid",
@@ -1071,7 +971,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		orchestrator.EXPECT().GetReplicationDetails(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("MirrorAllSnapshots", "5min", "svm1", nil)
 		// For promotion attempt that succeeds but results in "promoting" state
 		orchestrator.EXPECT().PromoteMirror(ctx, "test-backend-uuid", "test-volume", "test-internal-volume", "svm1:test-volume", "").Return(false, nil)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
@@ -1079,18 +978,14 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 			LocalVolumeHandle: "svm1:test-volume",
 			MirrorState:       netappv1.MirrorStateEstablished,
 		}
-
 		ready, err := controller.ensureMirrorReadyForDeletion(ctx, tmr, volumeMapping, condition)
 		assert.NoError(t, err)
 		assert.False(t, ready) // Should not be ready when promotion is in progress (MirrorStatePromoting)
 	})
-
 	t.Run("MirrorPromotionSucceeds", func(t *testing.T) {
 		controller, mockCtrl, orchestrator := setupMirrorRelationshipTest(t)
 		defer mockCtrl.Finish()
-
 		ctx := context.Background()
-
 		// Create complete PV with CSI and internal name
 		pv := &corev1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{
@@ -1110,7 +1005,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Create PVC
 		pvc := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
@@ -1123,7 +1017,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		}
 		_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(ctx, pvc, metav1.CreateOptions{})
 		assert.NoError(t, err)
-
 		// Mock orchestrator calls - when we have a promoted mirror already
 		mockVolume := &storage.VolumeExternal{
 			BackendUUID: "test-backend-uuid",
@@ -1134,7 +1027,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 		orchestrator.EXPECT().GetVolume(ctx, "test-volume-handle").Return(mockVolume, nil)
 		orchestrator.EXPECT().GetMirrorStatus(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("promoted", nil)
 		orchestrator.EXPECT().GetReplicationDetails(ctx, "test-backend-uuid", "test-internal-volume", "svm1:test-volume").Return("MirrorAllSnapshots", "5min", "svm1", nil)
-
 		tmr := createTestTMR("test-tmr", "default")
 		volumeMapping := tmr.Spec.VolumeMappings[0]
 		condition := &netappv1.TridentMirrorRelationshipCondition{
@@ -1142,7 +1034,6 @@ func TestEnsureMirrorReadyForDeletion_EdgeCases(t *testing.T) {
 			LocalVolumeHandle: "svm1:test-volume",
 			MirrorState:       netappv1.MirrorStateEstablished,
 		}
-
 		ready, err := controller.ensureMirrorReadyForDeletion(ctx, tmr, volumeMapping, condition)
 		assert.NoError(t, err)
 		assert.True(t, ready) // Should be ready when mirror is already promoted

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/netapp/trident/utils/errors"
+
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
@@ -17,6 +19,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
 )
 
@@ -185,7 +188,7 @@ func (h *helper) reconcileVolumePublishInfoFile(
 	// everything is cleaned up properly.
 	if shouldDelete {
 		if err = h.VolumePublishManager.DeleteTrackingInfo(ctx, volumeId); err != nil {
-			return csi.TerminalReconciliationError(fmt.Errorf("could not delete the tracking file: %w", err).Error())
+			return errors.TerminalReconciliationError(fmt.Errorf("could not delete the tracking file: %w", err).Error())
 		}
 	}
 
@@ -232,6 +235,26 @@ func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove
 	}
 
 	h.publishedPaths[volumeID] = volTrackingInfo.PublishedPaths
+	return nil
+}
+
+// UpdatePublishInfo updates the existing tracking file and by replacing the supplied tracking info.
+// It reads the existing file, replaces the publishInfo and replaces the original tracking file.
+func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error {
+	fields := LogFields{"volumeID": volumeID}
+	Logc(ctx).WithFields(fields).Trace(">>>> UpdatePublishInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< UpdatePublishInfo")
+
+	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
+	if err != nil {
+		return fmt.Errorf("failed to read the tracking file; %v", err)
+	}
+
+	volTrackingInfo.VolumePublishInfo = *publishInfo
+
+	if err := h.WriteTrackingInfo(ctx, volumeID, volTrackingInfo); err != nil {
+		return fmt.Errorf("failed to update the tracking file; %v", err)
+	}
 	return nil
 }
 

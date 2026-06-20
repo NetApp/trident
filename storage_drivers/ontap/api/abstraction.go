@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -109,6 +109,8 @@ type OntapAPI interface {
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
+	LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error
+	LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error
 	LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error)
 
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
@@ -126,6 +128,8 @@ type OntapAPI interface {
 	IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error
 	IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool, error)
 	IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error)
+
+	GetNodeForAggregate(ctx context.Context, aggregate string) (*Node, error)
 
 	GetSVMAggregateAttributes(ctx context.Context) (map[string]string, error)
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)
@@ -195,7 +199,9 @@ type OntapAPI interface {
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName string,
 	) error
+
 	JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error)
+	JobGet(ctx context.Context, jobID string) (*Job, error)
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
 	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
@@ -215,6 +221,9 @@ type OntapAPI interface {
 	// the transport layer, so the REST adapter maps skipRecoveryQueue onto that flag while keeping
 	// this caller-facing signature stable.
 	VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
+	VolumeMove(
+		ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
+	) (string, error)
 	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)

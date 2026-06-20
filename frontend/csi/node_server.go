@@ -47,20 +47,22 @@ import (
 )
 
 const (
-	tridentDeviceInfoPath           = "/var/lib/trident/tracking"
-	nodeLockID                      = "csi_node_server"
-	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
-	ResizeISCSIVolumeTimeout        = 20 * time.Second
-	AttachFCPVolumeTimeoutShort     = 20 * time.Second
-	iSCSINodeUnstageMaxDuration     = 15 * time.Second
-	iSCSILoginTimeout               = 10 * time.Second
-	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
-	iSCSISelfHealingTimeout         = 60 * time.Second
-	fcpNodeUnstageMaxDuration       = 15 * time.Second
-	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
-	defaultNodeReconciliationPeriod = 1 * time.Minute
-	maximumNodeReconciliationJitter = 5000 * time.Millisecond
-	nvmeMaxFlushWaitDuration        = 6 * time.Minute
+	tridentDeviceInfoPath            = "/var/lib/trident/tracking"
+	nodeLockID                       = "csi_node_server"
+	AttachISCSIVolumeTimeoutShort    = 20 * time.Second
+	GraftISCSIAttachmentTimeoutShort = 20 * time.Second
+	PruneISCSIAttachmentTimeoutShort = 15 * time.Second
+	ResizeISCSIVolumeTimeout         = 20 * time.Second
+	AttachFCPVolumeTimeoutShort      = 20 * time.Second
+	iSCSINodeUnstageMaxDuration      = 15 * time.Second
+	iSCSILoginTimeout                = 10 * time.Second
+	iSCSISelfHealingLockContext      = "ISCSISelfHealingThread"
+	iSCSISelfHealingTimeout          = 60 * time.Second
+	fcpNodeUnstageMaxDuration        = 15 * time.Second
+	nvmeSelfHealingLockContext       = "NVMeSelfHealingThread"
+	defaultNodeReconciliationPeriod  = 1 * time.Minute
+	maximumNodeReconciliationJitter  = 5000 * time.Millisecond
+	nvmeMaxFlushWaitDuration         = 6 * time.Minute
 
 	// Node Scalability constants.
 	maxNodeStageNFSVolumeOperations     = 10
@@ -89,9 +91,11 @@ const (
 	NodePublishSMBVolume = "NodePublishSMBVolume"
 
 	// iSCSI Constants
-	NodeStageISCSIVolume   = "NodeStageISCSIVolume"
-	NodeUnstageISCSIVolume = "NodeUnstageISCSIVolume"
-	NodePublishISCSIVolume = "NodePublishISCSIVolume"
+	NodeStageISCSIVolume     = "NodeStageISCSIVolume"
+	NodeUnstageISCSIVolume   = "NodeUnstageISCSIVolume"
+	NodePublishISCSIVolume   = "NodePublishISCSIVolume"
+	NodeGraftISCSIAttachment = "NodeGraftISCSIAttachment"
+	NodePruneISCSIAttachment = "NodePruneISCSIAttachment"
 
 	// FCP Constants
 	NodeStageFCPVolume   = "NodeStageFCPVolume"
@@ -3524,4 +3528,249 @@ func (p *Plugin) disconnectNVMeSubsystemIfNeeded(
 		}
 	}
 	return nil
+}
+
+func (p *Plugin) NodeGraftAttachment(
+	ctx context.Context, req *models.GraftAttachmentRequest,
+) (*models.GraftAttachmentResponse, error) {
+	if req == nil {
+		return nil, errors.TerminalReconciliationError("request is nil")
+	}
+
+	fields := LogFields{"Method": "GraftAttachment", "Type": "CSI_Node"}
+	Logc(ctx).WithFields(fields).Debug(">>>> NodeGraftAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGraftAttachment")
+
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeUpdate)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiNodeLockTimeout)
+	defer cancel()
+
+	lockContext := "NodeGraftAttachment"
+	defer locks.Unlock(ctx, lockContext, req.VolumeName)
+	if !attemptLock(ctx, lockContext, req.VolumeName, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
+	// Get the published info Trident node has record of.
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeName)
+	if err != nil {
+		Logc(ctx).Warnf("Tracking file for volume %q not found; is the volume attached?", req.VolumeName)
+		return nil, errors.NotFoundError(fmt.Sprintf("failed to read volume tracking info for %q; %s", req.VolumeName, err.Error()))
+	}
+
+	publishInfo := &models.VolumePublishInfo{}
+	if trackingInfo != nil {
+		// Init the publish info from the tracking info.
+		publishInfo = &trackingInfo.VolumePublishInfo
+
+		// Look for unreconcilable arguments.
+		if req.IscsiLunNumber != publishInfo.IscsiLunNumber {
+			return nil, errors.TerminalReconciliationError("lun number mismatch")
+		} else if req.IscsiTargetIQN != publishInfo.IscsiTargetIQN {
+			return nil, errors.TerminalReconciliationError("target IQN mismatch")
+		} else if len(req.IscsiPortals) == 0 {
+			return nil, errors.TerminalReconciliationError("no portals specified")
+		} else if req.IscsiTargetPortal == "" {
+			return nil, errors.TerminalReconciliationError("no target portal specified")
+		}
+	}
+	publishInfo.VolumeAccessInfo = convert.ToVal(req.VolumeAccessInfo.DeepCopy())
+
+	switch req.Protocol {
+	case tridentconfig.Block:
+		// TODO: Add NVMe check and support.
+		return p.nodeGraftISCSIAttachment(ctx, req, publishInfo)
+	case tridentconfig.File:
+		fallthrough
+	default:
+		msg := fmt.Sprintf("operation not supported with %s protocol", req.Protocol)
+		return nil, errors.TerminalReconciliationError(msg)
+	}
+}
+
+// nodeGraftISCSIAttachment extends an existing iSCSI attachment for a LUN by establishing new sessions and new
+// waiting for new device paths to exist through those sessions.
+// It does not remove existing iSCSI paths or devices.
+func (p *Plugin) nodeGraftISCSIAttachment(
+	ctx context.Context, req *models.GraftAttachmentRequest, publishInfo *models.VolumePublishInfo,
+) (*models.GraftAttachmentResponse, error) {
+	if req == nil {
+		return nil, errors.TerminalReconciliationError("request is nil")
+	}
+	if publishInfo == nil {
+		return nil, errors.TerminalReconciliationError("publish info is nil")
+	}
+
+	fields := LogFields{"volume": req.VolumeName, "lunID": publishInfo.IscsiLunNumber}
+	Logc(ctx).WithFields(fields).Debug(">>>> nodeGraftISCSIAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< nodeGraftISCSIAttachment")
+
+	// Debatable if this block should reference the "NodeStageISCSIVolume" limiter instead.
+	if err := p.limiterSharedMap[NodeGraftISCSIAttachment].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeGraftISCSIAttachment].Release(ctx)
+
+	// TODO(pshashan): Once the locks package revamp PR is merged, remove this atomic counter.
+	iSCSINodeOperationWaitingCount.Add(1)
+	iSCSISelfHealingLock.RLock()
+	defer iSCSISelfHealingLock.RUnlock()
+	iSCSINodeOperationWaitingCount.Add(-1)
+
+	if publishInfo.UseCHAP {
+		if err := DecryptCHAPAccessInfo(ctx, &publishInfo.VolumeAccessInfo); err != nil {
+			Logc(ctx).WithError(err).Warn("Could not decrypt CHAP credentials.")
+			return nil, err
+		}
+	}
+
+	// Ensure the existing attachment is extended.
+	attachInfo, err := p.iscsi.GraftAttachmentRetry(ctx, publishInfo, GraftISCSIAttachmentTimeoutShort)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not extend existing attachment.")
+		return nil, err
+	}
+
+	// Overwrite the access info.
+	publishInfo.VolumeAccessInfo = convert.ToVal(attachInfo.VolumeAccessInfo.DeepCopy())
+
+	// Update the tracking file.
+	if err := p.nodeHelper.UpdatePublishInfo(ctx, req.VolumeName, publishInfo); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not update publish info.")
+		return nil, err
+	}
+
+	// Update the self-healing map.
+	// This will have ALL sessions for a period of time; pre-existing sessions and new sessions.
+	// This isn't great for busy systems, but during a volume move operation, we cannot assume
+	// it is safe to omit new sessions or remove old sessions.
+	newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceNodeGraft)
+	lockContext := "nodeStageISCSIVolume.AddSession"
+	if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+	p.iscsi.AddSession(newCtx, publishedISCSISessions, publishInfo, req.VolumeName, "", models.NotInvalid)
+	locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+
+	return &models.GraftAttachmentResponse{
+		VolumeAccessInfo: attachInfo.VolumeAccessInfo,
+		VolumeName:       req.VolumeName,
+		Protocol:         req.Protocol,
+	}, nil
+}
+
+// NodePruneAttachment should remove unwanted iSCSI sessions and paths for a LUN after a volume has moved.
+// It should not disrupt other LUNs or sessions. If it is safe to logout, this operation may safely log out
+// of a session.
+func (p *Plugin) NodePruneAttachment(
+	ctx context.Context, req *models.PruneAttachmentRequest,
+) (*models.PruneAttachmentResponse, error) {
+	if req == nil {
+		return nil, errors.TerminalReconciliationError("request is nil")
+	}
+
+	fields := LogFields{"Method": "PruneAttachment", "Type": "CSI_Node"}
+	Logc(ctx).WithFields(fields).Debug(">>>> NodePruneAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePruneAttachment")
+
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeUpdate)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiNodeLockTimeout)
+	defer cancel()
+
+	lockContext := "NodePruneAttachment"
+	defer locks.Unlock(ctx, lockContext, req.VolumeName)
+	if !attemptLock(ctx, lockContext, req.VolumeName, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
+	// Get the published info Trident node has record of.
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeName)
+	if err != nil {
+		Logc(ctx).Warnf("Tracking file for volume %q not found; stale sessions may persist. "+
+			"Continuing with prune attachment workflow.", req.VolumeName)
+	}
+
+	publishInfo := &models.VolumePublishInfo{}
+	if trackingInfo != nil {
+		// Init the publish info from the tracking info.
+		publishInfo = &trackingInfo.VolumePublishInfo
+	}
+	publishInfo.VolumeAccessInfo = convert.ToVal(req.VolumeAccessInfo.DeepCopy())
+
+	switch req.Protocol {
+	case tridentconfig.Block:
+		return p.nodePruneISCSIAttachment(ctx, req, publishInfo)
+	case tridentconfig.File:
+		fallthrough
+	default:
+		msg := fmt.Sprintf("operation not supported with %s protocol", req.Protocol)
+		return nil, errors.TerminalReconciliationError(msg)
+	}
+}
+
+func (p *Plugin) nodePruneISCSIAttachment(
+	ctx context.Context, req *models.PruneAttachmentRequest, publishInfo *models.VolumePublishInfo,
+) (*models.PruneAttachmentResponse, error) {
+	if req == nil {
+		return nil, errors.TerminalReconciliationError("request is nil")
+	}
+	if publishInfo == nil {
+		return nil, errors.TerminalReconciliationError("publish info is nil")
+	}
+
+	fields := LogFields{"volume": req.VolumeName, "lunID": publishInfo.IscsiLunNumber}
+	Logc(ctx).WithFields(fields).Debug(">>>> nodePruneISCSIAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< nodePruneISCSIAttachment")
+
+	// Look for unreconcilable arguments.
+	if req.IscsiLunNumber != publishInfo.IscsiLunNumber {
+		return nil, errors.TerminalReconciliationError("lun number mismatch")
+	} else if req.IscsiTargetIQN != publishInfo.IscsiTargetIQN {
+		return nil, errors.TerminalReconciliationError("target IQN mismatch")
+	} else if len(req.IscsiPortals) == 0 {
+		return nil, errors.TerminalReconciliationError("no portals specified")
+	} else if req.IscsiTargetPortal == "" {
+		return nil, errors.TerminalReconciliationError("no target portal specified")
+	}
+
+	if err := p.limiterSharedMap[NodePruneISCSIAttachment].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodePruneISCSIAttachment].Release(ctx)
+
+	// TODO(pshashan): Once the locks package revamp PR is merged, remove this atomic counter.
+	iSCSINodeOperationWaitingCount.Add(1)
+	iSCSISelfHealingLock.RLock()
+	defer iSCSISelfHealingLock.RUnlock()
+	iSCSINodeOperationWaitingCount.Add(-1)
+
+	// Acquiring the global self-healing session lock may impact parallelism,
+	// but self-healing session operations are minimal and should complete quickly.
+	// Therefore, a slight performance impact is acceptable to keep the code clean and maintainable.
+	lockContext := "nodeUnstageISCSIVolume.RemovePortalsFromSession"
+	if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+	defer locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+
+	// The publish info here contains the portals to RETAIN on the host, not the portals to remove.
+	attachInfo, err := p.iscsi.PruneAttachmentRetry(ctx, publishInfo, PruneISCSIAttachmentTimeoutShort)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not prune existing attachment.")
+		return nil, err
+	}
+
+	// NOTE: This attachInfo has the stale portals.
+	// It does not typically contain the target portals.
+	p.iscsi.RemovePortalsFromSession(ctx, attachInfo.VolumePublishInfo, publishedISCSISessions)
+
+	return &models.PruneAttachmentResponse{
+		VolumeAccessInfo: req.VolumeAccessInfo,
+		VolumeName:       req.VolumeName,
+		Protocol:         req.Protocol,
+	}, nil
 }

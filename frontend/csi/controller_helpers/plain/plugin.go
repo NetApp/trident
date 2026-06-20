@@ -1,9 +1,11 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package plain
 
 import (
 	"context"
+
+	"github.com/netapp/trident/utils/errors"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -45,7 +47,7 @@ func (h *helper) Activate() error {
 	// At that point, all supported Trident versions will include volume publications.
 	err := h.orchestrator.ReconcileVolumePublications(context.Background(), nil)
 	if err != nil {
-		return csi.TerminalReconciliationError(err.Error())
+		return errors.TerminalReconciliationError(err.Error())
 	}
 
 	return nil

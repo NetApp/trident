@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -34,7 +34,8 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
 			requestId = reqID
 		}
-		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST, WorkflowTridentRESTLogger, LogLayerRESTFrontend)
+		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST, WorkflowTridentRESTLogger,
+			LogLayerRESTFrontend)
 		r = r.WithContext(ctx)
 		logRestCallInfo("REST API call received.", r, start, routeName, "")
 

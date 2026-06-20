@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package plain
 
@@ -12,6 +12,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/models"
 )
 
 type helper struct {
@@ -91,4 +92,19 @@ func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove
 	}
 	delete(trackingInfo.PublishedPaths, pathToRemove)
 	return h.WriteTrackingInfo(ctx, volumeID, trackingInfo)
+}
+
+// UpdatePublishInfo updates the existing tracking file and by replacing the supplied tracking info.
+func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error {
+	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
+	if err != nil {
+		return fmt.Errorf("failed to read the tracking file; %v", err)
+	}
+
+	volTrackingInfo.VolumePublishInfo = *publishInfo
+
+	if err := h.WriteTrackingInfo(ctx, volumeID, volTrackingInfo); err != nil {
+		return fmt.Errorf("failed to update the tracking file; %v", err)
+	}
+	return nil
 }

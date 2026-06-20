@@ -7,7 +7,10 @@ package csi
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 
@@ -20,6 +23,33 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
+
+const (
+	publishInfoKeyIscsiTargetPortalCount       = "iscsiTargetPortalCount"
+	publishInfoKeyIscsiTargetPortal            = "p1"
+	publishInfoKeyIscsiEncryptedUsername       = "encryptedIscsiUsername"
+	publishInfoKeyIscsiEncryptedSecret         = "encryptedIscsiInitiatorSecret"
+	publishInfoKeyIscsiEncryptedTargetUsername = "encryptedIscsiTargetUsername"
+	publishInfoKeyIscsiEncryptedTargetSecret   = "encryptedIscsiTargetSecret"
+)
+
+var (
+	aesKeySingleton []byte
+	aesKeyError     error
+	readAESKeysOnce sync.Once
+)
+
+// ReadAESKey initializes a singleton for AES keys.
+func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
+	readAESKeysOnce.Do(func() {
+		if "" != aesKeyFile {
+			aesKeySingleton, aesKeyError = os.ReadFile(aesKeyFile)
+		} else {
+			Logc(ctx).Warn("AES encryption key not provided!")
+		}
+	})
+	return aesKeySingleton, aesKeyError
+}
 
 func ParseEndpoint(ep string) (string, string, error) {
 	if strings.HasPrefix(strings.ToLower(ep), "unix://") || strings.HasPrefix(strings.ToLower(ep), "tcp://") {
@@ -67,32 +97,139 @@ func NewGroupControllerServiceCapability(
 	}
 }
 
+func setEncryptedCHAPPublishInfo(publishInfo map[string]string, accessInfo *models.VolumeAccessInfo) {
+	if publishInfo == nil {
+		return
+	}
+	if accessInfo == nil {
+		return
+	}
+	publishInfo[publishInfoKeyIscsiEncryptedUsername] = accessInfo.IscsiUsername
+	publishInfo[publishInfoKeyIscsiEncryptedSecret] = accessInfo.IscsiInitiatorSecret
+	publishInfo[publishInfoKeyIscsiEncryptedTargetUsername] = accessInfo.IscsiTargetUsername
+	publishInfo[publishInfoKeyIscsiEncryptedTargetSecret] = accessInfo.IscsiTargetSecret
+}
+
+func SetEncryptedCHAPPublishInfo(publishInfo map[string]string, accessInfo *models.VolumeAccessInfo) {
+	if accessInfo == nil {
+		return
+	}
+	if !accessInfo.UseCHAP {
+		return
+	}
+	setEncryptedCHAPPublishInfo(publishInfo, accessInfo)
+	return
+}
+
+// encryptCHAPAccessInfo encrypts CHAP credentials within an access info in-place.
+func encryptCHAPAccessInfo(
+	ctx context.Context, accessInfo *models.VolumeAccessInfo, aesKey []byte,
+) error {
+	if accessInfo == nil {
+		return nil
+	}
+	if !accessInfo.UseCHAP {
+		return nil
+	}
+	if len(aesKey) == 0 {
+		aesKey = aesKeySingleton
+	}
+
+	initiatorUser, err := crypto.EncryptStringWithAES(accessInfo.IscsiUsername, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error encrypting iSCSI username; %v", err)
+		return errors.New("error encrypting iscsi username")
+	}
+	initiatorPass, err := crypto.EncryptStringWithAES(accessInfo.IscsiInitiatorSecret, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error encrypting initiator secret; %v", err)
+		return errors.New("error encrypting initiator secret")
+	}
+	targetUser, err := crypto.EncryptStringWithAES(accessInfo.IscsiTargetUsername, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error encrypting target username; %v", err)
+		return errors.New("error encrypting target username")
+	}
+	targetPass, err := crypto.EncryptStringWithAES(accessInfo.IscsiTargetSecret, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error encrypting target secret; %v", err)
+		return errors.New("error encrypting target secret")
+	}
+
+	accessInfo.IscsiUsername = initiatorUser
+	accessInfo.IscsiInitiatorSecret = initiatorPass
+	accessInfo.IscsiTargetUsername = targetUser
+	accessInfo.IscsiTargetSecret = targetPass
+
+	return nil
+}
+
+// EncryptCHAPAccessInfo encrypts CHAP credentials within an access info in-place.
+func EncryptCHAPAccessInfo(
+	ctx context.Context, accessInfo *models.VolumeAccessInfo,
+) error {
+	return encryptCHAPAccessInfo(ctx, accessInfo, aesKeySingleton)
+}
+
 // encryptCHAPPublishInfo will encrypt the CHAP credentials from volumePublish and add them to publishInfo
 func encryptCHAPPublishInfo(
 	ctx context.Context, publishInfo map[string]string, volumePublishInfo *models.VolumePublishInfo, aesKey []byte,
 ) error {
-	var err error
-	if publishInfo["encryptedIscsiUsername"], err = crypto.EncryptStringWithAES(
-		volumePublishInfo.IscsiUsername, aesKey); err != nil {
-		Logc(ctx).Errorf("Error encrypting iSCSI username; %v", err)
-		return errors.New("error encrypting iscsi username")
+	if err := encryptCHAPAccessInfo(ctx, &volumePublishInfo.VolumeAccessInfo, aesKey); err != nil {
+		return err
 	}
-	if publishInfo["encryptedIscsiInitiatorSecret"], err = crypto.EncryptStringWithAES(
-		volumePublishInfo.IscsiInitiatorSecret, aesKey); err != nil {
-		Logc(ctx).Errorf("Error encrypting initiator secret; %v", err)
-		return errors.New("error encrypting initiator secret")
-	}
-	if publishInfo["encryptedIscsiTargetUsername"], err = crypto.EncryptStringWithAES(
-		volumePublishInfo.IscsiTargetUsername, aesKey); err != nil {
-		Logc(ctx).Errorf("Error encrypting target username; %v", err)
-		return errors.New("error encrypting target username")
-	}
-	if publishInfo["encryptedIscsiTargetSecret"], err = crypto.EncryptStringWithAES(
-		volumePublishInfo.IscsiTargetSecret, aesKey); err != nil {
-		Logc(ctx).Errorf("Error encrypting target secret; %v", err)
-		return errors.New("error encrypting target secret")
-	}
+	setEncryptedCHAPPublishInfo(publishInfo, &volumePublishInfo.VolumeAccessInfo)
 	return nil
+}
+
+// decryptCHAPAccessInfo decrypts CHAP credentials within an access info in-place.
+func decryptCHAPAccessInfo(
+	ctx context.Context, accessInfo *models.VolumeAccessInfo, aesKey []byte,
+) error {
+	if accessInfo == nil {
+		return nil
+	}
+	if !accessInfo.UseCHAP {
+		return nil
+	}
+	if len(aesKey) == 0 {
+		aesKey = aesKeySingleton
+	}
+
+	initiatorUser, err := crypto.DecryptStringWithAES(accessInfo.IscsiUsername, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error decrypting iSCSI username; %v", err)
+		return errors.New("error decrypting iscsi username")
+	}
+	initiatorPass, err := crypto.DecryptStringWithAES(accessInfo.IscsiInitiatorSecret, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error decrypting initiator secret; %v", err)
+		return errors.New("error decrypting initiator secret")
+	}
+	targetUser, err := crypto.DecryptStringWithAES(accessInfo.IscsiTargetUsername, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error decrypting target username; %v", err)
+		return errors.New("error decrypting target username")
+	}
+	targetPass, err := crypto.DecryptStringWithAES(accessInfo.IscsiTargetSecret, aesKey)
+	if err != nil {
+		Logc(ctx).Errorf("Error decrypting target secret; %v", err)
+		return errors.New("error decrypting target secret")
+	}
+
+	accessInfo.IscsiUsername = initiatorUser
+	accessInfo.IscsiInitiatorSecret = initiatorPass
+	accessInfo.IscsiTargetUsername = targetUser
+	accessInfo.IscsiTargetSecret = targetPass
+
+	return nil
+}
+
+// DecryptCHAPAccessInfo decrypts CHAP credentials within an access info in-place.
+func DecryptCHAPAccessInfo(
+	ctx context.Context, accessInfo *models.VolumeAccessInfo,
+) error {
+	return decryptCHAPAccessInfo(ctx, accessInfo, aesKeySingleton)
 }
 
 // decryptCHAPPublishInfo will decrypt the CHAP credentials from req and replace empty plaintext credential fields in
@@ -102,33 +239,33 @@ func decryptCHAPPublishInfo(
 ) error {
 	var err error
 
-	if publishInfo.IscsiUsername == "" && publishContext["encryptedIscsiUsername"] != "" {
-		if publishInfo.IscsiUsername, err = crypto.DecryptStringWithAES(publishContext["encryptedIscsiUsername"],
-			aesKey); err != nil {
+	if publishInfo.IscsiUsername == "" && publishContext[publishInfoKeyIscsiEncryptedUsername] != "" {
+		if publishInfo.IscsiUsername, err = crypto.DecryptStringWithAES(
+			publishContext[publishInfoKeyIscsiEncryptedUsername], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting iscsi username; %v", err)
 			return errors.New("error decrypting iscsi username")
 		}
 	}
 
-	if publishInfo.IscsiInitiatorSecret == "" && publishContext["encryptedIscsiInitiatorSecret"] != "" {
+	if publishInfo.IscsiInitiatorSecret == "" && publishContext[publishInfoKeyIscsiEncryptedSecret] != "" {
 		if publishInfo.IscsiInitiatorSecret, err = crypto.DecryptStringWithAES(
-			publishContext["encryptedIscsiInitiatorSecret"], aesKey); err != nil {
+			publishContext[publishInfoKeyIscsiEncryptedSecret], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting initiator secret; %v", err)
 			return errors.New("error decrypting initiator secret")
 		}
 	}
 
-	if publishInfo.IscsiTargetUsername == "" && publishContext["encryptedIscsiTargetUsername"] != "" {
+	if publishInfo.IscsiTargetUsername == "" && publishContext[publishInfoKeyIscsiEncryptedTargetUsername] != "" {
 		if publishInfo.IscsiTargetUsername, err = crypto.DecryptStringWithAES(
-			publishContext["encryptedIscsiTargetUsername"], aesKey); err != nil {
+			publishContext[publishInfoKeyIscsiEncryptedTargetUsername], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting target username; %v", err)
 			return errors.New("error decrypting target username")
 		}
 	}
 
-	if publishInfo.IscsiTargetSecret == "" && publishContext["encryptedIscsiTargetSecret"] != "" {
-		if publishInfo.IscsiTargetSecret, err = crypto.DecryptStringWithAES(publishContext["encryptedIscsiTargetSecret"],
-			aesKey); err != nil {
+	if publishInfo.IscsiTargetSecret == "" && publishContext[publishInfoKeyIscsiEncryptedTargetSecret] != "" {
+		if publishInfo.IscsiTargetSecret, err = crypto.DecryptStringWithAES(
+			publishContext[publishInfoKeyIscsiEncryptedTargetSecret], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting target secret; %v", err)
 			return errors.New("error decrypting target secret")
 		}
@@ -322,5 +459,45 @@ func ensureLUKSVolumePassphrase(
 	// 	}
 	// }
 	// }
+	return nil
+}
+
+func addAccessInfoPortalsToPublishInfo(publishInfo map[string]string, accessInfo models.VolumeAccessInfo) {
+	count := 1 + len(accessInfo.IscsiPortals)
+	publishInfo[publishInfoKeyIscsiTargetPortalCount] = strconv.Itoa(count)
+	publishInfo[publishInfoKeyIscsiTargetPortal] = accessInfo.IscsiTargetPortal
+	for i, p := range accessInfo.IscsiPortals {
+		key := fmt.Sprintf("p%d", i+2)
+		publishInfo[key] = p
+	}
+}
+
+func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *models.VolumePublishInfo) {
+	addAccessInfoPortalsToPublishInfo(publishInfo, volumePublishInfo.VolumeAccessInfo)
+}
+
+// UpsertIscsiTargetPortals replaces the existing target portals in a publishInfo
+// with the portals in the supplied accessInfo.
+func UpsertIscsiTargetPortals(
+	ctx context.Context, publishInfo map[string]string, accessInfo *models.VolumeAccessInfo,
+) error {
+	if len(publishInfo) == 0 {
+		return fmt.Errorf("publishInfo is empty")
+	}
+	if accessInfo == nil {
+		return fmt.Errorf("accessInfo is empty")
+	}
+
+	pMax, err := strconv.Atoi(publishInfo[publishInfoKeyIscsiTargetPortalCount])
+	if err != nil {
+		Logc(ctx).Error(err.Error())
+		return err
+	}
+	for pNum := 0; pNum < pMax+1; pNum++ {
+		delete(publishInfo, fmt.Sprintf("p%v", pNum))
+	}
+	delete(publishInfo, publishInfoKeyIscsiTargetPortal)
+
+	addAccessInfoPortalsToPublishInfo(publishInfo, *accessInfo)
 	return nil
 }

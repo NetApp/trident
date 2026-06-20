@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -19,6 +19,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
 
@@ -13769,4 +13770,453 @@ func TestUpsertStorageClassAutogrowPolicyInternal(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "gold", vol.EffectiveAGPolicy.PolicyName)
 	assert.Contains(t, o.autogrowPolicies["gold"].GetVolumes(), "vol1")
+}
+
+// ---------------------------------------------------------------------------
+// MoveInfo (volume move) tests for the classic TridentOrchestrator.
+//
+// These exercise the publish gate that reads volume.Config.MoveInfo and the
+// Stage/Move/Unstage helpers that set it. The classic core takes o.mutex.Lock()
+// on each call, so the tests rely on that single-writer guarantee rather than
+// modelling lock contention.
+// ---------------------------------------------------------------------------
+
+// setupOrchestratorForMoveInfo returns an orchestrator with a fresh mock
+// StoreClient and a single test volume preloaded in the cache.
+func setupOrchestratorForMoveInfo(
+	t *testing.T, volName, backendUUID string,
+) (
+	*TridentOrchestrator,
+	*storage.Volume,
+	*mockpersistentstore.MockStoreClient,
+	*gomock.Controller,
+) {
+	t.Helper()
+
+	mockCtrl := gomock.NewController(t)
+	o := getOrchestrator(t, false)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o.storeClient = mockStoreClient
+
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+		BackendUUID: backendUUID,
+		State:       storage.VolumeStateOnline,
+	}
+	o.volumes[volName] = vol
+	t.Cleanup(func() {
+		delete(o.volumes, volName)
+		delete(o.backends, backendUUID)
+	})
+	return o, vol, mockStoreClient, mockCtrl
+}
+
+// newMoveInfo is a builder that keeps test rows readable.
+func newMoveInfo(volName string, state models.VolumeMoveState) *models.VolumeMoveInfo {
+	return &models.VolumeMoveInfo{
+		VolumeName: volName,
+		State:      state,
+		SourceNode: "node-a",
+		SourcePool: "pool-a",
+		TargetNode: "node-b",
+		TargetPool: "pool-b",
+	}
+}
+
+func TestTridentOrchestrator_StageVolumeMove(t *testing.T) {
+	const (
+		volName     = "tvm-stage-vol"
+		backendUUID = "backend-uuid-stage"
+	)
+
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.StageVolumeMove(ctx(), newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.StageVolumeMove(ctx(), nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.StageVolumeMove(ctx(),
+			newMoveInfo("no-such-vol", models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("non-online volume returns VolumeStateError", func(t *testing.T) {
+		o, vol, _, _ := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+		vol.State = storage.VolumeStateDeleting
+
+		err := o.StageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+	})
+
+	t.Run("missing backend returns NotFound", func(t *testing.T) {
+		o, _, _, _ := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		err := o.StageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("backend failure does not set MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), vol.Config, gomock.Any()).
+			Return(fmt.Errorf("backend rejected stage")).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		_ = mockStoreClient
+
+		err := o.StageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		require.Error(t, err)
+		assert.Nil(t, vol.Config.MoveInfo,
+			"backend stage failure must leave MoveInfo untouched")
+	})
+
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), vol.Config, gomock.Any()).
+			Return(nil).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		_ = mockStoreClient
+
+		err := o.StageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
+		require.NoError(t, err)
+		require.NotNil(t, vol.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateControllerStaging, vol.Config.MoveInfo.State)
+	})
+}
+
+func TestTridentOrchestrator_MoveVolume(t *testing.T) {
+	const (
+		volName     = "tvm-move-vol"
+		backendUUID = "backend-uuid-move"
+	)
+
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.MoveVolume(ctx(), newMoveInfo(volName, models.VolumeMoveStateMoving))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.MoveVolume(ctx(), nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.MoveVolume(ctx(), newMoveInfo("no-such-vol", models.VolumeMoveStateMoving))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("dry-run on non-online volume returns VolumeStateError", func(t *testing.T) {
+		o, vol, _, _ := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+		vol.State = storage.VolumeStateDeleting
+
+		info := newMoveInfo(volName, models.VolumeMoveStatePending)
+		info.DryRun = true
+
+		err := o.MoveVolume(ctx(), info)
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+	})
+
+	t.Run("missing backend returns NotFound", func(t *testing.T) {
+		o, _, _, _ := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		err := o.MoveVolume(ctx(), newMoveInfo(volName, models.VolumeMoveStateMoving))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("backend transient error still updates MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+		vol.Pool = "pool-original"
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().MoveVolume(gomock.Any(), vol.Config, gomock.Any()).
+			Return(fmt.Errorf("ontap still working")).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		_ = mockStoreClient
+
+		err := o.MoveVolume(ctx(), newMoveInfo(volName, models.VolumeMoveStateMoving))
+		require.Error(t, err)
+		require.NotNil(t, vol.Config.MoveInfo, "transient error must still update MoveInfo")
+		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.Equal(t, "pool-original", vol.Pool, "pool should not change on transient move errors")
+	})
+
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+		vol.Pool = "pool-original"
+		moveInfo := newMoveInfo(volName, models.VolumeMoveStateMoving)
+		moveInfo.TargetPool = "pool-target"
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().MoveVolume(gomock.Any(), vol.Config, gomock.Any()).
+			Return(nil).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), vol).Return(nil).Times(1)
+
+		err := o.MoveVolume(ctx(), moveInfo)
+		require.NoError(t, err)
+		require.NotNil(t, vol.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.Equal(t, "pool-target", vol.Pool, "pool should be updated to move target on success")
+	})
+}
+
+func TestTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
+	const (
+		volName     = "tvm-unstage-vol"
+		backendUUID = "backend-uuid-unstage"
+	)
+
+	t.Run("bootstrap error short circuits", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		bootErr := fmt.Errorf("bootstrap failed")
+		o.bootstrapError = bootErr
+
+		err := o.UnstageVolumeMove(ctx(), newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
+		assert.ErrorIs(t, err, bootErr)
+	})
+
+	t.Run("nil VolumeMoveInfo is invalid input", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.UnstageVolumeMove(ctx(), nil)
+		require.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("missing volume returns NotFound", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		err := o.UnstageVolumeMove(ctx(),
+			newMoveInfo("no-such-vol", models.VolumeMoveStateControllerUnstaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("missing backend returns NotFound", func(t *testing.T) {
+		o, _, _, _ := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		err := o.UnstageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("backend failure does not clear MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		vol.Config.MoveInfo = newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging)
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().UnstageVolumeMove(gomock.Any(), vol.Config, gomock.Any()).
+			Return(fmt.Errorf("backend rejected unstage")).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		_ = mockStoreClient
+
+		err := o.UnstageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
+		require.Error(t, err)
+		assert.NotNil(t, vol.Config.MoveInfo,
+			"backend unstage failure must leave MoveInfo untouched")
+	})
+
+	t.Run("happy path clears MoveInfo", func(t *testing.T) {
+		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
+
+		vol.Config.MoveInfo = newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging)
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().UnstageVolumeMove(gomock.Any(), vol.Config, gomock.Any()).
+			Return(nil).Times(1)
+		o.backends[backendUUID] = mockBackend
+
+		_ = mockStoreClient
+
+		err := o.UnstageVolumeMove(ctx(),
+			newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
+		require.NoError(t, err)
+		assert.Nil(t, vol.Config.MoveInfo,
+			"successful unstage must clear MoveInfo")
+	})
+}
+
+func TestTridentOrchestrator_bootstrapVolumeMoves(t *testing.T) {
+	const (
+		volName    = "pvc-move-bootstrap"
+		sourceNode = "ontap-node-src"
+		targetNode = "ontap-node-tgt"
+	)
+
+	t.Run("no volume moves returns nil", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil)
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.NoError(t, err)
+	})
+
+	t.Run("store error propagates", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, fmt.Errorf("store unavailable"))
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.Error(t, err)
+	})
+
+	t.Run("active move projects MoveInfo onto volume", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		vol := &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+			BackendUUID: "backend-uuid",
+			State:       storage.VolumeStateOnline,
+		}
+		o.volumes[volName] = vol
+
+		moves := []*storage.VolumeMoveExternal{
+			{
+				VolumeName: volName,
+				State:      models.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+		}
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.NoError(t, err)
+		require.NotNil(t, vol.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.Equal(t, sourceNode, vol.Config.MoveInfo.SourceNode)
+		assert.Equal(t, targetNode, vol.Config.MoveInfo.TargetNode)
+	})
+
+	t.Run("inactive move does not project MoveInfo", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		vol := &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+			BackendUUID: "backend-uuid",
+			State:       storage.VolumeStateOnline,
+		}
+		o.volumes[volName] = vol
+
+		moves := []*storage.VolumeMoveExternal{
+			{
+				VolumeName: volName,
+				State:      models.VolumeMoveStateSucceeded,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+		}
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.NoError(t, err)
+		assert.Nil(t, vol.Config.MoveInfo)
+	})
+
+	t.Run("move for missing volume is skipped", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		moves := []*storage.VolumeMoveExternal{
+			{
+				VolumeName: "no-such-volume",
+				State:      models.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+		}
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.NoError(t, err)
+	})
+
+	t.Run("multiple moves only active one projects", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStore
+
+		vol := &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+			BackendUUID: "backend-uuid",
+			State:       storage.VolumeStateOnline,
+		}
+		o.volumes[volName] = vol
+
+		moves := []*storage.VolumeMoveExternal{
+			{
+				VolumeName: volName,
+				State:      models.VolumeMoveStateFailed,
+				SourceNode: "old-src",
+				TargetNode: "old-tgt",
+			},
+			{
+				VolumeName: volName,
+				State:      models.VolumeMoveStateMoving,
+				SourceNode: sourceNode,
+				TargetNode: targetNode,
+			},
+		}
+		mockStore.EXPECT().GetVolumeMoves(gomock.Any()).Return(moves, nil)
+
+		err := o.bootstrapVolumeMoves(ctx())
+		assert.NoError(t, err)
+		require.NotNil(t, vol.Config.MoveInfo)
+		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.Equal(t, sourceNode, vol.Config.MoveInfo.SourceNode)
+	})
 }

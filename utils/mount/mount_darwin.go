@@ -1,11 +1,10 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package mount
 
 import (
+	"context"
 	"fmt"
-
-	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"

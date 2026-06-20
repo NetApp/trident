@@ -221,6 +221,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrap(ctx context.Context) error {
 		o.bootstrapAutogrowPolicies,
 		// Volumes, storage classes, and snapshots require backends to be bootstrapped.
 		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
+		// Volume moves require volumes to be bootstrapped.
+		o.bootstrapVolumeMoves,
 		// Volume transactions require volumes and snapshots to be bootstrapped.
 		o.bootstrapVolTxns,
 		// Node access reconciliation is part of node bootstrap and requires volume publications to be bootstrapped.
@@ -375,6 +377,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 	for _, v := range volumes {
 		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned, v.State)
+
+		// Add persisted autogrow and move status to the volume.
 		vol.AutogrowStatus = v.AutogrowStatus
 
 		if vol.IsSubordinate() {
@@ -473,6 +477,56 @@ func (o *ConcurrentTridentOrchestrator) healTridentVolumePublishEnforcement(
 	_ = backend.HealVolumePublishEnforcement(ctx, vol)
 
 	return
+}
+
+// bootstrapVolumeMoves reads volume moves from the persistent store and loads them in the core.
+//
+// It is special in that it does not populate a cache for the storage.VolumeMoveExternal
+// or storage.VolumeMoveInfo types. Instead, it projects move info onto the Trident volumes.
+func (o *ConcurrentTridentOrchestrator) bootstrapVolumeMoves(ctx context.Context) error {
+	volumeMoves, err := o.storeClient.GetVolumeMoves(ctx)
+	if err != nil {
+		return err
+	}
+	if len(volumeMoves) == 0 {
+		Logc(ctx).Trace("No volume moves found during bootstrap.")
+		return nil
+	}
+
+	// Check if each volume has an active move.
+	// There should be a maximum of 1 active move per volume.
+	var wg sync.WaitGroup
+	for _, move := range volumeMoves {
+		name := move.VolumeName
+		wg.Go(func() {
+			if !move.IsActive() {
+				Logc(ctx).Debugf("Skipping volume move %q because it is not active.", name)
+				return
+			}
+
+			// Move is active. Get the volume and update the cache.
+			// Importantly, do not update the persistent store.
+			_, res, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(name, "")))
+			defer unlocker()
+			if err != nil {
+				Logc(ctx).WithError(err).Error("Failed to lock volume during volume move bootstrap.")
+				return
+			}
+
+			volume, upsert := res[0].Volume.Read, res[0].Volume.Upsert
+			if volume == nil {
+				Logc(ctx).Debugf("Volume %q not found during volume move bootstrap.", name)
+				return
+			}
+
+			volume.Config.MoveInfo = move.VolumeMoveInfo()
+			upsert(volume)
+		})
+	}
+	wg.Wait()
+
+	Logc(ctx).Infof("Added %d existing volume move(s).", len(volumeMoves))
+	return nil
 }
 
 // bootstrapSnapshots reads snapshots from the persistent store and loads them into the concurrent cache.
@@ -4421,6 +4475,252 @@ func (o *ConcurrentTridentOrchestrator) ResizeVolume(ctx context.Context, volume
 
 func (o *ConcurrentTridentOrchestrator) ReloadVolumes(ctx context.Context) error {
 	return fmt.Errorf("concurrent core is not supported for Docker")
+}
+
+func (o *ConcurrentTridentOrchestrator) ReconcileVolumeMove(ctx context.Context, volumeName string, volumeMoveInfo *models.VolumeMoveInfo) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_move_reconcile", &err)()
+
+	if volumeName == "" {
+		return errors.New("volume name is required")
+	}
+
+	_, res, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume, upsert := res[0].Volume.Read, res[0].Volume.Upsert
+	if volume == nil {
+		return nil
+	}
+
+	// Only update the volume move info in the cache.
+	var updateMoveInfo *models.VolumeMoveInfo
+	if volumeMoveInfo != nil {
+		updateMoveInfo = volumeMoveInfo.DeepCopy()
+	}
+	volume.Config.MoveInfo = updateMoveInfo
+	upsert(volume)
+
+	return
+}
+
+func (o *ConcurrentTridentOrchestrator) StageVolumeMove(
+	ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo,
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_move_stage", &err)()
+
+	if volumeMoveInfo == nil {
+		return errors.InvalidInputError("volume move info is nil")
+	}
+
+	_, results, unlocker, err := db.Lock(
+		ctx,
+		db.Query(db.UpsertVolume(volumeMoveInfo.VolumeName, ""), db.ReadBackend("")),
+	)
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume := results[0].Volume.Read
+	backend := results[0].Backend.Read
+	upserter := results[0].Volume.Upsert
+
+	if volume == nil {
+		return errors.NotFoundError("volume %q not found", volumeMoveInfo.VolumeName)
+	}
+	if volume.State != storage.VolumeStateOnline {
+		return errors.VolumeStateError("volume %s is not online", volume.Config.Name)
+	}
+
+	if backend == nil {
+		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
+	}
+
+	err = backend.StageVolumeMove(ctx, volume.Config, volumeMoveInfo)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":      volume.Config.Name,
+			"backendUUID": volume.BackendUUID,
+		}).WithError(err).Error("Failed to stage volume move.")
+		return fmt.Errorf("failed to stage volume move for %s: %w", volume.Config.Name, err)
+	}
+	volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
+	upserter(volume)
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":      volume.Config.Name,
+		"backendUUID": volume.BackendUUID,
+	}).Info("Staged volume for move.")
+
+	return nil
+}
+
+func (o *ConcurrentTridentOrchestrator) MoveVolume(
+	ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo,
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_move", &err)()
+
+	if volumeMoveInfo == nil {
+		return errors.InvalidInputError("volume move info is nil")
+	}
+
+	_, results, unlocker, err := db.Lock(
+		ctx, db.Query(db.UpsertVolume(volumeMoveInfo.VolumeName, ""), db.ReadBackend("")),
+	)
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume := results[0].Volume.Read
+	backend := results[0].Backend.Read
+	upserter := results[0].Volume.Upsert
+
+	if volume == nil {
+		return errors.NotFoundError("volume %q not found", volumeMoveInfo.VolumeName)
+	}
+	if backend == nil {
+		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
+	}
+
+	if volumeMoveInfo.DryRun {
+		if volume.State != storage.VolumeStateOnline {
+			return errors.VolumeStateError(fmt.Sprintf("volume %q is not online", volume.Config.Name))
+		}
+	}
+
+	defer func() {
+		// Move is special in that it may have updated state from the backend
+		// that could be useful to persist on the storage.Volume reference in
+		// the cache.
+		//
+		// Backend moves should return transient errors until a terminal failure
+		// is hit, or the move succeeds which results in a nil return from the
+		// backend.
+		defer func() {
+			upserter(volume)
+		}()
+		volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
+
+		if err != nil {
+			return
+		}
+		// If no error is returned, the move is complete.
+
+		// Persist the moved pool only when the backend reports the move complete.
+		if !volumeMoveInfo.DryRun && volumeMoveInfo.TargetPool != "" {
+			volume.Pool = volumeMoveInfo.TargetPool
+		}
+
+		// Update the volume persistence layer once the
+		// move completes in the backend.
+		err = o.storeClient.UpdateVolume(ctx, volume)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volume":      volume.Config.Name,
+				"backendUUID": volume.BackendUUID,
+			}).WithError(err).Error("Failed to update volume after staging volume move.")
+		}
+	}()
+
+	err = backend.MoveVolume(ctx, volume.Config, volumeMoveInfo)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":      volume.Config.Name,
+			"backendUUID": volume.BackendUUID,
+			"moveState":   volumeMoveInfo.State,
+		}).WithError(err).Debug("Volume move started.")
+		return err
+	}
+
+	if volumeMoveInfo.DryRun {
+		Logc(ctx).WithFields(LogFields{
+			"volume":      volume.Config.Name,
+			"backendUUID": volume.BackendUUID,
+			"dryRun":      volumeMoveInfo.DryRun,
+		}).Info("Volume move dry run passed.")
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"volume":      volume.Config.Name,
+			"backendUUID": volume.BackendUUID,
+		}).Info("Volume moved.")
+	}
+
+	return err
+}
+
+func (o *ConcurrentTridentOrchestrator) UnstageVolumeMove(
+	ctx context.Context, volumeMoveInfo *models.VolumeMoveInfo,
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_move_unstage", &err)()
+
+	if volumeMoveInfo == nil {
+		return errors.InvalidInputError("volume move info is nil")
+	}
+
+	_, results, unlocker, err := db.Lock(
+		ctx, db.Query(db.UpsertVolume(volumeMoveInfo.VolumeName, ""), db.ReadBackend("")),
+	)
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume := results[0].Volume.Read
+	backend := results[0].Backend.Read
+	upserter := results[0].Volume.Upsert
+
+	if volume == nil {
+		return errors.NotFoundError("volume %q not found", volumeMoveInfo.VolumeName)
+	}
+	if backend == nil {
+		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
+	}
+
+	err = backend.UnstageVolumeMove(ctx, volume.Config, volumeMoveInfo)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":      volume.Config.Name,
+			"backendUUID": volume.BackendUUID,
+		}).WithError(err).Error("Failed to unstage volume move.")
+		return fmt.Errorf("failed to unstage volume move for %s: %w", volume.Config.Name, err)
+	}
+	volume.Config.MoveInfo = nil
+	upserter(volume)
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":      volume.Config.Name,
+		"backendUUID": volume.BackendUUID,
+	}).Info("Unstaged volume for move.")
+
+	return nil
 }
 
 // addSubordinateVolume defines a new subordinate volume and updates all references to it.  It does not create any

@@ -5982,3 +5982,42 @@ func TestNVMeSubsystemList(t *testing.T) {
 	assert.Nil(t, subsystems)
 	assert.Contains(t, err.Error(), "error listing subsystems")
 }
+
+func TestOntapAPIREST_VolumeMove(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: generic error is propagated as-is
+	rsi.EXPECT().VolumeMove(ctx, "vol1", "aggr1", false).Return("", errors.New("network error"))
+	_, err := oapi.VolumeMove(ctx, "vol1", "aggr1", false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "network error")
+
+	// case 2: InvalidInputError (4xx from REST layer) is preserved, so the controller
+	// can classify it as terminal.
+	rsi.EXPECT().VolumeMove(ctx, "vol1", "aggr1", false).
+		Return("", errors.InvalidInputError("ONTAP rejected volume move request: [400] ..."))
+	_, err = oapi.VolumeMove(ctx, "vol1", "aggr1", false)
+	assert.Error(t, err)
+	assert.True(t, errors.IsInvalidInputError(err),
+		"InvalidInputError from REST layer must survive delegation through OntapAPIREST")
+
+	// case 3: NotFoundError (missing volume) is preserved.
+	rsi.EXPECT().VolumeMove(ctx, "vol1", "aggr1", false).
+		Return("", errors.NotFoundError("could not find volume with name vol1"))
+	_, err = oapi.VolumeMove(ctx, "vol1", "aggr1", false)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err),
+		"NotFoundError from REST layer must survive delegation through OntapAPIREST")
+
+	// case 4: success — job UUID is returned unchanged.
+	rsi.EXPECT().VolumeMove(ctx, "vol1", "aggr1", false).Return("job-abc-123", nil)
+	jobID, err := oapi.VolumeMove(ctx, "vol1", "aggr1", false)
+	assert.NoError(t, err)
+	assert.Equal(t, "job-abc-123", jobID)
+
+	// case 5: dry-run mode success.
+	rsi.EXPECT().VolumeMove(ctx, "vol1", "aggr1", true).Return("", nil)
+	jobID, err = oapi.VolumeMove(ctx, "vol1", "aggr1", true)
+	assert.NoError(t, err)
+	assert.Empty(t, jobID, "dry-run returns empty job ID")
+}

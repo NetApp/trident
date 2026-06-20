@@ -2037,6 +2037,98 @@ func (c *RestClient) VolumeDestroy(ctx context.Context, name string, force bool)
 	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol, force)
 }
 
+func (c *RestClient) VolumeMove(
+	ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
+) (string, error) {
+
+	fields := []string{""}
+	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
+	if err != nil {
+		return "", err
+	}
+	if volume == nil {
+		return "", errors.NotFoundError(fmt.Sprintf("could not find volume with name %v", volumeName))
+	}
+	if volume.UUID == nil {
+		return "", errors.NotFoundError(fmt.Sprintf("could not find volume uuid with name %v", volumeName))
+	}
+
+	uuid := *volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = uuid
+	params.ValidateOnly = &dryRun
+
+	volumeInfo := &models.Volume{
+		Movement: &models.VolumeInlineMovement{
+			DestinationAggregate: &models.VolumeInlineMovementInlineDestinationAggregate{
+				Name: convert.ToPtr(destinationAggregateName),
+			},
+		},
+	}
+
+	params.SetInfo(volumeInfo)
+
+	volumeModifyOk, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	if err != nil {
+		var volModDefault *storage.VolumeModifyDefault
+		if errors.As(err, &volModDefault) && volModDefault.IsClientError() {
+			return "", errors.InvalidInputError(fmt.Sprintf("ONTAP rejected volume move request: %v", err.Error()))
+		}
+		if errors.As(err, &volModDefault) && volModDefault.IsServerError() {
+			return "", errors.TerminalReconciliationError(fmt.Sprintf("ONTAP rejected volume move request: %v", err.Error()))
+		}
+		return "", err
+	}
+
+	if volumeModifyOk == nil && volumeModifyAccepted == nil {
+		return "", fmt.Errorf("unexpected response from volume modify")
+	}
+
+	// If there is explicit error, return the error
+	if volumeModifyOk != nil && !volumeModifyOk.IsSuccess() {
+		return "", fmt.Errorf("failed to start volume move; %v", volumeModifyOk.Error())
+	}
+
+	if volumeModifyAccepted != nil && !volumeModifyAccepted.IsSuccess() {
+		return "", fmt.Errorf("failed to start volume move; %v", volumeModifyAccepted.Error())
+	}
+
+	if dryRun {
+		Logc(ctx).WithField("volume", volumeName).Debug("Volume move dry run successful.")
+		return "", nil
+	}
+
+	// At this point, it is clear that no error occurred while trying to start the volume move.
+	// Since volume move usually takes time, we do not wait for its completion.
+	// Hence, do not get the jobLink and poll for its status. Assume, it is successful and return jobID.
+	Logc(ctx).WithField("volume", volumeName).Debug(
+		"Volume move initiated successfully. This is an asynchronous operation, and its completion is not monitored.")
+
+	var jobUUID string
+
+	if volumeModifyOk != nil && volumeModifyOk.Payload != nil {
+		payload := volumeModifyOk.GetPayload()
+		if payload.Job != nil && payload.Job.UUID != nil {
+			jobUUID = string(*payload.Job.UUID)
+		}
+	} else if volumeModifyAccepted != nil && volumeModifyAccepted.Payload != nil {
+		payload := volumeModifyAccepted.GetPayload()
+		if payload.Job != nil && payload.Job.UUID != nil {
+			jobUUID = string(*payload.Job.UUID)
+		}
+	}
+
+	if jobUUID == "" {
+		return "", fmt.Errorf("missing job UUID in volume modify response")
+	}
+
+	return jobUUID, nil
+
+}
+
 // VolumeRecoveryQueuePurge uses the cli passthrough REST API to purge a volume from the recovery queue.
 // the cli does not support passing in the UUID of the verver instead of the name. This will not work with
 // a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to
@@ -3686,6 +3778,129 @@ func (c *RestClient) LunMapGetReportingNodes(
 		}
 	}
 	return names, nil
+}
+
+// LunMapAddReportingNode adds the node to the lun map's reporting nodes
+func (c *RestClient) LunMapAddReportingNode(
+	ctx context.Context, initiatorGroupName, lunPath, nodeName string,
+) error {
+	lunFields := []string{""}
+	lun, lunGetErr := c.LunGetByName(ctx, lunPath, lunFields)
+	if lunGetErr != nil {
+		return lunGetErr
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
+	}
+	if lun.UUID == nil {
+		return fmt.Errorf("could not find LUN uuid with name %v", lunPath)
+	}
+	lunUUID := *lun.UUID
+
+	igroupFields := []string{""}
+	igroup, igroupGetErr := c.IgroupGetByName(ctx, initiatorGroupName, igroupFields)
+	if igroupGetErr != nil {
+		return igroupGetErr
+	}
+	if igroup == nil {
+		return fmt.Errorf("could not find igroup with name %v", initiatorGroupName)
+	}
+	if igroup.UUID == nil {
+		return fmt.Errorf("could not find igroup uuid with name %v", initiatorGroupName)
+	}
+	igroupUUID := *igroup.UUID
+
+	params := san.NewLunMapReportingNodeCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SetLunUUID(lunUUID)
+	params.SetIgroupUUID(igroupUUID)
+	params.SetInfo(&models.LunMapReportingNode{Name: convert.ToPtr(nodeName)})
+
+	_, err := c.api.San.LunMapReportingNodeCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// lunMapGetReportingNodeUUID resolves a node name to its UUID by querying the reporting node
+// collection for the given lun map. The DELETE endpoint requires the node UUID as a path parameter
+// while the POST endpoint accepts either name or UUID in the body.
+func (c *RestClient) lunMapGetReportingNodeUUID(
+	ctx context.Context, lunUUID, igroupUUID, nodeName string,
+) (string, error) {
+	params := san.NewLunMapReportingNodeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SetLunUUID(lunUUID)
+	params.SetIgroupUUID(igroupUUID)
+
+	result, err := c.api.San.LunMapReportingNodeCollectionGet(params, c.authInfo)
+	if err != nil {
+		return "", err
+	}
+
+	for _, record := range result.Payload.LunMapReportingNodeResponseInlineRecords {
+		if record.Name != nil && *record.Name == nodeName && record.UUID != nil {
+			return *record.UUID, nil
+		}
+	}
+	return "", errors.NotFoundError("reporting node %q not found in lun map", nodeName)
+}
+
+// LunMapRemoveReportingNode removes the node from the lun map's reporting nodes.
+// Returns a NotFoundError if the LUN, igroup, or reporting node does not exist.
+func (c *RestClient) LunMapRemoveReportingNode(
+	ctx context.Context, initiatorGroupName, lunPath, nodeName string,
+) error {
+	lunFields := []string{""}
+	lun, lunGetErr := c.LunGetByName(ctx, lunPath, lunFields)
+	if lunGetErr != nil {
+		return lunGetErr
+	}
+	if lun == nil {
+		return errors.NotFoundError("could not find LUN with name %v", lunPath)
+	}
+	if lun.UUID == nil {
+		return errors.NotFoundError("could not find LUN uuid with name %v", lunPath)
+	}
+	lunUUID := *lun.UUID
+
+	igroupFields := []string{""}
+	igroup, igroupGetErr := c.IgroupGetByName(ctx, initiatorGroupName, igroupFields)
+	if igroupGetErr != nil {
+		return igroupGetErr
+	}
+	if igroup == nil {
+		return errors.NotFoundError("could not find igroup with name %v", initiatorGroupName)
+	}
+	if igroup.UUID == nil {
+		return errors.NotFoundError("could not find igroup uuid with name %v", initiatorGroupName)
+	}
+	igroupUUID := *igroup.UUID
+
+	nodeUUID, err := c.lunMapGetReportingNodeUUID(ctx, lunUUID, igroupUUID, nodeName)
+	if err != nil {
+		return err
+	}
+
+	params := san.NewLunMapReportingNodeDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SetLunUUID(lunUUID)
+	params.SetIgroupUUID(igroupUUID)
+	params.SetUUID(nodeUUID)
+
+	_, err = c.api.San.LunMapReportingNodeDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // LunSize gets the size for a given LUN.

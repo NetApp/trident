@@ -22,6 +22,7 @@ const (
 	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
 	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
 	VOLUME_BUSY_ERROR_REST                     = "524486"
+	VOLUME_MOVE_INTERNAL_ERROR                 = "144182225"
 )
 
 // VolumeBusyRESTCodeRegexp matches REST errno VOLUME_BUSY_ERROR_REST when comma-heavy Messages break ExtractError.

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -288,6 +288,13 @@ func (c *PassthroughClient) AddVolume(context.Context, *storage.Volume) error {
 // memory after bootstrapping.  So this method need not do anything.
 func (c *PassthroughClient) GetVolume(_ context.Context, volName string) (*storage.VolumeExternal, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, volName)
+}
+
+func (c *PassthroughClient) GetVolumeMoves(_ context.Context) ([]*storage.VolumeMoveExternal, error) {
+	// Volume moves are not supported in Docker/passthrough mode. Return an empty
+	// list (consistent with the other passthrough list methods) so bootstrap can
+	// proceed instead of failing with a fatal "Unsupported operation" error.
+	return make([]*storage.VolumeMoveExternal, 0), nil
 }
 
 func (c *PassthroughClient) UpdateVolume(context.Context, *storage.Volume) error {

@@ -1869,3 +1869,17 @@ func TestPreconditionError(t *testing.T) {
 		assert.True(t, IsPreconditionError(wrapped))
 	})
 }
+
+func TestTerminalReconciliationError(t *testing.T) {
+	msg := "terminal reconciliation error"
+	err := TerminalReconciliationError(msg)
+
+	// IsTerminalReconciliationError should be true for this error
+	assert.True(t, IsTerminalReconciliationError(err))
+
+	// Should be false for nil
+	assert.False(t, IsTerminalReconciliationError(nil))
+
+	// Should be false for unrelated error
+	assert.False(t, IsTerminalReconciliationError(errors.New("other error")))
+}

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package filesystem
 
@@ -36,7 +36,7 @@ func NewJSONReaderWriter(osFs afero.Fs) JSONReaderWriter {
 func (j jsonReaderWriter) WriteJSONFile(
 	ctx context.Context, fileContents interface{}, filepath, fileDescription string,
 ) error {
-	file, err := j.osFs.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0o600)
+	file, err := j.osFs.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}

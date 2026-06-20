@@ -5687,3 +5687,468 @@ func TestOntapSANDriverGetMirrorTransferTime(t *testing.T) {
 	assert.Error(t, err, "GetMirrorTransferTime should return error when snapmirror not found")
 	assert.Nil(t, transferTime, "Transfer time should be nil when error occurs")
 }
+
+func TestStageVolumeMove(t *testing.T) {
+	const (
+		volumeName   = "pvc-stage-test"
+		internalName = "trident_pvc_stage_test"
+		sourceNode   = "node-source"
+		targetNode   = "node-target"
+		sourcePool   = "aggr1"
+		targetPool   = "aggr2"
+		igroupA      = "igroup-A"
+		igroupB      = "igroup-B"
+	)
+	internalLUN := lunPath(internalName)
+
+	sourceLIFs := []string{"10.0.0.1", "10.0.0.2"}
+	targetLIFs := []string{"10.1.0.1", "10.1.0.2"}
+	allLIFs := append(append([]string{}, sourceLIFs...), targetLIFs...)
+
+	newVolConfig := func(igroups string, useCHAP bool) *storage.VolumeConfig {
+		return &storage.VolumeConfig{
+			Name:         volumeName,
+			InternalName: internalName,
+			AccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiIgroup:       igroups,
+					IscsiTargetPortal: "10.0.0.1",
+					IscsiPortals:      []string{"10.0.0.2"},
+					IscsiChapInfo: models.IscsiChapInfo{
+						UseCHAP: useCHAP,
+					},
+				},
+			},
+		}
+	}
+
+	newMoveInfo := func() *models.VolumeMoveInfo {
+		return &models.VolumeMoveInfo{
+			VolumeName: volumeName,
+			SourceNode: sourceNode,
+			SourcePool: sourcePool,
+			TargetNode: targetNode,
+			TargetPool: targetPool,
+		}
+	}
+
+	happyVolumeInfo := &api.Volume{Aggregates: []string{sourcePool}}
+
+	setupHappyPath := func(m *mockapi.MockOntapAPI) {
+		m.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode, targetNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode, targetNode}).
+			Return(allLIFs, nil)
+	}
+
+	t.Run("happy path: single igroup, target LIFs computed via delta", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		setupHappyPath(mockAPI)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+
+		assert.NotNil(t, moveInfo.InitialAccessInfo)
+		assert.Equal(t, sourceLIFs[0], moveInfo.InitialAccessInfo.IscsiTargetPortal)
+		assert.Equal(t, sourceLIFs[1:], moveInfo.InitialAccessInfo.IscsiPortals)
+
+		assert.NotNil(t, moveInfo.TargetAccessInfo)
+		assert.Equal(t, targetLIFs[0], moveInfo.TargetAccessInfo.IscsiTargetPortal)
+		assert.Equal(t, targetLIFs[1:], moveInfo.TargetAccessInfo.IscsiPortals)
+	})
+
+	t.Run("happy path: multiple igroups adds reporting node for each", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		twoIgroups := igroupA + "," + igroupB
+
+		m := mockAPI
+		m.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupB, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode, targetNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode, targetNode}).
+			Return(allLIFs, nil)
+
+		volConfig := newVolConfig(twoIgroups, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+		assert.Equal(t, targetLIFs[0], moveInfo.TargetAccessInfo.IscsiTargetPortal)
+	})
+
+	t.Run("successive move: stale tracking file portals are corrected", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+
+		staleLIFs := []string{"10.2.0.1", "10.2.0.2"}
+		volConfig := newVolConfig(igroupA, false)
+		volConfig.AccessInfo.IscsiTargetPortal = staleLIFs[0]
+		volConfig.AccessInfo.IscsiPortals = staleLIFs[1:]
+
+		m := mockAPI
+		m.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode, targetNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode, targetNode}).
+			Return(allLIFs, nil)
+
+		moveInfo := newMoveInfo()
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+
+		assert.Equal(t, sourceLIFs[0], moveInfo.InitialAccessInfo.IscsiTargetPortal,
+			"InitialAccessInfo should reflect ONTAP reporting nodes, not stale tracking file")
+		assert.Equal(t, targetLIFs[0], moveInfo.TargetAccessInfo.IscsiTargetPortal,
+			"TargetAccessInfo should have target node LIFs")
+	})
+
+	t.Run("CHAP credentials are set on target access info", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		driver.Config.ChapUsername = "chap-user"
+		driver.Config.ChapInitiatorSecret = "chap-secret"
+		driver.Config.ChapTargetUsername = "chap-target-user"
+		driver.Config.ChapTargetInitiatorSecret = "chap-target-secret"
+		setupHappyPath(mockAPI)
+
+		volConfig := newVolConfig(igroupA, true)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+		assert.Equal(t, "chap-user", moveInfo.TargetAccessInfo.IscsiUsername)
+		assert.Equal(t, "chap-secret", moveInfo.TargetAccessInfo.IscsiInitiatorSecret)
+		assert.Equal(t, "chap-target-user", moveInfo.TargetAccessInfo.IscsiTargetUsername)
+		assert.Equal(t, "chap-target-secret", moveInfo.TargetAccessInfo.IscsiTargetSecret)
+	})
+
+	t.Run("no delta falls back to all LIFs", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+
+		m := mockAPI
+		m.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+		assert.Equal(t, sourceLIFs[0], moveInfo.TargetAccessInfo.IscsiTargetPortal)
+		assert.Equal(t, sourceLIFs[1:], moveInfo.TargetAccessInfo.IscsiPortals)
+	})
+
+	t.Run("empty igroup skips stage without error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		volConfig := newVolConfig("", false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+	})
+
+	t.Run("VolumeInfo error returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).
+			Return(nil, fmt.Errorf("connection refused"))
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+	})
+
+	t.Run("source pool mismatch returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).
+			Return(&api.Volume{Aggregates: []string{"wrong_aggr"}}, nil)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+		assert.True(t, errors.IsInvalidInputError(err))
+	})
+
+	t.Run("LunMapGetReportingNodes error in initial access info returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return(nil, fmt.Errorf("ONTAP error"))
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+	})
+
+	t.Run("no pre-move LIFs returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return([]string{}, nil)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+		assert.Nil(t, moveInfo.TargetAccessInfo)
+	})
+
+	t.Run("LunMapAddReportingNode error returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		mockAPI.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(fmt.Errorf("permission denied"))
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+	})
+
+	t.Run("no post-move reporting LIFs returns error", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode}, nil)
+		mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode}).
+			Return(sourceLIFs, nil)
+		mockAPI.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode, targetNode}, nil)
+		mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode, targetNode}).
+			Return([]string{}, nil)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.Error(t, err)
+	})
+
+	t.Run("pre-populated InitialAccessInfo skips ONTAP query", func(t *testing.T) {
+		mockAPI, driver := newMockOntapSANDriver(t)
+
+		m := mockAPI
+		m.EXPECT().VolumeInfo(ctx, internalName).Return(happyVolumeInfo, nil)
+		m.EXPECT().LunMapAddReportingNode(ctx, igroupA, internalLUN, targetNode).
+			Return(nil)
+		m.EXPECT().LunMapGetReportingNodes(ctx, igroupA, internalLUN).
+			Return([]string{sourceNode, targetNode}, nil)
+		m.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), []string{sourceNode, targetNode}).
+			Return(allLIFs, nil)
+
+		volConfig := newVolConfig(igroupA, false)
+		moveInfo := newMoveInfo()
+		moveInfo.InitialAccessInfo = &models.VolumeAccessInfo{
+			IscsiAccessInfo: models.IscsiAccessInfo{
+				IscsiTargetPortal: sourceLIFs[0],
+				IscsiPortals:      sourceLIFs[1:],
+			},
+		}
+
+		err := driver.StageVolumeMove(ctx, volConfig, moveInfo)
+		assert.NoError(t, err)
+		assert.Equal(t, targetLIFs[0], moveInfo.TargetAccessInfo.IscsiTargetPortal)
+	})
+}
+
+func TestUnstageVolumeMove(t *testing.T) {
+	const (
+		volumeName   = "pvc-test"
+		internalName = "trident_pvc_test"
+		sourceNode   = "ontap-node-source"
+		igroupA      = "igroup-A"
+		igroupB      = "igroup-B"
+	)
+	internalLUN := lunPath(internalName)
+
+	newVolConfig := func(igroups string) *storage.VolumeConfig {
+		return &storage.VolumeConfig{
+			Name:         volumeName,
+			InternalName: internalName,
+			AccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiIgroup:       igroups,
+					IscsiTargetPortal: "10.0.0.1",
+					IscsiPortals:      []string{"10.0.0.2"},
+				},
+			},
+		}
+	}
+
+	newMoveInfo := func() *models.VolumeMoveInfo {
+		return &models.VolumeMoveInfo{
+			VolumeName: volumeName,
+			State:      models.VolumeMoveStateMoving,
+			SourceNode: sourceNode,
+			TargetNode: "ontap-node-target",
+			InitialAccessInfo: &models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiTargetPortal: "10.0.0.1",
+					IscsiPortals:      []string{"10.0.0.2"},
+				},
+			},
+			TargetAccessInfo: &models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiTargetPortal: "10.1.0.1",
+					IscsiPortals:      []string{"10.1.0.2"},
+				},
+			},
+		}
+	}
+
+	tests := []struct {
+		name      string
+		igroups   string
+		setupMock func(m *mockapi.MockOntapAPI)
+		assertErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "happy path single igroup removes source and updates LIFs",
+			igroups: igroupA,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(nil)
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "happy path multiple igroups removes source from all",
+			igroups: igroupA + "," + igroupB,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupB, internalLUN, sourceNode).
+					Return(nil)
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "not-found error from LunMapRemoveReportingNode is tolerated",
+			igroups: igroupA,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(errors.NotFoundError("igroup %s not found", igroupA))
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "not-found error tolerated for one igroup while other succeeds",
+			igroups: igroupA + "," + igroupB,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupB, internalLUN, sourceNode).
+					Return(errors.NotFoundError("reporting node not found"))
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "real error from LunMapRemoveReportingNode fails unstage",
+			igroups: igroupA,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(fmt.Errorf("ONTAP connection refused"))
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:    "real error on one igroup fails even if other succeeds",
+			igroups: igroupA + "," + igroupB,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupA, internalLUN, sourceNode).
+					Return(nil)
+				m.EXPECT().
+					LunMapRemoveReportingNode(ctx, igroupB, internalLUN, sourceNode).
+					Return(fmt.Errorf("permission denied"))
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:    "nil InitialAccessInfo skips unstage without error",
+			igroups: igroupA,
+			setupMock: func(m *mockapi.MockOntapAPI) {
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:    "empty igroup string skips unstage without error",
+			igroups: "",
+			setupMock: func(m *mockapi.MockOntapAPI) {
+			},
+			assertErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			tt.setupMock(mockAPI)
+
+			volConfig := newVolConfig(tt.igroups)
+			moveInfo := newMoveInfo()
+
+			if tt.name == "nil InitialAccessInfo skips unstage without error" {
+				moveInfo.InitialAccessInfo = nil
+				moveInfo.TargetAccessInfo = nil
+			}
+
+			err := driver.UnstageVolumeMove(ctx, volConfig, moveInfo)
+			tt.assertErr(t, err)
+		})
+	}
+}

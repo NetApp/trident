@@ -72,6 +72,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentAutogrowPolicyList{},
 		&TridentAutogrowRequestInternal{},
 		&TridentAutogrowRequestInternalList{},
+		&TridentVolumeMove{},
+		&TridentVolumeMoveList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

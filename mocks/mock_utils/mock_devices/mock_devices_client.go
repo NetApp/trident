@@ -13,9 +13,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
 	context "golang.org/x/net/context"
+
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockDevices is a mock of Devices interface.
@@ -287,6 +288,21 @@ func (mr *MockDevicesMockRecorder) GetMultipathDeviceUUID(multipathDevicePath an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipathDeviceUUID", reflect.TypeOf((*MockDevices)(nil).GetMultipathDeviceUUID), multipathDevicePath)
 }
 
+// GetUnhealthyDevices mocks base method.
+func (m *MockDevices) GetUnhealthyDevices(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUnhealthyDevices", ctx, deviceInfo)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUnhealthyDevices indicates an expected call of GetUnhealthyDevices.
+func (mr *MockDevicesMockRecorder) GetUnhealthyDevices(ctx, deviceInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnhealthyDevices", reflect.TypeOf((*MockDevices)(nil).GetUnhealthyDevices), ctx, deviceInfo)
+}
+
 // IsDeviceUnformatted mocks base method.
 func (m *MockDevices) IsDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -326,6 +342,34 @@ func (m *MockDevices) MultipathFlushDevice(ctx context.Context, deviceInfo *mode
 func (mr *MockDevicesMockRecorder) MultipathFlushDevice(ctx, deviceInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MultipathFlushDevice", reflect.TypeOf((*MockDevices)(nil).MultipathFlushDevice), ctx, deviceInfo)
+}
+
+// AddMultipathPath mocks base method.
+func (m *MockDevices) AddMultipathPath(ctx context.Context, blockDevice string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMultipathPath", ctx, blockDevice)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddMultipathPath indicates an expected call of AddMultipathPath.
+func (mr *MockDevicesMockRecorder) AddMultipathPath(ctx, blockDevice any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMultipathPath", reflect.TypeOf((*MockDevices)(nil).AddMultipathPath), ctx, blockDevice)
+}
+
+// FailMultipathPath mocks base method.
+func (m *MockDevices) FailMultipathPath(ctx context.Context, blockDevice string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailMultipathPath", ctx, blockDevice)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FailMultipathPath indicates an expected call of FailMultipathPath.
+func (mr *MockDevicesMockRecorder) FailMultipathPath(ctx, blockDevice any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailMultipathPath", reflect.TypeOf((*MockDevices)(nil).FailMultipathPath), ctx, blockDevice)
 }
 
 // RemoveDevice mocks base method.

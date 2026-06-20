@@ -8,6 +8,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -49,6 +50,7 @@ const (
 	ObjectTypeTridentBackend           = crdtypes.ObjectTypeTridentBackend
 	ObjectTypeTridentAutogrowPolicy    = crdtypes.ObjectTypeTridentAutogrowPolicy
 	ObjectTypeStorageClass             = crdtypes.ObjectTypeStorageClass
+	ObjectTypeTridentVolumeMove        = crdtypes.ObjectTypeTridentVolumeMove
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -106,6 +108,11 @@ type TridentNodeCrdController struct {
 	tridentAutogrowPolicyInformer cache.SharedIndexInformer
 	tridentAutogrowPolicyLister   listers.TridentAutogrowPolicyLister
 	tridentAutogrowPolicySynced   cache.InformerSynced
+
+	// TridentVolumeMove related
+	tridentVolumeMoveInformer cache.SharedIndexInformer
+	tridentVolumeMoveLister   listers.TridentVolumeMoveLister
+	tridentVolumeMoveSynced   cache.InformerSynced
 
 	// StorageClass related informer and lister
 	storageClassInformer cache.SharedIndexInformer
@@ -247,6 +254,10 @@ func newTridentNodeCrdController(
 	tagpInformer := allNSCrdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer()
 	tagpLister := listers.NewTridentAutogrowPolicyLister(tagpInformer.GetIndexer())
 
+	// TridentVolumeMove informer - watches volume move actions in the Trident namespace
+	tvmInformer := tridentNSCrdInformerFactory.Trident().V1().TridentVolumeMoves().Informer()
+	tvmLister := listers.NewTridentVolumeMoveLister(tvmInformer.GetIndexer())
+
 	// StorageClass informer and lister - watches all storage classes across the cluster
 	scInformer := kubeInformerFactory.Storage().V1().StorageClasses().Informer()
 	scLister := kubeInformerFactory.Storage().V1().StorageClasses().Lister()
@@ -320,18 +331,21 @@ func newTridentNodeCrdController(
 		tridentVolumePublicationInformer: tvpInformer,
 		tridentBackendInformer:           tbeInformer,
 		tridentAutogrowPolicyInformer:    tagpInformer,
+		tridentVolumeMoveInformer:        tvmInformer,
 		storageClassInformer:             scInformer,
 
 		// Listers for cached resource lookups
 		tridentVolumePublicationLister: tvpLister,
 		tridentBackendLister:           tbeLister,
 		tridentAutogrowPolicyLister:    tagpLister,
+		tridentVolumeMoveLister:        tvmLister,
 		storageClassLister:             scLister,
 
 		// Informer sync status checkers
 		tridentVolumePublicationSynced: tvpInformer.HasSynced,
 		tridentBackendSynced:           tbeInformer.HasSynced,
 		tridentAutogrowPolicySynced:    tagpInformer.HasSynced,
+		tridentVolumeMoveSynced:        tvmInformer.HasSynced,
 		storageClassSynced:             scInformer.HasSynced,
 
 		autogrowOrchestrator: autogrowOrch,
@@ -368,6 +382,13 @@ func newTridentNodeCrdController(
 
 	// TridentAutogrowPolicy events (all policies cluster-wide)
 	_, _ = tagpInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	// TridentVolumeMove events (Trident namespace)
+	_, _ = tvmInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
@@ -456,6 +477,7 @@ func (c *TridentNodeCrdController) Run(ctx context.Context, threadiness int, sto
 		c.tridentVolumePublicationSynced,
 		c.tridentBackendSynced,
 		c.tridentAutogrowPolicySynced,
+		c.tridentVolumeMoveSynced,
 		c.storageClassSynced,
 	); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
@@ -561,6 +583,15 @@ func (c *TridentNodeCrdController) updateCRHandler(old, new interface{}) {
 	if newCRMeta.GetGeneration() == oldCRMeta.GetGeneration() &&
 		newCRMeta.GetGeneration() != 0 &&
 		newCRMeta.DeletionTimestamp.IsZero() { // CR was deleted and need to remove finalizers
+		// TridentVolumeMove node work is driven by status (e.g. NodeStaging); status updates do not bump generation.
+		if oldTVM, ok := old.(*tridentv1.TridentVolumeMove); ok {
+			if newTVM, ok2 := new.(*tridentv1.TridentVolumeMove); ok2 {
+				if !apiequality.Semantic.DeepEqual(oldTVM.Status, newTVM.Status) {
+					c.addEventToWorkqueue(key, EventUpdate, ctx, ObjectType(newCR.GetKind()))
+					return
+				}
+			}
+		}
 		logFields := LogFields{
 			"name":          newCRMeta.GetName(),
 			"oldGeneration": oldCRMeta.GetGeneration(),
@@ -701,6 +732,8 @@ func (c *TridentNodeCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentAutogrowPolicies
 		case ObjectTypeStorageClass:
 			handleFunction = c.handleStorageClasses
+		case ObjectTypeTridentVolumeMove:
+			handleFunction = c.handleTridentVolumeMove
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}

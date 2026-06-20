@@ -14,9 +14,10 @@ import (
 	os "os"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	models "github.com/netapp/trident/utils/models"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockNodeHelper is a mock of NodeHelper interface.
@@ -199,6 +200,20 @@ func (m *MockNodeHelper) RemovePublishedPath(ctx context.Context, volumeID, path
 func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(ctx, volumeID, pathToRemove any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).RemovePublishedPath), ctx, volumeID, pathToRemove)
+}
+
+// UpdatePublishInfo mocks base method.
+func (m *MockNodeHelper) UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePublishInfo", ctx, volumeID, publishInfo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePublishInfo indicates an expected call of UpdatePublishInfo.
+func (mr *MockNodeHelperMockRecorder) UpdatePublishInfo(ctx, volumeID, publishInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePublishInfo", reflect.TypeOf((*MockNodeHelper)(nil).UpdatePublishInfo), ctx, volumeID, publishInfo)
 }
 
 // UpgradeVolumeTrackingFile mocks base method.

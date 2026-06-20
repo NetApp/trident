@@ -136,6 +136,14 @@ type TridentVolumeListerExpansion interface{}
 // TridentVolumeNamespaceLister.
 type TridentVolumeNamespaceListerExpansion interface{}
 
+// TridentVolumeMoveListerExpansion allows custom methods to be added to
+// TridentVolumeMoveLister.
+type TridentVolumeMoveListerExpansion interface{}
+
+// TridentVolumeMoveNamespaceListerExpansion allows custom methods to be added to
+// TridentVolumeMoveNamespaceLister.
+type TridentVolumeMoveNamespaceListerExpansion interface{}
+
 // TridentVolumePublicationListerExpansion allows custom methods to be added to
 // TridentVolumePublicationLister.
 type TridentVolumePublicationListerExpansion interface{}

@@ -90,6 +90,8 @@ type Backend interface {
 	DeepCopyType() Backend
 	GetUniqueKey() string
 	Mirrorer
+	CanMoveVolume() bool
+	VolumeMover
 	ChapEnabled
 	PublishEnforceable
 	GroupSnapshotter

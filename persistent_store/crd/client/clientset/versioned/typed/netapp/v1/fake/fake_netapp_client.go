@@ -5,9 +5,10 @@
 package fake
 
 import (
-	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
+
+	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 )
 
 type FakeTridentV1 struct {
@@ -80,6 +81,10 @@ func (c *FakeTridentV1) TridentVersions(namespace string) v1.TridentVersionInter
 
 func (c *FakeTridentV1) TridentVolumes(namespace string) v1.TridentVolumeInterface {
 	return &FakeTridentVolumes{c, namespace}
+}
+
+func (c *FakeTridentV1) TridentVolumeMoves(namespace string) v1.TridentVolumeMoveInterface {
+	return &FakeTridentVolumeMoves{c, namespace}
 }
 
 func (c *FakeTridentV1) TridentVolumePublications(namespace string) v1.TridentVolumePublicationInterface {

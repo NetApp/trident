@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -573,24 +573,11 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.ResourceExhausted, err.Error())
 	} else if errors.IsInvalidInputError(err) {
 		return status.Error(codes.InvalidArgument, err.Error())
+	} else if errors.IsVolumeStateError(err) {
+		return status.Error(codes.Aborted, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())
 	}
-}
-
-func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
-	var aesKey []byte
-	var err error
-
-	if "" != aesKeyFile {
-		aesKey, err = os.ReadFile(aesKeyFile)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		Logc(ctx).Warn("AES encryption key not provided!")
-	}
-	return aesKey, nil
 }
 
 func (p *Plugin) IsReady() bool {
@@ -841,6 +828,22 @@ func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 		limiter.WithSemaphoreNSize(ctx, maxNodePublishNVMeVolumeOperations),
 	); err != nil {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishNVMeVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeGraftISCSIAttachment], err = limiter.New(ctx,
+		NodeGraftISCSIAttachment,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishISCSIVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeGraftISCSIAttachment, err)
+	}
+
+	if p.limiterSharedMap[NodePruneISCSIAttachment], err = limiter.New(ctx,
+		NodePruneISCSIAttachment,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishISCSIVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePruneISCSIAttachment, err)
 	}
 
 	// NodeUnpublish is common for all protocols

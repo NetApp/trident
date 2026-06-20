@@ -322,8 +322,8 @@ func IsVolumeStateError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*volumeStateError)
-	return ok
+	var errPtr *volumeStateError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -800,8 +800,8 @@ func IsInvalidInputError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*invalidInputError)
-	return ok
+	var errPtr *invalidInputError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -923,8 +923,8 @@ func IsAuthError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*authError)
-	return ok
+	var errPtr *authError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -1796,5 +1796,23 @@ func IsPreconditionError(err error) bool {
 		return false
 	}
 	var errPtr *preconditionError
+	return errors.As(err, &errPtr)
+}
+
+type terminalReconciliationError struct {
+	message string
+}
+
+func (e *terminalReconciliationError) Error() string { return e.message }
+
+func TerminalReconciliationError(message string) error {
+	return &terminalReconciliationError{message}
+}
+
+func IsTerminalReconciliationError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *terminalReconciliationError
 	return errors.As(err, &errPtr)
 }

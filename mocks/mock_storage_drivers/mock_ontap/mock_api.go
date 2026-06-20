@@ -14,8 +14,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	api "github.com/netapp/trident/storage_drivers/ontap/api"
 	gomock "go.uber.org/mock/gomock"
+
+	api "github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
 // MockOntapAPI is a mock of OntapAPI interface.
@@ -528,6 +529,21 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupUsedSize(ctx, volumeName any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupUsedSize", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupUsedSize), ctx, volumeName)
 }
 
+// GetNodeForAggregate mocks base method.
+func (m *MockOntapAPI) GetNodeForAggregate(ctx context.Context, aggregate string) (*api.Node, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNodeForAggregate", ctx, aggregate)
+	ret0, _ := ret[0].(*api.Node)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNodeForAggregate indicates an expected call of GetNodeForAggregate.
+func (mr *MockOntapAPIMockRecorder) GetNodeForAggregate(ctx, aggregate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodeForAggregate", reflect.TypeOf((*MockOntapAPI)(nil).GetNodeForAggregate), ctx, aggregate)
+}
+
 // GetSLMDataLifs mocks base method.
 func (m *MockOntapAPI) GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -835,6 +851,21 @@ func (mr *MockOntapAPIMockRecorder) IscsiNodeGetNameRequest(ctx any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiNodeGetNameRequest", reflect.TypeOf((*MockOntapAPI)(nil).IscsiNodeGetNameRequest), ctx)
 }
 
+// JobGet mocks base method.
+func (m *MockOntapAPI) JobGet(ctx context.Context, jobID string) (*api.Job, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "JobGet", ctx, jobID)
+	ret0, _ := ret[0].(*api.Job)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// JobGet indicates an expected call of JobGet.
+func (mr *MockOntapAPIMockRecorder) JobGet(ctx, jobID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobGet", reflect.TypeOf((*MockOntapAPI)(nil).JobGet), ctx, jobID)
+}
+
 // JobScheduleExists mocks base method.
 func (m *MockOntapAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -982,6 +1013,20 @@ func (mr *MockOntapAPIMockRecorder) LunListIgroupsMapped(ctx, lunPath any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunListIgroupsMapped", reflect.TypeOf((*MockOntapAPI)(nil).LunListIgroupsMapped), ctx, lunPath)
 }
 
+// LunMapAddReportingNode mocks base method.
+func (m *MockOntapAPI) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunMapAddReportingNode indicates an expected call of LunMapAddReportingNode.
+func (mr *MockOntapAPIMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+}
+
 // LunMapGetReportingNodes mocks base method.
 func (m *MockOntapAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -1010,6 +1055,20 @@ func (m *MockOntapAPI) LunMapInfo(ctx context.Context, initiatorGroupName, lunPa
 func (mr *MockOntapAPIMockRecorder) LunMapInfo(ctx, initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapInfo", reflect.TypeOf((*MockOntapAPI)(nil).LunMapInfo), ctx, initiatorGroupName, lunPath)
+}
+
+// LunMapRemoveReportingNode mocks base method.
+func (m *MockOntapAPI) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunMapRemoveReportingNode indicates an expected call of LunMapRemoveReportingNode.
+func (mr *MockOntapAPIMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
 }
 
 // LunRename mocks base method.
@@ -2403,6 +2462,21 @@ func (m *MockOntapAPI) VolumeMount(ctx context.Context, name, junctionPath strin
 func (mr *MockOntapAPIMockRecorder) VolumeMount(ctx, name, junctionPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockOntapAPI)(nil).VolumeMount), ctx, name, junctionPath)
+}
+
+// VolumeMove mocks base method.
+func (m *MockOntapAPI) VolumeMove(ctx context.Context, volumeName, destinationAggregateName string, dryRun bool) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeMove", ctx, volumeName, destinationAggregateName, dryRun)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeMove indicates an expected call of VolumeMove.
+func (mr *MockOntapAPIMockRecorder) VolumeMove(ctx, volumeName, destinationAggregateName, dryRun any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMove", reflect.TypeOf((*MockOntapAPI)(nil).VolumeMove), ctx, volumeName, destinationAggregateName, dryRun)
 }
 
 // VolumeRecoveryQueueGetName mocks base method.

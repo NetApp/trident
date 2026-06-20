@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -129,6 +129,13 @@ type VolumeUpdater interface {
 		ctx context.Context, volConfig *VolumeConfig,
 		updateInfo *models.VolumeUpdateInfo, allVolumes map[string]*Volume,
 	) (map[string]*Volume, error)
+}
+
+// VolumeMover provides a common interface for backends that support moving volumes
+type VolumeMover interface {
+	StageVolumeMove(ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error
+	MoveVolume(ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error
+	UnstageVolumeMove(ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error
 }
 
 type StorageBackend struct {
@@ -1687,4 +1694,63 @@ func (b *StorageBackend) DeepCopyType() Backend {
 
 func (b *StorageBackend) GetUniqueKey() string {
 	return b.name
+}
+
+func (b *StorageBackend) CanMoveVolume() bool {
+	_, ok := b.driver.(VolumeMover)
+	return ok
+}
+
+func (b *StorageBackend) StageVolumeMove(
+	ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	// Ensure backend supports volume move
+	moveEnabledDriver, ok := b.driver.(VolumeMover)
+	if !ok {
+		return errors.UnsupportedError(fmt.Sprintf(
+			"volume move is not implemented by backends of type %v", b.driver.Name()))
+	}
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(ctx); err != nil {
+		return err
+	}
+
+	return moveEnabledDriver.StageVolumeMove(ctx, volConfig, volumeMoveInfo)
+}
+
+func (b *StorageBackend) MoveVolume(
+	ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	// Ensure backend supports volume move
+	moveEnabledDriver, ok := b.driver.(VolumeMover)
+	if !ok {
+		return errors.UnsupportedError(fmt.Sprintf(
+			"volume move is not implemented by backends of type %v", b.driver.Name()))
+	}
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(ctx); err != nil {
+		return err
+	}
+
+	return moveEnabledDriver.MoveVolume(ctx, volConfig, volumeMoveInfo)
+}
+
+func (b *StorageBackend) UnstageVolumeMove(
+	ctx context.Context, volConfig *VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo,
+) error {
+	// Ensure backend supports volume move
+	moveEnabledDriver, ok := b.driver.(VolumeMover)
+	if !ok {
+		return errors.UnsupportedError(fmt.Sprintf(
+			"volume move is not implemented by backends of type %v", b.driver.Name()))
+	}
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(ctx); err != nil {
+		return err
+	}
+
+	return moveEnabledDriver.UnstageVolumeMove(ctx, volConfig, volumeMoveInfo)
 }

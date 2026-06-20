@@ -7,9 +7,10 @@ package externalversions
 import (
 	"fmt"
 
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
+
+	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -73,6 +74,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVersions().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentvolumes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVolumes().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentvolumemoves"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVolumeMoves().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentvolumepublications"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVolumePublications().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentvolumereferences"):

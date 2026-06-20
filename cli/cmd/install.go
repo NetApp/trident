@@ -57,6 +57,7 @@ const (
 	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 	AutogrowPolicyCRDName          = "tridentautogrowpolicies.trident.netapp.io"
 	AutogrowRequestInternalCRDName = "tridentautogrowrequestinternals.trident.netapp.io"
+	VolumeMoveCRDName              = "tridentvolumemoves.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -209,6 +210,7 @@ var (
 		ConfiguratorCRDName,
 		AutogrowPolicyCRDName,
 		AutogrowRequestInternalCRDName,
+		VolumeMoveCRDName,
 	}
 )
 

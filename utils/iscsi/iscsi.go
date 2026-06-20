@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -44,6 +45,7 @@ const (
 	SessionSourceCurrentStatus = "currentStatus"
 	SessionSourceNodeStage     = "nodeStage"
 	SessionSourceTrackingInfo  = "trackingInfo"
+	SessionSourceNodeGraft     = "nodeGraft"
 
 	iscsiadmLoginTimeoutValue = 10
 	iscsiadmLoginTimeout      = iscsiadmLoginTimeoutValue * time.Second
@@ -128,6 +130,15 @@ type ISCSI interface {
 		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
 		safeToFsFormat bool,
 	) error
+	GraftAttachment(ctx context.Context, publishInfo *models.VolumePublishInfo) (*models.AttachmentInfo, error)
+	GraftAttachmentRetry(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
+	) (*models.AttachmentInfo, error)
+	PruneAttachment(ctx context.Context, publishInfo *models.VolumePublishInfo) (*models.AttachmentInfo, error)
+	PruneAttachmentRetry(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
+	) (*models.AttachmentInfo, error)
+	RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error
 }
 
 // Exclusion list contains keywords if found in any Target IQN should not be considered for
@@ -3212,5 +3223,1047 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 				name, devicePath, mountPoint, err)
 		}
 	}
+	return nil
+}
+
+// ensureMultipathDeviceHasPaths checks that at least one of the expected block devices is present as a
+// slave of the multipath device. If any are missing, it attempts to add them via "multipathd add path"
+// (best-effort) and re-reads the slave list. Returns the list of confirmed slaves, or an error if the
+// multipath device is unknown, no expected devices were provided, or none of the expected devices are
+// present as slaves.
+func (client *Client) ensureMultipathDeviceHasPaths(
+	ctx context.Context, multipathDevice string, expectedDevices []string,
+) ([]string, error) {
+	fields := LogFields{"multipathDevice": multipathDevice, "expectedDevices": expectedDevices}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.ensureMultipathDeviceHasPaths")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.ensureMultipathDeviceHasPaths")
+
+	if multipathDevice == "" {
+		return nil, fmt.Errorf("multipath device not yet discovered for expected devices %v", expectedDevices)
+	}
+	if len(expectedDevices) == 0 {
+		return nil, fmt.Errorf("no expected devices provided for multipath device %s", multipathDevice)
+	}
+
+	mpathSlaves := client.devices.FindDevicesForMultipathDevice(ctx, multipathDevice)
+	uniqueUnderlyingDevices := make(map[string]struct{}, len(mpathSlaves))
+	for _, s := range mpathSlaves {
+		uniqueUnderlyingDevices[s] = struct{}{}
+	}
+
+	var missing []string
+	for _, dev := range expectedDevices {
+		if _, ok := uniqueUnderlyingDevices[dev]; !ok {
+			missing = append(missing, dev)
+		}
+	}
+
+	if len(missing) > 0 {
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice": multipathDevice,
+			"missingDevices":  missing,
+		}).Info("Actively adding missing devices to multipathd.")
+
+		for _, dev := range missing {
+			if err := client.devices.AddMultipathPath(ctx, dev); err != nil {
+				Logc(ctx).WithField("device", dev).WithError(err).Warn(
+					"multipathd add path failed; will verify slaves anyway.")
+			}
+		}
+
+		mpathSlaves = client.devices.FindDevicesForMultipathDevice(ctx, multipathDevice)
+		uniqueUnderlyingDevices = make(map[string]struct{}, len(mpathSlaves))
+		for _, s := range mpathSlaves {
+			uniqueUnderlyingDevices[s] = struct{}{}
+		}
+	}
+
+	var present []string
+	for _, dev := range expectedDevices {
+		if _, ok := uniqueUnderlyingDevices[dev]; ok {
+			present = append(present, dev)
+		}
+	}
+
+	if len(present) == 0 {
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice": multipathDevice,
+			"mpathSlaves":     mpathSlaves,
+			"expectedDevices": expectedDevices,
+		}).Warn("No expected device paths in multipath device slave list after add attempts.")
+		return nil, fmt.Errorf(
+			"multipath device %s has none of the expected slave devices %v; "+
+				"multipathd has not incorporated any new paths",
+			multipathDevice, expectedDevices,
+		)
+	}
+
+	if len(present) < len(expectedDevices) {
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice": multipathDevice,
+			"presentDevices":  present,
+			"totalExpected":   len(expectedDevices),
+		}).Info("Some paths not yet in multipath device; self-healing and iscsid will recover them.")
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"multipathDevice": multipathDevice,
+		"slaves":          mpathSlaves,
+		"confirmedSlaves": present,
+	}).Debug("At least one expected device confirmed as multipath device slave.")
+
+	return present, nil
+}
+
+// GraftAttachment attempts to add paths to an existing iSCSI LUN attachment.
+// It assumes the caller will retry or clean up when failures occur.
+func (client *Client) GraftAttachment(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+) (*models.AttachmentInfo, error) {
+	if publishInfo == nil {
+		return nil, errors.New("nil publish info supplied to attachment graft")
+	}
+
+	fields := LogFields{
+		"lunID":  publishInfo.IscsiLunNumber,
+		"target": publishInfo.IscsiTargetIQN,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.GraftAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.GraftAttachment")
+
+	target := publishInfo.IscsiTargetIQN
+	lunID := publishInfo.IscsiLunNumber
+
+	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
+	// are rest of the target ports for establishing iSCSI session.
+	// If the target has multiple portals, then there will be multiple iSCSI sessions.
+	portals := make([]string, 0, len(publishInfo.IscsiPortals)+1)
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, network.EnsureHostportFormatted(p))
+	}
+	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	// This call will ignore sessions that already exist and try to standup new sessions for
+	// portals without corresponding sessions.
+	if _, err := client.EnsureSessions(ctx, publishInfo, portals); err != nil {
+		// Standard attach case doesn't return an err. Log a warning and continue.
+		Logc(ctx).WithFields(fields).WithError(err).Warn("Failed to establish sessions for portal(s).")
+		return nil, err
+	}
+
+	// Build the deviceMap and initiate a scan across all hosts for the target for the new LUN.
+	hostSessionMap, err := client.discoverHostSessionMapByTargetAndInPortals(ctx, target, portals...)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to discover host session maps.")
+		return nil, err
+	}
+
+	// Now we must wait for the device(s) to show up across all relevant hosts.
+	if err := client.waitForDeviceScan(ctx, hostSessionMap, int(lunID), target); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to wait for device scans for LUN.")
+		return nil, err
+	}
+
+	// Lookup all the SCSI device information.
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, int(lunID), publishInfo.IscsiTargetIQN, false)
+	if err != nil {
+		return nil, err
+	} else if deviceInfo == nil {
+		return nil, fmt.Errorf("empty device information for LUN %d", lunID)
+	}
+
+	// Ensure multipathd has incorporated the new devices into the dm device.
+	// waitForDeviceScan only confirms sysfs visibility; multipathd may not have added
+	// the paths to the device-mapper table yet. Without this, a subsequent prune could
+	// remove old paths before new ones are ready, causing I/O errors.
+	_, err = client.ensureMultipathDeviceHasPaths(ctx, deviceInfo.MultipathDevice, deviceInfo.Devices)
+	if err != nil {
+		return nil, fmt.Errorf("new device paths not ready in multipath device: %w", err)
+	}
+
+	Logc(ctx).WithFields(fields).WithFields(LogFields{
+		"IQN":             deviceInfo.IQN,
+		"LUN":             deviceInfo.LUN,
+		"multipathDevice": deviceInfo.MultipathDevice,
+		"devices":         deviceInfo.Devices,
+	}).Info("Found updated device info.")
+
+	return &models.AttachmentInfo{
+		VolumePublishInfo: publishInfo,
+		ScsiDeviceInfo:    deviceInfo,
+	}, nil
+}
+
+// GraftAttachmentRetry extends the attachment of a volume.
+func (client *Client) GraftAttachmentRetry(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
+) (*models.AttachmentInfo, error) {
+	Logc(ctx).Debug(">>>> iscsi.GraftAttachmentRetry")
+	defer Logc(ctx).Debug("<<<< iscsi.GraftAttachmentRetry")
+
+	var attachInfo *models.AttachmentInfo
+	var err error
+
+	graftAttachment := func() error {
+		attachInfo, err = client.GraftAttachment(ctx, publishInfo)
+		return err
+	}
+
+	attachNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithError(err).WithField(
+			"increment", duration,
+		).Debug("Volume attachment extension is not complete, waiting.")
+	}
+
+	attachBackoff := backoff.NewExponentialBackOff()
+	attachBackoff.InitialInterval = 1 * time.Second
+	attachBackoff.Multiplier = 1.414 // approx sqrt(2)
+	attachBackoff.RandomizationFactor = 0.1
+	attachBackoff.MaxElapsedTime = timeout
+
+	err = backoff.RetryNotify(graftAttachment, attachBackoff, attachNotify)
+	return attachInfo, err
+}
+
+// PruneAttachment removes paths based on supplied unpublish info.
+// The supplied publishInfo should have the set of portals to KEEP.
+// i.e. any other portal existing on the host should be removed.
+func (client *Client) PruneAttachment(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+) (*models.AttachmentInfo, error) {
+	if publishInfo == nil {
+		return nil, errors.New("nil publish info supplied to attachment prune")
+	}
+
+	fields := LogFields{
+		"lunID":  publishInfo.IscsiLunNumber,
+		"serial": publishInfo.IscsiLunSerial,
+		"target": publishInfo.IscsiTargetIQN,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.PruneAttachment")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.PruneAttachment")
+
+	lunID := publishInfo.IscsiLunNumber
+	serial := publishInfo.IscsiLunSerial
+	target := publishInfo.IscsiTargetIQN
+
+	// Organize the portals.
+	// These are the portals for sessions we need to keep.
+	portals := make([]string, 0, len(publishInfo.IscsiPortals)+1)
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, network.EnsureHostportFormatted(p))
+	}
+	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	fields["portals"] = portals
+
+	// Before removing old paths, verify that at least one device from the new (kept) portals
+	// is present as a slave of the multipath device. This ensures the dm map has I/O
+	// continuity through the prune.
+	//
+	// If not a single new device path exists from the new portal session, fail before removing old paths.
+	newPortalSessions, err := client.discoverHostSessionMapByTargetAndInPortals(ctx, target, portals...)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to discover sessions for new portals.")
+		return nil, err
+	}
+
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, newPortalSessions, int(lunID), target, false)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get device info for new portals.")
+		return nil, err
+	}
+	if deviceInfo == nil {
+		Logc(ctx).WithFields(fields).Debug("No device info found for LUN.")
+		return nil, fmt.Errorf("no device info found for LUN %d", lunID)
+	}
+
+	_, err = client.ensureMultipathDeviceHasPaths(ctx, deviceInfo.MultipathDevice, deviceInfo.Devices)
+	if err != nil {
+		return nil, fmt.Errorf("new device paths not ready in multipath device: %w", err)
+	}
+
+	// Discover a filtered version of the host session map.
+	// These host sessions will ONLY contain values where:
+	//  1. There are no other device serials present.
+	//  2. There are no other targets.
+	//  3. There are no specified portals present.
+	hostSessionsToRemove, err := client.discoverHostSessionMapBySerialTargetAndExPortals(ctx, serial, target, portals)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get host sessions for target and portals.")
+		return nil, err
+	}
+	Logc(ctx).WithFields(fields).WithFields(LogFields{
+		"hostSessionsToRemove": hostSessionsToRemove,
+		"excludedPortals":      portals,
+	}).Debug("Determined host sessions filtered by target, serial and excluded portals.")
+
+	// No stale sessions or paths remain to remove. This can happen when a move
+	// keeps the same target portals before and after migration.
+	if len(hostSessionsToRemove) == 0 {
+		Logc(ctx).WithFields(fields).Debug("No host sessions require pruning; returning no-op.")
+		attachPublishInfo := publishInfo.DeepCopy()
+		attachPublishInfo.IscsiPortals = nil
+		attachPublishInfo.IscsiTargetPortal = ""
+		return &models.AttachmentInfo{
+			VolumePublishInfo: attachPublishInfo,
+			ScsiDeviceInfo:    nil,
+		}, nil
+	}
+
+	// Read the device information again for this LUN and use the the filtered host sessions to remove.
+	deviceInfo, err = client.GetDeviceInfoForLUN(ctx, hostSessionsToRemove, int(lunID), target, false)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get device info for LUN.")
+		return nil, err
+	}
+	if deviceInfo == nil {
+		Logc(ctx).WithFields(fields).Info("No device paths found for stale host sessions; continuing with session cleanup.")
+	} else {
+		// Tell multipathd to fail the old paths before removal. This gives multipathd a
+		// chance to failover I/O to the new paths gracefully.
+		for _, dev := range deviceInfo.Devices {
+			if failErr := client.devices.FailMultipathPath(ctx, dev); failErr != nil {
+				Logc(ctx).WithField("device", dev).WithError(failErr).Warn(
+					"multipathd fail path failed; continuing with removal.")
+			}
+		}
+
+		// Remove the SCSI device with "ignoreErrors" and "skipFlush" set to true.
+		// At the time of pruning, the paths may already be in a faulty state, but the remote nodes
+		// (and LIFs) will no longer be accessible. So we must ignore errors without flushing.
+		if _, err := client.removeSCSIDevice(ctx, deviceInfo, true, true); err != nil {
+			return nil, err
+		}
+	}
+
+	// Determine the portals safe for logout.
+	portalsToLogout, err := client.determinePortalsSafeForLogout(ctx, hostSessionsToRemove)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine which portals are safe for logout.")
+		return nil, err
+	}
+
+	// Logout of portals where safe to do so.
+	var errs error
+	portalsLoggedOut := make([]string, 0)
+	for _, portal := range portalsToLogout {
+		if err := client.Logout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
+			Logc(ctx).WithFields(fields).WithField(
+				"portal", portal,
+			).WithError(err).Warn("Failed to logout of portal.")
+			errs = errors.Join(errs, err)
+			continue
+		}
+		portalsLoggedOut = append(portalsLoggedOut, portal)
+	}
+	if errs != nil {
+		Logc(ctx).WithFields(fields).WithError(errs).Warn("Could not logout of all portals; retrying.")
+		return nil, errs
+	}
+
+	// Record the delta.
+	attachPublishInfo := publishInfo.DeepCopy()
+
+	// Routines like self-healing will need to know which portals were logged out.
+	attachPublishInfo.IscsiPortals = nil
+	attachPublishInfo.IscsiTargetPortal = "" // Unset this so that it is not removed from self-healing state.
+	if len(portalsLoggedOut) > 0 {
+		attachPublishInfo.IscsiTargetPortal = portalsLoggedOut[0]
+		portalsLoggedOut = portalsLoggedOut[1:]
+		attachPublishInfo.IscsiPortals = portalsLoggedOut
+	}
+
+	return &models.AttachmentInfo{
+		VolumePublishInfo: attachPublishInfo,
+		ScsiDeviceInfo:    nil, // Nothing to return for this case.
+	}, nil
+}
+
+// PruneAttachmentRetry prunes the attachment of a volume.
+func (client *Client) PruneAttachmentRetry(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
+) (*models.AttachmentInfo, error) {
+	Logc(ctx).Debug(">>>> iscsi.PruneAttachmentRetry")
+	defer Logc(ctx).Debug("<<<< iscsi.PruneAttachmentRetry")
+
+	var attachInfo *models.AttachmentInfo
+	var err error
+
+	pruneAttachment := func() error {
+		attachInfo, err = client.PruneAttachment(ctx, publishInfo)
+		return err
+	}
+
+	attachNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithError(err).WithField(
+			"increment", duration,
+		).Debug("Volume attachment pruning is not complete, waiting.")
+	}
+
+	attachBackoff := backoff.NewExponentialBackOff()
+	attachBackoff.InitialInterval = 1 * time.Second
+	attachBackoff.Multiplier = 1.414 // approx sqrt(2)
+	attachBackoff.RandomizationFactor = 0.1
+	attachBackoff.MaxElapsedTime = timeout
+
+	err = backoff.RetryNotify(pruneAttachment, attachBackoff, attachNotify)
+	return attachInfo, err
+}
+
+// discoverHostSessionMapByTargetAndInPortals reads through sysfs "/sys/class/scsi_host" and filters
+// for host sessions by two sets of fields:
+//  1. "targetIQN" - All hosts we initiate scans for ONTAP volumes must have the same target IQN.
+//  2. "inPortals" - A set of portals to include sessions in the result.
+//     If a session has one of these, include it. Otherwise, ignore it.
+func (client *Client) discoverHostSessionMapByTargetAndInPortals(
+	ctx context.Context, target string, inPortals ...string,
+) (map[int]int, error) {
+	fields := LogFields{"iSCSINodeName": target}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.discoverHostSessionMapByTargetAndInPortals")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.discoverHostSessionMapByTargetAndInPortals")
+
+	// Build a portal set.
+	portalSet := make(map[string]struct{})
+	for _, portal := range inPortals {
+		portalSet[portal] = struct{}{}
+	}
+
+	// Initialize the device and host session maps.
+	hostSessionMap := make(map[int]int)
+
+	// Read in everything under: '/sys/class/scsi_host/'.
+	scsiHostPath := client.chrootPathPrefix + "/sys/class/scsi_host/"
+	hostEntries, err := client.os.ReadDir(scsiHostPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list hosts; %w", err)
+	}
+
+	// Search through each dir under: '/sys/class/scsi_host/'.
+	for _, hostEntry := range hostEntries {
+		hostName := hostEntry.Name() // example: "host10" from "/sys/class/scsi_host/host10"
+		if !strings.HasPrefix(hostName, "host") {
+			continue
+		}
+
+		// Read in all dirs under: '/sys/class/scsi_host/host#/device'.
+		hostDevicePath := filepath.Join(scsiHostPath, hostName, "device")
+		hostDeviceEntries, err := client.os.ReadDir(hostDevicePath)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not read host device entries at: '%s'.", hostDevicePath)
+			continue
+		}
+
+		// Look for "session#" within the device directory entries.
+		// It's possible that multiple sessions that Trident setup can exist for a given host.
+		// Example:
+		//  '/sys/class/scsi_host/host10/device/session1'
+		//  '/sys/class/scsi_host/host10/device/session2'
+		for _, hostDeviceEntry := range hostDeviceEntries {
+			sessionName := hostDeviceEntry.Name()
+			if !strings.HasPrefix(hostDeviceEntry.Name(), "session") {
+				continue
+			}
+
+			// Check if the iscsi session exists: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#'.
+			sessionPath := filepath.Join(hostDevicePath, sessionName, "iscsi_session", sessionName)
+			if sessionExists, err := client.os.Exists(sessionPath); err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read iscsi session path at: '%s'", sessionPath)
+				continue
+			} else if !sessionExists {
+				Logc(ctx).Debugf("iSCSI session path '%s' does not exist.", sessionPath)
+				continue
+			}
+
+			// Read in target IQN from: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/targetname'.
+			targetNamePath := filepath.Join(sessionPath, "targetname")
+			contents, err := client.os.ReadFile(targetNamePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read target IQN at: '%s'", targetNamePath)
+				continue
+			}
+
+			// Ignore sessions that aren't connected to the expected target IQN.
+			targetName := strings.TrimSpace(string(contents))
+			if targetName != target {
+				Logc(ctx).Debugf("IQN mismatch. '%s' != '%s'; ignoring session.", targetName, target)
+				continue
+			}
+
+			// At this point, we know this session is for a NetApp target.
+			// Read in all entries under: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/device'
+			sessionDevicePath := filepath.Join(sessionPath, "device")
+			sessionDeviceEntries, err := client.os.ReadDir(sessionDevicePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read session device entries at: '%s'.", sessionDevicePath)
+				continue
+			}
+
+			// At this point, we must check two things:
+			//  1. Is there least 1 iscsi_connection under:
+			//  "/sys/class/iscsi_host/host10/device/session5/connection5:0/iscsi_connection"
+			//  where the address is within our portal set?
+
+			// Filter by the connections using the portal set.
+			// We need just a single connection relying on a portal for it to be a candidate for scans.
+			isConnectionRelevant := false
+			for _, entry := range sessionDeviceEntries {
+				entryName := entry.Name()
+				if !strings.HasPrefix(entryName, "connection") {
+					continue
+				}
+				Logc(ctx).WithFields(LogFields{
+					"connection":  entryName,
+					"sessionPath": sessionPath,
+				}).Debug("Found iSCSI connection directory for session.")
+
+				// Read in the address for the connection; if even one connection is in the portal set, this
+				// host is relevant for precise LUN scans.
+				sessionConnectionPath := filepath.Join(sessionDevicePath, entryName, "iscsi_connection", entryName)
+				contents, err := client.os.ReadFile(filepath.Join(sessionConnectionPath, "address"))
+				if err != nil {
+					Logc(ctx).WithError(err).Errorf("Could not read connection device entries at: '%s'.",
+						sessionConnectionPath)
+					continue
+				}
+
+				// If even a single iscsi_connection has a relevant portal IP, we
+				// need to initiate precise LUN scans on that corresponding host.
+				address := strings.TrimSpace(string(contents))
+				if _, ok := portalSet[address]; ok {
+					Logc(ctx).WithFields(LogFields{
+						"session": sessionName,
+						"address": address,
+					}).Debug("Connection address is in desired portals; host is a candidate for scanning.")
+					isConnectionRelevant = true
+					break
+				}
+			}
+			if !isConnectionRelevant {
+				Logc(ctx).WithFields(LogFields{
+					"portals": portalSet,
+				}).Debug("No matching iSCSI connection found on host for desired portals.")
+				continue
+			}
+
+			// Build the host session map.
+			hostNum, err := strconv.Atoi(strings.TrimPrefix(hostName, "host"))
+			if err != nil {
+				Logc(ctx).WithError(err).WithFields(LogFields{
+					"host":    hostName,
+					"session": sessionName,
+				}).Error("Could not parse host number.")
+				continue
+			}
+			sessionNum, err := strconv.Atoi(strings.TrimPrefix(sessionName, "session"))
+			if err != nil {
+				Logc(ctx).WithError(err).WithFields(LogFields{
+					"host":    hostName,
+					"session": sessionName,
+				}).WithError(err).Error("Could not parse session number.")
+				continue
+			}
+			hostSessionMap[hostNum] = sessionNum
+		}
+	}
+
+	return hostSessionMap, nil
+}
+
+// discoverHostSessionMapBySerialTargetAndExPortals traverses sysfs and
+// filters out host sessions by 3 fields;
+//  1. LUN serial - If any device exists in a host session that doesn't have this serial, the session is ignored.
+//  2. Target IQN - If any target device doesn't have the expected IQN, the session is ignored.
+//  3. Exclude Portals - If any session has underlying connections relying on any portal in our set, ignore the session.
+//
+// This allows Trident to precisely "prune" iSCSI attachments.
+func (client *Client) discoverHostSessionMapBySerialTargetAndExPortals(
+	ctx context.Context, serial, target string, exPortals []string,
+) (map[int]int, error) {
+	fields := LogFields{"serial": serial, "target": target, "exPortals": exPortals}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.discoverHostSessionMapBySerialTargetAndExPortals")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.discoverHostSessionMapBySerialTargetAndExPortals")
+
+	portalSet := make(map[string]struct{}, len(exPortals))
+	for _, portal := range exPortals {
+		portalSet[network.ParseHostportIP(portal)] = struct{}{}
+	}
+
+	hostSessionMap := make(map[int]int)
+	scsiHostPath := client.chrootPathPrefix + "/sys/class/scsi_host/"
+	hostEntries, err := client.os.ReadDir(scsiHostPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list hosts; %w", err)
+	}
+
+	for _, hostEntry := range hostEntries {
+		hostName := hostEntry.Name()
+		if !strings.HasPrefix(hostName, "host") {
+			continue
+		}
+
+		hostDevicePath := filepath.Join(scsiHostPath, hostName, "device")
+		hostDeviceEntries, err := client.os.ReadDir(hostDevicePath)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not read host device entries at: '%s'.", hostDevicePath)
+			continue
+		}
+
+		for _, hostDeviceEntry := range hostDeviceEntries {
+			sessionName := hostDeviceEntry.Name()
+			if !strings.HasPrefix(sessionName, "session") {
+				continue
+			}
+
+			sessionPath := filepath.Join(hostDevicePath, sessionName, "iscsi_session", sessionName)
+			if sessionExists, err := client.os.Exists(sessionPath); err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read iscsi session path at: '%s'", sessionPath)
+				continue
+			} else if !sessionExists {
+				Logc(ctx).Debugf("iSCSI session path '%s' does not exist.", sessionPath)
+				continue
+			}
+
+			targetNamePath := filepath.Join(sessionPath, "targetname")
+			contents, err := client.os.ReadFile(targetNamePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read target IQN at: '%s'", targetNamePath)
+				continue
+			}
+			targetName := strings.TrimSpace(string(contents))
+			if targetName != target {
+				Logc(ctx).Debugf("IQN mismatch. '%s' != '%s'; ignoring session.", targetName, target)
+				continue
+			}
+
+			sessionDevicePath := filepath.Join(sessionPath, "device")
+			sessionDeviceEntries, err := client.os.ReadDir(sessionDevicePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read session device entries at: '%s'.", sessionDevicePath)
+				continue
+			}
+
+			// Efficiently check for targets and collect connection addresses in one pass
+			hasTargets := false
+			connectionAddresses := []string{}
+			for _, entry := range sessionDeviceEntries {
+				entryName := entry.Name()
+				if strings.HasPrefix(entryName, "target") {
+					hasTargets = true
+				} else if strings.HasPrefix(entryName, "connection") {
+					connectionPath := filepath.Join(sessionDevicePath, entryName, "iscsi_connection", entryName)
+					contents, err := client.os.ReadFile(filepath.Join(connectionPath, "address"))
+					if err != nil {
+						Logc(ctx).WithError(err).Errorf("Could not read connection entries at: '%s'.", connectionPath)
+						continue
+					}
+					address := network.ParseHostportIP(strings.TrimSpace(string(contents)))
+					connectionAddresses = append(connectionAddresses, address)
+				}
+			}
+
+			// If no targets, and none of the connections are in exPortals, include for logout
+			if !hasTargets {
+				includeSessionForLogout := true
+				for _, address := range connectionAddresses {
+					if _, ok := portalSet[address]; ok {
+						includeSessionForLogout = false
+						break
+					}
+				}
+				if includeSessionForLogout {
+					hostNum, err := strconv.Atoi(strings.TrimPrefix(hostName, "host"))
+					if err != nil {
+						Logc(ctx).WithError(err).WithFields(LogFields{
+							"host":    hostName,
+							"session": sessionName,
+						}).Error("Could not parse host number.")
+						continue
+					}
+					sessionNum, err := strconv.Atoi(strings.TrimPrefix(sessionName, "session"))
+					if err != nil {
+						Logc(ctx).WithError(err).WithFields(LogFields{
+							"host":    hostName,
+							"session": sessionName,
+						}).Error("Could not parse session number.")
+						continue
+					}
+					hostSessionMap[hostNum] = sessionNum
+				}
+				continue // Skip further processing for this session
+			}
+
+			// Existing logic for sessions with targets/devices
+			couldDiscoverAllDeviceSerials := true
+			nonMatchingDevs := make([]string, 0)
+			for _, entry := range sessionDeviceEntries {
+				entryName := entry.Name()
+				if !strings.HasPrefix(entryName, "target") {
+					continue
+				}
+				targetDevicePath := filepath.Join(sessionDevicePath, entryName)
+				targetDeviceEntries, err := client.os.ReadDir(targetDevicePath)
+				if err != nil {
+					Logc(ctx).WithError(err).Errorf("Could not read device entries at: '%s'", targetDevicePath)
+					couldDiscoverAllDeviceSerials = false
+					continue
+				}
+				for _, devEntry := range targetDeviceEntries {
+					scsiAddressName := devEntry.Name()
+					if !strings.Contains(scsiAddressName, ":") {
+						continue
+					}
+					vpdPath := filepath.Join(targetDevicePath, scsiAddressName)
+					devSerial, err := client.devices.GetLunSerial(ctx, vpdPath)
+					if err != nil {
+						Logc(ctx).WithError(err).Errorf("Could not read vpd at: '%s'", vpdPath)
+						couldDiscoverAllDeviceSerials = false
+						break
+					}
+					if devSerial != serial {
+						Logc(ctx).WithFields(LogFields{
+							"desiredSerial": serial,
+							"currentSerial": devSerial,
+						}).WithError(err).Warn("Found LUN that has a different serial number.")
+						nonMatchingDevs = append(nonMatchingDevs, scsiAddressName)
+					}
+				}
+			}
+			if !couldDiscoverAllDeviceSerials || len(nonMatchingDevs) > 0 {
+				Logc(ctx).WithFields(LogFields{
+					"host":    hostName,
+					"session": sessionName,
+					"devices": nonMatchingDevs,
+				}).Warn("Session is not safe for removal with multiple LUNs present.")
+				continue
+			}
+
+			// Filter by the connections using the portal set.
+			includeSessionForLogout := true
+			for _, address := range connectionAddresses {
+				if _, ok := portalSet[address]; ok {
+					Logc(ctx).WithFields(LogFields{
+						"session": sessionName,
+						"address": address,
+					}).Debug("Connection address is in desired portals; session may not be removed.")
+					includeSessionForLogout = false
+					break
+				}
+				Logc(ctx).WithFields(LogFields{
+					"session": sessionName,
+					"address": address,
+				}).Debug("Connection address is in not desired portals; session is a candidate for removal.")
+			}
+			if !includeSessionForLogout {
+				Logc(ctx).WithField("session", sessionName).Debug("Session is not safe to for iSCSI logout.")
+				continue
+			}
+
+			hostNum, err := strconv.Atoi(strings.TrimPrefix(hostName, "host"))
+			if err != nil {
+				Logc(ctx).WithError(err).WithFields(LogFields{
+					"host":    hostName,
+					"session": sessionName,
+				}).Error("Could not parse host number.")
+				continue
+			}
+			sessionNum, err := strconv.Atoi(strings.TrimPrefix(sessionName, "session"))
+			if err != nil {
+				Logc(ctx).WithError(err).WithFields(LogFields{
+					"host":    hostName,
+					"session": sessionName,
+				}).Error("Could not parse session number.")
+				continue
+			}
+			hostSessionMap[hostNum] = sessionNum
+		}
+	}
+
+	return hostSessionMap, nil
+}
+
+func (client *Client) buildPortalHostSessionMapFromHostSessionMap(
+	ctx context.Context, hostSessionMap map[int]int,
+) (map[string]map[int]int, error) {
+	Logc(ctx).Debug(">>>> iscsi.buildPortalHostSessionsFromHostSessionMapAndPortals")
+	defer Logc(ctx).Debug("<<<< iscsi.buildPortalHostSessionsFromHostSessionMapAndPortals")
+
+	portalHostSessions := make(map[string]map[int]int)
+
+	scsiHostPath := client.chrootPathPrefix + "/sys/class/scsi_host/"
+	for hostNum, sessionNum := range hostSessionMap {
+		host := fmt.Sprintf("host%d", hostNum)
+		session := fmt.Sprintf("session%d", sessionNum)
+
+		sessionDevicePath := filepath.Join(scsiHostPath, host, "device", session, "iscsi_session", session, "device")
+		sessionDeviceEntries, err := client.os.ReadDir(sessionDevicePath)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not read session device entries at: '%s'.", sessionDevicePath)
+			continue
+		}
+
+		for _, entry := range sessionDeviceEntries {
+			entryName := entry.Name()
+			if !strings.HasPrefix(entryName, "connection") {
+				continue
+			}
+
+			connectionPath := filepath.Join(sessionDevicePath, entryName, "iscsi_connection", entryName)
+			addressPath := filepath.Join(connectionPath, "address")
+			contents, err := client.os.ReadFile(addressPath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read connection address at: '%s'.", addressPath)
+				continue
+			}
+
+			portal := strings.TrimSpace(string(contents))
+			if _, ok := portalHostSessions[portal]; !ok {
+				portalHostSessions[portal] = make(map[int]int)
+			}
+			portalHostSessions[portal][hostNum] = sessionNum
+		}
+	}
+
+	return portalHostSessions, nil
+}
+
+// determinePortalsSafeForLogout accepts a map of host sessions, builds
+// a relationship between the portals and host sessions and determines if
+// it's safe to logout of a set of portals.
+// It returns a set of portals that are safe for logout.
+func (client *Client) determinePortalsSafeForLogout(
+	ctx context.Context, hostSessions map[int]int,
+) ([]string, error) {
+	Logc(ctx).Debug(">>>> iscsi.determinePortalsSafeForLogout")
+	defer Logc(ctx).Debug("<<<< iscsi.determinePortalsSafeForLogout")
+
+	// Build a mapping of the hostSessionMap and the portals.
+	// Each portal may be present in 1-many host sessions.
+	portalHostSessionMap, err := client.buildPortalHostSessionMapFromHostSessionMap(ctx, hostSessions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine what portals are safe for logout.
+	safeForLogout := make([]string, 0)
+	for portal, hostSessions := range portalHostSessionMap {
+		portalSafeForLogout := true
+		for host, session := range hostSessions {
+			if !client.SafeToLogOut(ctx, host, session) {
+				portalSafeForLogout = false
+				break
+			}
+		}
+
+		if !portalSafeForLogout {
+			Logc(ctx).WithFields(LogFields{
+				"portal":       portal,
+				"hostSessions": hostSessions,
+			}).Debug("Portal is not safe for logout.")
+			continue
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"portal":       portal,
+			"hostSessions": hostSessions,
+		}).Debug("Portal is safe for logout.")
+		safeForLogout = append(safeForLogout, portal)
+	}
+
+	if len(safeForLogout) == 0 {
+		Logc(ctx).Warn("No portal(s) are safe for logout.")
+		return nil, nil
+	}
+
+	Logc(ctx).WithField(
+		"safeForLogout", safeForLogout,
+	).Debug("Determined portal(s) are safe for logout.")
+	return safeForLogout, nil
+}
+
+// filterDevicesBySize builds a map of disk devices to their size, filtered by a minimum size requirement.
+// If any errors occur when checking the size of a device, it captures the error and moves onto the next device.
+func (client *Client) filterDevicesBySize(
+	ctx context.Context, deviceInfo *models.ScsiDeviceInfo, minSize int64,
+) (map[string]int64, error) {
+	var errs error
+	deviceSizeMap := make(map[string]int64, 0)
+	for _, diskDevice := range deviceInfo.Devices {
+		size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+diskDevice)
+		if err != nil {
+			errs = errors.Join(errs, err)
+			// Only consider devices whose size can be gathered.
+			continue
+		}
+
+		if size < minSize {
+			// Only consider devices that are undersized.
+			deviceSizeMap[diskDevice] = size
+		}
+	}
+
+	if errs != nil {
+		return nil, errs
+	}
+	return deviceSizeMap, nil
+}
+
+// rescanDevices accepts a map of disk devices to sizes and initiates a rescan for each device.
+// If any rescan fails it captures the error and moves onto the next rescanning the next device.
+func (client *Client) rescanDevices(ctx context.Context, deviceSizeMap map[string]int64) error {
+	var errs error
+	for diskDevice := range deviceSizeMap {
+		if err := client.rescanDisk(ctx, diskDevice); err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err))
+		}
+	}
+
+	if errs != nil {
+		return errs
+	}
+	return nil
+}
+
+func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.RescanDevices")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.RescanDevices")
+
+	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("error getting iSCSI device information: no host session found")
+	}
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, int(lunID), targetIQN, false)
+	if err != nil {
+		return fmt.Errorf("error getting iSCSI device information: %s", err)
+	}
+
+	// Get all disk devices that require a rescan.
+	devicesBySize, err := client.filterDevicesBySize(ctx, deviceInfo, minSize)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Failed to read disk size for devices.")
+		return err
+	}
+
+	if len(devicesBySize) != 0 {
+		fields = LogFields{
+			"lunID":   lunID,
+			"devices": devicesBySize,
+			"minSize": minSize,
+		}
+
+		Logc(ctx).WithFields(fields).Debug("Found devices that require a rescan.")
+		if err := client.rescanDevices(ctx, devicesBySize); err != nil {
+			Logc(ctx).WithError(err).Error("Failed to initiate rescanning for devices.")
+			return err
+		}
+
+		// Sleep for a second to give the SCSI subsystem time to rescan the devices.
+		time.Sleep(time.Second)
+
+		// Reread the devices to check if any are undersized.
+		devicesBySize, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to read disk size for devices after rescan.")
+			return err
+		}
+
+		if len(devicesBySize) != 0 {
+			Logc(ctx).WithFields(fields).Error("Some devices are still undersized after rescan.")
+			return errors.New("devices are still undersized after rescan")
+		}
+	}
+
+	if deviceInfo.MultipathDevice != "" {
+		multipathDevice := deviceInfo.MultipathDevice
+		size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+multipathDevice)
+		if err != nil {
+			return err
+		}
+
+		fields = LogFields{"size": size, "minSize": minSize}
+		if size < minSize {
+			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
+			if err := client.reloadMultipathDevice(ctx, multipathDevice); err != nil {
+				return err
+			}
+			time.Sleep(time.Second)
+
+			size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+multipathDevice)
+			if err != nil {
+				return err
+			}
+
+			if size < minSize {
+				Logc(ctx).Error("Multipath device not large enough after resize.")
+				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
+			}
+		} else {
+			Logc(ctx).WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
+		}
+	}
+
+	return nil
+}
+
+// rescanDisk causes the kernel to rescan a single iSCSI disk/block device.
+// This is how size changes are found when expanding a volume.
+func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
+	fields := LogFields{"deviceName": deviceName}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.rescanDisk")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.rescanDisk")
+
+	client.devices.ListAllDevices(ctx)
+	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
+	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
+
+	f, err := client.os.OpenFile(filename, os.O_WRONLY, 0)
+	if err != nil {
+		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
+		return err
+	}
+
+	defer func() {
+		_ = f.Close()
+	}()
+
+	written, err := f.WriteString("1")
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"file":  filename,
+			"error": err,
+		}).Warning("Could not write to file.")
+		return err
+	} else if written == 0 {
+		Logc(ctx).WithField("file", filename).Warning("Zero bytes written to file.")
+		return fmt.Errorf("no data written to %s", filename)
+	}
+
+	client.devices.ListAllDevices(ctx)
+	return nil
+}
+
+func (client *Client) reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
+	fields := LogFields{"multipathDevice": multipathDevice}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.reloadMultipathDevice")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.reloadMultipathDevice")
+
+	if multipathDevice == "" {
+		return errors.New("cannot reload an empty multipathDevice")
+	}
+
+	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r",
+		devices.DevPrefix+multipathDevice)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"device": multipathDevice,
+			"error":  err,
+		}).Error("Failed to reload multipathDevice.")
+		return fmt.Errorf("failed to reload multipathDevice %s: %s", multipathDevice, err)
+	}
+
+	Logc(ctx).WithFields(fields).Debug("Multipath device reloaded.")
 	return nil
 }

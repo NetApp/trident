@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package controller
 
@@ -10,6 +10,7 @@ import (
 	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned"
 	"golang.org/x/time/rate"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -61,6 +62,7 @@ const (
 	ObjectTypeTridentNodeRemediation         = crdtypes.ObjectTypeTridentNodeRemediation
 	ObjectTypeTridentAutogrowPolicy          = crdtypes.ObjectTypeTridentAutogrowPolicy
 	ObjectTypeTridentAutogrowRequestInternal = crdtypes.ObjectTypeTridentAutogrowRequestInternal
+	ObjectTypeTridentVolumeMove              = crdtypes.ObjectTypeTridentVolumeMove
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -185,6 +187,10 @@ type TridentCrdController struct {
 	autogrowRequestInternalLister listers.TridentAutogrowRequestInternalLister
 	autogrowRequestInternalSynced cache.InformerSynced
 
+	// TridentVolumeMove CRD handling
+	volumeMoveLister listers.TridentVolumeMoveLister
+	volumeMoveSynced cache.InformerSynced
+
 	// K8s Indexers
 	indexers indexers.Indexers
 
@@ -214,9 +220,7 @@ type TridentCrdController struct {
 }
 
 // NewTridentCrdController returns a new Trident CRD controller frontend.
-func NewTridentCrdController(
-	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
-) (*TridentCrdController, error) {
+func NewTridentCrdController(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (*TridentCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCRDControllerCreate, LogLayerCRDFrontend)
 
 	Logx(ctx).Trace("Creating CRDv1 controller.")
@@ -233,15 +237,15 @@ func NewTridentCrdController(
 
 	remediationUtils := NewNodeRemediationUtils(clients.KubeClient, orchestrator, indexers, pvcGetter)
 
-	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient,
-		clients.SnapshotClient, clients.TridentClient, indexers, remediationUtils)
+	return newTridentCrdControllerImpl(
+		orchestrator, clients.Namespace, clients.KubeClient, clients.SnapshotClient, clients.TridentClient, indexers, remediationUtils,
+	)
 }
 
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
-	orchestrator core.Orchestrator, tridentNamespace string, kubeClientset kubernetes.Interface,
-	snapshotClientset k8ssnapshots.Interface, crdClientset tridentv1clientset.Interface, indexers indexers.Indexers,
-	nodeRemediationUtils NodeRemediationUtils,
+	orchestrator core.Orchestrator, tridentNamespace string, kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
+	crdClientset tridentv1clientset.Interface, indexers indexers.Indexers, nodeRemediationUtils NodeRemediationUtils,
 ) (*TridentCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
@@ -279,6 +283,7 @@ func newTridentCrdControllerImpl(
 	autogrowPolicyInformer := allNSCrdInformer.TridentAutogrowPolicies()
 	// Reuse crdInformer (resync 0) for TAGRIs; reconciliation is driven by watch events and on-demand re-queues
 	autogrowRequestInternalInformer := crdInformer.TridentAutogrowRequestInternals()
+	volumeMoveInformer := crdInformer.TridentVolumeMoves()
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
@@ -341,6 +346,8 @@ func newTridentCrdControllerImpl(
 		autogrowPoliciesSynced:        autogrowPolicyInformer.Informer().HasSynced,
 		autogrowRequestInternalLister: autogrowRequestInternalInformer.Lister(),
 		autogrowRequestInternalSynced: autogrowRequestInternalInformer.Informer().HasSynced,
+		volumeMoveLister:              volumeMoveInformer.Lister(),
+		volumeMoveSynced:              volumeMoveInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
 		tagriRateLimiter:     tagriRateLimiter,
@@ -400,6 +407,14 @@ func newTridentCrdControllerImpl(
 	})
 
 	_, _ = autogrowRequestInternalInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	// Even if the TVMInformer instance is shared, adding event handlers is safe.
+	// Event handlers on an informer are additive. Any previously placed handlers will still fire.
+	_, _ = volumeMoveInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
@@ -501,7 +516,8 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 		c.snapshotInfoSynced,
 		c.secretsSynced,
 		c.autogrowPoliciesSynced,
-		c.autogrowRequestInternalSynced); !ok {
+		c.autogrowRequestInternalSynced,
+		c.volumeMoveSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
 		Logx(ctx).Errorf("Error: %v", waitErr)
 		return
@@ -622,6 +638,15 @@ func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
 	if newCRMeta.GetGeneration() == oldCRMeta.GetGeneration() &&
 		newCRMeta.GetGeneration() != 0 &&
 		newCRMeta.DeletionTimestamp.IsZero() { // CR was deleted and need to remove finalizers
+		// TridentVolumeMove is reconciled from status transitions; status updates do not bump generation.
+		if oldTVM, ok := old.(*tridentv1.TridentVolumeMove); ok {
+			if newTVM, ok2 := new.(*tridentv1.TridentVolumeMove); ok2 {
+				if !apiequality.Semantic.DeepEqual(oldTVM.Status, newTVM.Status) {
+					c.addEventToWorkqueue(key, EventUpdate, ctx, ObjectType(newCR.GetKind()))
+					return
+				}
+			}
+		}
 		logFields := LogFields{
 			"name":          newCRMeta.GetName(),
 			"oldGeneration": oldCRMeta.GetGeneration(),
@@ -723,6 +748,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentNodeRemediation
 		case ObjectTypeTridentAutogrowPolicy:
 			handleFunction = c.handleAutogrowPolicy
+		case ObjectTypeTridentVolumeMove:
+			handleFunction = c.handleVolumeMove
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
@@ -752,6 +779,19 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					Log().Info("-------------------------------------------------")
 
 					return fmt.Errorf("%s; %w", errMessage, err)
+				} else if duration, ok := errors.ReconcileDeferredWithDurationValue(err); ok {
+					if duration <= 0 {
+						Logx(keyItem.ctx).Infof("deferred syncing %v '%v', duration <= 0 (%v), requeuing immediately; %v",
+							keyItem.objectType, keyItem.key, duration, err.Error())
+						keyItem.isRetry = true
+						c.workqueue.Add(keyItem)
+					} else {
+						Logx(keyItem.ctx).Infof("deferred syncing %v '%v', requeuing with AddAfter(%v); %v",
+							keyItem.objectType, keyItem.key, duration, err.Error())
+						keyItem.isRetry = true
+						c.workqueue.AddAfter(keyItem, duration)
+					}
+					return nil
 				} else if errors.IsReconcileDeferredError(err) {
 					// If it is a deferred error, then do not remove the object from the queue and retry in due time
 					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType,

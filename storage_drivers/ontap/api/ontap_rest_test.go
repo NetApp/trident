@@ -9012,3 +9012,149 @@ func TestOntapRest_NVMeGetNamespaceUUIDsForSubsystem_NilResponse(t *testing.T) {
 
 	server.Close()
 }
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VolumeMove tests
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// mockVolumeMoveVolumeNotFound returns an empty volume list so the lookup returns 0 records.
+func mockVolumeMoveVolumeNotFound(w http.ResponseWriter, r *http.Request) {
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{},
+		NumRecords:                  new(int64(0)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+// mockVolumeMovePatchClientError returns a valid volume on GET but a 400 Bad Request on PATCH.
+func mockVolumeMovePatchClientError(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPatch {
+		errResp := models.ErrorResponse{
+			Error: &models.ReturnedError{
+				Code:    new("42"),
+				Message: new("destination aggregate does not exist"),
+			},
+		}
+		setHTTPResponseHeader(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errResp)
+		return
+	}
+	volume := getVolumeInfo()
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume},
+		NumRecords:                  new(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+// mockVolumeMovePatchServerError returns a valid volume on GET but a 500 on PATCH.
+func mockVolumeMovePatchServerError(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPatch {
+		setHTTPResponseHeader(w, http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("")
+		return
+	}
+	volume := getVolumeInfo()
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume},
+		NumRecords:                  new(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+// mockVolumeMoveAccepted returns a valid volume on GET and a 202 Accepted with job UUID on PATCH.
+func mockVolumeMoveAccepted(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPatch {
+		jobLink := models.JobLink{UUID: new(strfmt.UUID("job-uuid-abc"))}
+		resp := models.VolumeJobLinkResponse{Job: &jobLink}
+		setHTTPResponseHeader(w, http.StatusAccepted)
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	volume := getVolumeInfo()
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume},
+		NumRecords:                  new(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func TestRestClientVolumeMove(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFn       func(http.ResponseWriter, *http.Request)
+		dryRun       bool
+		wantErr      bool
+		wantNotFound bool
+		wantInvalid  bool
+		wantJobID    string
+	}{
+		{
+			name:         "VolumeNotFound_ReturnsNotFoundError",
+			mockFn:       mockVolumeMoveVolumeNotFound,
+			wantErr:      true,
+			wantNotFound: true,
+		},
+		{
+			name:        "PatchClientError_ReturnsInvalidInputError",
+			mockFn:      mockVolumeMovePatchClientError,
+			wantErr:     true,
+			wantInvalid: true,
+		},
+		{
+			name:    "PatchServerError_ReturnsRawError_NotInvalidInput",
+			mockFn:  mockVolumeMovePatchServerError,
+			wantErr: true,
+		},
+		{
+			name:      "PatchAccepted_ReturnsJobUUID",
+			mockFn:    mockVolumeMoveAccepted,
+			wantJobID: "job-uuid-abc",
+		},
+		{
+			name:   "DryRun_PatchAccepted_NoJobUUID",
+			mockFn: mockVolumeMoveAccepted,
+			dryRun: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(tt.mockFn))
+			defer server.Close()
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			jobID, err := rs.VolumeMove(ctx, "fakeVolume", "fakeAggregate", tt.dryRun)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, tt.wantNotFound == errors.IsNotFoundError(err),
+					"IsNotFoundError mismatch: got %v", errors.IsNotFoundError(err))
+				assert.True(t, tt.wantInvalid == errors.IsInvalidInputError(err),
+					"IsInvalidInputError mismatch: got %v", errors.IsInvalidInputError(err))
+				// 5xx server errors must NOT be wrapped as InvalidInput or NotFound
+				// (they should be retried by the controller).
+				if !tt.wantNotFound && !tt.wantInvalid {
+					assert.False(t, errors.IsInvalidInputError(err),
+						"5xx server error must not be classified as InvalidInputError")
+					assert.False(t, errors.IsNotFoundError(err),
+						"5xx server error must not be classified as NotFoundError")
+				}
+			} else {
+				if tt.dryRun {
+					assert.NoError(t, err)
+					assert.Equal(t, "", jobID)
+				} else {
+					assert.NoError(t, err)
+					assert.Equal(t, tt.wantJobID, jobID)
+				}
+			}
+		})
+	}
+}
