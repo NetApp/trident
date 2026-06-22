@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -129,6 +130,16 @@ func addSnapshotsToCache(t *testing.T, snapshots ...*storage.Snapshot) {
 	}
 }
 
+func addGroupSnapshotsToCache(t *testing.T, groupSnapshots ...*storage.GroupSnapshot) {
+	t.Helper()
+	for _, groupSnapshot := range groupSnapshots {
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertGroupSnapshot(groupSnapshot.ID())))
+		require.NoError(t, err)
+		results[0].GroupSnapshot.Upsert(groupSnapshot)
+		unlocker()
+	}
+}
+
 func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePublication) {
 	t.Helper()
 	for _, publication := range publications {
@@ -167,6 +178,14 @@ func getSnapshotByIDFromCache(t *testing.T, snapshotId string) *storage.Snapshot
 	require.NoError(t, err)
 	snapshot := results[0].Snapshot.Read
 	return snapshot
+}
+
+func getGroupSnapshotByIDFromCache(t *testing.T, groupSnapshotID string) *storage.GroupSnapshot {
+	t.Helper()
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadGroupSnapshot(groupSnapshotID)))
+	defer unlocker()
+	require.NoError(t, err)
+	return results[0].GroupSnapshot.Read
 }
 
 func getBackendByNameFromCache(t *testing.T, backendName string) storage.Backend {
@@ -550,6 +569,7 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetSnapshots(gomock.Any()).Return(snapshots, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetGroupSnapshots(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
@@ -648,6 +668,7 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetSnapshots(gomock.Any()).Return(snapshots, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetGroupSnapshots(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
@@ -1212,6 +1233,93 @@ func TestBootstrapSnapshotsConcurrentCore(t *testing.T) {
 			}
 
 			err := o.bootstrapSnapshots(testCtx)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestBootstrapGroupSnapshotsConcurrentCore(t *testing.T) {
+	groupID := "groupsnapshot-13695cff-d8ab-486e-98df-971a6b235a67"
+	groupSnapshot := storage.NewGroupSnapshot(
+		&storage.GroupSnapshotConfig{
+			Version:     "1",
+			Name:        groupID,
+			VolumeNames: []string{"vol1", "vol2"},
+		},
+		[]string{"vol1/snap1", "vol2/snap1"},
+		"2026-01-01T00:00:00Z",
+	)
+
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError func(err error)
+	}{
+		{
+			name: "StoreError",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetGroupSnapshots(gomock.Any()).Return(nil, failed).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+
+				result := getGroupSnapshotByIDFromCache(t, groupID)
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "EmptyStore",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetGroupSnapshots(gomock.Any()).Return(nil, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				result := getGroupSnapshotByIDFromCache(t, groupID)
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "Success",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				groupSnapshots := []*storage.GroupSnapshotPersistent{groupSnapshot.ConstructPersistent()}
+				mockStoreClient.EXPECT().GetGroupSnapshots(gomock.Any()).Return(groupSnapshots, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				result := getGroupSnapshotByIDFromCache(t, groupID)
+				assert.NotNil(t, result)
+				assert.Equal(t, groupID, result.ID())
+				assert.Equal(t, []string{"vol1", "vol2"}, result.GetVolumeNames())
+				assert.Equal(t, []string{"vol1/snap1", "vol2/snap1"}, result.GetSnapshotIDs())
+				assert.Equal(t, "2026-01-01T00:00:00Z", result.GetCreated())
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.bootstrapGroupSnapshots(testCtx)
 
 			if tt.verifyError != nil {
 				tt.verifyError(err)
@@ -9646,6 +9754,123 @@ func TestDeleteSnapshotConcurrentCore(t *testing.T) {
 	}
 }
 
+// TestDeleteSnapshotConcurrentCore_GroupGuard verifies the constituent-snapshot guard added to
+// the public DeleteSnapshot path: a snapshot whose Config.GroupSnapshotName references a still-
+// existing group snapshot is rejected with a ConflictError; if the group is already gone, the
+// orphan constituent is allowed to be deleted (matches the monolithic behavior). Recovery callers
+// (handleFailedTransaction) bypass this guard by passing groupName="" to the inner deleteSnapshot.
+func TestDeleteSnapshotConcurrentCore_GroupGuard(t *testing.T) {
+	const (
+		groupID    = "groupsnapshot-guard-1"
+		snapName   = "snapshot-guard-1" // ConvertGroupSnapshotID(groupID)
+		buuid      = "backend-uuid1"
+		volumeName = "vol1"
+	)
+	snapID := storage.MakeSnapshotID(volumeName, snapName)
+
+	addBaseFixtures := func(t *testing.T, mockBackend *mockstorage.MockBackend) {
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t,
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: volumeName, Name: volumeName}, BackendUUID: buuid},
+		)
+		addSnapshotsToCache(t,
+			&storage.Snapshot{
+				Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volumeName, GroupSnapshotName: groupID},
+				State:  storage.SnapshotStateOnline,
+			},
+		)
+	}
+
+	t.Run("RejectedWhileGroupExists", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getConcurrentOrchestrator()
+		o.storeClient = mockStoreClient
+
+		mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+		addBaseFixtures(t, mockBackend)
+		addGroupSnapshotsToCache(t, storage.NewGroupSnapshot(
+			&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{volumeName}},
+			[]string{snapID}, "2026-01-01T00:00:00Z",
+		))
+
+		// Public DeleteSnapshot still adds the txn before deleteSnapshot runs the guard, so we
+		// expect the txn add + delete cleanup but no backend / store snapshot delete.
+		mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		err := o.DeleteSnapshot(testCtx, volumeName, snapName)
+		assert.True(t, errors.IsConflictError(err), "expected ConflictError, got %v", err)
+		assert.NotNil(t, getSnapshotByIDFromCache(t, snapID), "snapshot must remain in cache")
+		assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID), "group must remain in cache")
+
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("AllowedWhenGroupAlreadyGone", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getConcurrentOrchestrator()
+		o.storeClient = mockStoreClient
+
+		mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		addBaseFixtures(t, mockBackend)
+		// Note: no group snapshot in cache - the constituent is an orphan.
+
+		mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		err := o.DeleteSnapshot(testCtx, volumeName, snapName)
+		assert.NoError(t, err)
+		assert.Nil(t, getSnapshotByIDFromCache(t, snapID), "orphan constituent should have been deleted")
+
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("UngroupedSnapshotStillDeletable", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getConcurrentOrchestrator()
+		o.storeClient = mockStoreClient
+
+		mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t,
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: volumeName, Name: volumeName}, BackendUUID: buuid},
+		)
+		// Plain (non-grouped) snapshot.
+		addSnapshotsToCache(t, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{Name: "plain", VolumeName: volumeName},
+			State:  storage.SnapshotStateOnline,
+		})
+
+		mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		err := o.DeleteSnapshot(testCtx, volumeName, "plain")
+		assert.NoError(t, err)
+		assert.Nil(t, getSnapshotByIDFromCache(t, storage.MakeSnapshotID(volumeName, "plain")))
+
+		persistenceCleanup(t, o)
+	})
+}
+
 func TestCreateSnapshotConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -10145,6 +10370,282 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestGetGroupSnapshotConcurrentCore(t *testing.T) {
+	groupID := "group1"
+	tests := []struct {
+		name         string
+		groupID      string
+		bootstrapErr error
+		setupMocks   func(o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result *storage.GroupSnapshotExternal)
+	}{
+		{
+			name:         "Success",
+			groupID:      groupID,
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				gs := storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+					[]string{"vol1/snap1", "vol2/snap1"},
+					"2026-01-01T00:00:00Z",
+				)
+				addGroupSnapshotsToCache(t, gs)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.GroupSnapshotExternal) {
+				assert.NotNil(t, result)
+				assert.Equal(t, groupID, result.ID())
+			},
+		},
+		{
+			name:         "NotFound",
+			groupID:      "nonexistentGroup",
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				// No group snapshots added
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "group snapshot nonexistentGroup was not found")
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+			verifyResult: func(result *storage.GroupSnapshotExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			groupID:      groupID,
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				// No group snapshots added
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result *storage.GroupSnapshotExternal) {
+				assert.Nil(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(o)
+			}
+
+			result, err := o.GetGroupSnapshot(testCtx, tt.groupID)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestListGroupSnapshotsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		bootstrapErr error
+		setupMocks   func(o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result []*storage.GroupSnapshotExternal)
+	}{
+		{
+			name:         "Success",
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				gs1 := storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: "group2", VolumeNames: []string{"vol1"}},
+					[]string{"vol1/snap1"}, "2026-01-02T00:00:00Z",
+				)
+				gs2 := storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: "group1", VolumeNames: []string{"vol2"}},
+					[]string{"vol2/snap1"}, "2026-01-01T00:00:00Z",
+				)
+				addGroupSnapshotsToCache(t, gs1, gs2)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result []*storage.GroupSnapshotExternal) {
+				require.Len(t, result, 2)
+				// Results are sorted by ID.
+				assert.Equal(t, "group1", result[0].ID())
+				assert.Equal(t, "group2", result[1].ID())
+			},
+		},
+		{
+			name:         "Empty",
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				// No group snapshots added
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result []*storage.GroupSnapshotExternal) {
+				assert.Empty(t, result)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				// No group snapshots added
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result []*storage.GroupSnapshotExternal) {
+				assert.Nil(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(o)
+			}
+
+			result, err := o.ListGroupSnapshots(testCtx)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestListSnapshotsForGroupConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		groupName    string
+		bootstrapErr error
+		setupMocks   func(o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result []*storage.SnapshotExternal)
+	}{
+		{
+			name:         "Success",
+			groupName:    "group1",
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				backend := getFakeBackend("testBackend1", "backend-uuid1", nil)
+				vol1 := &storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: "backend-uuid1"}
+				vol2 := &storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: "backend-uuid1"}
+				vol3 := &storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol3", Name: "vol3"}, BackendUUID: "backend-uuid1"}
+				// Two snapshots belong to group1, one belongs to no group.
+				snap1 := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: "snap1", VolumeName: "vol1", GroupSnapshotName: "group1"}}
+				snap2 := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: "snap2", VolumeName: "vol2", GroupSnapshotName: "group1"}}
+				snap3 := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: "snap3", VolumeName: "vol3"}}
+
+				addBackendsToCache(t, backend)
+				addVolumesToCache(t, vol1, vol2, vol3)
+				addSnapshotsToCache(t, snap1, snap2, snap3)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result []*storage.SnapshotExternal) {
+				require.Len(t, result, 2)
+				actualNames := []string{}
+				for _, snapshot := range result {
+					actualNames = append(actualNames, snapshot.Config.Name)
+				}
+				assert.ElementsMatch(t, []string{"snap1", "snap2"}, actualNames)
+			},
+		},
+		{
+			name:         "NotFound",
+			groupName:    "group1",
+			bootstrapErr: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				backend := getFakeBackend("testBackend1", "backend-uuid1", nil)
+				vol1 := &storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: "backend-uuid1"}
+				// A snapshot that does not belong to the requested group.
+				snap1 := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: "snap1", VolumeName: "vol1", GroupSnapshotName: "otherGroup"}}
+
+				addBackendsToCache(t, backend)
+				addVolumesToCache(t, vol1)
+				addSnapshotsToCache(t, snap1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "no snapshots found for group snapshot 'group1'")
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+			verifyResult: func(result []*storage.SnapshotExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			groupName:    "group1",
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks: func(o *ConcurrentTridentOrchestrator) {
+				// No snapshots added
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result []*storage.SnapshotExternal) {
+				assert.Nil(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(o)
+			}
+
+			result, err := o.ListSnapshotsForGroup(testCtx, tt.groupName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
 func TestCreateSnapshotConcurrentCore_ConfigComplete(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
@@ -10194,6 +10695,1114 @@ func TestCreateSnapshotConcurrentCore_ConfigComplete(t *testing.T) {
 	assert.NoError(t, err)
 
 	persistenceCleanup(t, o)
+}
+
+// newGroupCapableMockBackend builds a mock backend with configurable online/group-snapshot support.
+// It mirrors getMockBackend but lets a test set Online() and CanGroupSnapshot() explicitly.
+func newGroupCapableMockBackend(
+	mockCtrl *gomock.Controller, name, uuid string, online, canGroup bool,
+) *mockstorage.MockBackend {
+	mb := mockstorage.NewMockBackend(mockCtrl)
+	mb.EXPECT().Name().Return(name).AnyTimes()
+	mb.EXPECT().BackendUUID().Return(uuid).AnyTimes()
+	mb.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+	mb.EXPECT().GetDriverName().Return("ontap-nas").AnyTimes()
+	mb.EXPECT().State().Return(storage.Online).AnyTimes()
+	mb.EXPECT().Online().Return(online).AnyTimes()
+	mb.EXPECT().CanGroupSnapshot().Return(canGroup).AnyTimes()
+	mb.EXPECT().SmartCopy().Return(mb).AnyTimes()
+	mb.EXPECT().GetUniqueKey().Return(name).AnyTimes()
+	mb.EXPECT().ConstructPersistent(gomock.Any()).
+		Return(&storage.BackendPersistent{Name: name, BackendUUID: uuid}).AnyTimes()
+
+	pool := storage.NewStoragePool(mb, "pool1")
+	pools := sync.Map{}
+	pools.Store("pool1", pool)
+	mb.EXPECT().StoragePools().Return(&pools).AnyTimes()
+
+	return mb
+}
+
+func TestCreateGroupSnapshotConcurrentCore(t *testing.T) {
+	const (
+		groupID  = "groupsnapshot-abc"
+		snapName = "snapshot-abc" // ConvertGroupSnapshotID(groupID)
+		buuid    = "backend-uuid1"
+	)
+	snapID1 := storage.MakeSnapshotID("vol1", snapName)
+	snapID2 := storage.MakeSnapshotID("vol2", snapName)
+
+	// newConstituents builds the per-volume snapshots a backend would return from ProcessGroupSnapshot.
+	newConstituents := func() []*storage.Snapshot {
+		return []*storage.Snapshot{
+			{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol1", GroupSnapshotName: groupID}},
+			{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol2", GroupSnapshotName: groupID}},
+		}
+	}
+
+	addSourceVolumes := func(t *testing.T) {
+		addVolumesToCache(t,
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: buuid},
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: buuid},
+		)
+	}
+
+	// newGroupSnapshot builds the GroupSnapshot record a backend would return from ConstructGroupSnapshot.
+	newGroupSnapshot := func() *storage.GroupSnapshot {
+		return storage.NewGroupSnapshot(
+			&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+			[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+		)
+	}
+
+	tests := []struct {
+		name         string
+		groupName    string // overrides the default groupID for the config name when set
+		volumeNames  []string
+		bootstrapErr error
+		setupMocks   func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyError  func(t *testing.T, err error)
+		verifyState  func(t *testing.T)
+	}{
+		{
+			name:        "Success",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				constituents := newConstituents()
+				groupSnapshot := storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+					[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+				)
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().CanGroupSnapshot().Return(true).AnyTimes()
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(constituents, nil).Times(1)
+				mockBackend.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(groupSnapshot, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:        "NoSourceVolumes",
+			volumeNames: []string{},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsInvalidInputError(err))
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "VolumeNotFound",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// No volumes added to the cache.
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsNotFoundError(err))
+				assert.ErrorContains(t, err, "source volume vol1 not found")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "BackendCannotGroupSnapshot",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().CanGroupSnapshot().Return(false).AnyTimes()
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				// The transaction is created (before re-validation) and must be cleaned up.
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsUnsupportedError(err))
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "BackendCreateGroupSnapshotError",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().CanGroupSnapshot().Return(true).AnyTimes()
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(failed).Times(1)
+				// No backend snapshots were created, so no DeleteSnapshot calls expected.
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+			},
+		},
+		{
+			name:        "StoreAddSnapshotErrorTriggersBackendCleanup",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				constituents := newConstituents()
+				groupSnapshot := storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+					[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+				)
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().CanGroupSnapshot().Return(true).AnyTimes()
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(constituents, nil).Times(1)
+				mockBackend.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(groupSnapshot, nil).Times(1)
+				// Both constituents must be removed from the backend during cleanup.
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				// First constituent persistence fails, aborting the create.
+				mockStoreClient.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				// Nothing should have been committed to the cache.
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:         "BootstrapError",
+			volumeNames:  []string{"vol1", "vol2"},
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.EqualError(t, err, "bootstrap error")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "InvalidGroupSnapshotID",
+			groupName:   "not-a-group-id",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "invalid group snapshot ID format")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, "not-a-group-id"))
+			},
+		},
+		{
+			name:        "SubordinateVolume",
+			volumeNames: []string{"subvol"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// A subordinate volume is rejected during the pre-check, before any transaction.
+				addSubordinateVolumesToCache(t,
+					&storage.Volume{Config: &storage.VolumeConfig{Name: "subvol", ShareSourceVolume: "src"}})
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsNotFoundError(err))
+				assert.ErrorContains(t, err, "subordinate volume subvol")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "SnapshotAlreadyExists",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+				// A constituent id is already present.
+				addSnapshotsToCache(t, &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol1"}})
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "already exists")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "SourceVolumeDeleting",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t,
+					&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: buuid, State: storage.VolumeStateDeleting},
+					&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: buuid},
+				)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "source volume vol1 is deleting")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "BackendOffline",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, false, true)
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "not online")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "GetGroupSnapshotTargetError",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(nil, failed).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "failed to get storage target")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "InvalidStorageTarget",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// A non-fake target with an empty UUID fails Validate().
+				target := storage.NewGroupSnapshotTargetInfo("ontap-nas", "", nil)
+
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsInvalidInputError(err))
+				assert.ErrorContains(t, err, "invalid storage target")
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "BackendCreateGroupSnapshotMaxLimitReached",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(errors.MaxLimitReachedError("limit reached")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsMaxLimitReachedError(err))
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:        "ProcessGroupSnapshotError",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, failed).Times(1)
+				// No constituents were returned, so no backend snapshots to clean up.
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+			},
+		},
+		{
+			name:        "ConstructGroupSnapshotError",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+				constituents := newConstituents()
+
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(constituents, nil).Times(1)
+				mockBackend.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, failed).Times(1)
+				// Both constituents must be removed from the backend during cleanup.
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:        "StoreAddGroupSnapshotError",
+			volumeNames: []string{"vol1", "vol2"},
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+				constituents := newConstituents()
+
+				mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+				mockBackend.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+				mockBackend.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(constituents, nil).Times(1)
+				mockBackend.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(newGroupSnapshot(), nil).Times(1)
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+				addBackendsToCache(t, mockBackend)
+				addSourceVolumes(t)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddGroupSnapshot(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(t, mockCtrl, mockStoreClient)
+			}
+
+			cfgName := groupID
+			if tt.groupName != "" {
+				cfgName = tt.groupName
+			}
+			config := &storage.GroupSnapshotConfig{Version: "1", Name: cfgName, VolumeNames: tt.volumeNames}
+			_, err := o.CreateGroupSnapshot(testCtx, config)
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+			if tt.verifyState != nil {
+				tt.verifyState(t)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// TestCreateGroupSnapshotConcurrentCore_MultiBackend covers the group-specific paths that only arise
+// when the source volumes span more than one backend: the per-backend GetGroupSnapshotTarget merge and
+// the same-SVM IsShared validation.
+func TestCreateGroupSnapshotConcurrentCore_MultiBackend(t *testing.T) {
+	const (
+		groupID  = "groupsnapshot-abc"
+		snapName = "snapshot-abc"
+		uuidA    = "backend-uuid-a"
+		uuidB    = "backend-uuid-b"
+	)
+	snapID1 := storage.MakeSnapshotID("vol1", snapName)
+	snapID2 := storage.MakeSnapshotID("vol2", snapName)
+
+	// vol1 lives on backend A, vol2 on backend B.
+	addSourceVolumes := func(t *testing.T) {
+		addVolumesToCache(t,
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: uuidA},
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: uuidB},
+		)
+	}
+	snap1 := func() *storage.Snapshot {
+		return &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol1", GroupSnapshotName: groupID}}
+	}
+	snap2 := func() *storage.Snapshot {
+		return &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol2", GroupSnapshotName: groupID}}
+	}
+
+	t.Run("SuccessAcrossBackends", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		db.Initialize()
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getConcurrentOrchestrator()
+		o.storeClient = mockStoreClient
+
+		// Both backends report the same (fake) SVM target, so IsShared passes.
+		target := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil)
+		groupSnapshot := storage.NewGroupSnapshot(
+			&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+			[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+		)
+
+		backendA := newGroupCapableMockBackend(mockCtrl, "backendA", uuidA, true, true)
+		backendB := newGroupCapableMockBackend(mockCtrl, "backendB", uuidB, true, true)
+		for _, b := range []*mockstorage.MockBackend{backendA, backendB} {
+			b.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(target, nil).Times(1)
+			// Exactly one backend becomes the groupSnapshotter (map iteration order is not deterministic),
+			// so allow these on either backend zero-or-one times.
+			b.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			b.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(groupSnapshot, nil).AnyTimes()
+		}
+		// Each backend processes only its own volume.
+		backendA.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return([]*storage.Snapshot{snap1()}, nil).Times(1)
+		backendB.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return([]*storage.Snapshot{snap2()}, nil).Times(1)
+
+		addBackendsToCache(t, backendA, backendB)
+		addSourceVolumes(t)
+
+		mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().AddGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+		mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		config := &storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}}
+		_, err := o.CreateGroupSnapshot(testCtx, config)
+		assert.NoError(t, err)
+
+		assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+		assert.NotNil(t, getSnapshotByIDFromCache(t, snapID1))
+		assert.NotNil(t, getSnapshotByIDFromCache(t, snapID2))
+
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("TargetNotShared", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		db.Initialize()
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		o := getConcurrentOrchestrator()
+		o.storeClient = mockStoreClient
+
+		// The two backends report different SVM UUIDs, so IsShared fails.
+		targetA := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "svm-a", nil)
+		targetB := storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "svm-b", nil)
+
+		backendA := newGroupCapableMockBackend(mockCtrl, "backendA", uuidA, true, true)
+		backendB := newGroupCapableMockBackend(mockCtrl, "backendB", uuidB, true, true)
+		backendA.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(targetA, nil).Times(1)
+		backendB.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).Return(targetB, nil).Times(1)
+		// CreateGroupSnapshot must never be reached when the targets are not shared.
+
+		addBackendsToCache(t, backendA, backendB)
+		addSourceVolumes(t)
+
+		mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		config := &storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}}
+		_, err := o.CreateGroupSnapshot(testCtx, config)
+		assert.True(t, errors.IsInvalidInputError(err))
+		assert.ErrorContains(t, err, "not the same for all backends")
+
+		assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+
+		persistenceCleanup(t, o)
+	})
+}
+
+// configureGroupSnapshotMockBackend wires the group-snapshot driver methods on a mock backend so that
+// it can serve any number of concurrent CreateGroupSnapshot calls. GetGroupSnapshotTarget returns a
+// fresh target per call (the core mutates the target via AddVolumes, so a shared pointer would race),
+// and Process/ConstructGroupSnapshot derive their results from the per-call config so distinct groups
+// produce distinct, non-colliding constituent snapshot IDs.
+func configureGroupSnapshotMockBackend(mb *mockstorage.MockBackend) {
+	mb.EXPECT().GetGroupSnapshotTarget(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ []*storage.VolumeConfig) (*storage.GroupSnapshotTargetInfo, error) {
+			return storage.NewGroupSnapshotTargetInfo(storage.FakeStorageType, "", nil), nil
+		}).AnyTimes()
+	mb.EXPECT().CreateGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mb.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mb.EXPECT().ProcessGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, cfg *storage.GroupSnapshotConfig, vols []*storage.VolumeConfig) ([]*storage.Snapshot, error) {
+			snapName, err := storage.ConvertGroupSnapshotID(cfg.ID())
+			if err != nil {
+				return nil, err
+			}
+			snaps := make([]*storage.Snapshot, 0, len(vols))
+			for _, v := range vols {
+				snaps = append(snaps, &storage.Snapshot{
+					Config: &storage.SnapshotConfig{Name: snapName, VolumeName: v.Name, GroupSnapshotName: cfg.ID()},
+				})
+			}
+			return snaps, nil
+		}).AnyTimes()
+	mb.EXPECT().ConstructGroupSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, cfg *storage.GroupSnapshotConfig, snaps []*storage.Snapshot) (*storage.GroupSnapshot, error) {
+			ids := make([]string, 0, len(snaps))
+			for _, s := range snaps {
+				ids = append(ids, s.ID())
+			}
+			return storage.NewGroupSnapshot(cfg, ids, "2026-01-01T00:00:00Z"), nil
+		}).AnyTimes()
+}
+
+// configureGroupSnapshotStoreMock allows all persistence calls made by CreateGroupSnapshot to succeed
+// any number of times. The gomock controller serializes these internally, so it is safe to share the
+// mock store across goroutines under the race detector.
+func configureGroupSnapshotStoreMock(m *mockpersistentstore.MockStoreClient) {
+	m.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	m.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	m.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	m.EXPECT().AddGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	m.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+}
+
+// TestCreateGroupSnapshotConcurrentCore_Race drives many concurrent CreateGroupSnapshot calls (each for a
+// distinct group over a shared pool of volumes/backends) interleaved with concurrent readers. Run with
+// `-race`, it validates that the single multi-tree db.Lock acquisition is deadlock-free and that the cache
+// stays consistent: distinct groups derive distinct constituent snapshot IDs, so they share read locks on
+// the source volumes/backends while taking non-conflicting write locks, and every create should succeed.
+func TestCreateGroupSnapshotConcurrentCore_Race(t *testing.T) {
+	const (
+		buuid      = "backend-uuid1"
+		numVolumes = 4
+		numGroups  = 16
+		numReaders = 4
+	)
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+	configureGroupSnapshotMockBackend(mockBackend)
+	addBackendsToCache(t, mockBackend)
+
+	volNames := make([]string, 0, numVolumes)
+	vols := make([]*storage.Volume, 0, numVolumes)
+	for i := 0; i < numVolumes; i++ {
+		name := fmt.Sprintf("vol%d", i)
+		volNames = append(volNames, name)
+		vols = append(vols, &storage.Volume{
+			Config: &storage.VolumeConfig{InternalName: name, Name: name}, BackendUUID: buuid,
+		})
+	}
+	addVolumesToCache(t, vols...)
+
+	configureGroupSnapshotStoreMock(mockStoreClient)
+
+	groupIDs := make([]string, numGroups)
+	for i := range groupIDs {
+		groupIDs[i] = fmt.Sprintf("groupsnapshot-%08d-0000-0000-0000-000000000000", i)
+	}
+
+	var wg sync.WaitGroup
+
+	for _, gid := range groupIDs {
+		wg.Add(1)
+		go func(gid string) {
+			defer wg.Done()
+			cfg := &storage.GroupSnapshotConfig{Version: "1", Name: gid, VolumeNames: volNames}
+			_, err := o.CreateGroupSnapshot(testCtx, cfg)
+			assert.NoError(t, err)
+		}(gid)
+	}
+
+	// Concurrent readers add lock interleaving against the in-flight writers.
+	for i := 0; i < numReaders; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < numGroups; j++ {
+				_, _ = o.ListGroupSnapshots(testCtx)
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	// Every distinct group should exist with exactly one constituent per source volume.
+	groups, err := o.ListGroupSnapshots(testCtx)
+	require.NoError(t, err)
+	assert.Len(t, groups, numGroups)
+	for _, gid := range groupIDs {
+		gs := getGroupSnapshotByIDFromCache(t, gid)
+		require.NotNil(t, gs, "group %s should have been created", gid)
+		assert.Len(t, gs.GetSnapshotIDs(), numVolumes)
+	}
+
+	persistenceCleanup(t, o)
+}
+
+// TestCreateGroupSnapshotConcurrentCore_RaceDuplicate launches many concurrent CreateGroupSnapshot calls for
+// the SAME group ID over the same volumes. The per-transaction mutex, the snapshot/group write locks, and the
+// already-exists guard must combine so that exactly one call wins and the rest fail cleanly, with no race or
+// deadlock and no partially-written duplicate state.
+func TestCreateGroupSnapshotConcurrentCore_RaceDuplicate(t *testing.T) {
+	const (
+		buuid       = "backend-uuid1"
+		numVolumes  = 3
+		dupAttempts = 10
+		groupID     = "groupsnapshot-ffffffff-0000-0000-0000-000000000000"
+	)
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	mockBackend := newGroupCapableMockBackend(mockCtrl, "testBackend1", buuid, true, true)
+	configureGroupSnapshotMockBackend(mockBackend)
+	addBackendsToCache(t, mockBackend)
+
+	volNames := make([]string, 0, numVolumes)
+	vols := make([]*storage.Volume, 0, numVolumes)
+	for i := 0; i < numVolumes; i++ {
+		name := fmt.Sprintf("vol%d", i)
+		volNames = append(volNames, name)
+		vols = append(vols, &storage.Volume{
+			Config: &storage.VolumeConfig{InternalName: name, Name: name}, BackendUUID: buuid,
+		})
+	}
+	addVolumesToCache(t, vols...)
+
+	configureGroupSnapshotStoreMock(mockStoreClient)
+
+	var (
+		wg        sync.WaitGroup
+		successes int32
+	)
+	for i := 0; i < dupAttempts; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cfg := &storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: volNames}
+			if _, err := o.CreateGroupSnapshot(testCtx, cfg); err == nil {
+				atomic.AddInt32(&successes, 1)
+			}
+		}()
+	}
+	wg.Wait()
+
+	assert.Equal(t, int32(1), atomic.LoadInt32(&successes), "exactly one concurrent create should win")
+
+	groups, err := o.ListGroupSnapshots(testCtx)
+	require.NoError(t, err)
+	assert.Len(t, groups, 1)
+	gs := getGroupSnapshotByIDFromCache(t, groupID)
+	require.NotNil(t, gs)
+	assert.Len(t, gs.GetSnapshotIDs(), numVolumes)
+
+	persistenceCleanup(t, o)
+}
+
+// TestDeleteGroupSnapshotConcurrentCore exercises DeleteGroupSnapshot across success and failure modes.
+// The test seeds the cache with a group + two constituent snapshots on the same backend, then runs
+// each subtest with a fresh cache and a per-subtest mock setup. Verifies cache + persistence side
+// effects: every successful path drops the constituents and the group; every failure path leaves
+// the cache in the documented state (constituents intact when ROC blocks, group intact when any
+// constituent failed to delete on the backend, etc.).
+func TestDeleteGroupSnapshotConcurrentCore(t *testing.T) {
+	const (
+		groupID  = "groupsnapshot-del-1"
+		snapName = "snapshot-del-1" // ConvertGroupSnapshotID(groupID)
+		buuid    = "backend-uuid1"
+	)
+	snapID1 := storage.MakeSnapshotID("vol1", snapName)
+	snapID2 := storage.MakeSnapshotID("vol2", snapName)
+
+	addBaseFixtures := func(t *testing.T, mockBackend *mockstorage.MockBackend) {
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t,
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: buuid},
+			&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: buuid},
+		)
+		addSnapshotsToCache(t,
+			&storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol1", GroupSnapshotName: groupID}},
+			&storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol2", GroupSnapshotName: groupID}},
+		)
+		addGroupSnapshotsToCache(t, storage.NewGroupSnapshot(
+			&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+			[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+		))
+	}
+
+	tests := []struct {
+		name         string
+		groupName    string
+		bootstrapErr error
+		setupMocks   func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyError  func(t *testing.T, err error)
+		verifyState  func(t *testing.T)
+	}{
+		{
+			name:      "Success",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				mockStoreClient.EXPECT().DeleteGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.NoError(t, err) },
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "EmptyName",
+			groupName: "",
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsInvalidInputError(err), "expected InvalidInputError, got %v", err)
+			},
+		},
+		{
+			name:      "GroupNotFound",
+			groupName: "groupsnapshot-missing",
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError, got %v", err)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			groupName:    groupID,
+			bootstrapErr: failed,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			verifyError: func(t *testing.T, err error) { assert.ErrorIs(t, err, failed) },
+		},
+		{
+			name:      "AddTransactionFails",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.ErrorIs(t, err, failed) },
+			verifyState: func(t *testing.T) {
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "ROCConflictAbortsBeforeAnyDelete",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				addBaseFixtures(t, mockBackend)
+
+				roc := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName:        "roc1",
+						Name:                "roc1",
+						ReadOnlyClone:       true,
+						CloneSourceSnapshot: snapName,
+						CloneSourceVolume:   "vol2",
+					},
+					BackendUUID: buuid,
+				}
+				addVolumesToCache(t, roc)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.True(t, errors.IsConflictError(err), "expected ConflictError, got %v", err)
+			},
+			verifyState: func(t *testing.T) {
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "BackendDeleteFailsLeavesGroup",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				// First constituent succeeds; second fails on the backend.
+				gomock.InOrder(
+					mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1),
+					mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(failed).Times(1),
+				)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				// Only the first constituent gets a store delete; the second short-circuits on backend error.
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.ErrorIs(t, err, failed) },
+			verifyState: func(t *testing.T) {
+				// Group record left in place for retry/recovery.
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				// First constituent removed, second still present.
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.NotNil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "BackendDeleteNotFoundIsTolerated",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(errors.NotFoundError("already gone")).Times(2)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				mockStoreClient.EXPECT().DeleteGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.NoError(t, err) },
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "StoreDeleteSnapshotFails",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.ErrorIs(t, err, failed) },
+			verifyState: func(t *testing.T) {
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+			},
+		},
+		{
+			name:      "StoreDeleteGroupFails",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				addBaseFixtures(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				mockStoreClient.EXPECT().DeleteGroupSnapshot(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.ErrorIs(t, err, failed) },
+			verifyState: func(t *testing.T) {
+				// Constituents are gone but the group record remains; restart recovery handles cleanup.
+				assert.NotNil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID2))
+			},
+		},
+		{
+			name:      "MissingSnapshotInCacheSkipped",
+			groupName: groupID,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", buuid)
+				// Only one of the two referenced constituents is present in the snapshot cache.
+				mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t,
+					&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"}, BackendUUID: buuid},
+					&storage.Volume{Config: &storage.VolumeConfig{InternalName: "vol2", Name: "vol2"}, BackendUUID: buuid},
+				)
+				addSnapshotsToCache(t,
+					&storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: "vol1", GroupSnapshotName: groupID}},
+				)
+				addGroupSnapshotsToCache(t, storage.NewGroupSnapshot(
+					&storage.GroupSnapshotConfig{Version: "1", Name: groupID, VolumeNames: []string{"vol1", "vol2"}},
+					[]string{snapID1, snapID2}, "2026-01-01T00:00:00Z",
+				))
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteGroupSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) { assert.NoError(t, err) },
+			verifyState: func(t *testing.T) {
+				assert.Nil(t, getGroupSnapshotByIDFromCache(t, groupID))
+				assert.Nil(t, getSnapshotByIDFromCache(t, snapID1))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+			o.bootstrapError = tt.bootstrapErr
+
+			tt.setupMocks(t, mockCtrl, mockStoreClient)
+
+			err := o.DeleteGroupSnapshot(testCtx, tt.groupName)
+			tt.verifyError(t, err)
+			if tt.verifyState != nil {
+				tt.verifyState(t)
+			}
+			persistenceCleanup(t, o)
+		})
+	}
 }
 
 func TestRestoreSnapshotConcurrentCore(t *testing.T) {

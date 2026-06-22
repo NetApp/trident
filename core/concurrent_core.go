@@ -89,26 +89,7 @@ func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrat
 	}, nil
 }
 
-func (o *ConcurrentTridentOrchestrator) ListSnapshotsForGroup(ctx context.Context, groupName string) ([]*storage.SnapshotExternal, error) {
-	return nil, fmt.Errorf("ListSnapshotsForGroup is not implemented for concurrent core")
-}
-
-func (o *ConcurrentTridentOrchestrator) CreateGroupSnapshot(ctx context.Context, config *storage.GroupSnapshotConfig) (*storage.GroupSnapshotExternal, error) {
-	return nil, fmt.Errorf("CreateGroupSnapshot is not implemented for concurrent core")
-}
-
-func (o *ConcurrentTridentOrchestrator) DeleteGroupSnapshot(ctx context.Context, groupName string) error {
-	return fmt.Errorf("DeleteGroupSnapshot is not implemented for concurrent core")
-}
-
-func (o *ConcurrentTridentOrchestrator) GetGroupSnapshot(ctx context.Context, groupName string) (*storage.GroupSnapshotExternal, error) {
-	return nil, fmt.Errorf("GetGroupSnapshot is not implemented for concurrent core")
-}
-
-func (o *ConcurrentTridentOrchestrator) ListGroupSnapshots(ctx context.Context) ([]*storage.GroupSnapshotExternal, error) {
-	return nil, fmt.Errorf("ListGroupSnapshots is not implemented for concurrent core")
-}
-
+// GetStorageClassPoolMap returns a deep copy of the storage class to pool mapping for each backend.
 // RebuildStorageClassPoolMap rebuilds the storage class to pool mapping for each backend.
 // TODO (cknight): automate this when the pool map is moved into the cache layer.
 func (o *ConcurrentTridentOrchestrator) RebuildStorageClassPoolMap(ctx context.Context) {
@@ -124,7 +105,6 @@ func (o *ConcurrentTridentOrchestrator) RebuildStorageClassPoolMap(ctx context.C
 	o.scPoolMap.Rebuild(ctx, results[0].StorageClasses, results[0].Backends)
 }
 
-// GetStorageClassPoolMap returns a deep copy of the storage class to pool mapping for each backend.
 // TODO (cknight): we're using deep copy semantics to mimic the lockless reads of the cache layer.
 func (o *ConcurrentTridentOrchestrator) GetStorageClassPoolMap() *storageclass.PoolMap {
 	o.scPoolMapMutex.RLock()
@@ -221,6 +201,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrap(ctx context.Context) error {
 		o.bootstrapAutogrowPolicies,
 		// Volumes, storage classes, and snapshots require backends to be bootstrapped.
 		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
+		// Group snapshots reference constituent snapshots, so they load after snapshots.
+		o.bootstrapGroupSnapshots,
 		// Volume moves require volumes to be bootstrapped.
 		o.bootstrapVolumeMoves,
 		// Volume transactions require volumes and snapshots to be bootstrapped.
@@ -577,6 +559,41 @@ func (o *ConcurrentTridentOrchestrator) bootstrapSnapshots(ctx context.Context) 
 	}
 
 	Logc(ctx).Infof("Added %d existing snapshots(s).", snapshotCount)
+	return nil
+}
+
+// bootstrapGroupSnapshots reads group snapshots from the persistent store and loads them into the concurrent
+// cache. A group snapshot is a parentless cache record that only references its constituent snapshot IDs, so the
+// load just upserts the umbrella record. It is registered after bootstrapSnapshots so the constituent snapshots
+// already exist in the cache.
+func (o *ConcurrentTridentOrchestrator) bootstrapGroupSnapshots(ctx context.Context) error {
+	groupSnapshots, storeErr := o.storeClient.GetGroupSnapshots(ctx)
+	if storeErr != nil {
+		Logc(ctx).WithError(storeErr).Error("Failed to get group snapshots from the persistent store.")
+		return storeErr
+	}
+
+	groupSnapshotCount := 0
+
+	for _, gs := range groupSnapshots {
+		// TODO: If the API evolves, check the Version field here.
+		groupSnapshot := storage.NewGroupSnapshot(gs.Config(), gs.GetSnapshotIDs(), gs.GetCreated())
+
+		_, results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertGroupSnapshot(groupSnapshot.ID())))
+		if upsertErr != nil {
+			Logc(ctx).WithField("groupSnapshot", groupSnapshot.ID()).WithError(upsertErr).Error(
+				"Failed to lock group snapshot for upsert.")
+			unlocker()
+			return upsertErr
+		}
+
+		results[0].GroupSnapshot.Upsert(groupSnapshot)
+		unlocker()
+
+		groupSnapshotCount++
+	}
+
+	Logc(ctx).Infof("Added %d existing group snapshot(s).", groupSnapshotCount)
 	return nil
 }
 
@@ -5605,18 +5622,37 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(
 	return nil
 }
 
-func (o *ConcurrentTridentOrchestrator) deleteSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
+// deleteSnapshot deletes a single snapshot from the backend, persistent store, and cache.
+//
+// If groupName is non-empty, the snapshot is treated as a group constituent and the function
+// rejects the delete with a ConflictError when the group record still exists. The check is
+// performed under the same multi-tree lock that write-locks the snapshot ID, so it is atomic
+// with the delete: any concurrent CreateGroupSnapshot must serialize on the same snapshot ID
+// write-lock, so the group either fully exists when we check or is fully gone. Pass "" to skip
+// the guard (used by transaction-recovery callsites that must clean up regardless of group
+// state).
+func (o *ConcurrentTridentOrchestrator) deleteSnapshot(
+	ctx context.Context, volumeName, snapshotName, groupName string,
+) (err error) {
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 
 	// Acquire read lock on backend
 	// Acquire read lock on parent volume
 	// Acquire write lock on snapshot
 	// We also need the entire list of volumes and the list of snapshots for the parent volume.
-	_, results, unlocker, err := db.Lock(ctx, db.Query(
-		db.ListReadOnlyCloneVolumes(),
-		db.ReadBackend(""), // this is for populating the parent backend in the results
-		db.ReadVolume(""),  // this is for populating the parent volume in the results
-		db.DeleteSnapshot(snapshotID)))
+	// If the snapshot is a group constituent, also include the group record's read tree so the
+	// group-existence guard is atomic with the delete.
+	queries := []([]db.Subquery){
+		db.Query(
+			db.ListReadOnlyCloneVolumes(),
+			db.ReadBackend(""), // this is for populating the parent backend in the results
+			db.ReadVolume(""),  // this is for populating the parent volume in the results
+			db.DeleteSnapshot(snapshotID)),
+	}
+	if groupName != "" {
+		queries = append(queries, db.Query(db.InconsistentReadGroupSnapshot(groupName)))
+	}
+	_, results, unlocker, err := db.Lock(ctx, queries...)
 	defer unlocker()
 	if err != nil {
 		return err
@@ -5630,6 +5666,17 @@ func (o *ConcurrentTridentOrchestrator) deleteSnapshot(ctx context.Context, volu
 
 	if snapshot == nil {
 		return errors.NotFoundError("snapshot %s not found on volume %s", snapshotName, volumeName)
+	}
+
+	// Atomic group guard: reject if the constituent's group record still exists. Recovery callers
+	// pass groupName="" to bypass this and clean up regardless of group state.
+	if groupName != "" && results[1].GroupSnapshot.Read != nil {
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":  snapshotID,
+			"groupName": groupName,
+		}).Warn("Snapshot could not be deleted because it is part of a group snapshot. Delete the group snapshot.")
+		return errors.ConflictError(
+			"unable to delete snapshot: '%s' while group: '%s' exists", snapshotID, groupName)
 	}
 
 	if volume == nil {
@@ -5927,8 +5974,9 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 		err = o.deleteSnapshotCleanup(ctx, err, txn)
 	}()
 
-	// Delete the snapshot
-	err = o.deleteSnapshot(ctx, volumeName, snapshotName)
+	// Delete the snapshot. Pass the constituent's group name (if any) so deleteSnapshot atomically
+	// rejects deletion of an active group constituent.
+	err = o.deleteSnapshot(ctx, volumeName, snapshotName, snapshot.GroupSnapshotName())
 	if err != nil {
 		return err
 	}
@@ -5965,6 +6013,574 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 	o.deleteCloneSnapshots(ctx, backendUUID, snapshotName, internalSnapName)
 
 	return nil
+}
+
+// CreateGroupSnapshot creates a group snapshot across the source volumes named in config. A single
+// db.Lock write-locks every constituent snapshot and the group record while read-locking the source
+// volumes and backends. Cache upserts commit only after all store writes succeed; on failure the
+// deferred addGroupSnapshotCleanup removes backend snapshots and the transaction.
+func (o *ConcurrentTridentOrchestrator) CreateGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig,
+) (externalGroupSnapshot *storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var (
+		groupSnapshotTarget *storage.GroupSnapshotTargetInfo
+		groupSnapshotter    storage.Backend
+		groupSnapshot       *storage.GroupSnapshot
+		snapshots           []*storage.Snapshot
+		backendsToVolumes   map[string][]*storage.VolumeConfig
+		backendsByUUID      map[string]storage.Backend
+	)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("group_snapshot_create", &err)()
+
+	// pvc-UUID names of all pvcs in the volume group.
+	sourceVolumeIDs := config.GetVolumeNames()
+	if len(sourceVolumeIDs) == 0 {
+		return nil, errors.InvalidInputError("group snapshot must have at least one source volume")
+	}
+
+	// All constituents share one derived logical snapshot name; each gets a unique per-volume id.
+	snapName, err := storage.ConvertGroupSnapshotID(config.ID())
+	if err != nil {
+		return nil, err
+	}
+
+	// Phase 1: cheap pre-check pass with no per-id locks, to fail fast before taking write locks.
+	precheckQueries := make([][]db.Subquery, 0, len(sourceVolumeIDs))
+	for _, volumeID := range sourceVolumeIDs {
+		precheckQueries = append(precheckQueries, db.Query(
+			db.InconsistentReadVolume(volumeID),
+			db.InconsistentReadSubordinateVolume(volumeID),
+		))
+	}
+	_, results, unlocker, err := db.Lock(ctx, precheckQueries...)
+	unlocker()
+	if err != nil {
+		return nil, err
+	}
+	for i, volumeID := range sourceVolumeIDs {
+		if results[i].Volume.Read == nil {
+			if results[i].SubordinateVolume.Read != nil {
+				return nil, errors.NotFoundError(
+					"creating snapshot is not allowed on subordinate volume %s", volumeID)
+			}
+			return nil, errors.NotFoundError("source volume %s not found", volumeID)
+		}
+	}
+
+	// Add a volume transaction covering the whole group in case the operation must be rolled back.
+	txn := &storage.VolumeTransaction{
+		GroupSnapshotConfig: config,
+		Op:                  storage.AddGroupSnapshot,
+	}
+
+	// Acquire the txn lock before any cache locks to avoid deadlocks.
+	o.txnMutex.Lock(txn.Name())
+	defer o.txnMutex.Unlock(txn.Name())
+
+	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
+		return nil, err
+	}
+
+	// Phase 2: one db.Lock with N constituent trees (write-lock the new snapshot id; read-lock its
+	// parent volume and backend) plus one group tree (write-lock the group record).
+	snapIDs := make([]string, len(sourceVolumeIDs))
+	queries := make([][]db.Subquery, 0, len(sourceVolumeIDs)+1)
+	for i, volumeID := range sourceVolumeIDs {
+		snapIDs[i] = storage.MakeSnapshotID(volumeID, snapName)
+		queries = append(queries, db.Query(
+			db.UpsertSnapshot(volumeID, snapIDs[i]),
+			db.ReadVolume(""),  // populated from the snapshot's parent volume dependency
+			db.ReadBackend(""), // populated from the volume's parent backend dependency
+		))
+	}
+	groupResultIdx := len(queries)
+	queries = append(queries, db.Query(db.UpsertGroupSnapshot(config.ID())))
+
+	_, results, unlocker, err = db.Lock(ctx, queries...)
+	if err != nil {
+		// We still need to clean up the txn.
+		if txErr := o.DeleteVolumeTransaction(ctx, txn); txErr != nil {
+			return nil, fmt.Errorf("unable to clean up group snapshot transaction: %v", txErr)
+		}
+		return nil, err
+	}
+	defer unlocker()
+
+	// Recovery function in case of error. Cache upserts commit only after all store writes succeed,
+	// so an early failure simply never commits them; cleanup handles backend snapshots and the txn.
+	defer func() {
+		err = o.addGroupSnapshotCleanup(ctx, err, backendsToVolumes, backendsByUUID, snapshots, txn)
+	}()
+
+	// Phase 3: re-validate under the held locks and map each source volume to its backend.
+	backendsToVolumes = make(map[string][]*storage.VolumeConfig)
+	backendsByUUID = make(map[string]storage.Backend)
+	upsertByID := make(map[string]func(*storage.Snapshot), len(sourceVolumeIDs))
+	for i, volumeID := range sourceVolumeIDs {
+		volume := results[i].Volume.Read
+		backend := results[i].Backend.Read
+		upsertByID[snapIDs[i]] = results[i].Snapshot.Upsert
+
+		if results[i].Snapshot.Read != nil {
+			return nil, fmt.Errorf("snapshot %s already exists", snapIDs[i])
+		}
+		if volume == nil {
+			return nil, errors.NotFoundError("source volume %s not found", volumeID)
+		}
+		if volume.State.IsDeleting() {
+			return nil, errors.VolumeStateError(fmt.Sprintf("source volume %s is deleting", volumeID))
+		}
+		if backend == nil {
+			return nil, errors.NotFoundError("backend for volume %s not found", volumeID)
+		}
+		if !backend.CanGroupSnapshot() {
+			return nil, errors.UnsupportedError(fmt.Sprintf(
+				"backend %s for volume %s does not support group snapshots", backend.Name(), volumeID))
+		}
+		if !backend.Online() {
+			return nil, errors.New(fmt.Sprintf("backend for volume %s not online", volumeID))
+		}
+
+		backendsToVolumes[backend.BackendUUID()] = append(backendsToVolumes[backend.BackendUUID()], volume.Config)
+		backendsByUUID[backend.BackendUUID()] = backend
+	}
+
+	// Phase 4: gather the group snapshot target for each backend and validate the same storage target rule.
+	for backendUUID, volumes := range backendsToVolumes {
+		backend := backendsByUUID[backendUUID]
+
+		currentInfo, targetErr := backend.GetGroupSnapshotTarget(ctx, volumes)
+		if targetErr != nil {
+			return nil, fmt.Errorf("failed to get storage target for backend %s: %w", backend.Name(), targetErr)
+		}
+
+		if groupSnapshotTarget == nil {
+			groupSnapshotTarget = currentInfo
+		}
+
+		if validateErr := currentInfo.Validate(); validateErr != nil {
+			return nil, errors.InvalidInputError("invalid storage target for backend %s: %v", backend.Name(), validateErr)
+		} else if !currentInfo.IsShared(groupSnapshotTarget) {
+			return nil, errors.InvalidInputError("storage target is not the same for all backends")
+		}
+
+		// Identify and remove duplicates for any source volumes shared across multiple backends.
+		groupSnapshotTarget.AddVolumes(currentInfo.GetVolumes())
+
+		// All targets are the same, so the entry-point backend doesn't matter.
+		groupSnapshotter = backend
+	}
+	if groupSnapshotter == nil {
+		return nil, errors.New("failed to set group snapshotter")
+	}
+
+	// Phase 5: create the group snapshot on the storage backend.
+	if createErr := groupSnapshotter.CreateGroupSnapshot(ctx, config, groupSnapshotTarget); createErr != nil {
+		if errors.IsMaxLimitReachedError(createErr) {
+			return nil, errors.MaxLimitReachedError(fmt.Sprintf("failed to create group snapshot %s: %v",
+				config.ID(), createErr))
+		}
+		return nil, fmt.Errorf("failed to create group snapshot %s: %v", config.ID(), createErr)
+	}
+
+	// Phase 6: process each backend's constituents. Defer error handling until all backends have
+	// processed so the set of created snapshots is known for cleanup.
+	var processingErrs error
+	for backendUUID, volumes := range backendsToVolumes {
+		backend := backendsByUUID[backendUUID]
+
+		snapshotsSlice, processErr := backend.ProcessGroupSnapshot(ctx, config, volumes)
+		if processErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumes":     volumes,
+				"backendUUID": backendUUID,
+			}).WithError(processErr).Debugf("Failed to process grouped snapshots for backend %s", backend.Name())
+			processingErrs = errors.Join(processingErrs, processErr)
+		}
+
+		snapshots = append(snapshots, snapshotsSlice...)
+	}
+	if processingErrs != nil {
+		return nil, processingErrs
+	}
+
+	// Every processed snapshot must correspond to a constituent we hold a write lock on.
+	for _, snap := range snapshots {
+		if _, ok := upsertByID[snap.ID()]; !ok {
+			return nil, fmt.Errorf("backend returned unexpected snapshot %s not locked for group snapshot %s",
+				snap.ID(), config.ID())
+		}
+	}
+
+	// Phase 7: construct the group snapshot record from the constituents.
+	groupSnapshot, err = groupSnapshotter.ConstructGroupSnapshot(ctx, config, snapshots)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct group snapshot %s: %v", config.ID(), err)
+	}
+
+	// Phase 8: persist the group record, then each constituent snapshot.
+	if err = o.storeClient.AddGroupSnapshot(ctx, groupSnapshot); err != nil {
+		return nil, err
+	}
+	for _, snap := range snapshots {
+		if err = o.storeClient.AddSnapshot(ctx, snap); err != nil {
+			return nil, err
+		}
+	}
+
+	// Phase 9: commit to the cache only after all store writes succeed; group first, then constituents.
+	results[groupResultIdx].GroupSnapshot.Upsert(groupSnapshot)
+	for _, snap := range snapshots {
+		upsertByID[snap.ID()](snap)
+	}
+
+	return groupSnapshot.ConstructExternal(), nil
+}
+
+// addGroupSnapshotCleanup is the deferred recovery for CreateGroupSnapshot. On a creation failure it
+// deletes any snapshots that were created on the backends and removes the volume transaction. It does
+// not roll back the persistent store (store writes are last in create, mirroring orchestrator_core),
+// and it never has to roll back the cache because cache upserts only commit after all store writes.
+func (o *ConcurrentTridentOrchestrator) addGroupSnapshotCleanup(
+	ctx context.Context, err error,
+	backendsToVolumes map[string][]*storage.VolumeConfig, backendsByUUID map[string]storage.Backend,
+	snapshots []*storage.Snapshot, volTxn *storage.VolumeTransaction,
+) error {
+	var cleanupErr, txErr error
+	if err != nil {
+		// We may have created some snapshots on the backends. Because something failed, delete them.
+		for backendUUID, volConfigs := range backendsToVolumes {
+			backend, ok := backendsByUUID[backendUUID]
+			if !ok || backend == nil {
+				cleanupErr = errors.Join(cleanupErr, errors.NotFoundError("backend not found"))
+				continue
+			}
+
+			for _, volConfig := range volConfigs {
+				for _, snap := range snapshots {
+					volName, _, parseErr := storage.ParseSnapshotID(snap.ID())
+					if parseErr != nil {
+						cleanupErr = errors.Join(cleanupErr, parseErr)
+						continue
+					} else if volName != volConfig.Name {
+						continue
+					}
+
+					if deleteErr := backend.DeleteSnapshot(ctx, snap.Config, volConfig); deleteErr != nil {
+						cleanupErr = errors.Join(cleanupErr, fmt.Errorf(
+							"unable to delete snapshot from backend during cleanup: %w", deleteErr))
+					}
+				}
+			}
+		}
+	}
+
+	if cleanupErr == nil {
+		// Only clean up the transaction if backend cleanup succeeded or wasn't needed; otherwise leave
+		// it for restart recovery.
+		if deleteErr := o.DeleteVolumeTransaction(ctx, volTxn); deleteErr != nil {
+			txErr = fmt.Errorf("unable to clean up group snapshot transaction: %w", deleteErr)
+		}
+	}
+
+	// Append leaves err untouched (same value and type) when there is nothing to add, so callers can
+	// still detect typed errors (e.g. MaxLimitReachedError) on the common no-cleanup-error path.
+	err = multierr.Append(err, cleanupErr)
+	err = multierr.Append(err, txErr)
+	if cleanupErr != nil || txErr != nil {
+		Logc(ctx).Warnf(
+			"Unable to clean up artifacts of group snapshot creation: %v. "+
+				"Repeat creating the group snapshot or restart %v.",
+			err, config.OrchestratorName)
+	}
+
+	return err
+}
+
+// DeleteGroupSnapshot deletes a group snapshot and its constituents. The locking idiom mirrors
+// CreateGroupSnapshot: a cheap pre-read to learn the constituent IDs, then a single multi-tree
+// db.Lock that takes write locks on every constituent snapshot and the group record while also
+// read-locking each constituent's parent backend/volume and listing read-only-clone volumes for
+// validation. The serializing txnMutex keyed on the group name prevents an interleaved create or
+// delete of the same group between the pre-read and the multi-tree lock acquisition. The group
+// record is removed from the store and cache only after every constituent has been deleted from
+// the backend and persistent store; if any constituent delete fails, the group record is left in
+// place so the user (or recovery) can retry.
+func (o *ConcurrentTridentOrchestrator) DeleteGroupSnapshot(
+	ctx context.Context, groupName string,
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("group_snapshot_delete", &err)()
+
+	if groupName == "" {
+		return errors.InvalidInputError("empty group snapshot name")
+	}
+
+	// Phase 1: cheap pre-read of the group record so we know the constituent IDs to lock.
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadGroupSnapshot(groupName)))
+	unlocker()
+	if err != nil {
+		return err
+	}
+	groupSnapshot := results[0].GroupSnapshot.Read
+	if groupSnapshot == nil {
+		Logc(ctx).Warnf("Group snapshot '%s' not found.", groupName)
+		return errors.NotFoundError("group snapshot '%s' not found", groupName)
+	}
+	snapshotIDs := groupSnapshot.GetSnapshotIDs()
+
+	// Phase 2: serialize same-group create/delete via the txn mutex, then add the txn.
+	txn := &storage.VolumeTransaction{
+		GroupSnapshotConfig: groupSnapshot.GroupSnapshotConfig,
+		Op:                  storage.DeleteGroupSnapshot,
+	}
+	o.txnMutex.Lock(txn.Name())
+	defer o.txnMutex.Unlock(txn.Name())
+
+	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
+		return err
+	}
+	defer func() {
+		err = o.deleteSnapshotCleanup(ctx, err, txn)
+	}()
+
+	// Phase 3: one db.Lock covering the ROC-volume list, every constituent (write-lock the snapshot
+	// id; read-lock its parent volume and backend), and the group record's delete tree.
+	queries := make([][]db.Subquery, 0, len(snapshotIDs)+2)
+	queries = append(queries, db.Query(db.ListReadOnlyCloneVolumes()))
+	for _, snapID := range snapshotIDs {
+		queries = append(queries, db.Query(
+			db.ReadBackend(""), // populated from the snapshot's parent backend dependency
+			db.ReadVolume(""),  // populated from the snapshot's parent volume dependency
+			db.DeleteSnapshot(snapID),
+		))
+	}
+	groupResultIdx := len(queries)
+	queries = append(queries, db.Query(db.DeleteGroupSnapshot(groupName)))
+
+	_, results, unlocker, err = db.Lock(ctx, queries...)
+	if err != nil {
+		return err
+	}
+	defer unlocker()
+
+	// Re-validate under the held lock; the pre-read could be stale even though the txn mutex held.
+	if results[groupResultIdx].GroupSnapshot.Read == nil {
+		return errors.NotFoundError("group snapshot '%s' not found", groupName)
+	}
+	deleteGroupSnapshotInCache := results[groupResultIdx].GroupSnapshot.Delete
+	allReadOnlyCloneVolumes := results[0].Volumes
+
+	// Phase 4: pre-validate ROC conflicts across all constituents BEFORE any backend/store delete,
+	// so that a conflict aborts cleanly without a partial-delete state. The monolithic core only
+	// detects this mid-loop; we improve on that here.
+	for i, snapID := range snapshotIDs {
+		snapshot := results[i+1].Snapshot.Read
+		if snapshot == nil {
+			continue
+		}
+		snapshotName := snapshot.Config.Name
+		for _, vol := range allReadOnlyCloneVolumes {
+			if vol.Config.CloneSourceSnapshot == snapshotName {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotID":    snapID,
+					"snapshotName":  snapshotName,
+					"readOnlyClone": vol.Config.Name,
+				}).Error("Unable to safely delete source snapshot for read-only clone.")
+				return errors.ConflictError(
+					"unable to delete source snapshot %s for read-only clone %s",
+					snapshotName, vol.Config.Name)
+			}
+		}
+	}
+
+	// Phase 5: delete each constituent snapshot from the backend, store, and cache.
+	var errs error
+	for i, snapID := range snapshotIDs {
+		treeIdx := i + 1
+		snapshot := results[treeIdx].Snapshot.Read
+		volume := results[treeIdx].Volume.Read
+		backend := results[treeIdx].Backend.Read
+		deleteSnapshotInCache := results[treeIdx].Snapshot.Delete
+
+		if snapshot == nil {
+			Logc(ctx).WithFields(LogFields{
+				"groupName":  groupName,
+				"snapshotID": snapID,
+			}).Warn("Could not find snapshot in group.")
+			continue
+		}
+		volumeName := snapshot.Config.VolumeName
+
+		// Source volume gone but snapshot doesn't claim missing-volume → inconsistent state, bail.
+		if volume == nil && !snapshot.State.IsMissingVolume() {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotID":    snapID,
+				"snapshotState": snapshot.State,
+				"volumeName":    volumeName,
+			}).Error("Cannot delete snapshot; inaccurate snapshot state.")
+			return errors.NotFoundError("volume %s not found", volumeName)
+		}
+
+		var backendUUID string
+		if volume != nil {
+			backendUUID = volume.BackendUUID
+			if backend == nil && !snapshot.State.IsMissingBackend() {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotID":    snapID,
+					"snapshotState": snapshot.State,
+					"backendUUID":   backendUUID,
+				}).Error("Cannot delete snapshot; inaccurate snapshot state.")
+				return errors.NotFoundError("backend %s not found", backendUUID)
+			}
+		}
+
+		// Lost backend or volume: drop the snapshot reference from store/cache without a backend
+		// delete; the snapshot may persist in the storage system.
+		if backend == nil || volume == nil {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotID":  snapID,
+				"volumeName":  volumeName,
+				"backendUUID": backendUUID,
+			}).Warn("Deleting snapshot reference without source volume or backend; snapshot may persist in storage system.")
+			if storeErr := o.storeClient.DeleteSnapshot(ctx, snapshot); storeErr != nil {
+				return storeErr
+			}
+			deleteSnapshotInCache()
+			continue
+		}
+
+		// Backend delete; treat NotFound as already-gone (matches monolithic + DeleteSnapshot).
+		if deleteErr := backend.DeleteSnapshot(ctx, snapshot.Config, volume.Config); deleteErr != nil {
+			if !errors.IsNotFoundError(deleteErr) {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotID": snapID,
+					"groupName":  groupName,
+					"volumeName": volumeName,
+				}).WithError(deleteErr).Warn("Unable to delete snapshot.")
+				errs = errors.Join(errs, deleteErr)
+				continue
+			}
+		}
+
+		if storeErr := o.storeClient.DeleteSnapshot(ctx, snapshot); storeErr != nil {
+			return storeErr
+		}
+		deleteSnapshotInCache()
+	}
+
+	// If any constituent failed, leave the group record in place so a retry can resume.
+	if errs != nil {
+		Logc(ctx).Debug("Unable to delete some grouped snapshots.")
+		return errs
+	}
+
+	// Phase 6: every constituent deleted; remove the group record from store, then cache.
+	if err = o.storeClient.DeleteGroupSnapshot(ctx, groupSnapshot); err != nil {
+		return err
+	}
+	deleteGroupSnapshotInCache()
+
+	return nil
+}
+
+// GetGroupSnapshot returns the group snapshot with the given ID. The group snapshot is a parentless
+// resource in the cache, so an inconsistent read (acquire, copy, release) is sufficient.
+func (o *ConcurrentTridentOrchestrator) GetGroupSnapshot(
+	ctx context.Context, groupSnapshotID string,
+) (groupSnapshotExternal *storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("group_snapshot_get", &err)()
+
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadGroupSnapshot(groupSnapshotID)))
+	unlocker()
+	if err != nil {
+		return nil, err
+	}
+
+	groupSnapshot := results[0].GroupSnapshot.Read
+	if groupSnapshot == nil {
+		return nil, errors.NotFoundError("group snapshot %s was not found", groupSnapshotID)
+	}
+
+	return groupSnapshot.ConstructExternal(), nil
+}
+
+// ListGroupSnapshots returns all group snapshots known to the cache.
+func (o *ConcurrentTridentOrchestrator) ListGroupSnapshots(
+	ctx context.Context,
+) (groupSnapshotExternals []*storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("group_snapshot_list", &err)()
+
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.ListGroupSnapshots()))
+	defer unlocker()
+	if err != nil {
+		return nil, err
+	}
+	cachedGroupSnapshots := results[0].GroupSnapshots
+
+	groupSnapshotExternals = make([]*storage.GroupSnapshotExternal, 0, len(cachedGroupSnapshots))
+	for _, gs := range cachedGroupSnapshots {
+		groupSnapshotExternals = append(groupSnapshotExternals, gs.ConstructExternal())
+	}
+
+	sort.Sort(storage.ByGroupSnapshotExternalID(groupSnapshotExternals))
+	return groupSnapshotExternals, nil
+}
+
+// ListSnapshotsForGroup returns all constituent snapshots that belong to the named group snapshot.
+// Constituent snapshots are independent snapshot resources tagged with the group name, so they are
+// resolved by filtering the snapshot cache rather than by reading the group snapshot record. This also
+// gracefully handles pre-provisioned grouped snapshots imported before the group snapshot reference.
+func (o *ConcurrentTridentOrchestrator) ListSnapshotsForGroup(
+	ctx context.Context, groupName string,
+) (externalSnapshots []*storage.SnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("snapshot_list_by_group_name", &err)()
+
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.ListSnapshotsForGroup(groupName)))
+	defer unlocker()
+	if err != nil {
+		return nil, err
+	}
+	cachedSnapshots := results[0].Snapshots
+
+	externalSnapshots = make([]*storage.SnapshotExternal, 0, len(cachedSnapshots))
+	for _, s := range cachedSnapshots {
+		externalSnapshots = append(externalSnapshots, s.ConstructExternal())
+	}
+
+	if len(externalSnapshots) == 0 {
+		Logc(ctx).Errorf("No snapshots found for group snapshot '%s'.", groupName)
+		return nil, errors.NotFoundError("no snapshots found for group snapshot '%s'", groupName)
+	}
+
+	sort.Sort(storage.BySnapshotExternalID(externalSnapshots))
+	return externalSnapshots, nil
 }
 
 func (o *ConcurrentTridentOrchestrator) AddStorageClass(
@@ -7175,7 +7791,9 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			// If the snapshot was added to the store, we will have loaded the
 			// snapshot into memory, and we can just delete it normally.
 			// Handles case 3)
-			if err := o.deleteSnapshot(ctx, v.SnapshotConfig.VolumeName, v.SnapshotConfig.Name); err != nil {
+			// Recovery path: bypass the group guard (groupName="") so we can clean up regardless
+			// of group state, mirroring the original behavior.
+			if err := o.deleteSnapshot(ctx, v.SnapshotConfig.VolumeName, v.SnapshotConfig.Name, ""); err != nil {
 				return fmt.Errorf("unable to clean up snapshot %s: %v", v.SnapshotConfig.Name, err)
 			}
 		} else {
@@ -7248,7 +7866,8 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 		// when we bootstrapped and we can retry the snapshot deletion.
 		logFields := LogFields{"volume": v.SnapshotConfig.VolumeName, "snapshot": v.SnapshotConfig.Name}
 
-		if err := o.deleteSnapshot(ctx, v.SnapshotConfig.VolumeName, v.SnapshotConfig.Name); err != nil {
+		// Recovery path: bypass the group guard (groupName="") to clean up regardless of group state.
+		if err := o.deleteSnapshot(ctx, v.SnapshotConfig.VolumeName, v.SnapshotConfig.Name, ""); err != nil {
 			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Info("Snapshot for the delete transaction wasn't found.")
 			} else {

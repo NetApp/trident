@@ -168,6 +168,45 @@ func TestGroupSnapshot(t *testing.T) {
 	assert.Equal(t, groupsnapshot.Config(), persistent.Config())
 }
 
+func TestGroupSnapshot_SmartCopy(t *testing.T) {
+	sourceConfig := &GroupSnapshotConfig{
+		Version:      "1.0",
+		Name:         "groupsnapshot-12345",
+		InternalName: "internal_groupsnapshot-12345",
+		VolumeNames:  []string{"volume1", "volume2"},
+	}
+	groupSnapshot := &GroupSnapshot{
+		GroupSnapshotConfig: sourceConfig,
+		SnapshotIDs: []string{
+			"volume1/snapshot-12345",
+			"volume2/snapshot-12345",
+		},
+		Created: "2026-01-01T00:00:00Z",
+	}
+
+	copied, ok := groupSnapshot.SmartCopy().(*GroupSnapshot)
+	assert.True(t, ok, "SmartCopy must return a *GroupSnapshot")
+
+	// Equal by value, but a distinct object (deep copy).
+	assert.Equal(t, groupSnapshot, copied)
+	assert.NotSame(t, groupSnapshot, copied)
+	assert.NotSame(t, groupSnapshot.GroupSnapshotConfig, copied.GroupSnapshotConfig,
+		"embedded config pointer must be deep-copied")
+
+	// Mutating the copy must not affect the original (independent backing arrays/pointers).
+	copied.SnapshotIDs[0] = "mutated"
+	assert.Equal(t, "volume1/snapshot-12345", groupSnapshot.SnapshotIDs[0],
+		"mutating copy SnapshotIDs must not alias the original")
+
+	copied.VolumeNames[0] = "mutated"
+	assert.Equal(t, "volume1", groupSnapshot.VolumeNames[0],
+		"mutating copy VolumeNames must not alias the original")
+
+	copied.Name = "mutated"
+	assert.Equal(t, "groupsnapshot-12345", groupSnapshot.Name,
+		"mutating copy config must not alias the original")
+}
+
 func TestGroupSnapshotPersistent(t *testing.T) {
 	// Create a dummy config with all values.
 	sourceConfig := &GroupSnapshotConfig{

@@ -46,6 +46,16 @@ func ListSnapshotsForVolume(volumeName string) Subquery {
 	}
 }
 
+func ListSnapshotsForGroup(groupName string) Subquery {
+	return Subquery{
+		res: snapshot,
+		op:  list,
+		setResults: listSnapshotsSetResults(func(s *storage.Snapshot) bool {
+			return s.Config.GroupSnapshotName == groupName
+		}),
+	}
+}
+
 func listSnapshotsSetResults(filter func(*storage.Snapshot) bool) func(*Subquery, *Result) error {
 	return func(_ *Subquery, r *Result) error {
 		snapshots.rlock()

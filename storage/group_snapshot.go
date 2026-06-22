@@ -4,6 +4,8 @@ package storage
 
 import (
 	"fmt"
+
+	"github.com/brunoga/deep"
 )
 
 const (
@@ -199,6 +201,12 @@ func (gs *GroupSnapshot) ConstructClone() *GroupSnapshot {
 	clone.SnapshotIDs = snapshotIDs
 	clone.Created = gs.Created
 	return clone
+}
+
+// SmartCopy returns a deep copy of the group snapshot. It is required for the concurrent cache, which
+// stores group snapshots as SmartCopier values and hands out independent copies on reads.
+func (gs *GroupSnapshot) SmartCopy() interface{} {
+	return deep.MustCopy(gs)
 }
 
 // ConstructExternal accepts a list of snapshot objects and returns a GroupSnapshotExternal object

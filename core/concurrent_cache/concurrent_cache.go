@@ -46,6 +46,10 @@ func Initialize() {
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
 	}
+	groupSnapshots = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+	}
 	backends = cache{
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
@@ -157,6 +161,7 @@ var (
 	rootCache          cache
 	nodes              cache
 	storageClasses     cache
+	groupSnapshots     cache
 	backends           cache
 	volumes            cache
 	subordinateVolumes cache
@@ -168,6 +173,7 @@ var (
 		root:              &rootCache,
 		node:              &nodes,
 		storageClass:      &storageClasses,
+		groupSnapshot:     &groupSnapshots,
 		backend:           &backends,
 		volume:            &volumes,
 		subordinateVolume: &subordinateVolumes,
@@ -910,6 +916,7 @@ type Result struct {
 	VolumePublications []*models.VolumePublication
 	Snapshots          []*storage.Snapshot
 	AutogrowPolicies   []*storage.AutogrowPolicy
+	GroupSnapshots     []*storage.GroupSnapshot
 
 	Node              NodeResult
 	StorageClass      StorageClassResult
@@ -919,6 +926,7 @@ type Result struct {
 	VolumePublication VolumePublicationResult
 	Snapshot          SnapshotResult
 	AutogrowPolicy    AutogrowPolicyResult
+	GroupSnapshot     GroupSnapshotResult
 }
 
 type NodeResult struct {
@@ -969,6 +977,12 @@ type AutogrowPolicyResult struct {
 	Delete func()
 }
 
+type GroupSnapshotResult struct {
+	Read   *storage.GroupSnapshot
+	Upsert func(*storage.GroupSnapshot)
+	Delete func()
+}
+
 type resource int
 
 func (r resource) String() string {
@@ -981,6 +995,7 @@ func (r resource) String() string {
 var resourceNames = map[resource]string{
 	node:              "Node",
 	storageClass:      "Storage Class",
+	groupSnapshot:     "Group Snapshot",
 	backend:           "Backend",
 	volume:            "Volume",
 	subordinateVolume: "Subordinate Volume",
@@ -993,6 +1008,9 @@ const (
 	root = resource(iota)
 	node
 	storageClass
+	// groupSnapshot sorts before backend so a held group lock can legally NestedLock its constituent
+	// backend->volume->snapshot trees. Always take the group lock first, never after a backend/volume/snapshot lock.
+	groupSnapshot
 	backend
 	volume
 	subordinateVolume
@@ -1033,6 +1051,7 @@ var schema = map[resource][]resource{
 	root:              nil, // root is not a schema dependency; injected synthetically during consistent locks
 	node:              nil,
 	storageClass:      nil,
+	groupSnapshot:     nil, // parentless; constituents are locked as separate snapshot trees
 	backend:           nil,
 	autogrowPolicy:    nil,
 	volume:            {backend},
