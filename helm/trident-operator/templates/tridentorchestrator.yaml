@@ -30,6 +30,24 @@ spec:
   {{- if .Values.imageRegistry }}
   imageRegistry: {{ .Values.imageRegistry }}
   {{- end }}
+  {{- if .Values.csiSidecarProvisionerImage }}
+  csiSidecarProvisionerImage: {{ .Values.csiSidecarProvisionerImage }}
+  {{- end }}
+  {{- if .Values.csiSidecarAttacherImage }}
+  csiSidecarAttacherImage: {{ .Values.csiSidecarAttacherImage }}
+  {{- end }}
+  {{- if .Values.csiSidecarResizerImage }}
+  csiSidecarResizerImage: {{ .Values.csiSidecarResizerImage }}
+  {{- end }}
+  {{- if .Values.csiSidecarSnapshotterImage }}
+  csiSidecarSnapshotterImage: {{ .Values.csiSidecarSnapshotterImage }}
+  {{- end }}
+  {{- if .Values.csiSidecarNodeDriverRegistrarImage }}
+  csiSidecarNodeDriverRegistrarImage: {{ .Values.csiSidecarNodeDriverRegistrarImage }}
+  {{- end }}
+  {{- if .Values.csiSidecarLivenessProbeImage }}
+  csiSidecarLivenessProbeImage: {{ .Values.csiSidecarLivenessProbeImage }}
+  {{- end }}
   kubeletDir: {{ .Values.kubeletDir }}
   {{- with .Values.imagePullSecrets }}
   imagePullSecrets:
