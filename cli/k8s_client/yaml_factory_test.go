@@ -1904,8 +1904,50 @@ func getVersionAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefiniti
 	t.Helper()
 	schema := apiextensionsv1.CustomResourceValidation{
 		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-			Type:                   "object",
-			XPreserveUnknownFields: new(true),
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"apiVersion": {
+					Type: "string",
+				},
+				"kind": {
+					Type: "string",
+				},
+				"metadata": {
+					Type: "object",
+				},
+				"spec": {
+					Type:                   "object",
+					XPreserveUnknownFields: new(true),
+				},
+				"status": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"backendNames": {
+							Type: "array",
+							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
+								Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "string",
+								},
+							},
+						},
+						"message": {
+							Type: "string",
+						},
+						"deletionPolicy": {
+							Type: "string",
+						},
+						"phase": {
+							Type: "string",
+						},
+						"lastOperationStatus": {
+							Type: "string",
+						},
+						"cloudProvider": {
+							Type: "string",
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -2984,82 +3026,10 @@ func getActionSnapshotRestoreAPIExtension(t *testing.T) apiextensionsv1.CustomRe
 
 func getConfiguratorsAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefinition {
 	t.Helper()
-	schema := apiextensionsv1.CustomResourceValidation{
-		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-			Type:                   "object",
-			XPreserveUnknownFields: new(true),
-		},
-	}
 
-	return apiextensionsv1.CustomResourceDefinition{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "CustomResourceDefinition",
-			APIVersion: "apiextensions.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "tridentconfigurators.trident.netapp.io",
-		},
-		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
-			Group: "trident.netapp.io",
-			Names: apiextensionsv1.CustomResourceDefinitionNames{
-				Plural:     "tridentconfigurators",
-				Singular:   "tridentconfigurator",
-				Kind:       "TridentConfigurator",
-				ShortNames: []string{"tconf", "tconfigurator"},
-				Categories: []string{"trident", "trident-internal", "trident-external"},
-			},
-			Scope: "Cluster",
-			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
-				{
-					Name:    "v1",
-					Served:  true,
-					Storage: true,
-					Schema:  &schema,
-					Subresources: &apiextensionsv1.CustomResourceSubresources{
-						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
-						Scale:  nil,
-					},
-					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
-						{
-							Name:        "Phase",
-							Type:        "string",
-							Description: "The backend config phase",
-							Priority:    int32(0),
-							JSONPath:    ".status.phase",
-						},
-						{
-							Name:        "Status",
-							Type:        "string",
-							Description: "The result of the last operation",
-							Priority:    int32(0),
-							JSONPath:    ".status.lastOperationStatus",
-						},
-						{
-							Name:        "Cloud Provider",
-							Type:        "string",
-							Description: "The name of cloud provider",
-							Priority:    int32(0),
-							JSONPath:    ".status.cloudProvider",
-						},
-						{
-							Name:        "Storage Driver",
-							Type:        "string",
-							Description: "The storage driver type",
-							Priority:    int32(1),
-							JSONPath:    ".spec.storageDriverName",
-						},
-						{
-							Name:        "Deletion Policy",
-							Type:        "string",
-							Description: "The deletion policy",
-							Priority:    int32(1),
-							JSONPath:    ".status.deletionPolicy",
-						},
-					},
-				},
-			},
-		},
-	}
+	var crd apiextensionsv1.CustomResourceDefinition
+	require.NoError(t, yaml.Unmarshal([]byte(tridentConfiguratorCRDYAMLv1), &crd), "invalid YAML")
+	return crd
 }
 
 func TestGetBackendConfigCRDYAML(t *testing.T) {
@@ -3074,14 +3044,39 @@ func TestGetBackendConfigCRDYAML(t *testing.T) {
 }
 
 func TestGetConfiguratorCRDYAML(t *testing.T) {
-	expected := getConfiguratorsAPIExtension(t)
 	actualYAML := GetConfiguratorCRDYAML()
 
 	var actual apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+	assert.Equal(t, metav1.TypeMeta{
+		Kind:       "CustomResourceDefinition",
+		APIVersion: "apiextensions.k8s.io/v1",
+	}, actual.TypeMeta)
+	assert.Equal(t, "tridentconfigurators.trident.netapp.io", actual.Name)
+	assert.Equal(t, "trident.netapp.io", actual.Spec.Group)
+	assert.Equal(t, "Cluster", string(actual.Spec.Scope))
+	assert.Equal(t, apiextensionsv1.CustomResourceDefinitionNames{
+		Plural:     "tridentconfigurators",
+		Singular:   "tridentconfigurator",
+		Kind:       "TridentConfigurator",
+		ShortNames: []string{"tconf", "tconfigurator"},
+		Categories: []string{"trident", "trident-internal", "trident-external"},
+	}, actual.Spec.Names)
+
+	require.Len(t, actual.Spec.Versions, 1)
+	version := actual.Spec.Versions[0]
+	require.NotNil(t, version.Schema)
+	require.NotNil(t, version.Schema.OpenAPIV3Schema)
+	schema := version.Schema.OpenAPIV3Schema
+
+	assert.Equal(t, "object", schema.Type)
+	assert.Nil(t, schema.XPreserveUnknownFields)
+	assert.Equal(t, "object", schema.Properties["spec"].Type)
+	require.NotNil(t, schema.Properties["spec"].XPreserveUnknownFields)
+	assert.True(t, *schema.Properties["spec"].XPreserveUnknownFields)
+	assert.Equal(t, "object", schema.Properties["status"].Type)
+	assert.Equal(t, "array", schema.Properties["status"].Properties["backendNames"].Type)
+	assert.Equal(t, "string", schema.Properties["status"].Properties["phase"].Type)
 }
 
 func TestGetMirrorRelationshipCRDYAML(t *testing.T) {
@@ -3184,52 +3179,66 @@ func TestGetGroupSnapshotCRDYAML(t *testing.T) {
 }
 
 func TestGetOrchestratorCRDYAML(t *testing.T) {
-	schema := apiextensionsv1.CustomResourceValidation{
-		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-			Type:                   "object",
-			XPreserveUnknownFields: new(true),
-		},
-	}
-	expected := apiextensionsv1.CustomResourceDefinition{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "CustomResourceDefinition",
-			APIVersion: "apiextensions.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "tridentorchestrators.trident.netapp.io",
-		},
-		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
-			Group: "trident.netapp.io",
-			Names: apiextensionsv1.CustomResourceDefinitionNames{
-				Plural:     "tridentorchestrators",
-				Singular:   "tridentorchestrator",
-				Kind:       "TridentOrchestrator",
-				ListKind:   "TridentOrchestratorList",
-				ShortNames: []string{"torc", "torchestrator"},
-			},
-			Scope: "Cluster",
-			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
-				{
-					Name:    "v1",
-					Served:  true,
-					Storage: true,
-					Schema:  &schema,
-					Subresources: &apiextensionsv1.CustomResourceSubresources{
-						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
-						Scale:  nil,
-					},
-				},
-			},
-		},
+	assertSchemaProperty := func(t *testing.T, schema *apiextensionsv1.JSONSchemaProps, path []string, expectedType string) {
+		t.Helper()
+
+		current := schema
+		for _, segment := range path {
+			next, ok := current.Properties[segment]
+			assert.True(t, ok, "missing schema property %q in path %v", segment, path)
+			current = &next
+		}
+		assert.Equal(t, expectedType, current.Type, "unexpected schema type for path %v", path)
 	}
 
 	actualYAML := GetOrchestratorCRDYAML()
 
 	var actual apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+	assert.Equal(t, metav1.TypeMeta{
+		Kind:       "CustomResourceDefinition",
+		APIVersion: "apiextensions.k8s.io/v1",
+	}, actual.TypeMeta)
+	assert.Equal(t, "tridentorchestrators.trident.netapp.io", actual.Name)
+	assert.Equal(t, "trident.netapp.io", actual.Spec.Group)
+	assert.Equal(t, "Cluster", string(actual.Spec.Scope))
+	assert.Equal(t, apiextensionsv1.CustomResourceDefinitionNames{
+		Plural:     "tridentorchestrators",
+		Singular:   "tridentorchestrator",
+		Kind:       "TridentOrchestrator",
+		ListKind:   "TridentOrchestratorList",
+		ShortNames: []string{"torc", "torchestrator"},
+	}, actual.Spec.Names)
+
+	require.Len(t, actual.Spec.Versions, 1)
+	version := actual.Spec.Versions[0]
+	assert.Equal(t, "v1", version.Name)
+	assert.True(t, version.Served)
+	assert.True(t, version.Storage)
+	require.NotNil(t, version.Subresources)
+	assert.NotNil(t, version.Subresources.Status)
+	require.NotNil(t, version.Schema)
+	require.NotNil(t, version.Schema.OpenAPIV3Schema)
+
+	schema := version.Schema.OpenAPIV3Schema
+	assert.Equal(t, "object", schema.Type)
+	assert.Nil(t, schema.XPreserveUnknownFields)
+	assertSchemaProperty(t, schema, []string{"spec"}, "object")
+	assertSchemaProperty(t, schema, []string{"spec", "namespace"}, "string")
+	assertSchemaProperty(t, schema, []string{"spec", "enableForceDetach"}, "boolean")
+	assertSchemaProperty(t, schema, []string{"spec", "probePort"}, "integer")
+	assertSchemaProperty(t, schema, []string{"spec", "imagePullSecrets"}, "array")
+	assertSchemaProperty(t, schema, []string{"spec", "controllerPluginNodeSelector"}, "object")
+	assertSchemaProperty(t, schema, []string{"spec", "controllerPluginTolerations"}, "array")
+	assertSchemaProperty(t, schema, []string{"spec", "resources"}, "object")
+	assertSchemaProperty(t, schema, []string{"spec", "resources", "controller"}, "object")
+	assertSchemaProperty(t, schema, []string{"spec", "resources", "node", "linux"}, "object")
+	assertSchemaProperty(t, schema, []string{"status"}, "object")
+	assertSchemaProperty(t, schema, []string{"status", "message"}, "string")
+
+	currentInstallationParams := schema.Properties["status"].Properties["currentInstallationParams"]
+	require.NotNil(t, currentInstallationParams.XPreserveUnknownFields)
+	assert.True(t, *currentInstallationParams.XPreserveUnknownFields)
 }
 
 func TestGetActionMirrorUpdateCRDYAML(t *testing.T) {
