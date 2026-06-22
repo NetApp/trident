@@ -726,6 +726,25 @@ func (i *Installer) setInstallationParams(
 		}
 	}
 
+	if cr.Spec.CSISidecarProvisionerImage != "" {
+		csiSidecarProvisionerImage = cr.Spec.CSISidecarProvisionerImage
+	}
+	if cr.Spec.CSISidecarAttacherImage != "" {
+		csiSidecarAttacherImage = cr.Spec.CSISidecarAttacherImage
+	}
+	if cr.Spec.CSISidecarResizerImage != "" {
+		csiSidecarResizerImage = cr.Spec.CSISidecarResizerImage
+	}
+	if cr.Spec.CSISidecarSnapshotterImage != "" {
+		csiSidecarSnapshotterImage = cr.Spec.CSISidecarSnapshotterImage
+	}
+	if cr.Spec.CSISidecarNodeDriverRegistrarImage != "" {
+		csiSidecarNodeDriverRegistrarImage = cr.Spec.CSISidecarNodeDriverRegistrarImage
+	}
+	if cr.Spec.CSISidecarLivenessProbeImage != "" {
+		csiSidecarLivenessProbeImage = cr.Spec.CSISidecarLivenessProbeImage
+	}
+
 	// Setting up the resources
 	if returnError = i.populateResources(cr); returnError != nil {
 		return nil, nil, false, fmt.Errorf("failed parsing resources list specified: \n%w", returnError)
@@ -1033,41 +1052,47 @@ func (i *Installer) InstallOrPatchTrident(
 	acpVersion := i.GetACPVersion()
 
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
-		EnableForceDetach:        strconv.FormatBool(enableForceDetach),
-		DisableAuditLog:          strconv.FormatBool(disableAuditLog),
-		LogFormat:                logFormat,
-		Debug:                    strconv.FormatBool(debug),
-		LogLevel:                 determineLogLevel(),
-		LogWorkflows:             logWorkflows,
-		LogLayers:                logLayers,
-		TridentImage:             tridentImage,
-		ImageRegistry:            imageRegistry,
-		IPv6:                     strconv.FormatBool(useIPv6),
-		SilenceAutosupport:       strconv.FormatBool(silenceAutosupport),
-		ProbePort:                probePort,
-		AutosupportImage:         autosupportImage,
-		AutosupportProxy:         autosupportProxy,
-		AutosupportInsecure:      autosupportInsecure,
-		AutosupportSerialNumber:  autosupportSerialNumber,
-		AutosupportHostname:      autosupportHostname,
-		KubeletDir:               kubeletDir,
-		K8sTimeout:               strconv.Itoa(int(k8sTimeout.Seconds())),
-		HTTPRequestTimeout:       httpTimeout,
-		ImagePullSecrets:         imagePullSecrets,
-		NodePluginNodeSelector:   nodePluginNodeSelector,
-		NodePluginTolerations:    nodePluginTolerations,
-		ImagePullPolicy:          imagePullPolicy,
-		EnableACP:                strconv.FormatBool(enableACP),
-		ACPImage:                 acpImage,
-		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
-		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
-		K8sAPIQPS:                k8sAPIQPS,
-		FSGroupPolicy:            fsGroupPolicy,
-		NodePrep:                 nodePrep,
-		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
-		Resources:                resourcesValues,
-		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
-		HostNetwork:              hostNetwork,
+		EnableForceDetach:                  strconv.FormatBool(enableForceDetach),
+		DisableAuditLog:                    strconv.FormatBool(disableAuditLog),
+		LogFormat:                          logFormat,
+		Debug:                              strconv.FormatBool(debug),
+		LogLevel:                           determineLogLevel(),
+		LogWorkflows:                       logWorkflows,
+		LogLayers:                          logLayers,
+		TridentImage:                       tridentImage,
+		ImageRegistry:                      imageRegistry,
+		CSISidecarProvisionerImage:         csiSidecarProvisionerImage,
+		CSISidecarAttacherImage:            csiSidecarAttacherImage,
+		CSISidecarResizerImage:             csiSidecarResizerImage,
+		CSISidecarSnapshotterImage:         csiSidecarSnapshotterImage,
+		CSISidecarNodeDriverRegistrarImage: csiSidecarNodeDriverRegistrarImage,
+		CSISidecarLivenessProbeImage:       csiSidecarLivenessProbeImage,
+		IPv6:                               strconv.FormatBool(useIPv6),
+		SilenceAutosupport:                 strconv.FormatBool(silenceAutosupport),
+		ProbePort:                          probePort,
+		AutosupportImage:                   autosupportImage,
+		AutosupportProxy:                   autosupportProxy,
+		AutosupportInsecure:                autosupportInsecure,
+		AutosupportSerialNumber:            autosupportSerialNumber,
+		AutosupportHostname:                autosupportHostname,
+		KubeletDir:                         kubeletDir,
+		K8sTimeout:                         strconv.Itoa(int(k8sTimeout.Seconds())),
+		HTTPRequestTimeout:                 httpTimeout,
+		ImagePullSecrets:                   imagePullSecrets,
+		NodePluginNodeSelector:             nodePluginNodeSelector,
+		NodePluginTolerations:              nodePluginTolerations,
+		ImagePullPolicy:                    imagePullPolicy,
+		EnableACP:                          strconv.FormatBool(enableACP),
+		ACPImage:                           acpImage,
+		ISCSISelfHealingInterval:           iscsiSelfHealingInterval,
+		ISCSISelfHealingWaitTime:           iscsiSelfHealingWaitTime,
+		K8sAPIQPS:                          k8sAPIQPS,
+		FSGroupPolicy:                      fsGroupPolicy,
+		NodePrep:                           nodePrep,
+		EnableConcurrency:                  strconv.FormatBool(enableConcurrency),
+		Resources:                          resourcesValues,
+		HTTPSMetrics:                       strconv.FormatBool(httpsMetrics),
+		HostNetwork:                        hostNetwork,
 	}
 
 	Log().WithFields(LogFields{

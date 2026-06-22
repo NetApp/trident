@@ -6,3 +6,9 @@ spec:
   debug: true
   namespace: trident
   tridentImage: localhost:5000/netapp/trident:26.06
+  csiSidecarProvisionerImage: localhost:5000/sig-storage/csi-provisioner:v6.3.0
+  csiSidecarAttacherImage: localhost:5000/sig-storage/csi-attacher:v4.11.0
+  csiSidecarResizerImage: localhost:5000/sig-storage/csi-resizer:v2.1.0
+  csiSidecarSnapshotterImage: localhost:5000/sig-storage/csi-snapshotter:v8.6.0
+  csiSidecarNodeDriverRegistrarImage: localhost:5000/sig-storage/csi-node-driver-registrar:v2.17.0
+  csiSidecarLivenessProbeImage: localhost:5000/sig-storage/livenessprobe:v2.19.0
