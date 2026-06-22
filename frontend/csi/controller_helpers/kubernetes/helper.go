@@ -1050,7 +1050,7 @@ func isValidAccessControlPermission(permission string) bool {
 
 // IsEphemeralPVC checks whether a PVC being provisioned is an ephemeral one that is part of a backup workflow.
 func IsEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
-	return IsVeeamKastenEphemeralPVC(pvc) || IsTrilioEphemeralPVC(pvc)
+	return IsVeeamKastenEphemeralPVC(pvc) || IsTrilioEphemeralPVC(pvc) || IsCohesityEphemeralPVC(pvc)
 }
 
 // IsVeeamKastenEphemeralPVC checks if a PVC is part of a Veeam Kasten workflow.
@@ -1073,4 +1073,15 @@ func IsTrilioEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
 	// Check for the well-known TrilioVault managed-by label on the PVC.
 	value, exists := pvc.Labels[LabelK8sAppManagedByKey]
 	return exists && value == LabelK8sAppManagedByTrilioValue
+}
+
+// IsCohesityEphemeralPVC checks if a PVC is part of a Cohesity workflow.
+func IsCohesityEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
+	if pvc == nil {
+		return false
+	}
+
+	// Check for the well-known Cohesity task ID label on the PVC.
+	value, exists := pvc.Labels[LabelCohesityTaskIDKey]
+	return exists && value != ""
 }

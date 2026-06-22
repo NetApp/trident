@@ -101,6 +101,7 @@ const (
 	// Third-party backup labels
 	LabelK8sAppManagedByKey         = "app.kubernetes.io/managed-by"
 	LabelK8sAppManagedByTrilioValue = "k8s-triliovault"
+	LabelCohesityTaskIDKey          = "cohesity/task-id"
 
 	// Red Hat OpenShift Migration Toolkit for Virtualization
 	AnnRedHatMTV = "forklift.konveyor.io/netapp-shift"

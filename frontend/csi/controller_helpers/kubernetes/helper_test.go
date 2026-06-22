@@ -2595,6 +2595,89 @@ func TestIsTrilioEphemeralPVC(t *testing.T) {
 	}
 }
 
+func TestIsCohesityEphemeralPVC(t *testing.T) {
+	tests := []struct {
+		name     string
+		pvc      *v1.PersistentVolumeClaim
+		expected bool
+	}{
+		{
+			name:     "Nil PVC",
+			pvc:      nil,
+			expected: false,
+		},
+		{
+			name: "PVC with Cohesity task-id label",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelCohesityTaskIDKey: "task-12345",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "PVC without Cohesity label",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"some-other-key": "value",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with empty labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with nil labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: nil,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with Cohesity label set to empty string",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelCohesityTaskIDKey: "",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with Cohesity label set to a non-empty value",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelCohesityTaskIDKey: "task-67890",
+					},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsCohesityEphemeralPVC(tt.pvc)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestIsEphemeralPVC(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -2618,6 +2701,17 @@ func TestIsEphemeralPVC(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Cohesity ephemeral PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelCohesityTaskIDKey: "task-12345",
 					},
 				},
 			},
@@ -2694,6 +2788,14 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			expectedSkipRecoveryQueue: "true",
 		},
 		{
+			name:    "Cohesity ephemeral PVC defaults SkipRecoveryQueue to true",
+			pvcName: "cohesity-pvc",
+			pvcLabels: map[string]string{
+				LabelCohesityTaskIDKey: "task-12345",
+			},
+			expectedSkipRecoveryQueue: "true",
+		},
+		{
 			name:                      "non-ephemeral PVC leaves SkipRecoveryQueue empty",
 			pvcName:                   "regular-pvc",
 			pvcAnnotations:            nil,
@@ -2716,6 +2818,17 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			},
 			pvcLabels: map[string]string{
 				LabelK8sAppManagedByKey: LabelK8sAppManagedByTrilioValue,
+			},
+			expectedSkipRecoveryQueue: "false",
+		},
+		{
+			name:    "Cohesity ephemeral PVC with explicit annotation preserves annotation value",
+			pvcName: "cohesity-pvc-explicit",
+			pvcAnnotations: map[string]string{
+				AnnSkipRecoveryQueue: "false",
+			},
+			pvcLabels: map[string]string{
+				LabelCohesityTaskIDKey: "task-12345",
 			},
 			expectedSkipRecoveryQueue: "false",
 		},
