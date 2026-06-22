@@ -62,8 +62,11 @@ func (f *FakeListWatcher) Watch(options metav1.ListOptions) (watch.Interface, er
 
 type FakeController struct{}
 
-func (f *FakeController) Run(stopCh <-chan struct{})                {}
-func (f *FakeController) HasSynced() bool                           { return true }
+func (f *FakeController) Run(stopCh <-chan struct{}) {}
+func (f *FakeController) HasSynced() bool            { return true }
+func (f *FakeController) HasSyncedChecker() cache.DoneChecker {
+	return newFakeDoneChecker("fake-controller", true)
+}
 func (f *FakeController) LastSyncResourceVersion() string           { return "" }
 func (f *FakeController) GetIndexer() cache.Indexer                 { return &FakeIndexer{} }
 func (f *FakeController) AddIndexers(indexers cache.Indexers) error { return nil }
@@ -124,6 +127,8 @@ func (f *FakeIndexer) Update(obj interface{}) error                 { return nil
 func (f *FakeIndexer) Delete(obj interface{}) error                 { return nil }
 func (f *FakeIndexer) List() []interface{}                          { return nil }
 func (f *FakeIndexer) ListKeys() []string                           { return nil }
+func (f *FakeIndexer) LastStoreSyncResourceVersion() string         { return "" }
+func (f *FakeIndexer) Bookmark(rv string)                           {}
 func (f *FakeIndexer) Get(obj interface{}) (item interface{}, exists bool, err error) {
 	return nil, false, nil
 }
@@ -139,11 +144,13 @@ func (f *FakeIndexer) Resync() error                       { return nil }
 
 type FakeStore struct{}
 
-func (f *FakeStore) Add(obj interface{}) error    { return nil }
-func (f *FakeStore) Update(obj interface{}) error { return nil }
-func (f *FakeStore) Delete(obj interface{}) error { return nil }
-func (f *FakeStore) List() []interface{}          { return nil }
-func (f *FakeStore) ListKeys() []string           { return nil }
+func (f *FakeStore) Add(obj interface{}) error            { return nil }
+func (f *FakeStore) Update(obj interface{}) error         { return nil }
+func (f *FakeStore) Delete(obj interface{}) error         { return nil }
+func (f *FakeStore) List() []interface{}                  { return nil }
+func (f *FakeStore) ListKeys() []string                   { return nil }
+func (f *FakeStore) LastStoreSyncResourceVersion() string { return "" }
+func (f *FakeStore) Bookmark(rv string)                   {}
 func (f *FakeStore) Get(obj interface{}) (item interface{}, exists bool, err error) {
 	return nil, false, nil
 }
@@ -2374,8 +2381,33 @@ type fakeController struct {
 	synced bool
 }
 
+type fakeDoneChecker struct {
+	name string
+	done <-chan struct{}
+}
+
+func (f fakeDoneChecker) Name() string {
+	return f.name
+}
+
+func (f fakeDoneChecker) Done() <-chan struct{} {
+	return f.done
+}
+
 func (f *fakeController) HasSynced() bool {
 	return f.synced
+}
+
+func (f *fakeController) HasSyncedChecker() cache.DoneChecker {
+	return newFakeDoneChecker("fake-controller", f.synced)
+}
+
+func newFakeDoneChecker(name string, synced bool) cache.DoneChecker {
+	doneCh := make(chan struct{})
+	if synced {
+		close(doneCh)
+	}
+	return fakeDoneChecker{name: name, done: doneCh}
 }
 
 // Implement other required methods as no-ops for testing

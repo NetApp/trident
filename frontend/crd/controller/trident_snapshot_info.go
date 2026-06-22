@@ -116,7 +116,7 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 			"reason":           reason,
 		}
 		Logx(ctx).WithFields(logFields).Warn("Invalid TridentSnapshotInfo provided.")
-		c.recorder.Eventf(snapshotInfoCopy, corev1.EventTypeWarning, netappv1.SnapshotInfoInvalid, reason)
+		c.recorder.Eventf(snapshotInfoCopy, corev1.EventTypeWarning, netappv1.SnapshotInfoInvalid, "%s", reason)
 		status = &netappv1.TridentSnapshotInfoStatus{}
 	}
 

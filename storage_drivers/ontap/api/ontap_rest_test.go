@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 
@@ -1537,6 +1538,28 @@ func TestOntapREST_LunRename(t *testing.T) {
 	}
 }
 
+func TestOntapREST_LunRename_UsesJSONContentType(t *testing.T) {
+	var patchContentType string
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PATCH" {
+			patchContentType = r.Header.Get("Content-Type")
+		}
+		mockLunResponse(w, r)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	err := rs.LunRename(ctx, "/fake-lunName", "/fake-NewlunName")
+	assert.NoError(t, err)
+	assert.Contains(t, patchContentType, "application/json")
+	assert.NotContains(t, strings.ToLower(patchContentType), "multipart/form-data")
+}
+
 func mockLunResponseSuccessAsync(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/cluster/jobs/1234" {
 		mockJobResponse(w, r)
@@ -1965,6 +1988,28 @@ func TestOntapREST_SetLunSize(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestOntapREST_SetLunSize_UsesJSONContentType(t *testing.T) {
+	var patchContentType string
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PATCH" {
+			patchContentType = r.Header.Get("Content-Type")
+		}
+		mockLunResponse(w, r)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	_, err := rs.LunSetSize(ctx, "fake-lunName", "3147483648")
+	assert.NoError(t, err)
+	assert.Contains(t, patchContentType, "application/json")
+	assert.NotContains(t, strings.ToLower(patchContentType), "multipart/form-data")
 }
 
 func getNetworkIpInterface(hasNextLink bool) *models.IPInterfaceResponse {

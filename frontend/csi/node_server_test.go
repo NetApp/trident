@@ -4894,6 +4894,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		}()
 
 		csiNodeLockTimeout = testNodeLockTimeout
+		csiNodeRequestTimeout = testNodeMultithreadedBarrierTimeout
 
 		ctrl := gomock.NewController(t)
 		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
@@ -4901,12 +4902,22 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		// Setting up mocks expectation for each request.
 		for i := 0; i < numOfRequests; i++ {
-			volumeTrackingInfo := &models.VolumeTrackingInfo{
-				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
-			}
-			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			// Return fresh tracking structs so concurrent read-only mutations do not race on shared pointers.
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+					return &models.VolumeTrackingInfo{
+						VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+					}, nil
+				},
+			)
 			mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
-			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+					return &models.VolumeTrackingInfo{
+						VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+					}, nil
+				},
+			)
 			mockMount.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockTrackingClient.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
@@ -4926,11 +4937,11 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		wg.Add(numOfRequests)
 
 		for i := 0; i < numOfRequests; i++ {
-			go func() {
+			go func(index int) {
 				defer wg.Done()
-				_, err := plugin.NodePublishVolume(context.Background(), requests[i])
+				_, err := plugin.NodePublishVolume(context.Background(), requests[index])
 				assert.NoError(t, err)
-			}()
+			}(i)
 		}
 
 		wg.Wait()
@@ -5805,7 +5816,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 			csiNodeRequestTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiNodeRequestTimeout = testNodeRequestTimeoutShort
+		csiNodeRequestTimeout = testNodeMultithreadedBarrierTimeout
 		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
