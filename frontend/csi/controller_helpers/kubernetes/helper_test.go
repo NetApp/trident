@@ -1678,8 +1678,10 @@ func (m *MockFullIndexer) Delete(obj interface{}) error { return nil }
 func (m *MockFullIndexer) Get(obj interface{}) (item interface{}, exists bool, err error) {
 	return nil, false, nil
 }
-func (m *MockFullIndexer) ListKeys() []string                  { return []string{} }
-func (m *MockFullIndexer) Replace([]interface{}, string) error { return nil }
+func (m *MockFullIndexer) ListKeys() []string                   { return []string{} }
+func (m *MockFullIndexer) LastStoreSyncResourceVersion() string { return "" }
+func (m *MockFullIndexer) Bookmark(rv string)                   {}
+func (m *MockFullIndexer) Replace([]interface{}, string) error  { return nil }
 
 // Required methods for cache.Indexer interface
 func (m *MockFullIndexer) Index(indexName string, obj interface{}) ([]interface{}, error) {

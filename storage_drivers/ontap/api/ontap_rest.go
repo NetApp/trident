@@ -585,6 +585,14 @@ func WithNextLink(next *models.Href) func(*runtime.ClientOperation) {
 	}
 }
 
+// WithConsumesJSON forces a generated client operation to use JSON request bodies.
+// This avoids runtime media-type auto-selection choosing multipart/form-data on dual-consumes endpoints.
+func WithConsumesJSON() func(*runtime.ClientOperation) {
+	return func(op *runtime.ClientOperation) {
+		op.ConsumesMediaTypes = []string{"application/json"}
+	}
+}
+
 // HasNextLink checks if restResult.Links.Next exists using reflection
 func HasNextLink(restResult interface{}) (result bool) {
 	//
@@ -3365,7 +3373,7 @@ func (c *RestClient) LunSetComment(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo, WithConsumesJSON())
 	if err != nil {
 		return err
 	}
@@ -3515,7 +3523,7 @@ func (c *RestClient) LunSetQosPolicyGroup(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo, WithConsumesJSON())
 	if err != nil {
 		return err
 	}
@@ -3558,7 +3566,7 @@ func (c *RestClient) LunRename(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo, WithConsumesJSON())
 	if err != nil {
 		return err
 	}
@@ -3967,7 +3975,7 @@ func (c *RestClient) LunSetSize(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo, WithConsumesJSON())
 	if err != nil {
 		return 0, err
 	}

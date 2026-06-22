@@ -245,7 +245,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 		}
 	} else {
 		Logx(ctx).WithFields(logFields).WithField("reason", reason).Debug("Invalid TridentMirrorRelationship provided.")
-		c.recorder.Eventf(mirrorRCopy, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, reason)
+		c.recorder.Eventf(mirrorRCopy, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, "%s", reason)
 
 		if len(mirrorRCopy.Status.Conditions) > 0 {
 			// For now, we only allow a single volumeMapping which should map to a single status condition
@@ -424,7 +424,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			"Could not find volume at volume handle: %v", localPV.Spec.CSI.VolumeHandle,
 		)
 		Logx(ctx).WithFields(logFields).Debug(statusCondition.Message)
-		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message)
+		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, "%s", statusCondition.Message)
 		return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
 
@@ -435,14 +435,14 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			statusCondition.Message = "Error checking if localPVC's backend can support mirroring"
 			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).WithError(err).Error(statusCondition.Message)
 			c.recorder.Eventf(
-				relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message)
+				relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, "%s", statusCondition.Message)
 			return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 		} else if !mirrorCapable {
 			statusCondition.MirrorState = netappv1.MirrorStateInvalid
 			statusCondition.Message = "localPVC's backend does not support mirroring"
 			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Warn(statusCondition.Message)
 			c.recorder.Eventf(
-				relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
+				relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, "%s", statusCondition.Message)
 			return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 		}
 	}
@@ -496,7 +496,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				statusCondition.Message = "Could not establish mirror"
 				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
-					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
+					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, "%s", statusCondition.Message,
 				)
 			} else if api.IsNotReadyError(err) {
 				update, _ := updateTMRConditionLocalFields(statusCondition, localPVCName,
@@ -521,7 +521,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				statusCondition.Message = "Could not reestablish mirror"
 				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
-					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
+					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, "%s", statusCondition.Message,
 				)
 			} else {
 				// If we performed an action, get new mirror state
@@ -543,7 +543,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				statusCondition.Message = "Could not promote mirror"
 				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
-					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
+					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, "%s", statusCondition.Message,
 				)
 			} else if api.IsNotReadyError(err) {
 				update, _ := updateTMRConditionLocalFields(statusCondition, localPVCName,
@@ -566,7 +566,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		statusCondition.MirrorState = netappv1.MirrorStateInvalid
 		statusCondition.Message = err.Error()
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Error(err)
-		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
+		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, "%s", statusCondition.Message)
 		return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
 
