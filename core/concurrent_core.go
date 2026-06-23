@@ -2936,6 +2936,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	if volConfig.SplitOnClone != "" {
 		cloneConfig.SplitOnClone = volConfig.SplitOnClone
 	}
+	// Override these values only if SecureSMB is enabled in clone volume's config
+	if volConfig.SecureSMBEnabled {
+		cloneConfig.SecureSMBEnabled = volConfig.SecureSMBEnabled
+		cloneConfig.SMBShareACL = volConfig.SMBShareACL
+	}
 	cloneConfig.ReadOnlyClone = volConfig.ReadOnlyClone
 	cloneConfig.Namespace = volConfig.Namespace
 	cloneConfig.RequestName = volConfig.RequestName
