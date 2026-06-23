@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: post-delete-service-account
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trident.namespace" . }}
   annotations:
     "helm.sh/hook": post-delete
     "helm.sh/hook-weight": "-10"
@@ -38,7 +38,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: post-delete-service-account
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trident.namespace" . }}
 roleRef:
   kind: ClusterRole
   name: post-delete-cluster-role
@@ -50,7 +50,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: post-delete-hook
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trident.namespace" . }}
   labels:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
