@@ -3,8 +3,10 @@
 package api
 
 import (
+	"sync"
 	"time"
 
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 )
 
@@ -45,15 +47,154 @@ const (
 
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment.
 type AzureResources struct {
-	ResourceGroups    []*ResourceGroup
-	ResourceGroupMap  map[string]*ResourceGroup
-	NetAppAccountMap  map[string]*NetAppAccount
-	CapacityPoolMap   map[string]*CapacityPool
-	VirtualNetworkMap map[string]*VirtualNetwork
-	SubnetMap         map[string]*Subnet
-	StoragePoolMap    map[string]storage.Pool
-	Features          map[string]bool
+	resourceGroups    []*ResourceGroup
+	resourceGroupMap  *collection.ImmutableMap[string, *ResourceGroup]
+	netAppAccountMap  *collection.ImmutableMap[string, *NetAppAccount]
+	capacityPoolMap   *collection.ImmutableMap[string, *CapacityPool]
+	virtualNetworkMap *collection.ImmutableMap[string, *VirtualNetwork]
+	subnetMap         *collection.ImmutableMap[string, *Subnet]
+	storagePools      *collection.ImmutableMap[string, storage.Pool]
+	features          *collection.ImmutableMap[string, bool]
 	lastUpdateTime    time.Time
+	m                 sync.Mutex
+}
+
+// azureResourceUpdater swaps in a full discovery snapshot; caller must hold AzureResources.m.
+type azureResourceUpdater func(
+	updateTime time.Time,
+	resourceGroups []*ResourceGroup,
+	resourceGroupMap map[string]*ResourceGroup,
+	netAppAccountMap map[string]*NetAppAccount,
+	capacityPoolMap map[string]*CapacityPool,
+	virtualNetworkMap map[string]*VirtualNetwork,
+	subnetMap map[string]*Subnet,
+)
+
+func newAzureResources() *AzureResources {
+	return &AzureResources{
+		resourceGroupMap:  collection.NewImmutableMap[string, *ResourceGroup](nil),
+		netAppAccountMap:  collection.NewImmutableMap[string, *NetAppAccount](nil),
+		capacityPoolMap:   collection.NewImmutableMap[string, *CapacityPool](nil),
+		virtualNetworkMap: collection.NewImmutableMap[string, *VirtualNetwork](nil),
+		subnetMap:         collection.NewImmutableMap[string, *Subnet](nil),
+		storagePools:      collection.NewImmutableMap[string, storage.Pool](nil),
+		features:          collection.NewImmutableMap[string, bool](nil),
+	}
+}
+
+func (r *AzureResources) newDiscoveryUpdater() azureResourceUpdater {
+	return func(
+		updateTime time.Time,
+		resourceGroups []*ResourceGroup,
+		resourceGroupMap map[string]*ResourceGroup,
+		netAppAccountMap map[string]*NetAppAccount,
+		capacityPoolMap map[string]*CapacityPool,
+		virtualNetworkMap map[string]*VirtualNetwork,
+		subnetMap map[string]*Subnet,
+	) {
+		r.resourceGroups = resourceGroups
+		r.resourceGroupMap = collection.NewImmutableMap(resourceGroupMap)
+		r.netAppAccountMap = collection.NewImmutableMap(netAppAccountMap)
+		r.capacityPoolMap = collection.NewImmutableMap(capacityPoolMap)
+		r.virtualNetworkMap = collection.NewImmutableMap(virtualNetworkMap)
+		r.subnetMap = collection.NewImmutableMap(subnetMap)
+		r.lastUpdateTime = updateTime
+	}
+}
+
+// LockAndCheckStale locks the resources and returns true if the cache is stale based on maxAge.
+// The caller must call the returned unlock function when done. When stale is false, updater is nil.
+func (r *AzureResources) LockAndCheckStale(maxAge time.Duration) (stale bool, updater azureResourceUpdater, unlock func()) {
+	r.m.Lock()
+	if time.Since(r.lastUpdateTime) <= maxAge {
+		return false, nil, func() { r.m.Unlock() }
+	}
+	return true, r.newDiscoveryUpdater(), func() { r.m.Unlock() }
+}
+
+// LockForDiscover locks and returns an updater for a full discovery refresh (ignores cache age).
+func (r *AzureResources) LockForDiscover() (updater azureResourceUpdater, unlock func()) {
+	r.m.Lock()
+	return r.newDiscoveryUpdater(), func() { r.m.Unlock() }
+}
+
+// SetStoragePools sets pools from the backend config; not thread-safe and should only be called during initialization.
+func (r *AzureResources) SetStoragePools(storagePools map[string]storage.Pool) {
+	r.storagePools = collection.NewImmutableMap(storagePools)
+}
+
+// GetStoragePools returns the pools defined in the backend config.
+func (r *AzureResources) GetStoragePools() *collection.ImmutableMap[string, storage.Pool] {
+	return r.storagePools
+}
+
+func (r *AzureResources) GetResourceGroups() []*ResourceGroup {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.resourceGroups
+}
+
+func (r *AzureResources) GetResourceGroupMap() *collection.ImmutableMap[string, *ResourceGroup] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.resourceGroupMap
+}
+
+func (r *AzureResources) GetNetAppAccountMap() *collection.ImmutableMap[string, *NetAppAccount] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.netAppAccountMap
+}
+
+func (r *AzureResources) GetCapacityPools() *collection.ImmutableMap[string, *CapacityPool] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.capacityPoolMap
+}
+
+func (r *AzureResources) GetVirtualNetworkMap() *collection.ImmutableMap[string, *VirtualNetwork] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.virtualNetworkMap
+}
+
+func (r *AzureResources) GetSubnetMap() *collection.ImmutableMap[string, *Subnet] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.subnetMap
+}
+
+// SetFeatures replaces the feature flags map; caller should hold no locks — this method locks internally.
+func (r *AzureResources) SetFeatures(featureMap map[string]bool) {
+	r.m.Lock()
+	defer r.m.Unlock()
+	r.features = collection.NewImmutableMap(featureMap)
+}
+
+func (r *AzureResources) featuresSnapshot() map[string]bool {
+	r.m.Lock()
+	im := r.features
+	r.m.Unlock()
+	if im == nil {
+		return map[string]bool{}
+	}
+	out := make(map[string]bool, im.Length())
+	im.Range(func(k string, v bool) bool {
+		out[k] = v
+		return true
+	})
+	return out
+}
+
+func (r *AzureResources) hasFeature(name string) bool {
+	r.m.Lock()
+	im := r.features
+	r.m.Unlock()
+	if im == nil {
+		return false
+	}
+	v, ok := im.GetOk(name)
+	return ok && v
 }
 
 // ResourceGroup records details of a discovered Azure ResourceGroup.

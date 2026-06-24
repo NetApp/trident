@@ -1630,6 +1630,11 @@ func (d *NASStorageDriver) waitForVolumeCreate(
 			Logc(ctx).WithFields(logFields).Debugf("Volume is in %s state.", state)
 			return err
 
+		case "":
+			// State will be empty if the volume could not be found or there was an API error
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Volume state is unknown.")
+			return err
+
 		case api.StateMoving, api.StateReverting:
 			fallthrough
 
