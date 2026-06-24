@@ -439,6 +439,7 @@ var (
 	// Concurrency context
 	IsConcurrent       bool
 	ConcurrentBackends = []string{
+		"azure-netapp-files",
 		"ontap-san",
 		"fake",
 		"ontap-nas",

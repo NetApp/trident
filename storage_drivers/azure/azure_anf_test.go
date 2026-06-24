@@ -5999,6 +5999,23 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 	}
 }
 
+func TestWaitForVolumeCreate_NoState(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+
+	filesystem := &api.FileSystem{
+		Name:              "testvol1",
+		CreationToken:     "netapp-testvol1",
+		ProvisioningState: api.StateCreating,
+	}
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return("", errFailed).Times(1)
+
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
+
+	assert.Error(t, result, "expected error")
+}
+
 func getStructsForDestroyNFSVolume(
 	ctx context.Context, driver *NASStorageDriver,
 ) (*storage.VolumeConfig, *api.FileSystem, *api.FileSystem, *api.Snapshot) {

@@ -16,6 +16,19 @@ import (
 
 var ctx = context.TODO()
 
+func commitTestDiscovery(
+	r *AzureResources,
+	rgMap map[string]*ResourceGroup,
+	naMap map[string]*NetAppAccount,
+	cpMap map[string]*CapacityPool,
+	vnMap map[string]*VirtualNetwork,
+	snMap map[string]*Subnet,
+) {
+	r.m.Lock()
+	defer r.m.Unlock()
+	r.newDiscoveryUpdater()(time.Now(), nil, rgMap, naMap, cpMap, vnMap, snMap)
+}
+
 func getFakeSDK() *Client {
 	// Enable tests with randomness
 	rand.Seed(time.Now().UnixNano())
@@ -26,7 +39,9 @@ func getFakeSDK() *Client {
 			Location:        "myLocation",
 			DebugTraceFlags: map[string]bool{"method": true, "api": true, "discovery": true},
 		},
-		sdkClient: new(AzureClient),
+		sdkClient: &AzureClient{
+			resources: newAzureResources(),
+		},
 	}
 
 	// RG1:
@@ -55,20 +70,20 @@ func getFakeSDK() *Client {
 	//     SN3
 
 	// Resource groups
-	sdk.sdkClient.ResourceGroupMap = make(map[string]*ResourceGroup)
+	rgMap := make(map[string]*ResourceGroup)
 
 	RG1 := &ResourceGroup{
 		Name: "RG1",
 	}
-	sdk.sdkClient.ResourceGroupMap[RG1.Name] = RG1
+	rgMap[RG1.Name] = RG1
 
 	RG2 := &ResourceGroup{
 		Name: "RG2",
 	}
-	sdk.sdkClient.ResourceGroupMap[RG2.Name] = RG2
+	rgMap[RG2.Name] = RG2
 
 	// NetApp accounts
-	sdk.sdkClient.NetAppAccountMap = make(map[string]*NetAppAccount)
+	naMap := make(map[string]*NetAppAccount)
 
 	RG1_NA1 := &NetAppAccount{
 		ResourceGroup: "RG1",
@@ -76,7 +91,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG1/NA1",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.NetAppAccountMap[RG1_NA1.FullName] = RG1_NA1
+	naMap[RG1_NA1.FullName] = RG1_NA1
 
 	RG1_NA2 := &NetAppAccount{
 		ResourceGroup: "RG1",
@@ -84,7 +99,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG1/NA2",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.NetAppAccountMap[RG1_NA2.FullName] = RG1_NA2
+	naMap[RG1_NA2.FullName] = RG1_NA2
 
 	RG2_NA1 := &NetAppAccount{
 		ResourceGroup: "RG2",
@@ -92,7 +107,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG2/NA1",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.NetAppAccountMap[RG2_NA1.FullName] = RG2_NA1
+	naMap[RG2_NA1.FullName] = RG2_NA1
 
 	RG2_NA2 := &NetAppAccount{
 		ResourceGroup: "RG2",
@@ -100,10 +115,10 @@ func getFakeSDK() *Client {
 		FullName:      "RG2/NA2",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.NetAppAccountMap[RG2_NA2.FullName] = RG2_NA2
+	naMap[RG2_NA2.FullName] = RG2_NA2
 
 	// Capacity pools
-	sdk.sdkClient.CapacityPoolMap = make(map[string]*CapacityPool)
+	cpMap := make(map[string]*CapacityPool)
 
 	RG1_NA1_CP1 := &CapacityPool{
 		ResourceGroup:     "RG1",
@@ -115,7 +130,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSAuto,
 		ProvisioningState: "Auto",
 	}
-	sdk.sdkClient.CapacityPoolMap[RG1_NA1_CP1.FullName] = RG1_NA1_CP1
+	cpMap[RG1_NA1_CP1.FullName] = RG1_NA1_CP1
 
 	RG1_NA1_CP2 := &CapacityPool{
 		ResourceGroup:     "RG1",
@@ -127,7 +142,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSAuto,
 		ProvisioningState: "Auto",
 	}
-	sdk.sdkClient.CapacityPoolMap[RG1_NA1_CP2.FullName] = RG1_NA1_CP2
+	cpMap[RG1_NA1_CP2.FullName] = RG1_NA1_CP2
 
 	RG1_NA2_CP1 := &CapacityPool{
 		ResourceGroup:     "RG1",
@@ -139,7 +154,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSAuto,
 		ProvisioningState: StateAvailable,
 	}
-	sdk.sdkClient.CapacityPoolMap[RG1_NA2_CP1.FullName] = RG1_NA2_CP1
+	cpMap[RG1_NA2_CP1.FullName] = RG1_NA2_CP1
 
 	RG1_NA2_CP2 := &CapacityPool{
 		ResourceGroup:     "RG1",
@@ -151,7 +166,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSAuto,
 		ProvisioningState: StateAvailable,
 	}
-	sdk.sdkClient.CapacityPoolMap[RG1_NA2_CP2.FullName] = RG1_NA2_CP2
+	cpMap[RG1_NA2_CP2.FullName] = RG1_NA2_CP2
 
 	RG2_NA1_CP1 := &CapacityPool{
 		ResourceGroup:     "RG2",
@@ -163,7 +178,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSManual,
 		ProvisioningState: StateAvailable,
 	}
-	sdk.sdkClient.CapacityPoolMap[RG2_NA1_CP1.FullName] = RG2_NA1_CP1
+	cpMap[RG2_NA1_CP1.FullName] = RG2_NA1_CP1
 
 	RG2_NA1_CP2 := &CapacityPool{
 		ResourceGroup:     "RG2",
@@ -175,7 +190,7 @@ func getFakeSDK() *Client {
 		QosType:           QOSManual,
 		ProvisioningState: StateAvailable,
 	}
-	sdk.sdkClient.CapacityPoolMap[RG2_NA1_CP2.FullName] = RG2_NA1_CP2
+	cpMap[RG2_NA1_CP2.FullName] = RG2_NA1_CP2
 
 	RG2_NA2_CP3 := &CapacityPool{
 		ResourceGroup:     "RG2",
@@ -187,10 +202,10 @@ func getFakeSDK() *Client {
 		QosType:           QOSManual,
 		ProvisioningState: StateAvailable,
 	}
-	sdk.sdkClient.CapacityPoolMap[RG2_NA2_CP3.FullName] = RG2_NA2_CP3
+	cpMap[RG2_NA2_CP3.FullName] = RG2_NA2_CP3
 
 	// Virtual networks
-	sdk.sdkClient.VirtualNetworkMap = make(map[string]*VirtualNetwork)
+	vnMap := make(map[string]*VirtualNetwork)
 
 	RG1_VN1 := &VirtualNetwork{
 		ResourceGroup: "RG1",
@@ -198,7 +213,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG1/VN1",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.VirtualNetworkMap[RG1_VN1.FullName] = RG1_VN1
+	vnMap[RG1_VN1.FullName] = RG1_VN1
 
 	RG1_VN2 := &VirtualNetwork{
 		ResourceGroup: "RG1",
@@ -206,7 +221,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG1/VN2",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.VirtualNetworkMap[RG1_VN2.FullName] = RG1_VN2
+	vnMap[RG1_VN2.FullName] = RG1_VN2
 
 	RG2_VN1 := &VirtualNetwork{
 		ResourceGroup: "RG2",
@@ -214,7 +229,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG2/VN1",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.VirtualNetworkMap[RG2_VN1.FullName] = RG2_VN1
+	vnMap[RG2_VN1.FullName] = RG2_VN1
 
 	RG2_VN2 := &VirtualNetwork{
 		ResourceGroup: "RG2",
@@ -222,7 +237,7 @@ func getFakeSDK() *Client {
 		FullName:      "RG2/VN2",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.VirtualNetworkMap[RG2_VN2.FullName] = RG2_VN2
+	vnMap[RG2_VN2.FullName] = RG2_VN2
 
 	RG2_VN3 := &VirtualNetwork{
 		ResourceGroup: "RG2",
@@ -230,10 +245,10 @@ func getFakeSDK() *Client {
 		FullName:      "RG2/VN3",
 		Location:      "myLocation",
 	}
-	sdk.sdkClient.VirtualNetworkMap[RG2_VN3.FullName] = RG2_VN3
+	vnMap[RG2_VN3.FullName] = RG2_VN3
 
 	// Subnets
-	sdk.sdkClient.SubnetMap = make(map[string]*Subnet)
+	snMap := make(map[string]*Subnet)
 
 	RG1_VN1_SN1 := &Subnet{
 		ResourceGroup:  "RG1",
@@ -242,7 +257,7 @@ func getFakeSDK() *Client {
 		FullName:       "RG1/VN1/SN1",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG1_VN1_SN1.FullName] = RG1_VN1_SN1
+	snMap[RG1_VN1_SN1.FullName] = RG1_VN1_SN1
 
 	RG1_VN2_SN2 := &Subnet{
 		ResourceGroup:  "RG1",
@@ -251,7 +266,7 @@ func getFakeSDK() *Client {
 		FullName:       "RG1/VN2/SN2",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG1_VN2_SN2.FullName] = RG1_VN2_SN2
+	snMap[RG1_VN2_SN2.FullName] = RG1_VN2_SN2
 
 	RG1_VN2_SN3 := &Subnet{
 		ResourceGroup:  "RG1",
@@ -260,7 +275,7 @@ func getFakeSDK() *Client {
 		FullName:       "RG1/VN2/SN3",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG1_VN2_SN3.FullName] = RG1_VN2_SN3
+	snMap[RG1_VN2_SN3.FullName] = RG1_VN2_SN3
 
 	RG2_VN1_SN1 := &Subnet{
 		ResourceGroup:  "RG2",
@@ -269,7 +284,7 @@ func getFakeSDK() *Client {
 		FullName:       "RG2/VN1/SN1",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG2_VN1_SN1.FullName] = RG2_VN1_SN1
+	snMap[RG2_VN1_SN1.FullName] = RG2_VN1_SN1
 
 	RG2_VN2_SN2 := &Subnet{
 		ResourceGroup:  "RG2",
@@ -278,7 +293,7 @@ func getFakeSDK() *Client {
 		FullName:       "RG2/VN2/SN2",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG2_VN2_SN2.FullName] = RG2_VN2_SN2
+	snMap[RG2_VN2_SN2.FullName] = RG2_VN2_SN2
 
 	RG2_VN3_SN3 := &Subnet{
 		ResourceGroup:  "RG2",
@@ -287,7 +302,9 @@ func getFakeSDK() *Client {
 		FullName:       "RG2/VN3/SN3",
 		Location:       "myLocation",
 	}
-	sdk.sdkClient.SubnetMap[RG2_VN3_SN3.FullName] = RG2_VN3_SN3
+	snMap[RG2_VN3_SN3.FullName] = RG2_VN3_SN3
+
+	commitTestDiscovery(sdk.sdkClient.resources, rgMap, naMap, cpMap, vnMap, snMap)
 
 	return sdk
 }
@@ -297,7 +314,7 @@ func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
 
@@ -311,7 +328,7 @@ func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
 	sPool2.InternalAttributes()[capacityPools] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
 
@@ -325,7 +342,7 @@ func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
 	sPool2.InternalAttributes()[capacityPools] = "CP1,CP2"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
 
@@ -339,7 +356,7 @@ func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
 	sPool2.InternalAttributes()[capacityPools] = "CP4"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
 
@@ -356,7 +373,7 @@ func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 	sPool2.InternalAttributes()[capacityPools] = "CP4"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
 
@@ -365,7 +382,7 @@ func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 
 func TestCheckForNonexistentResourceGroups_NoPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentResourceGroups(ctx)
 
@@ -377,7 +394,7 @@ func TestCheckForNonexistentResourceGroups_Empty(t *testing.T) {
 	sPool.InternalAttributes()[resourceGroups] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentResourceGroups(ctx)
 
@@ -389,7 +406,7 @@ func TestCheckForNonexistentResourceGroups_OK(t *testing.T) {
 	sPool.InternalAttributes()[resourceGroups] = "RG1,RG2"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentResourceGroups(ctx)
 
@@ -401,7 +418,7 @@ func TestCheckForNonexistentResourceGroups_Missing(t *testing.T) {
 	sPool.InternalAttributes()[resourceGroups] = "RG1,RG2,RG3"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentResourceGroups(ctx)
 
@@ -410,7 +427,7 @@ func TestCheckForNonexistentResourceGroups_Missing(t *testing.T) {
 
 func TestCheckForNonexistentNetAppAccounts_NoPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentNetAppAccounts(ctx)
 
@@ -422,7 +439,7 @@ func TestCheckForNonexistentNetAppAccounts_Empty(t *testing.T) {
 	sPool.InternalAttributes()[netappAccounts] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetAppAccounts(ctx)
 
@@ -434,7 +451,7 @@ func TestCheckForNonexistentNetAppAccounts_OK(t *testing.T) {
 	sPool.InternalAttributes()[netappAccounts] = "RG1/NA1,RG2/NA1,NA2"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetAppAccounts(ctx)
 
@@ -446,7 +463,7 @@ func TestCheckForNonexistentNetAppAccounts_Missing(t *testing.T) {
 	sPool.InternalAttributes()[netappAccounts] = "RG1/NA1,RG2/NA1,NA3"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetAppAccounts(ctx)
 
@@ -455,7 +472,7 @@ func TestCheckForNonexistentNetAppAccounts_Missing(t *testing.T) {
 
 func TestCheckForNonexistentCapacityPools_NoPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
 
@@ -467,7 +484,7 @@ func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
 	sPool.InternalAttributes()[capacityPools] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
 
@@ -479,7 +496,7 @@ func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
 	sPool.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
 
@@ -491,7 +508,7 @@ func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
 	sPool.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
 
@@ -500,7 +517,7 @@ func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
 
 func TestCheckForNonexistentVirtualNetworks_NoPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentVirtualNetworks(ctx)
 
@@ -512,7 +529,7 @@ func TestCheckForNonexistentVirtualNetworks_Empty(t *testing.T) {
 	sPool.InternalAttributes()[virtualNetwork] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentVirtualNetworks(ctx)
 
@@ -524,7 +541,7 @@ func TestCheckForNonexistentVirtualNetworks_OK(t *testing.T) {
 	sPool.InternalAttributes()[virtualNetwork] = "RG1/VN1"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentVirtualNetworks(ctx)
 
@@ -536,7 +553,7 @@ func TestCheckForNonexistentVirtualNetworks_Missing(t *testing.T) {
 	sPool.InternalAttributes()[virtualNetwork] = "VN4"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentVirtualNetworks(ctx)
 
@@ -545,7 +562,7 @@ func TestCheckForNonexistentVirtualNetworks_Missing(t *testing.T) {
 
 func TestCheckForNonexistentSubnets_NoPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentSubnets(ctx)
 
@@ -557,7 +574,7 @@ func TestCheckForNonexistentSubnets_Empty(t *testing.T) {
 	sPool.InternalAttributes()[subnet] = ""
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentSubnets(ctx)
 
@@ -569,7 +586,7 @@ func TestCheckForNonexistentSubnets_OK(t *testing.T) {
 	sPool.InternalAttributes()[subnet] = "RG1/VN2/SN3"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentSubnets(ctx)
 
@@ -581,7 +598,7 @@ func TestCheckForNonexistentSubnets_Missing(t *testing.T) {
 	sPool.InternalAttributes()[subnet] = "RG1/VN2/SN4"
 
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentSubnets(ctx)
 
@@ -620,13 +637,13 @@ func TestFeatures(t *testing.T) {
 
 	for _, test := range tests {
 
-		sdk.sdkClient.Features = test.features
+		sdk.sdkClient.resources.SetFeatures(test.features)
 
 		featuresResult := sdk.Features()
 		hasFeatureResult := sdk.HasFeature(test.feature)
 
 		// Change original to ensure we made a copy
-		sdk.sdkClient.Features = make(map[string]bool)
+		sdk.sdkClient.resources.SetFeatures(make(map[string]bool))
 
 		assert.Equal(t, test.features, featuresResult, "features mismatch")
 		assert.Equal(t, test.expected, hasFeatureResult, "feature mismatch")
@@ -635,7 +652,7 @@ func TestFeatures(t *testing.T) {
 
 func TestCapacityPools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	expected := &[]*CapacityPool{
 		sdk.capacityPool("RG1/NA1/CP1"),
@@ -654,7 +671,7 @@ func TestCapacityPools(t *testing.T) {
 
 func TestCapacityPoolsForStoragePools(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	RG1_NA1_CP1 := sdk.capacityPool("RG1/NA1/CP1")
 	RG1_NA1_CP2 := sdk.capacityPool("RG1/NA1/CP2")
@@ -671,11 +688,9 @@ func TestCapacityPoolsForStoragePools(t *testing.T) {
 
 	sPool1 := storage.NewStoragePool(nil, "testPool1")
 	sPool1.InternalAttributes()[capacityPools] = "CP3"
-	sdk.sdkClient.StoragePoolMap[sPool1.Name()] = sPool1
-
 	sPool2 := storage.NewStoragePool(nil, "testPool2")
 	sPool2.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
-	sdk.sdkClient.StoragePoolMap[sPool2.Name()] = sPool2
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{sPool1.Name(): sPool1, sPool2.Name(): sPool2})
 
 	expected := []*CapacityPool{RG1_NA1_CP1, RG1_NA1_CP2, RG2_NA2_CP3}
 
@@ -880,7 +895,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 
 func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 	sdk := getFakeSDK()
-	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
+	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	volume := &FileSystem{
 		ResourceGroup: "RG1",
@@ -893,13 +908,13 @@ func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 
 	sPool1 := storage.NewStoragePool(nil, "testPool1")
 	sPool1.InternalAttributes()[capacityPools] = "CP3"
-	sdk.sdkClient.StoragePoolMap[sPool1.Name()] = sPool1
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{sPool1.Name(): sPool1})
 
 	assert.NotNil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result nil")
 
 	sPool2 := storage.NewStoragePool(nil, "testPool2")
 	sPool2.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
-	sdk.sdkClient.StoragePoolMap[sPool2.Name()] = sPool2
+	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{sPool1.Name(): sPool1, sPool2.Name(): sPool2})
 
 	assert.Nil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result not nil")
 }

@@ -41,15 +41,19 @@ const (
 // RefreshAzureResources refreshes the cache of discovered Azure resources and validates
 // them against our known storage pools.
 func (c Client) RefreshAzureResources(ctx context.Context) error {
-	// Check if it is time to update the cache
-	if time.Now().Before(c.sdkClient.AzureResources.lastUpdateTime.Add(c.config.MaxCacheAge)) {
+	stale, resourceUpdater, unlocker := c.sdkClient.resources.LockAndCheckStale(c.config.MaxCacheAge)
+
+	if !stale {
 		Logc(ctx).Debugf("Cached resources not yet %v old, skipping refresh.", c.config.MaxCacheAge)
+		unlocker()
 		return nil
 	}
 
 	// (re-)Discover what we have to work with in Azure
 	Logc(ctx).Debugf("Discovering Azure resources.")
-	discoveryErr := multierr.Combine(c.DiscoverAzureResources(ctx))
+	discoveryErr := multierr.Combine(c.discoverAzureResources(ctx, resourceUpdater))
+	// Concurrent operations may continue after this point even if discovery failed
+	unlocker()
 
 	// This is noisy, hide it behind api tracing.
 	c.dumpAzureResources(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"])
@@ -72,7 +76,15 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 }
 
 // DiscoverAzureResources rediscovers the Azure resources we care about and updates the cache.
-func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) {
+func (c Client) DiscoverAzureResources(ctx context.Context) error {
+	resourceUpdater, unlocker := c.sdkClient.resources.LockForDiscover()
+	defer unlocker()
+	return c.discoverAzureResources(ctx, resourceUpdater)
+}
+
+// discoverAzureResources rediscovers Azure resources and updates the cache via resourceUpdater.
+// Caller must hold the client's resources lock for the duration of this call.
+func (c Client) discoverAzureResources(ctx context.Context, resourceUpdater azureResourceUpdater) (returnError error) {
 	// Start from scratch each time we are called.  All discovered resources are nested under ResourceGroups.
 	newResourceGroups := make([]*ResourceGroup, 0)
 	newResourceGroupMap := make(map[string]*ResourceGroup)
@@ -88,13 +100,8 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 		}
 
 		// Swap the newly discovered resources into the cache only if discovery succeeded.
-		c.sdkClient.AzureResources.ResourceGroups = newResourceGroups
-		c.sdkClient.AzureResources.ResourceGroupMap = newResourceGroupMap
-		c.sdkClient.AzureResources.NetAppAccountMap = newNetAppAccountMap
-		c.sdkClient.AzureResources.CapacityPoolMap = newCapacityPoolMap
-		c.sdkClient.AzureResources.VirtualNetworkMap = newVirtualNetworkMap
-		c.sdkClient.AzureResources.SubnetMap = newSubnetMap
-		c.sdkClient.AzureResources.lastUpdateTime = time.Now()
+		resourceUpdater(time.Now(), newResourceGroups, newResourceGroupMap, newNetAppAccountMap, newCapacityPoolMap,
+			newVirtualNetworkMap, newSubnetMap)
 
 		Logc(ctx).Debug("Switched to newly discovered resources.")
 	}()
@@ -220,7 +227,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 // dumpAzureResources writes a hierarchical representation of discovered resources to the log.
 func (c Client) dumpAzureResources(ctx context.Context, driverName string, discoveryTraceEnabled bool) {
 	Logd(ctx, driverName, discoveryTraceEnabled).Tracef("Discovered Azure Resources:")
-	for _, rg := range c.sdkClient.AzureResources.ResourceGroups {
+	for _, rg := range c.sdkClient.resources.GetResourceGroups() {
 		Logd(ctx, driverName, discoveryTraceEnabled).Tracef("  Resource Group: %s", rg.Name)
 		for _, na := range rg.NetAppAccounts {
 			Logd(ctx, driverName, discoveryTraceEnabled).Tracef("    ANF Account: %s, Location: %s", na.Name, na.Location)
@@ -241,7 +248,7 @@ func (c Client) dumpAzureResources(ctx context.Context, driverName string, disco
 // are satisfied by no capacity pools.
 func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors []error) {
 	// Ensure every storage pool matches one or more capacity pools
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find all capacity pools that work for this storage pool
 		cPools := c.CapacityPoolsForStoragePool(ctx, sPool,
@@ -263,7 +270,8 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 			// Print the mapping in the logs so we see it after each discovery refresh.
 			Logc(ctx).Debugf("Storage pool %s mapped to capacity pools %v.", sPoolName, cPoolFullNames)
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -271,13 +279,13 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 // checkForNonexistentResourceGroups logs warnings if any configured resource groups do not
 // match discovered resource groups in the resource cache.
 func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
-
-		// Build list of resource group names
-		rgNames := make([]string, 0)
-		for _, cacheRG := range c.sdkClient.AzureResources.ResourceGroupMap {
-			rgNames = append(rgNames, cacheRG.Name)
-		}
+	rgMap := c.sdkClient.resources.GetResourceGroupMap()
+	rgNames := make([]string, 0, rgMap.Length())
+	rgMap.Range(func(_ string, cacheRG *ResourceGroup) bool {
+		rgNames = append(rgNames, cacheRG.Name)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any resource group value in this storage pool that doesn't match known resource groups
 		for _, configRG := range collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",") {
@@ -290,7 +298,8 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 				}).Warning("Resource group referenced in pool not found.")
 			}
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -298,14 +307,14 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 // checkForNonexistentNetAppAccounts logs warnings if any configured NetApp accounts do not
 // match discovered NetApp accounts in the resource cache.
 func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
-
-		// Build list of short and long netapp account names
-		naNames := make([]string, 0)
-		for _, cacheNA := range c.sdkClient.AzureResources.NetAppAccountMap {
-			naNames = append(naNames, cacheNA.Name)
-			naNames = append(naNames, cacheNA.FullName)
-		}
+	naMap := c.sdkClient.resources.GetNetAppAccountMap()
+	naNames := make([]string, 0, naMap.Length()*2)
+	naMap.Range(func(_ string, cacheNA *NetAppAccount) bool {
+		naNames = append(naNames, cacheNA.Name)
+		naNames = append(naNames, cacheNA.FullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any netapp account value in this storage pool that doesn't match known netapp accounts
 		for _, configNA := range collection.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",") {
@@ -318,7 +327,8 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 				}).Warning("NetApp account referenced in pool not found.")
 			}
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -326,14 +336,14 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 // checkForNonexistentCapacityPools logs warnings if any configured capacity pools do not
 // match discovered capacity pools in the resource cache.
 func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
-
-		// Build list of short and long capacity pool names
-		cpNames := make([]string, 0)
-		for _, cacheCP := range c.sdkClient.AzureResources.CapacityPoolMap {
-			cpNames = append(cpNames, cacheCP.Name)
-			cpNames = append(cpNames, cacheCP.FullName)
-		}
+	cPools := c.sdkClient.resources.GetCapacityPools()
+	cpNames := make([]string, 0, cPools.Length()*2)
+	cPools.Range(func(_ string, cacheCP *CapacityPool) bool {
+		cpNames = append(cpNames, cacheCP.Name)
+		cpNames = append(cpNames, cacheCP.FullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any capacity pools value in this storage pool that doesn't match known capacity pools
 		for _, configCP := range collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
@@ -346,7 +356,8 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 				}).Warning("Capacity pool referenced in pool not found.")
 			}
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -354,14 +365,14 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 // checkForNonexistentVirtualNetworks logs warnings if any configured virtual networks do not
 // match discovered virtual networks in the resource cache.
 func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
-
-		// Build list of short and long capacity virtual network names
-		vnNames := make([]string, 0)
-		for _, cacheVN := range c.sdkClient.AzureResources.VirtualNetworkMap {
-			vnNames = append(vnNames, cacheVN.Name)
-			vnNames = append(vnNames, cacheVN.FullName)
-		}
+	vnMap := c.sdkClient.resources.GetVirtualNetworkMap()
+	vnNames := make([]string, 0, vnMap.Length()*2)
+	vnMap.Range(func(_ string, cacheVN *VirtualNetwork) bool {
+		vnNames = append(vnNames, cacheVN.Name)
+		vnNames = append(vnNames, cacheVN.FullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any virtual network value in this storage pool that doesn't match known virtual networks
 		configVN := sPool.InternalAttributes()[virtualNetwork]
@@ -373,7 +384,8 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 				"virtualNetwork": configVN,
 			}).Warning("Virtual network referenced in pool not found.")
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -381,14 +393,14 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 // checkForNonexistentSubnets logs warnings if any configured subnets do not
 // match discovered subnets in the resource cache.
 func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
-
-		// Build list of short and long capacity subnet names
-		snNames := make([]string, 0)
-		for _, cacheSN := range c.sdkClient.AzureResources.SubnetMap {
-			snNames = append(snNames, cacheSN.Name)
-			snNames = append(snNames, cacheSN.FullName)
-		}
+	snMap := c.sdkClient.resources.GetSubnetMap()
+	snNames := make([]string, 0, snMap.Length()*2)
+	snMap.Range(func(_ string, cacheSN *Subnet) bool {
+		snNames = append(snNames, cacheSN.Name)
+		snNames = append(snNames, cacheSN.FullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any subnet value in this storage pool that doesn't match known subnets
 		configSN := sPool.InternalAttributes()[subnet]
@@ -400,7 +412,8 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 				"subnet": configSN,
 			}).Warning("Subnet referenced in pool not found.")
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -417,7 +430,7 @@ func (c Client) EnableAzureFeatures(ctx context.Context, featureNames ...string)
 		}
 
 		// Swap the newly discovered features into the cache only if discovery succeeded.
-		c.sdkClient.AzureResources.Features = featureMap
+		c.sdkClient.resources.SetFeatures(featureMap)
 
 		Logc(ctx).Debug("Switched to newly discovered features.")
 	}()
@@ -491,17 +504,12 @@ func (c Client) enableAzureFeature(
 
 // Features returns the map of preview features believed to be available in the current subscription.
 func (c Client) Features() map[string]bool {
-	featureMap := make(map[string]bool)
-	for k, v := range c.sdkClient.Features {
-		featureMap[k] = v
-	}
-	return featureMap
+	return c.sdkClient.resources.featuresSnapshot()
 }
 
 // HasFeature returns true if the named preview feature is believed to be available in the current subscription.
 func (c Client) HasFeature(feature string) bool {
-	value, ok := c.sdkClient.Features[feature]
-	return ok && value
+	return c.sdkClient.resources.hasFeature(feature)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -773,16 +781,17 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 func (c Client) CapacityPools() *[]*CapacityPool {
 	var cPools []*CapacityPool
 
-	for _, cPool := range c.sdkClient.AzureResources.CapacityPoolMap {
+	c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cPool *CapacityPool) bool {
 		cPools = append(cPools, cPool)
-	}
+		return true
+	})
 
 	return &cPools
 }
 
 // capacityPool returns a single discovered capacity pool by its full name.
 func (c Client) capacityPool(cPoolFullName string) *CapacityPool {
-	return c.sdkClient.AzureResources.CapacityPoolMap[cPoolFullName]
+	return c.sdkClient.resources.GetCapacityPools().Get(cPoolFullName)
 }
 
 // CapacityPoolsForStoragePools returns all discovered capacity pools matching all known storage pools,
@@ -792,11 +801,12 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 	cPoolMap := make(map[*CapacityPool]bool)
 
 	// Build deduplicated map of cPools
-	for _, sPool := range c.sdkClient.StoragePoolMap {
+	c.sdkClient.resources.GetStoragePools().Range(func(_ string, sPool storage.Pool) bool {
 		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "", "") {
 			cPoolMap[cPool] = true
 		}
-	}
+		return true
+	})
 
 	// Copy keys into a list of deduplicated cPools
 	cPools := make([]*CapacityPool, 0)
@@ -816,30 +826,34 @@ func (c Client) CapacityPoolsForStoragePool(
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).
 		Tracef("Determining capacity pools for storage pool.")
 
+	capacityPoolMap := c.sdkClient.resources.GetCapacityPools()
+
 	// This map tracks which capacity pools have passed the filters
 	filteredCapacityPoolMap := make(map[string]bool)
 
 	// Start with all capacity pools marked as passing the filters
-	for cPoolFullName := range c.sdkClient.CapacityPoolMap {
+	capacityPoolMap.Range(func(cPoolFullName string, _ *CapacityPool) bool {
 		filteredCapacityPoolMap[cPoolFullName] = true
-	}
+		return true
+	})
 
 	// If resource groups were specified, filter out non-matching capacity pools
 	rgList := collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !collection.ContainsString(rgList, cPool.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in resource groups [%s].",
 					cPoolFullName, rgList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// If netapp accounts were specified, filter out non-matching capacity pools
 	naList := collection.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",")
 	if len(naList) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			naName := cPool.NetAppAccount
 			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
 			if !collection.ContainsString(naList, naName) && !collection.ContainsString(naList, naFullName) {
@@ -847,48 +861,52 @@ func (c Client) CapacityPoolsForStoragePool(
 					cPoolFullName, naList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// If capacity pools were specified, filter out non-matching capacity pools
 	cpList := collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
 	if len(cpList) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !collection.ContainsString(cpList, cPool.Name) && !collection.ContainsString(cpList, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
 					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Filter out pools with non-matching service levels
 	if serviceLevel != "" {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if cPool.ServiceLevel != serviceLevel {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not service level %s.",
 					cPoolFullName, serviceLevel)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Filter out pools with non-matching QOS type
 	if qosType != "" {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if cPool.QosType != qosType {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not QOS type %s.",
 					cPoolFullName, qosType)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Build list of all capacity pools that have passed all filters
 	cPools := make([]*CapacityPool, 0)
 	for cPoolFullName, match := range filteredCapacityPoolMap {
 		if match {
-			cPools = append(cPools, c.sdkClient.CapacityPoolMap[cPoolFullName])
+			cPools = append(cPools, capacityPoolMap.Get(cPoolFullName))
 		}
 	}
 
@@ -928,37 +946,41 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Fil
 
 // subnet returns a single subnet by its full name
 func (c Client) subnet(subnetFullName string) *Subnet {
-	return c.sdkClient.AzureResources.SubnetMap[subnetFullName]
+	return c.sdkClient.resources.GetSubnetMap().Get(subnetFullName)
 }
 
 // SubnetsForStoragePool returns all discovered subnets matching the specified storage pool.
 func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) []*Subnet {
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).Tracef("Determining subnets for storage pool.")
 
+	subnetMap := c.sdkClient.resources.GetSubnetMap()
+
 	// This map tracks which subnets have passed the filters
 	filteredSubnetMap := make(map[string]bool)
 
 	// Start with all subnets marked as passing the filters
-	for subnetFullName := range c.sdkClient.SubnetMap {
+	subnetMap.Range(func(subnetFullName string, _ *Subnet) bool {
 		filteredSubnetMap[subnetFullName] = true
-	}
+		return true
+	})
 
 	// If resource groups were specified, filter out non-matching subnets
 	rgList := collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			if !collection.ContainsString(rgList, subnet.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not in resource groups [%s].",
 					subnetFullName, rgList)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// If virtual network was specified, filter out non-matching subnets
 	vn := sPool.InternalAttributes()[virtualNetwork]
 	if vn != "" {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			vnName := subnet.VirtualNetwork
 			vnFullName := CreateVirtualNetworkFullName(subnet.ResourceGroup, subnet.VirtualNetwork)
 			if vn != vnName && vn != vnFullName {
@@ -966,26 +988,28 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 					subnetFullName, vn)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// If subnet was specified, filter out non-matching capacity subnets
 	sn := sPool.InternalAttributes()[subnet]
 	if sn != "" {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			if sn != subnet.Name && sn != subnetFullName {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not equal to subnet %s.",
 					subnetFullName, sn)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Build list of all subnets that have passed all filters
 	filteredSubnetList := make([]*Subnet, 0)
 	for subnetFullName, match := range filteredSubnetMap {
 		if match {
-			filteredSubnetList = append(filteredSubnetList, c.sdkClient.SubnetMap[subnetFullName])
+			filteredSubnetList = append(filteredSubnetList, subnetMap.Get(subnetFullName))
 		}
 	}
 
@@ -1009,26 +1033,30 @@ func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Po
 func (c Client) FilteredCapacityPoolMap(
 	ctx context.Context, rgFilter, naFilter, cpFilter []string,
 ) map[string]*CapacityPool {
+	capacityPoolMap := c.sdkClient.resources.GetCapacityPools()
+
 	// This map tracks which capacity pools have passed the filters
 	filteredCapacityPoolMap := make(map[string]bool)
 
 	// Start with all capacity pools marked as passing the filters
-	for cPoolFullName := range c.sdkClient.CapacityPoolMap {
+	capacityPoolMap.Range(func(cPoolFullName string, _ *CapacityPool) bool {
 		filteredCapacityPoolMap[cPoolFullName] = true
-	}
+		return true
+	})
 
 	if len(rgFilter) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !collection.ContainsString(rgFilter, cPool.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring capacity pool %s, not in resource groups [%s].", cPoolFullName, rgFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	if len(naFilter) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			naName := cPool.NetAppAccount
 			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
 			if !collection.ContainsString(naFilter, naName) && !collection.ContainsString(naFilter, naFullName) {
@@ -1036,23 +1064,25 @@ func (c Client) FilteredCapacityPoolMap(
 					Debugf("Ignoring capacity pool %s, not in netapp accounts [%s].", cPoolFullName, naFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	if len(cpFilter) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		capacityPoolMap.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !collection.ContainsString(cpFilter, cPool.Name) && !collection.ContainsString(cpFilter, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring capacity pool %s, not in capacity pools [%s].", cPoolFullName, cpFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	newCapacityPoolMap := make(map[string]*CapacityPool)
 	for cpFullName, present := range filteredCapacityPoolMap {
 		if present {
-			newCapacityPoolMap[cpFullName] = c.sdkClient.CapacityPoolMap[cpFullName]
+			newCapacityPoolMap[cpFullName] = capacityPoolMap.Get(cpFullName)
 		}
 	}
 
@@ -1062,24 +1092,27 @@ func (c Client) FilteredCapacityPoolMap(
 func (c Client) FilteredSubnetMap(
 	ctx context.Context, rgFilter []string, vnFilter, snFilter string,
 ) map[string]*Subnet {
+	subnetMap := c.sdkClient.resources.GetSubnetMap()
 	filteredSubnetMap := make(map[string]bool)
 
-	for subnetFullName := range c.sdkClient.SubnetMap {
+	subnetMap.Range(func(subnetFullName string, _ *Subnet) bool {
 		filteredSubnetMap[subnetFullName] = true
-	}
+		return true
+	})
 
 	if len(rgFilter) > 0 {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			if !collection.ContainsString(rgFilter, subnet.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Tracef("Ignoring subnet %s, not in resource groups [%s].", subnetFullName, rgFilter)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	if vnFilter != "" {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			vnName := subnet.VirtualNetwork
 			vnFullName := CreateVirtualNetworkFullName(subnet.ResourceGroup, subnet.VirtualNetwork)
 			if vnFilter != vnName && vnFilter != vnFullName {
@@ -1087,23 +1120,25 @@ func (c Client) FilteredSubnetMap(
 					Debugf("Ignoring subnet %s, not in virtual network %s.", subnetFullName, vnFilter)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	if snFilter != "" {
-		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+		subnetMap.Range(func(subnetFullName string, subnet *Subnet) bool {
 			if snFilter != subnet.Name && snFilter != subnetFullName {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring subnet %s, not equal to subnet %s.", subnetFullName, snFilter)
 				filteredSubnetMap[subnetFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	newSubnetMap := make(map[string]*Subnet)
 	for snFullName, present := range filteredSubnetMap {
 		if present {
-			newSubnetMap[snFullName] = c.sdkClient.SubnetMap[snFullName]
+			newSubnetMap[snFullName] = subnetMap.Get(snFullName)
 		}
 	}
 

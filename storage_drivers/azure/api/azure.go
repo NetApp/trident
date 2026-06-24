@@ -90,7 +90,7 @@ type AzureClient struct {
 	VolumesClient   *netapp.VolumesClient
 	SnapshotsClient *netapp.SnapshotsClient
 	ResourceClient  *netapp.ResourceClient
-	AzureResources
+	resources       *AzureResources
 }
 
 type AzureError struct {
@@ -391,6 +391,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		VolumesClient:   volumesClient,
 		SnapshotsClient: snapshotsClient,
 		ResourceClient:  resourceClient,
+		resources:       newAzureResources(),
 	}
 
 	return Client{
@@ -454,11 +455,11 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping.
 func (c Client) registerStoragePools(sPools map[string]storage.Pool) {
-	c.sdkClient.AzureResources.StoragePoolMap = make(map[string]storage.Pool)
-
+	m := make(map[string]storage.Pool)
 	for _, sPool := range sPools {
-		c.sdkClient.AzureResources.StoragePoolMap[sPool.Name()] = sPool
+		m[sPool.Name()] = sPool
 	}
+	c.sdkClient.resources.SetStoragePools(m)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -1118,7 +1119,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 
 	// Get the capacity pool so we can determine location and service level
 	cPoolFullName := CreateCapacityPoolFullName(resourceGroup, netappAccount, cPoolName)
-	cPool, ok := c.sdkClient.AzureResources.CapacityPoolMap[cPoolFullName]
+	cPool, ok := c.sdkClient.resources.GetCapacityPools().GetOk(cPoolFullName)
 	if !ok {
 		return nil, fmt.Errorf("unknown capacity pool %s", cPoolFullName)
 	}
