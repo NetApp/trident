@@ -2,7 +2,90 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v25.10.0
+## Changes since v26.02.0
+
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed race conditions and state handling for concurrent publish/unpublish, clone, cache, and backend update operations.
+- **Kubernetes:** Fixed export policy race conditions and concurrent publish/unpublish handling for subordinate volumes and read-only clones in ONTAP-NAS and ONTAP-NAS-Economy drivers.
+- **Kubernetes:** Fixed ONTAP-NAS-Economy FlexVol discovery after MetroCluster failover when snapshot policies differ (Issue [#1082](https://github.com/NetApp/trident/issues/1082)).
+- **Kubernetes:** Fixed ONTAP-NAS-Economy volume delete retries that interrupted long-running qtree deletes (Issue [#1121](https://github.com/NetApp/trident/issues/1121)).
+- **Kubernetes:** Fixed ONTAP-SAN and ONTAP-SAN-Economy import and resize behavior, including `fsType` validation, volume metadata handling, and autogrow mode behavior.
+- **Kubernetes:** Fixed NVMe/TCP namespace race condition during concurrent volume creation (Issue [#1089](https://github.com/NetApp/trident/issues/1089)).
+- **Kubernetes:** Improved stale node and multipath cleanup by removing ghost multipath artifacts and stale `TridentNode` resources after soft-deleted node cleanup.
+- **Kubernetes:** Fixed iSCSI resize failures when available paths and portals did not match, and improved repeated resize behavior.
+- **Kubernetes:** Fixed ONTAP-SAN volume delete failures caused by `volume busy` conditions.
+- **Kubernetes:** Fixed ONTAP REST error handling and improved SVM state timeout behavior.
+- **Kubernetes:** Fixed GCNV SAN zonal pool and host-group handling, normalized volume identifier conversion, and normalized create requests below minimum size.
+- **Kubernetes:** Fixed native GCNV capacity-pool selection to exclude ONTAP-mode pools.
+- **Kubernetes:** Fixed KubeVirt failover for VMs using `DataVolumes` with Trident Automated Workload Failover.
+- **Kubernetes:** Fixed Operator-managed installation RBAC issues, including missing node ClusterRoles and incorrect ClusterRole/ClusterRoleBinding reconciliation during upgrades (applies to Operator and Helm-based installs via the Trident Operator chart).
+- **Kubernetes:** Fixed persistent GitOps diffs on `TridentConfigurator` and related CRDs by omitting default `priority` values and correcting YAML template indentation (Issues [#915](https://github.com/NetApp/trident/issues/915), [#1120](https://github.com/NetApp/trident/issues/1120)).
+- **Kubernetes:** Fixed patching of `TridentVolumePublication` CRDs during Helm upgrade (Issue [#1151](https://github.com/NetApp/trident/issues/1151)).
+- **Kubernetes:** Fixed CSI startup ordering by starting CSI gRPC before node registration retries.
+- **Kubernetes:** Fixed secure SMB clone configuration overlays during concurrent operations.
+- **Kubernetes:** Fixed the issue of missing annotations in Trident controller pod after upgrade (Issue [#1004](https://github.com/NetApp/trident/issues/1004)).
+- **Kubernetes:** Improved slow Qtree provisioning on large SVMs (Issue [#1142](https://github.com/NetApp/trident/issues/1142)).
+- **Kubernetes:** Trident containers' root filesystem are now mounted as read-only.
+- **Kubernetes:** Added backup clone PVC recognition to keep backups created by Veeam Kasten, Trilio, and Cohesity from getting stuck in the ONTAP volume recovery queue.
+- Fixed ControllerPublish to use volume config file system type to avoid using incorrect default file system type.
+- **Kubernetes:** Fixed an issue where orphan dm devices might cause repeated CSI NodeUnstageVolume failures.
+
+**Enhancements:**
+
+- **Kubernetes:** Added support for Kubernetes 1.36.
+- **Kubernetes:** Concurrency support for ONTAP-NAS-Economy, ONTAP-SAN-Economy, ANF, and SolidFire drivers is now generally available (GA).
+- **Kubernetes:** Added subordinate volume support for Trident Volume Publication (TVP) propagation and autogrow workflows.
+- **Kubernetes:** Added dynamic GCNV gRPC rate limiting.
+- **Kubernetes:** Autogrow support for GCNV drivers (NAS and SAN) is now generally available (GA).
+- **Kubernetes:** Added Cloud Identity support for the GCNV SAN driver.
+- **Kubernetes:** Added integration with NetApp Shift Toolkit to simplify virtual machine imports from Red Hat OpenShift Migration Toolkit for Virtualization.
+- **Kubernetes:** Added controller readiness exec probe and tuned default Kubernetes API QPS/Burst settings for controller and sidecars.
+- **Kubernetes:** Improved node operation sequencing by decoupling attach, encryption setup, and filesystem formatting steps.
+- **Kubernetes:** Added support for ONTAP-SAN iSCSI intra-cluster volume move.
+- **Kubernetes:** Added support for volume updates and volume group snapshots to concurrent Trident.
+- Enhanced AWS ARN handling to support special regions.
+- Added a best-effort snapshot removal for clone volume snapshots in ONTAP backends when the source snapshot of clone volumes is deleted.
+- Added ability to use Unified ONTAP balanced placement for optimal aggregate selection when provisioning new volumes (Issue [#64](https://github.com/NetApp/trident/issues/64)).
+- **Kubernetes:** Added ONTAP AFX support for ONTAP-NAS-Flexgroup driver.
+
+**Experimental Enhancements:**
+
+**NOTE:** Not for use in production environments.
+
+- [Tech Preview] Added support for ONTAP-NAS-Economy qtree import.
+- **Kubernetes:** [Tech Preview] Added GCNV ONTAP-mode HTTP transport for ONTAP SAN and NAS drivers.
+- **Kubernetes:** [Tech Preview] Added support for concurrency for ASA-R2 (SAN and NVMe) drivers.
+
+### Trident Protect
+
+**Fixes:**
+
+- Fixed cross-cluster VM restore failing with a webhook error (`vrestore-creation` denied: VM namespace not found) when the source namespace does not exist on the target cluster.
+- Fixed selective VM in-place restore failing at `CreateApplication` due to a spec mismatch on an existing `Application`; the Application is now reused.
+- Fixed the IPR job hanging in `Running` when both the VM and its PVC are deleted; a deleted PVC during IPR is now treated as a fatal error.
+- Fixed an immediate backup/snapshot being triggered when editing an existing schedule by correcting the scheduled timestamp for overdue runs.
+- Fixed the Snapshot finalizer attempting to fetch the `Application` CR even after it was deleted; it now skips when the Application is not found.
+- Fixed protected capacity increasing drastically after IPR by using the `trident-protect-utils` pvc-copy image with sparse copy (`cp --sparse`).
+- Fixed Trident Protect deleting the Kubernetes snapshot object without confirming ONTAP deletion; the finalizer now waits for `VolumeSnapshot` deletion.
+- Fixed snapshots not continuing when a VM freeze fails; freeze/unfreeze now continues on failure.
+- Fixed KubeVirt VM apps recreating PVCs during AMR reverse / reverse-resync / resync operations.
+
+**Enhancements:**
+
+- Made the temp-volume `splitOnClone` annotation configurable for Kopia backups.
+- Added StorageClass mapping support to the Neptune CLI.
+- Added `includedVirtualMachines` support for Restore CRs in `protectctl`.
+- Added a `SkipApplicationCreation` field on Restore and implemented conditional `Application` CR creation.
+- Added StorageClass mapping to AppMirrorRelationship (AMR).
+- Propagated all Job pod statuses and events to their parent CRs.
+- Added resource transformations support to all Restore CRs.
+- Surfaced resource-restore failure messages from the pod into the Restore CR status.
+- Volume import now uses the source request size (to be reverted once fixed upstream).
+
+## v26.02.0
 
 ### Trident
 
