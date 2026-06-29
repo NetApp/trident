@@ -576,6 +576,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
+				// VP sync happens asynchronously, so we allow UpdateVolumePublication to be called
+				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -675,6 +677,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
+				// VP sync happens asynchronously, so we allow UpdateVolumePublication to be called
+				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -23209,7 +23213,7 @@ func TestConcurrentTridentOrchestrator_StageVolumeMove(t *testing.T) {
 		assert.Nil(t, cached.Config.MoveInfo, "backend stage failure must not set MoveInfo")
 	})
 
-	t.Run("happy path records MoveInfo", func(t *testing.T) {
+	t.Run("happy path sets MoveInfo on success", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 
 		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -23222,7 +23226,7 @@ func TestConcurrentTridentOrchestrator_StageVolumeMove(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		require.NotNil(t, cached.Config.MoveInfo)
+		require.NotNil(t, cached.Config.MoveInfo, "StageVolumeMove must set MoveInfo on success")
 		assert.Equal(t, models.VolumeMoveStateControllerStaging, cached.Config.MoveInfo.State)
 	})
 }
@@ -23265,7 +23269,7 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 		assert.True(t, errors.IsVolumeStateError(err))
 	})
 
-	t.Run("backend transient error still updates MoveInfo", func(t *testing.T) {
+	t.Run("backend transient error does not project MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 		vol.Pool = "pool-original"
 		addVolumesToCache(t, vol)
@@ -23279,12 +23283,11 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		require.NotNil(t, cached.Config.MoveInfo, "transient error must still update MoveInfo")
-		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
+		assert.Nil(t, cached.Config.MoveInfo, "MoveVolume must not project MoveInfo; commitState owns projection")
 		assert.Equal(t, "pool-original", cached.Pool, "pool should not change on transient move errors")
 	})
 
-	t.Run("happy path records MoveInfo", func(t *testing.T) {
+	t.Run("happy path persists target pool and sets MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 		vol.Pool = "pool-original"
 		addVolumesToCache(t, vol)
@@ -23301,7 +23304,7 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
 		require.NotNil(t, cached.Config.MoveInfo)
-		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
+		assert.NotNil(t, cached.Config.MoveInfo, "MoveVolume must set MoveInfo on success")
 		assert.Equal(t, "pool-target", cached.Pool, "pool should be updated to move target on success")
 	})
 }
@@ -23351,7 +23354,7 @@ func TestConcurrentTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 			"backend unstage failure must leave MoveInfo untouched")
 	})
 
-	t.Run("happy path clears MoveInfo", func(t *testing.T) {
+	t.Run("happy path does not clear MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 
 		vol.Config.MoveInfo = newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging)
@@ -23367,8 +23370,7 @@ func TestConcurrentTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		assert.Nil(t, cached.Config.MoveInfo,
-			"successful unstage must clear MoveInfo")
+		assert.NotNil(t, cached.Config.MoveInfo, "UnstageVolumeMove must not clear MoveInfo")
 	})
 }
 

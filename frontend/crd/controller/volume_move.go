@@ -5,6 +5,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -25,58 +26,51 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-const (
-	errMsgUpdateMoveState = "Could not record volume move info while TVM is in %q state: %s; requeuing.."
-)
+// stateOutcome captures the result of processing a single TVM state.
+// State handlers mutate the status in-place and return an outcome that
+// tells the main handler whether to commit and/or processErr.
+type stateOutcome struct {
+	processErr error // non-nil = processErr with this error after committing
+	skipCommit bool  // true = return immediately without committing state
+}
 
 // handleVolumeMove handles a TridentVolumeMove CR event.
-func (c TridentCrdController) handleVolumeMove(keyItem *KeyItem) (volMoveError error) {
+func (c *TridentCrdController) handleVolumeMove(keyItem *KeyItem) error {
 	key := keyItem.key
 	ctx := keyItem.ctx
 
 	Logc(ctx).Debug(">>>> TridentCrdController#handleVolumeMove")
 	defer Logc(ctx).Debug("<<<< TridentCrdController#handleVolumeMove")
 
-	// Ensure the volume attachment indexer cache is synced
 	if ok := c.indexers.VolumeAttachmentIndexer().WaitForCacheSync(ctx); !ok {
 		Logc(ctx).Warn("Failed to sync volume attachment cache. Not all volume attachments may be found.")
 		return errors.ReconcileDeferredError("failed to sync volume attachment cache; requeuing...")
 	}
 
-	// Convert the namespace/name string into a distinct namespace and name.
-	// If this fails, no retry is likely to succeed, so return the error to forget this action.
-	// We can't determine the CR, so no CR update is possible.
-	// The namespace should be in the Trident namespace because it is an admin action.
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		Logc(ctx).WithField("key", key).Error("Invalid key.")
 		return err
 	}
 
-	// Ensure the CR is new and valid. This may return ReconcileDeferred if it should be retried.
-	// Any other error returned here indicates a problem with the CR (i.e. it's not new or has been
-	// deleted), so no CR update is needed.
 	tvm, err := c.validateVolumeMoveCR(ctx, namespace, name)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
-			_ = c.reconcileVolumeMove(ctx, name, nil)
+			if err = c.reconcileVolumeMove(ctx, name, nil); err != nil {
+				return errors.WrapWithReconcileDeferredError(err, "failed to clear volume move info; requeuing...")
+			}
 			return nil
 		}
 		return err
 	}
-	updateStatus := &tvm.Status
+	status := &tvm.Status
 
-	// Reconcile the TVM CR attachments with the Kubernetes VolumeAttachments.
-	// If Kubernetes VolumeAttachments are not found or the attachment is !attached,
-	// TVM controllers will treat the attachment as detached and attempt to
-	// detach the volume from the node.
-	if err := c.reconcileAttachments(ctx, tvm.Name, updateStatus); err != nil {
+	if err := c.reconcileAttachments(ctx, tvm.Name, status); err != nil {
 		Logc(ctx).Errorf("Failed to reconcile attachments: %v", err)
-		return err
+		return fmt.Errorf("could not reconcile attachments: %w", err)
 	}
 
-	// The move info is rebuilt on every handling.
-	// As a result, the TVM attachments must always be reconciled.
+	// Fill in the move info.
 	moveInfo := &models.VolumeMoveInfo{
 		State:              tvm.Status.State,
 		VolumeName:         tvm.Name,
@@ -90,249 +84,317 @@ func (c TridentCrdController) handleVolumeMove(keyItem *KeyItem) (volMoveError e
 		DeleteAfterSuccess: tvm.Spec.GetDeleteAfterSuccess(),
 	}
 
-	switch updateStatus.State {
+	outcome := c.processState(ctx, tvm, moveInfo, status)
+	if outcome.skipCommit {
+		return outcome.processErr
+	}
+	if err := c.commitState(ctx, tvm.Name, tvm.Namespace, moveInfo, status); err != nil {
+		return fmt.Errorf("could not commit state: %w", err)
+	}
+	return outcome.processErr
+}
+
+func (c *TridentCrdController) processState(
+	ctx context.Context, tvm *netappv1.TridentVolumeMove,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	switch status.State {
 	case models.VolumeMoveStatePending:
-		if volMoveError := validateDeleteAfterSuccess(moveInfo.DeleteAfterSuccess); volMoveError != nil {
-			updateStatus.Message = volMoveError.Error()
-			updateStatus.State = models.VolumeMoveStateFailed
-			break
-		}
-
-		Logc(ctx).WithField("key", key).Debug("TVM is pending, starting dry-run.")
-		volMoveError = c.startVolumeMove(ctx, moveInfo, true)
-		if volMoveError != nil {
-			if isTerminalVolumeMoveError(volMoveError) {
-				updateStatus.Message = fmt.Sprintf("volume move dry run failed with error: %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-			return errors.ReconcileDeferredError("dry-run transient error; requeuing: %s", volMoveError)
-		}
-
-		startTime := metav1.Now()
-		updateStatus.StartTime = &startTime
-		updateStatus.State = models.VolumeMoveStateControllerStaging
-
+		return c.handleStatePending(ctx, moveInfo, status)
 	case models.VolumeMoveStateControllerStaging:
-		Logc(ctx).WithField("key", key).Debug("TVM is in controller staging state.")
-
-		volMoveError = c.controllerStaging(ctx, moveInfo)
-		if volMoveError != nil {
-			if isTerminalVolumeMoveError(volMoveError) {
-				updateStatus.Message = fmt.Sprintf("Volume move staging failed: %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-			return errors.ReconcileDeferredError("staging transient error; requeuing: %s", volMoveError)
-		}
-
-		if initAccessInfo := moveInfo.InitialAccessInfo; initAccessInfo != nil {
-			volMoveError = c.sanitizeAccessInfo(ctx, initAccessInfo)
-			if volMoveError != nil {
-				updateStatus.Message = fmt.Sprintf("Could not sanitize initial access info of secrets; %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-			updateStatus.InitialAccessInfo = initAccessInfo.DeepCopy()
-		}
-		if targAccessInfo := moveInfo.TargetAccessInfo; targAccessInfo != nil {
-			volMoveError = c.sanitizeAccessInfo(ctx, targAccessInfo)
-			if volMoveError != nil {
-				updateStatus.Message = fmt.Sprintf("Could not sanitize target access info of secrets; %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-			updateStatus.TargetAccessInfo = targAccessInfo.DeepCopy()
-		}
-
-		// This move is staged.
-		// Gather the known attachments from K8s and populate the TVM attachments.
-		tvmAttachments, err := c.populateAttachments(ctx, tvm.Name)
-		if err != nil {
-			updateStatus.Message = fmt.Sprintf("Failed to read VolumeAttachments; error: %s ; requeuing...", err.Error())
-			volMoveError = err
-			break
-		}
-		updateStatus.Attachments = tvmAttachments
-
-		// No attachments = nothing to do, skip to moving.
-		if len(tvm.Status.Attachments) == 0 {
-			updateStatus.Message = fmt.Sprintf("No volumes attachments to modify for volume %q", tvm.Name)
-			updateStatus.State = models.VolumeMoveStateMoving
-			break
-		}
-
-		updateStatus.State = models.VolumeMoveStateNodeStaging
-
+		return c.handleStateControllerStaging(ctx, tvm, moveInfo, status)
 	case models.VolumeMoveStateNodeStaging:
-		Logc(ctx).WithField("key", key).Debug("TVM is in node staging state.")
-		Logc(ctx).Debug("Waiting for nodes to update CR status...")
-
-		// Keep the volume move info in step with the TVM.
-		volMoveError = c.reconcileVolumeMove(ctx, moveInfo.VolumeName, moveInfo)
-		if volMoveError != nil {
-			updateStatus.Message = fmt.Sprintf(errMsgUpdateMoveState, models.VolumeMoveStateNodeStaging, volMoveError.Error())
-			break
-		}
-
-		allAttachmentsReady, err := c.attachmentsReady(ctx, models.VolumeMoveAttachmentStateBridged, updateStatus)
-		if err != nil {
-			updateStatus.Message = fmt.Sprintf("volume move node staging failed with error(s): %s", err.Error())
-			updateStatus.State = models.VolumeMoveStateFailed
-			break
-		}
-		if allAttachmentsReady {
-			updateStatus.Message = fmt.Sprintf("All attachments are ready; moving to %q state", models.VolumeMoveStateMoving)
-			updateStatus.State = models.VolumeMoveStateMoving
-			break
-		}
-
-		// In this case, we need to wait for the node-side CRD controllers to reconcile and
-		// update the TVM attachments.
-		return errors.ReconcileDeferredError("waiting for node staging to complete; requeuing...")
-
+		return c.handleStateNodeStaging(ctx, status)
 	case models.VolumeMoveStateMoving:
-		Logc(ctx).WithField("key", key).Debug("TVM is in moving state.")
-		if !tvm.HasTridentFinalizers() {
-			// Adding the finalizer, handled in the updateTridentVolumeMove function when state is moving.
-			Logc(ctx).Debug("Finalizer not found; adding finalizer and requeuing...")
-			break
-		}
-		volMoveError = c.startVolumeMove(ctx, moveInfo, false)
-		updateStatus.BackendContext.Raw = moveInfo.BackendContext
-		if volMoveError != nil {
-			if isTerminalVolumeMoveError(volMoveError) {
-				updateStatus.Message = fmt.Sprintf("Volume move failed: %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-
-			// Persist BackendContext progress before requeuing; the bottom-of-function
-			// update is only reached via `break`, and we need to flush in-flight job
-			// state so it shows up in the TVM YAML between polls.
-			updateStatus.Message = "Volume move in progress"
-			if updateErr := c.updateTridentVolumeMove(ctx, namespace, name, updateStatus); updateErr != nil {
-				return updateErr
-			}
-			return errors.ReconcileDeferredError("volume move transient error %q; requeuing...", volMoveError.Error())
-		}
-		updateStatus.Message = "Volume move complete; unstaging controller"
-		updateStatus.State = models.VolumeMoveStateControllerUnstaging
-
+		return c.handleStateMoving(ctx, tvm, moveInfo, status)
 	case models.VolumeMoveStateControllerUnstaging:
-		Logc(ctx).WithField("key", key).Debug("TVM is in controller unstaging state.")
-		volMoveError = c.controllerUnstaging(ctx, moveInfo)
-		if volMoveError != nil {
-			updateStatus.Message = fmt.Sprintf("volume move unstaging failed; continuing with volume move: %s", volMoveError.Error())
-		}
-
-		// Refresh the Kubernetes attachments before proceeding.
-		// This only matters for cases where there were real attachments in the TVM.
-		volMoveError = c.refreshAttachments(ctx, tvm)
-		if volMoveError != nil {
-			if isTerminalVolumeMoveError(volMoveError) {
-				updateStatus.Message = fmt.Sprintf("Volume move controller unstaging failed: %s", volMoveError.Error())
-				updateStatus.State = models.VolumeMoveStateFailed
-				break
-			}
-			updateStatus.Message = fmt.Sprintf("Could not update VolumeAttachments during volume move %s; requeuing...", volMoveError.Error())
-			break
-		}
-
-		updateStatus.State = models.VolumeMoveStateNodeUnstaging
-
+		return c.handleStateControllerUnstaging(ctx, tvm, moveInfo, status)
 	case models.VolumeMoveStateNodeUnstaging:
-		Logc(ctx).WithField("key", key).Debug("TVM is in node unstaging state.")
-		Logc(ctx).Debug("Waiting for nodes to update CR status...")
-
-		// Keep the volume move info in step with the TVM.
-		volMoveError = c.reconcileVolumeMove(ctx, moveInfo.VolumeName, moveInfo)
-		if volMoveError != nil {
-			updateStatus.Message = fmt.Sprintf(errMsgUpdateMoveState, models.VolumeMoveStateNodeUnstaging, volMoveError.Error())
-			break
-		}
-
-		allAttachmentsReady, err := c.attachmentsReady(ctx, models.VolumeMoveAttachmentStateMigrated, updateStatus)
-		if err != nil {
-			// Move to VolumeMoveStateFailed; the volume is moved and the worst case is that there are
-			// stale paths on some host(s).
-			updateStatus.Message = fmt.Sprintf("attachments may be stale; continuing with volume move: %s", updateStatus.AttachmentMessages())
-			updateStatus.State = models.VolumeMoveStateSucceeded
-			break
-		} else if allAttachmentsReady {
-			updateStatus.Message = ""
-			updateStatus.State = models.VolumeMoveStateSucceeded
-			break
-		}
-
-		// Wait for the node-side CRD controllers. Until the attachments are in the expected
-		// state, we cannot continue. Requeue to try again.
-		return errors.ReconcileDeferredError("waiting for node unstaging to complete; requeuing...")
-
+		return c.handleStateNodeUnstaging(ctx, status)
 	case models.VolumeMoveStateFailed:
-		// Always set a completion time.
-		// This costs 1 requeue with the current design, which is fine.
-		if updateStatus.CompletionTime == nil {
-			updateStatus.CompletionTime = convert.ToPtr(metav1.Now())
-			break
-		}
-
-		// Do not update or requeue for terminal states.
-		return nil
-
+		return c.handleStateFailed(status)
 	case models.VolumeMoveStateSucceeded:
-		if updateStatus.CompletionTime == nil {
-			// Always update the completion
-			updateStatus.CompletionTime = convert.ToPtr(metav1.Now())
-			break
-		}
-
-		if tvm.Spec.DeleteAfterSuccess == nil {
-			// DeleteAfterSuccess is not set. We are done. Return nil.
-			return nil
-		}
-
-		// Check if we should delete the TVM, if it is not ready to delete,
-		// shouldDeleteTVM will return a ReconcileDeferredWithDuration error.
-		shouldDelete, err := shouldDeleteTVM(tvm)
-		if err != nil {
-			return err
-		}
-		if shouldDelete {
-			volMoveError = c.deleteTridentVolumeMove(ctx, namespace, name)
-			if volMoveError == nil {
-				return nil
-			}
-			// Could not delete a successfully completed TVM. Requeue.
-			updateStatus.Message = fmt.Sprintf(
-				"Failed to automatically delete TVM %q: %s; will retry...",
-				tvm.Name, volMoveError.Error(),
-			)
-			break
-		}
-
+		return c.handleStateSucceeded(ctx, tvm, status)
 	default:
-		updateStatus.State = models.VolumeMoveStatePending
+		status.State = models.VolumeMoveStatePending
+		return stateOutcome{}
+	}
+}
+
+// commitState is the guaranteed epilogue that persists the volume config
+// projection and the TVM CR status. It runs after every state handler unless
+// the handler explicitly sets skipCommit.
+func (c *TridentCrdController) commitState(
+	ctx context.Context, name, namespace string,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) error {
+	moveInfo.State = status.State
+	var mi *models.VolumeMoveInfo
+	if !status.State.IsTerminal() {
+		mi = moveInfo
+	}
+	if err := c.reconcileVolumeMove(ctx, name, mi); err != nil {
+		return errors.WrapWithReconcileDeferredError(err, "failed to update volume move info")
+	}
+	return c.updateTridentVolumeMove(ctx, namespace, name, status)
+}
+
+// TVM State handlers
+// Each handler mutates status in-place and returns a stateOutcome.
+
+// handleStatePending attempts a dry-run if supported and transitions the TVM to ControllerStaging.
+func (c *TridentCrdController) handleStatePending(
+	ctx context.Context,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	if err := validateDeleteAfterSuccess(moveInfo.DeleteAfterSuccess); err != nil {
+		status.Message = err.Error()
+		status.State = models.VolumeMoveStateFailed
+		return stateOutcome{}
 	}
 
-	// As a safety net, we should always clear the move info on the volume before deleting the TVM.
-	// Two situations where always clearing makes sense:
-	//	1. TVM is in a terminal state - TVM is failed or succeeded.
-	//	2. TVM is deleting - TVM was deleted by something (CRD controller or admin).
-	if updateStatus.State.IsTerminal() {
-		if err := c.reconcileVolumeMove(ctx, name, nil); err != nil {
-			// Retry until we succeed.
-			return errors.WrapWithReconcileDeferredError(err, "failed to clear volume move info")
+	Logc(ctx).Debug("TVM is pending, starting dry-run.")
+	if err := c.startVolumeMove(ctx, moveInfo, true); err != nil {
+		if isTerminalVolumeMoveError(err) {
+			status.Message = fmt.Sprintf("volume move dry run failed with error: %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
 		}
+		return stateOutcome{processErr: errors.ReconcileDeferredError("dry-run transient error; requeuing: %s", err)}
 	}
 
-	// Update CR with finalizers and new status
-	volMoveError = c.updateTridentVolumeMove(ctx, namespace, name, updateStatus)
-	if volMoveError != nil {
-		return volMoveError
+	// NOTE: attachments are intentionally seeded in ControllerStaging, not here.
+	// The first TVM -> TVOL projection should land just after Pending but before
+	// handling any logic for ControllerStaging.
+	//
+	// Any publish that raced before MoveInfo existed still owns a VolumeAttachment
+	// captured by the snapshot, and any publish after is move aware via MoveInfo.
+	status.StartTime = convert.ToPtr(metav1.Now())
+	status.State = models.VolumeMoveStateControllerStaging
+	return stateOutcome{}
+}
+
+func (c *TridentCrdController) handleStateControllerStaging(
+	ctx context.Context, tvm *netappv1.TridentVolumeMove,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	Logc(ctx).Debug("TVM is in controller staging state.")
+
+	if err := c.populateAttachments(ctx, moveInfo.VolumeName, status); err != nil {
+		return stateOutcome{processErr: errors.ReconcileDeferredError("could not populate attachments; requeuing: %s", err)}
 	}
 
-	return volMoveError
+	if err := c.controllerStaging(ctx, moveInfo); err != nil {
+		if isTerminalVolumeMoveError(err) {
+			status.Message = fmt.Sprintf("Volume move staging failed: %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
+		}
+		return stateOutcome{processErr: errors.ReconcileDeferredError("staging transient error; requeuing: %s", err)}
+	}
+
+	if initAccessInfo := moveInfo.InitialAccessInfo; initAccessInfo != nil {
+		if err := c.sanitizeAccessInfo(ctx, initAccessInfo); err != nil {
+			status.Message = fmt.Sprintf("Could not sanitize initial access info of secrets; %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
+		}
+		status.InitialAccessInfo = initAccessInfo.DeepCopy()
+	}
+	if targAccessInfo := moveInfo.TargetAccessInfo; targAccessInfo != nil {
+		if err := c.sanitizeAccessInfo(ctx, targAccessInfo); err != nil {
+			status.Message = fmt.Sprintf("Could not sanitize target access info of secrets; %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
+		}
+		status.TargetAccessInfo = targAccessInfo.DeepCopy()
+	}
+
+	if len(tvm.Status.Attachments) == 0 {
+		status.Message = fmt.Sprintf("No volume attachments to modify for volume %q", tvm.Name)
+		status.State = models.VolumeMoveStateMoving
+		return stateOutcome{}
+	}
+
+	status.State = models.VolumeMoveStateNodeStaging
+	return stateOutcome{}
+}
+
+func (c *TridentCrdController) handleStateNodeStaging(
+	ctx context.Context, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	Logc(ctx).Debug("TVM is in node staging state. Waiting for nodes to update CR status...")
+
+	allReady, err := c.attachmentsReady(ctx, models.VolumeMoveAttachmentStateBridged, status)
+	if err != nil {
+		status.Message = fmt.Sprintf("volume move node staging failed with error(s): %s", err.Error())
+		status.State = models.VolumeMoveStateFailed
+		return stateOutcome{}
+	}
+	if allReady {
+		status.Message = fmt.Sprintf("All attachments are ready; moving to %q state", models.VolumeMoveStateMoving)
+		status.State = models.VolumeMoveStateMoving
+		return stateOutcome{}
+	}
+
+	return stateOutcome{processErr: errors.ReconcileDeferredError("waiting for node staging to complete; requeuing...")}
+}
+
+func (c *TridentCrdController) handleStateMoving(
+	ctx context.Context, tvm *netappv1.TridentVolumeMove,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	Logc(ctx).Debug("TVM is in moving state.")
+
+	if !tvm.HasTridentFinalizers() {
+		Logc(ctx).Debug("Finalizer not found; adding finalizer and requeuing...")
+		return stateOutcome{}
+	}
+
+	err := c.startVolumeMove(ctx, moveInfo, false)
+	status.BackendContext.Raw = moveInfo.BackendContext
+
+	if err != nil {
+		if isTerminalVolumeMoveError(err) {
+			status.Message = fmt.Sprintf("Volume move failed: %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
+		}
+		status.Message = "Volume move in progress"
+		return stateOutcome{processErr: errors.ReconcileDeferredError("volume move transient error %q; requeuing...", err.Error())}
+	}
+
+	status.Message = "Volume move complete; unstaging controller"
+	status.State = models.VolumeMoveStateControllerUnstaging
+	return stateOutcome{}
+}
+
+func (c *TridentCrdController) handleStateControllerUnstaging(
+	ctx context.Context, tvm *netappv1.TridentVolumeMove,
+	moveInfo *models.VolumeMoveInfo, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	Logc(ctx).Debug("TVM is in controller unstaging state.")
+
+	if err := c.controllerUnstaging(ctx, moveInfo); err != nil {
+		status.Message = fmt.Sprintf("volume move unstaging failed; continuing with volume move: %s", err.Error())
+	}
+
+	if err := c.refreshAttachments(ctx, tvm); err != nil {
+		if isTerminalVolumeMoveError(err) {
+			status.Message = fmt.Sprintf("Volume move controller unstaging failed: %s", err.Error())
+			status.State = models.VolumeMoveStateFailed
+			return stateOutcome{}
+		}
+		status.Message = fmt.Sprintf("Could not update VolumeAttachments during volume move %s; requeuing...", err.Error())
+		// Return a deferred error so the workqueue applies rate-limited backoff
+		// instead of hot-looping on the status-update event.
+		return stateOutcome{processErr: errors.ReconcileDeferredError("%s", status.Message)}
+	}
+
+	status.State = models.VolumeMoveStateNodeUnstaging
+	return stateOutcome{}
+}
+
+func (c *TridentCrdController) handleStateNodeUnstaging(
+	ctx context.Context, status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	Logc(ctx).Debug("TVM is in node unstaging state. Waiting for nodes to update CR status...")
+
+	allReady, err := c.attachmentsReady(ctx, models.VolumeMoveAttachmentStateMigrated, status)
+	if err != nil {
+		status.Message = fmt.Sprintf("attachments may be stale; continuing with volume move: %s", status.AttachmentMessages())
+		status.State = models.VolumeMoveStateSucceeded
+		return stateOutcome{}
+	}
+	if allReady {
+		status.Message = ""
+		status.State = models.VolumeMoveStateSucceeded
+		return stateOutcome{}
+	}
+
+	return stateOutcome{processErr: errors.ReconcileDeferredError("waiting for node unstaging to complete; requeuing...")}
+}
+
+func (c *TridentCrdController) handleStateFailed(
+	status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	if status.CompletionTime == nil {
+		status.CompletionTime = convert.ToPtr(metav1.Now())
+		return stateOutcome{}
+	}
+	return stateOutcome{skipCommit: true}
+}
+
+func (c *TridentCrdController) handleStateSucceeded(
+	ctx context.Context, tvm *netappv1.TridentVolumeMove,
+	status *netappv1.TridentVolumeMoveStatus,
+) stateOutcome {
+	if status.CompletionTime == nil {
+		status.CompletionTime = convert.ToPtr(metav1.Now())
+		return stateOutcome{}
+	}
+
+	if tvm.Spec.DeleteAfterSuccess == nil {
+		return stateOutcome{skipCommit: true}
+	}
+
+	shouldDelete, err := shouldDeleteTVM(tvm)
+	if err != nil {
+		return stateOutcome{skipCommit: true, processErr: err}
+	}
+	if shouldDelete {
+		if err := c.deleteTridentVolumeMove(ctx, tvm.Namespace, tvm.Name); err != nil {
+			status.Message = fmt.Sprintf("Failed to automatically delete TVM %q: %s; will retry...", tvm.Name, err.Error())
+			// Return a deferred error so the workqueue applies rate-limited
+			// backoff instead of hot-looping on the status-update event.
+			return stateOutcome{processErr: errors.ReconcileDeferredError("%s", status.Message)}
+		}
+		return stateOutcome{skipCommit: true}
+	}
+
+	return stateOutcome{skipCommit: true}
+}
+
+// Orchestrator wrappers
+
+func (c *TridentCrdController) startVolumeMove(
+	ctx context.Context, moveInfo *models.VolumeMoveInfo, dryRun bool,
+) error {
+	moveInfo.DryRun = dryRun
+	return c.orchestrator.MoveVolume(ctx, moveInfo)
+}
+
+func (c *TridentCrdController) controllerStaging(
+	ctx context.Context, moveInfo *models.VolumeMoveInfo,
+) error {
+	return c.orchestrator.StageVolumeMove(ctx, moveInfo)
+}
+
+func (c *TridentCrdController) controllerUnstaging(
+	ctx context.Context, moveInfo *models.VolumeMoveInfo,
+) error {
+	return c.orchestrator.UnstageVolumeMove(ctx, moveInfo)
+}
+
+func (c *TridentCrdController) reconcileVolumeMove(
+	ctx context.Context, volumeName string, moveInfo *models.VolumeMoveInfo,
+) error {
+	return c.orchestrator.ReconcileVolumeMove(ctx, volumeName, moveInfo)
+}
+
+// Validation and helpers
+
+func validateDeleteAfterSuccess(d *time.Duration) error {
+	if d == nil {
+		return nil
+	}
+	if *d < 0 {
+		return errors.InvalidInputError(
+			"deleteAfterSuccess must be zero or a positive duration (for example \"0s\" or \"10m\"); got %v",
+			d,
+		)
+	}
+	return nil
 }
 
 func shouldDeleteTVM(tvm *netappv1.TridentVolumeMove) (bool, error) {
@@ -350,8 +412,21 @@ func shouldDeleteTVM(tvm *netappv1.TridentVolumeMove) (bool, error) {
 	if remaining <= 0 {
 		return true, nil
 	}
-	return false, errors.ReconcileDeferredWithDuration(remaining,
-		"waiting %v before deleting successful TVM", remaining)
+	return false, errors.ReconcileDeferredWithDuration(remaining, "waiting %v before deleting TVM", remaining)
+}
+
+func (c *TridentCrdController) validateVolumeMoveCR(
+	ctx context.Context, namespace, name string,
+) (*netappv1.TridentVolumeMove, error) {
+	actionCR, err := c.crdClientset.TridentV1().TridentVolumeMoves(namespace).Get(ctx, name, getOpts)
+	if apierrors.IsNotFound(err) {
+		Logc(ctx).Debug("TVM in work queue no longer exists.")
+		return nil, errors.NotFoundError(fmt.Sprintf("TVM %q in work queue no longer exists", name))
+	}
+	if err != nil {
+		return nil, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
+	}
+	return actionCR, nil
 }
 
 func (c *TridentCrdController) deleteTridentVolumeMove(ctx context.Context, namespace, name string) error {
@@ -372,63 +447,7 @@ func (c *TridentCrdController) deleteTridentVolumeMove(ctx context.Context, name
 	return nil
 }
 
-func (c *TridentCrdController) startVolumeMove(
-	ctx context.Context, moveInfo *models.VolumeMoveInfo, dryRun bool,
-) (volMoveError error) {
-	moveInfo.DryRun = dryRun
-	volMoveError = c.orchestrator.MoveVolume(ctx, moveInfo)
-	return
-}
-
-func (c *TridentCrdController) controllerStaging(
-	ctx context.Context, moveInfo *models.VolumeMoveInfo,
-) (volMoveError error) {
-	volMoveError = c.orchestrator.StageVolumeMove(ctx, moveInfo)
-	return
-}
-
-func (c *TridentCrdController) controllerUnstaging(
-	ctx context.Context, moveInfo *models.VolumeMoveInfo,
-) (volMoveError error) {
-	volMoveError = c.orchestrator.UnstageVolumeMove(ctx, moveInfo)
-	return
-}
-
-func (c *TridentCrdController) reconcileVolumeMove(
-	ctx context.Context, volumeName string, moveInfo *models.VolumeMoveInfo,
-) (volMoveError error) {
-	volMoveError = c.orchestrator.ReconcileVolumeMove(ctx, volumeName, moveInfo)
-	return
-}
-
-func validateDeleteAfterSuccess(d *time.Duration) error {
-	if d == nil {
-		return nil
-	}
-	if *d < 0 {
-		return errors.InvalidInputError(
-			"deleteAfterSuccess must be zero or a positive duration (for example \"0s\" or \"10m\"); got %v",
-			d,
-		)
-	}
-	return nil
-}
-
-func (c *TridentCrdController) validateVolumeMoveCR(
-	ctx context.Context, namespace, name string,
-) (*netappv1.TridentVolumeMove, error) {
-	// Get the resource with this namespace/name
-	actionCR, err := c.crdClientset.TridentV1().TridentVolumeMoves(namespace).Get(ctx, name, getOpts)
-	if apierrors.IsNotFound(err) {
-		Logc(ctx).Debug("TVM in work queue no longer exists.")
-		return nil, errors.NotFoundError(fmt.Sprintf("TVM %q in work queue no longer exists", name))
-	}
-	if err != nil {
-		return nil, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
-	}
-
-	return actionCR, nil
-}
+// TVM CR update
 
 func (c *TridentCrdController) updateTridentVolumeMove(
 	ctx context.Context, namespace, name string, statusUpdate *netappv1.TridentVolumeMoveStatus,
@@ -480,7 +499,6 @@ func (c *TridentCrdController) updateTridentVolumeMove(
 		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
-	// Update metadata (finalizers) using the ResourceVersion from the status write.
 	if statusUpdate.State == models.VolumeMoveStateFailed || statusUpdate.State == models.VolumeMoveStateSucceeded {
 		if tvm.HasTridentFinalizers() {
 			tvm.RemoveTridentFinalizers()
@@ -501,6 +519,8 @@ func (c *TridentCrdController) updateTridentVolumeMove(
 	return nil
 }
 
+// Attachment helpers
+
 // applyControllerAttachmentOverrides propagates controller-owned attachment
 // state transitions into the fresh attachment slice. Today the only such
 // transition is Detached (set by reconcileAttachments when a K8s
@@ -511,8 +531,6 @@ func applyControllerAttachmentOverrides(
 ) {
 	idx := make(map[string]*netappv1.TridentVolumeMoveAttachmentStatus, len(source))
 	for _, a := range source {
-		// We only override the TVM attachment if the volume attachment
-		// was ripped away in Kubernetes.
 		if a != nil && a.State == models.VolumeMoveAttachmentStateDetached {
 			idx[a.NodeName] = a
 		}
@@ -522,9 +540,6 @@ func applyControllerAttachmentOverrides(
 		if a == nil {
 			continue
 		}
-		// Don't revert node-set terminal states. If the node already
-		// advanced past Detached (e.g. to Cleaned or Failed), the
-		// controller's stale Detached must not overwrite it.
 		if a.State == models.VolumeMoveAttachmentStateCleaned ||
 			a.State == models.VolumeMoveAttachmentStateFailed {
 			continue
@@ -535,52 +550,67 @@ func applyControllerAttachmentOverrides(
 	}
 }
 
-// populateAttachments populates the attachments on the TVM in the controller staging state.
-// This should always happen exactly once per TVM and should always read directly from the
-// Kubernetes API to gain an accurate picture of what VolumeAttachments exist during a TVM.
+// populateAttachments seeds the immutable TVM attachment set from the Kubernetes
+// VolumeAttachments that exist for volumeName at the moment the move begins.
 //
-// Rules for populating attachments:
-//  1. Attachments must have the attached=true state (CSI ControllerPublishVolume must have happened).
-//  2. Attachments must not be duplicated
+// Membership is anchored on VolumeAttachment.Spec (PersistentVolumeName +
+// NodeName), which Kubernetes sets at creation and never mutates. We deliberately
+// do NOT gate on Status.Attached (patched asynchronously by the external-attacher
+// after the publish RPC returns) nor on the existence of a Trident
+// VolumePublication (persisted only after the backend confirms the mapping). The
+// VA is the earliest, most complete signal that a node has - or is about to have -
+// a connection established using the source access info.
 //
-// The TVM attachments follow these rules throughout the TVM lifecycle:
-//  1. Immutable membership - once populated, TVM attachments are neither evicted nor added.
-//  2. Mutable state - Live attachments in K8s can be destroyed during a TVM.
-//     In that scenario, the TVM attachment should move to a Detached state.
+// Late VolumeAttachments created after this snapshot are intentionally ignored: a
+// publish that observes the in-flight move self-heals to the target portals in the
+// driver, so those nodes need no bridging.
 func (c *TridentCrdController) populateAttachments(
-	ctx context.Context, pvName string,
-) ([]*netappv1.TridentVolumeMoveAttachmentStatus, error) {
-	if pvName == "" {
-		return nil, errors.New("empty volume name")
+	ctx context.Context, volumeName string, status *netappv1.TridentVolumeMoveStatus,
+) error {
+	// The TVM attachment membership is immutable once the TVM attachments are populated.
+	// Never repopulate TVM attachments once they have been populated.
+	if len(status.Attachments) != 0 {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName":     volumeName,
+			"tvmAttachments": status.Attachments,
+		}).Trace("TVM attachments already populated; continuing with volume move.")
+		return nil
 	}
 
+	// Bypass the indexer and read straight from Kubernetes here.
 	vaList, err := c.kubeClientset.StorageV1().VolumeAttachments().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	if vaList == nil {
-		return nil, nil
+		return fmt.Errorf("could not list volume attachments for %q: %w", volumeName, err)
 	}
 
-	tvmAttachments := make([]*netappv1.TridentVolumeMoveAttachmentStatus, 0)
+	nodes := make(map[string]struct{}, len(vaList.Items))
 	for _, va := range vaList.Items {
-		if !va.Status.Attached {
+		source := va.Spec.Source.PersistentVolumeName
+		if source == nil || *source != volumeName {
 			continue
 		}
-		if va.Spec.Source.PersistentVolumeName == nil || *va.Spec.Source.PersistentVolumeName != pvName {
+		if va.Spec.NodeName == "" {
 			continue
 		}
+		nodes[va.Spec.NodeName] = struct{}{}
+	}
 
-		tvmAttachments = append(tvmAttachments, &netappv1.TridentVolumeMoveAttachmentStatus{
+	// Sort for deterministic attachment ordering.
+	nodeNames := make([]string, 0, len(nodes))
+	for nodeName := range nodes {
+		nodeNames = append(nodeNames, nodeName)
+	}
+	sort.Strings(nodeNames)
+
+	for _, nodeName := range nodeNames {
+		Logc(ctx).WithField("node", nodeName).Debug("Seeding TVM attachment from K8s VolumeAttachment.")
+		status.Attachments = append(status.Attachments, &netappv1.TridentVolumeMoveAttachmentStatus{
 			State:    models.VolumeMoveAttachmentStatePending,
-			NodeName: va.Spec.NodeName,
-			Message:  "",
+			NodeName: nodeName,
 		})
 	}
-	return tvmAttachments, nil
+
+	return nil
 }
 
 // reconcileAttachments reconciles the TVM attachments with the Kubernetes VolumeAttachments.
@@ -589,9 +619,6 @@ func (c *TridentCrdController) populateAttachments(
 //  1. Immutable membership - once populated, TVM attachments are neither evicted nor added.
 //  2. Mutable state - Live attachments in K8s can be destroyed during a TVM.
 //     In that scenario, the TVM attachment should move to a Detached state.
-//
-// As a result, this function modifies the TVM attachments in-place
-// and intentionally does not return a modified set of attachments.
 func (c *TridentCrdController) reconcileAttachments(
 	ctx context.Context, pvName string, status *netappv1.TridentVolumeMoveStatus,
 ) error {
@@ -605,14 +632,11 @@ func (c *TridentCrdController) reconcileAttachments(
 		return nil
 	}
 
-	// Here we can rely on the indexer as the reconcile
-	// does not remove TVM attachments.
 	vaList, err := c.indexers.VolumeAttachmentIndexer().GetCachedVolumeAttachmentsByVolume(ctx, pvName)
 	if err != nil {
 		return err
 	}
 
-	// Build a filtered index of K8s attachments by node.
 	nodeAttachments := make(map[string]*v1.VolumeAttachment)
 	for _, k8sAttachment := range vaList {
 		if k8sAttachment == nil {
@@ -621,15 +645,9 @@ func (c *TridentCrdController) reconcileAttachments(
 		if k8sAttachment.Spec.NodeName == "" {
 			continue
 		}
-		if !k8sAttachment.Status.Attached {
-			continue
-		}
 		nodeAttachments[k8sAttachment.Spec.NodeName] = k8sAttachment.DeepCopy()
 	}
 
-	// Reconcile the TVM attachments with the Kubernetes attachments.
-	// TVM is the immutable set, the Kubernetes attachments help us
-	// decide if we should move to a detached state or not.
 	for i, tvmAttachment := range status.Attachments {
 		if tvmAttachment == nil {
 			continue
@@ -641,8 +659,6 @@ func (c *TridentCrdController) reconcileAttachments(
 			continue
 		}
 
-		// TVM attachment wasn't found in K8s.
-		// That means it was deleted. Set it to Detached.
 		if _, ok := nodeAttachments[tvmAttachment.NodeName]; !ok {
 			detachedState := models.VolumeMoveAttachmentStateDetached
 			Logc(ctx).WithFields(LogFields{
@@ -667,9 +683,6 @@ func (c *TridentCrdController) reconcileAttachments(
 // volume move. This ensures an attachment that is reattached by Kubelet
 // (without going through CSI ControllerPublishVolume) again will have
 // the new models.VolumeAccessInfo.
-//
-// Without this, Kubelet could reattach a volume to the same node with
-// stale attachment metadata / publish context and fail forever.
 func (c *TridentCrdController) refreshAttachments(
 	ctx context.Context, tvm *netappv1.TridentVolumeMove,
 ) error {
@@ -680,7 +693,6 @@ func (c *TridentCrdController) refreshAttachments(
 		return errors.New("TVM name is empty")
 	}
 	if len(tvm.Status.Attachments) == 0 {
-		// No known attachments are OK; continue in the handler.
 		return nil
 	}
 	if tvm.Status.TargetAccessInfo == nil {
@@ -688,30 +700,22 @@ func (c *TridentCrdController) refreshAttachments(
 	}
 	targetAccessInfo := tvm.Status.TargetAccessInfo.DeepCopy()
 
-	// Build an index of TVM attachments by node name.
-	tvmAttachments := tvm.Status.Attachments
-	tvmAttachMap := make(map[string]*netappv1.TridentVolumeMoveAttachmentStatus, len(tvmAttachments))
-	for _, va := range tvmAttachments {
+	tvmAttachMap := make(map[string]*netappv1.TridentVolumeMoveAttachmentStatus, len(tvm.Status.Attachments))
+	for _, va := range tvm.Status.Attachments {
+		if va == nil || va.NodeName == "" {
+			continue
+		}
 		tvmAttachMap[va.NodeName] = va
 	}
 
-	// Build an index of K8s attachments by node name.
-	// Here we can rely on the indexer as the reconcile
-	// does not remove TVM attachments.
 	k8sAttachments, err := c.indexers.VolumeAttachmentIndexer().GetCachedVolumeAttachmentsByVolume(ctx, tvm.Name)
 	if err != nil {
 		return err
 	}
 	if len(k8sAttachments) == 0 {
-		// No attachments. Return early.
 		return nil
 	}
 
-	// Reorganize the attachments into an index of nodeName -> attachment.
-	// Filter the attachments by the following conditions:
-	//	1. The node of the attachment is not known to the TVM.
-	//	2. The attachment has "attached" set to false (CSI ControllerPublishVolume has not happened).
-	//  3. The attachment has no attachment metadata.
 	k8sAttachMap := make(map[string]*v1.VolumeAttachment)
 	for _, a := range k8sAttachments {
 		k8sNodeName := a.Spec.NodeName
@@ -737,7 +741,6 @@ func (c *TridentCrdController) refreshAttachments(
 	}
 
 	for _, k8sAttachment := range k8sAttachMap {
-		// Construct a new publish info from the attachment metadata.
 		publishInfo := make(map[string]string)
 		for k, v := range k8sAttachment.Status.AttachmentMetadata {
 			publishInfo[k] = v
@@ -749,7 +752,6 @@ func (c *TridentCrdController) refreshAttachments(
 		}
 		targetAccessInfoCopy := targetAccessInfo.DeepCopy()
 
-		// Update only the relevant publish info for each protocol on each volume attachment.
 		switch tridentconfig.Protocol(protocol) {
 		case tridentconfig.File:
 			Logc(ctx).Debug("Volume protocol is not supported with volume move.")
@@ -766,12 +768,9 @@ func (c *TridentCrdController) refreshAttachments(
 				Logc(ctx).Debugf("Volume protocol type %q is not supported with volume move.", sanType)
 				continue
 			case storageattribute.ISCSI:
-				// Unset the existing portals on the publish info metadata in the K8s attachment.
 				if err := csi.UpsertIscsiTargetPortals(ctx, publishInfo, targetAccessInfoCopy); err != nil {
 					return err
 				}
-				// The CHAP credentials should already be encrypted in the TVM attachments at this point.
-				// Replace them in the publish context.
 				csi.SetEncryptedCHAPPublishInfo(publishInfo, targetAccessInfoCopy)
 			default:
 				Logc(ctx).Debugf("Volume SAN type %q is not supported with volume move.", sanType)
@@ -782,7 +781,6 @@ func (c *TridentCrdController) refreshAttachments(
 			continue
 		}
 
-		// Heal the volume attachment by updating the VolumeAttachment status with the new publish info.
 		k8sAttachment.Status.AttachmentMetadata = publishInfo
 		k8sAttachment, err = c.kubeClientset.StorageV1().VolumeAttachments().UpdateStatus(ctx, k8sAttachment, metav1.UpdateOptions{})
 		if err != nil {
@@ -790,7 +788,6 @@ func (c *TridentCrdController) refreshAttachments(
 				Logc(ctx).WithError(err).Warn("VolumeAttachment could not be found; continuing...")
 				continue
 			}
-			// Volume attachment update failed for other reasons. Valid failure case.
 			Logc(ctx).WithError(err).Error("VolumeAttachment could not be updated.")
 			return err
 		}
@@ -811,24 +808,16 @@ func (c *TridentCrdController) attachmentReady(
 	case desiredState, models.VolumeMoveAttachmentStateDetached, models.VolumeMoveAttachmentStateCleaned:
 		return true, nil
 	case models.VolumeMoveAttachmentStateFailed:
-		// Failed states are reserved for terminal failures.
-		// At this point, the attachment can never move to a ready state.
-		// Moving forward with the vol move will not be safe, so fail.
 		return false, fmt.Errorf("attachment update on node %q failed; %s", node, msg)
 	default:
-		// This could be the case where an attachment is in a previous state
-		// still transitioning to the next one.
 		return false, nil
 	}
 }
 
-// attachmentsReady looks through all attachments on the TVM status and checks
-// if all attachments are at the desired state.
-// If any attachment has terminal errors, it returns an error.
+// attachmentsReady checks whether all TVM attachments have reached the desired state.
 func (c *TridentCrdController) attachmentsReady(
 	ctx context.Context, desiredState models.VolumeMoveAttachmentState, status *netappv1.TridentVolumeMoveStatus,
 ) (bool, error) {
-	// No attachments; good to continue moving.
 	if len(status.Attachments) == 0 {
 		return true, nil
 	}
@@ -850,10 +839,7 @@ func (c *TridentCrdController) attachmentsReady(
 	return allReady, errs
 }
 
-// sanitizeAccessInfo attempts to encrypt, redact, and ultimately sanitize any
-// secrets that may be within the supplied access info in-place.
-//
-// If any secrets fail sanitization, this should stop the entire volume move.
+// sanitizeAccessInfo encrypts any secrets within the supplied access info in-place.
 func (c *TridentCrdController) sanitizeAccessInfo(
 	ctx context.Context, accessInfo *models.VolumeAccessInfo,
 ) error {
@@ -861,9 +847,6 @@ func (c *TridentCrdController) sanitizeAccessInfo(
 }
 
 // isTerminalVolumeMoveError returns true for errors that cannot be resolved by retrying.
-// The TVM should transition to Failed immediately for these. Any error not matched here
-// is treated as transient and the reconcile is requeued — mirroring the node side's
-// isTerminalError logic in TridentNodeCrdController.
 func isTerminalVolumeMoveError(err error) bool {
 	return errors.IsInvalidInputError(err) ||
 		errors.IsNotFoundError(err) ||

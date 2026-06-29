@@ -5974,10 +5974,9 @@ func (o *TridentOrchestrator) StageVolumeMove(
 		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
 	}
 
-	initialConfig := volume.Config.ConstructClone()
-	err = backend.StageVolumeMove(ctx, volume.Config, volumeMoveInfo)
+	mutableConfig := volume.Config.ConstructClone()
+	err = backend.StageVolumeMove(ctx, mutableConfig, volumeMoveInfo)
 	if err != nil {
-		volume.Config = initialConfig
 		Logc(ctx).WithFields(LogFields{
 			"volume":      volume.Config.Name,
 			"backendUUID": volume.BackendUUID,
@@ -5985,7 +5984,8 @@ func (o *TridentOrchestrator) StageVolumeMove(
 		}).Error("Failed to stage volume move.")
 		return fmt.Errorf("failed to stage volume move for %s: %w", volume.Config.Name, err)
 	}
-	volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
+	mutableConfig.MoveInfo = volumeMoveInfo.DeepCopy()
+	volume.Config = mutableConfig
 
 	Logc(ctx).WithFields(LogFields{
 		"volume":      volume.Config.Name,
@@ -6026,6 +6026,7 @@ func (o *TridentOrchestrator) MoveVolume(ctx context.Context, volumeMoveInfo *mo
 		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
 	}
 
+	mutableConfig := volume.Config.ConstructClone()
 	defer func() {
 		// Move is special in that it may have updated state from the backend
 		// that could be useful to persist on the storage.Volume reference in
@@ -6034,15 +6035,21 @@ func (o *TridentOrchestrator) MoveVolume(ctx context.Context, volumeMoveInfo *mo
 		// Backend moves should return transient errors until a terminal failure
 		// is hit, or the move succeeds which results in a nil return from the
 		// backend.
-		volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
-
 		if err != nil {
 			return
 		}
-		// If no error is returned, the move is complete.
+		if volumeMoveInfo.DryRun {
+			return
+		}
+		mutableConfig.MoveInfo = volumeMoveInfo.DeepCopy()
 
-		// Persist the moved pool only when the backend reports the move complete.
-		if !volumeMoveInfo.DryRun && volumeMoveInfo.TargetPool != "" {
+		// Create a copy of the mutable state for rollback.
+		initialPool := volume.Pool
+		initialConfig := volume.Config
+
+		// Commit the backend mutations to the volume.
+		volume.Config = mutableConfig
+		if volumeMoveInfo.TargetPool != "" {
 			volume.Pool = volumeMoveInfo.TargetPool
 		}
 
@@ -6050,14 +6057,16 @@ func (o *TridentOrchestrator) MoveVolume(ctx context.Context, volumeMoveInfo *mo
 		// move completes in the backend.
 		err = o.storeClient.UpdateVolume(ctx, volume)
 		if err != nil {
+			volume.Pool = initialPool
+			volume.Config = initialConfig
 			Logc(ctx).WithFields(LogFields{
 				"volume":      volume.Config.Name,
 				"backendUUID": volume.BackendUUID,
-			}).WithError(err).Error("Failed to update volume after staging volume move.")
+			}).WithError(err).Error("Failed to update volume after volume move.")
 		}
 	}()
 
-	err = backend.MoveVolume(ctx, volume.Config, volumeMoveInfo)
+	err = backend.MoveVolume(ctx, mutableConfig, volumeMoveInfo)
 	if err != nil {
 		return err
 	}
@@ -6106,10 +6115,9 @@ func (o *TridentOrchestrator) UnstageVolumeMove(
 		return errors.NotFoundError("backend %s not found for volume %s", volume.BackendUUID, volume.Config.Name)
 	}
 
-	initialConfig := volume.Config.ConstructClone()
-	err = backend.UnstageVolumeMove(ctx, volume.Config, volumeMoveInfo)
+	mutableConfig := volume.Config.ConstructClone()
+	err = backend.UnstageVolumeMove(ctx, mutableConfig, volumeMoveInfo)
 	if err != nil {
-		volume.Config = initialConfig
 		Logc(ctx).WithFields(LogFields{
 			"volume":      volume.Config.Name,
 			"backendUUID": volume.BackendUUID,
@@ -6117,7 +6125,8 @@ func (o *TridentOrchestrator) UnstageVolumeMove(
 		}).Error("Failed to unstage volume move.")
 		return fmt.Errorf("failed to unstage volume move for %s: %w", volume.Config.Name, err)
 	}
-	volume.Config.MoveInfo = nil
+	mutableConfig.MoveInfo = volumeMoveInfo.DeepCopy()
+	volume.Config = mutableConfig
 
 	Logc(ctx).WithFields(LogFields{
 		"volume":      volume.Config.Name,

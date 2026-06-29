@@ -1047,10 +1047,6 @@ func (d *SANStorageDriver) Publish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
-	if moveInfo := volConfig.MoveInfo; moveInfo != nil && !moveInfo.State.IsMoving() {
-		return errors.VolumeStateError(fmt.Sprintf("cannot publish volume %q while in the %q move state", volConfig.Name, moveInfo.State))
-	}
-
 	// Check if the volume is DP or RW and don't publish if DP
 	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), name)
 	if err != nil {
@@ -1125,10 +1121,6 @@ func (d *SANStorageDriver) Unpublish(
 
 	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		return nil
-	}
-
-	if moveInfo := volConfig.MoveInfo; moveInfo != nil && moveInfo.State.IsControllerStaging() {
-		return errors.VolumeStateError(fmt.Sprintf("cannot unpublish volume %q while in the %q move state", volConfig.Name, moveInfo.State))
 	}
 
 	// Attempt to unmap the LUN from the per-node igroup.
@@ -2196,7 +2188,6 @@ func (d *SANStorageDriver) UnstageVolumeMove(
 	defer lunMutex.Unlock(internalLUN)
 
 	sourceNode, targetNode := volumeMoveInfo.SourceNode, volumeMoveInfo.TargetNode
-
 	if volumeMoveInfo.InitialAccessInfo == nil || volumeMoveInfo.TargetAccessInfo == nil {
 		Logc(ctx).Warn("InitialAccessInfo or TargetAccessInfo is nil; skipping unstage.")
 		return nil
