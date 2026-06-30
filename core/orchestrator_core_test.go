@@ -13890,7 +13890,7 @@ func TestTridentOrchestrator_StageVolumeMove(t *testing.T) {
 			"backend stage failure must leave MoveInfo untouched")
 	})
 
-	t.Run("happy path records MoveInfo", func(t *testing.T) {
+	t.Run("happy path preserves MoveInfo", func(t *testing.T) {
 		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
 
 		mockBackend := mockstorage.NewMockBackend(mockCtrl)
@@ -13903,8 +13903,7 @@ func TestTridentOrchestrator_StageVolumeMove(t *testing.T) {
 		err := o.StageVolumeMove(ctx(),
 			newMoveInfo(volName, models.VolumeMoveStateControllerStaging))
 		require.NoError(t, err)
-		require.NotNil(t, vol.Config.MoveInfo)
-		assert.Equal(t, models.VolumeMoveStateControllerStaging, vol.Config.MoveInfo.State)
+		assert.NotNil(t, vol.Config.MoveInfo, "StageVolumeMove must not unset MoveInfo")
 	})
 }
 
@@ -13957,7 +13956,7 @@ func TestTridentOrchestrator_MoveVolume(t *testing.T) {
 		assert.True(t, errors.IsNotFoundError(err))
 	})
 
-	t.Run("backend transient error still updates MoveInfo", func(t *testing.T) {
+	t.Run("backend transient error does not set MoveInfo", func(t *testing.T) {
 		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
 		vol.Pool = "pool-original"
 
@@ -13970,12 +13969,11 @@ func TestTridentOrchestrator_MoveVolume(t *testing.T) {
 
 		err := o.MoveVolume(ctx(), newMoveInfo(volName, models.VolumeMoveStateMoving))
 		require.Error(t, err)
-		require.NotNil(t, vol.Config.MoveInfo, "transient error must still update MoveInfo")
-		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.Nil(t, vol.Config.MoveInfo, "MoveVolume must not set MoveInfo on failure")
 		assert.Equal(t, "pool-original", vol.Pool, "pool should not change on transient move errors")
 	})
 
-	t.Run("happy path records MoveInfo", func(t *testing.T) {
+	t.Run("happy path persists target pool and sets MoveInfo", func(t *testing.T) {
 		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
 		vol.Pool = "pool-original"
 		moveInfo := newMoveInfo(volName, models.VolumeMoveStateMoving)
@@ -13990,8 +13988,7 @@ func TestTridentOrchestrator_MoveVolume(t *testing.T) {
 
 		err := o.MoveVolume(ctx(), moveInfo)
 		require.NoError(t, err)
-		require.NotNil(t, vol.Config.MoveInfo)
-		assert.Equal(t, models.VolumeMoveStateMoving, vol.Config.MoveInfo.State)
+		assert.NotNil(t, vol.Config.MoveInfo, "MoveVolume must not unset MoveInfo")
 		assert.Equal(t, "pool-target", vol.Pool, "pool should be updated to move target on success")
 	})
 }
@@ -14050,11 +14047,10 @@ func TestTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 		err := o.UnstageVolumeMove(ctx(),
 			newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
 		require.Error(t, err)
-		assert.NotNil(t, vol.Config.MoveInfo,
-			"backend unstage failure must leave MoveInfo untouched")
+		assert.NotNil(t, vol.Config.MoveInfo, "backend unstage failure must leave MoveInfo untouched")
 	})
 
-	t.Run("happy path clears MoveInfo", func(t *testing.T) {
+	t.Run("happy path does not clear MoveInfo", func(t *testing.T) {
 		o, vol, mockStoreClient, mockCtrl := setupOrchestratorForMoveInfo(t, volName, backendUUID)
 
 		vol.Config.MoveInfo = newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging)
@@ -14069,8 +14065,7 @@ func TestTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 		err := o.UnstageVolumeMove(ctx(),
 			newMoveInfo(volName, models.VolumeMoveStateControllerUnstaging))
 		require.NoError(t, err)
-		assert.Nil(t, vol.Config.MoveInfo,
-			"successful unstage must clear MoveInfo")
+		assert.NotNil(t, vol.Config.MoveInfo, "UnstageVolumeMove must not clear MoveInfo")
 	})
 }
 

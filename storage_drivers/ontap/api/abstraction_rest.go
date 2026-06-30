@@ -2313,7 +2313,8 @@ func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule
 }
 
 func (d OntapAPIREST) JobGet(ctx context.Context, jobID string) (*Job, error) {
-	jobResult, err := d.api.JobGet(ctx, jobID, []string{})
+	fields := []string{"**"}
+	jobResult, err := d.api.JobGet(ctx, jobID, fields)
 	if err != nil {
 		return nil, fmt.Errorf("error getting job %s: %v", jobID, err)
 	}

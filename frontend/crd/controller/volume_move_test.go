@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"go.uber.org/mock/gomock"
+	storagev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,6 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
+	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	crdclientfake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	"github.com/netapp/trident/utils/errors"
@@ -42,7 +45,7 @@ func TestIsTerminalVolumeMoveError(t *testing.T) {
 		},
 		{
 			name:     "ReconcileDeferredError is not terminal",
-			err:      errors.ReconcileDeferredError("requeue me"),
+			err:      errors.ReconcileDeferredError("processErr me"),
 			terminal: false,
 		},
 		{
@@ -623,3 +626,171 @@ func TestDeleteTridentVolumeMove(t *testing.T) {
 		assert.True(t, apierrors.IsInternalError(errors.Unwrap(err)))
 	})
 }
+
+// TestHandleVolumeMoveControllerStagingAttachmentSeeding verifies that the
+// immutable TVM attachment set is seeded during ControllerStaging (not Pending)
+// purely from the live Kubernetes VolumeAttachments that exist for the volume.
+//
+// Seeding is deferred to ControllerStaging because commitState is the sole
+// projector of volume.Config.MoveInfo and runs AFTER the state handler: the
+// first MoveInfo projection therefore lands on the Pending commit, and the
+// snapshot must only be taken once MoveInfo is guaranteed present in the cache.
+//
+// Seeding is anchored on VolumeAttachment.Spec and is Attached-agnostic: we do
+// NOT gate on va.Status.Attached (patched asynchronously by the external-attacher
+// after the publish RPC returns) nor on the existence of a Trident
+// VolumePublication. A VA whose attach is mid-flight (Attached=false) must STILL
+// be seeded, otherwise the TVM would drop a node whose CSI flow is in progress
+// and leave it with stale Source AccessInfo after the move.
+func TestHandleVolumeMoveControllerStagingAttachmentSeeding(t *testing.T) {
+	t.Parallel()
+
+	const (
+		testNamespace = "trident"
+		testName      = "test-tvm"
+	)
+
+	fakeVA := func(nodeName string, attached bool) *storagev1.VolumeAttachment {
+		return &storagev1.VolumeAttachment{
+			ObjectMeta: metav1.ObjectMeta{Name: "va-" + nodeName},
+			Spec: storagev1.VolumeAttachmentSpec{
+				NodeName: nodeName,
+				Source: storagev1.VolumeAttachmentSource{
+					PersistentVolumeName: strPtr(testName),
+				},
+			},
+			Status: storagev1.VolumeAttachmentStatus{
+				Attached: attached,
+			},
+		}
+	}
+
+	tests := []struct {
+		name              string
+		k8sVAs            []*storagev1.VolumeAttachment
+		wantAttachments   []string
+		wantAttachmentLen int
+	}{
+		{
+			name:              "all published nodes have fully-attached VAs",
+			k8sVAs:            []*storagev1.VolumeAttachment{fakeVA("node-1", true), fakeVA("node-2", true)},
+			wantAttachments:   []string{"node-1", "node-2"},
+			wantAttachmentLen: 2,
+		},
+		{
+			// A VA whose external-attacher patch of Status.Attached has not landed
+			// yet (Attached=false) must STILL be seeded, otherwise the TVM would
+			// drop a node whose CSI flow is mid-completion and leave it with stale
+			// Source AccessInfo after the move.
+			name:              "mid-attach VA (Attached=false) is still seeded",
+			k8sVAs:            []*storagev1.VolumeAttachment{fakeVA("node-mid", false)},
+			wantAttachments:   []string{"node-mid"},
+			wantAttachmentLen: 1,
+		},
+		{
+			name:              "mixed attached and mid-attach VAs are all seeded",
+			k8sVAs:            []*storagev1.VolumeAttachment{fakeVA("node-1", true), fakeVA("node-2", false)},
+			wantAttachments:   []string{"node-1", "node-2"},
+			wantAttachmentLen: 2,
+		},
+		{
+			name:              "no VAs means no attachments seeded",
+			k8sVAs:            nil,
+			wantAttachments:   nil,
+			wantAttachmentLen: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockCtrl := gomock.NewController(t)
+			t.Cleanup(mockCtrl.Finish)
+
+			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+			mockIdxs := mockindexers.NewMockIndexers(mockCtrl)
+			mockVaIdx := mockindexer.NewMockVolumeAttachmentIndexer(mockCtrl)
+
+			mockVaIdx.EXPECT().WaitForCacheSync(gomock.Any()).Return(true).AnyTimes()
+			mockIdxs.EXPECT().VolumeAttachmentIndexer().Return(mockVaIdx).AnyTimes()
+
+			// reconcileAttachments uses the indexer; populateAttachments uses
+			// the live kubeClientset list. Both paths are exercised in this test.
+			mockVaIdx.EXPECT().GetCachedVolumeAttachmentsByVolume(gomock.Any(), testName).
+				Return(tt.k8sVAs, nil).AnyTimes()
+
+			// MoveVolume dry-run (Pending) only validates the move; it no longer
+			// seeds nodes or projects MoveInfo.
+			orchestrator.EXPECT().MoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+			// ControllerStaging grafts the target reporting node onto the igroups.
+			orchestrator.EXPECT().StageVolumeMove(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+			// commitState projects MoveInfo on every commit: once for the Pending
+			// reconcile and once for the ControllerStaging reconcile.
+			orchestrator.EXPECT().ReconcileVolumeMove(gomock.Any(), testName, gomock.Any()).Return(nil).Times(2)
+
+			tvm := fakeTridentVolumeMove(testNamespace, testName, func(tvm *netappv1.TridentVolumeMove) {
+				tvm.Status.State = models.VolumeMoveStatePending
+			})
+			crdClient := NewFakeClientset(tvm)
+
+			// Seed the fake kubeClientset with the test's VAs so the live
+			// populateAttachments list call returns them.
+			kubeObjects := make([]runtime.Object, 0, len(tt.k8sVAs))
+			for _, va := range tt.k8sVAs {
+				kubeObjects = append(kubeObjects, va)
+			}
+			kubeClient := GetTestKubernetesClientset(kubeObjects...)
+
+			controller, err := newTridentCrdControllerImpl(
+				orchestrator, "trident",
+				kubeClient, GetTestSnapshotClientset(),
+				crdClient, mockIdxs, nil,
+			)
+			require.NoError(t, err)
+
+			key := fmt.Sprintf("%s/%s", testNamespace, testName)
+
+			// Reconcile 1: Pending -> ControllerStaging. No attachments are
+			// seeded yet; this commit projects MoveInfo into the cache.
+			require.NoError(t, controller.handleVolumeMove(&KeyItem{key: key, ctx: ctx()}))
+
+			afterPending, getErr := crdClient.TridentV1().TridentVolumeMoves(testNamespace).Get(
+				ctx(), testName, metav1.GetOptions{},
+			)
+			require.NoError(t, getErr)
+			assert.Equal(t, models.VolumeMoveStateControllerStaging, afterPending.Status.State,
+				"TVM must transition from Pending to ControllerStaging")
+			assert.Empty(t, afterPending.Status.Attachments,
+				"attachments must NOT be seeded during Pending; MoveInfo is not yet projected")
+
+			// Reconcile 2: ControllerStaging seeds the immutable attachment
+			// snapshot now that MoveInfo is guaranteed present in the cache.
+			require.NoError(t, controller.handleVolumeMove(&KeyItem{key: key, ctx: ctx()}))
+
+			got, getErr := crdClient.TridentV1().TridentVolumeMoves(testNamespace).Get(
+				ctx(), testName, metav1.GetOptions{},
+			)
+			require.NoError(t, getErr)
+
+			assert.NotContains(t,
+				[]models.VolumeMoveState{models.VolumeMoveStatePending, models.VolumeMoveStateControllerStaging},
+				got.Status.State,
+				"TVM must advance past ControllerStaging once attachments are seeded")
+			assert.Len(t, got.Status.Attachments, tt.wantAttachmentLen,
+				"seeded attachment count must match the live K8s VolumeAttachments")
+
+			gotNodes := make([]string, 0, len(got.Status.Attachments))
+			for _, a := range got.Status.Attachments {
+				gotNodes = append(gotNodes, a.NodeName)
+				assert.Equal(t, models.VolumeMoveAttachmentStatePending, a.State,
+					"all seeded attachments must start as Pending")
+			}
+			assert.ElementsMatch(t, tt.wantAttachments, gotNodes)
+		})
+	}
+}
+
+func strPtr(s string) *string { return &s }

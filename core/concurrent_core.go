@@ -4607,9 +4607,10 @@ func (o *ConcurrentTridentOrchestrator) MoveVolume(
 		return errors.InvalidInputError("volume move info is nil")
 	}
 
-	_, results, unlocker, err := db.Lock(
-		ctx, db.Query(db.UpsertVolume(volumeMoveInfo.VolumeName, ""), db.ReadBackend("")),
-	)
+	_, results, unlocker, err := db.Lock(ctx, db.Query(
+		db.UpsertVolume(volumeMoveInfo.VolumeName, ""),
+		db.ReadBackend(""),
+	))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -4640,18 +4641,16 @@ func (o *ConcurrentTridentOrchestrator) MoveVolume(
 		// Backend moves should return transient errors until a terminal failure
 		// is hit, or the move succeeds which results in a nil return from the
 		// backend.
-		defer func() {
-			upserter(volume)
-		}()
-		volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
-
 		if err != nil {
 			return
 		}
-		// If no error is returned, the move is complete.
+		if volumeMoveInfo.DryRun {
+			return
+		}
 
-		// Persist the moved pool only when the backend reports the move complete.
-		if !volumeMoveInfo.DryRun && volumeMoveInfo.TargetPool != "" {
+		// Persist the moved pool only when the move succeeds.
+		volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
+		if volumeMoveInfo.TargetPool != "" {
 			volume.Pool = volumeMoveInfo.TargetPool
 		}
 
@@ -4662,8 +4661,11 @@ func (o *ConcurrentTridentOrchestrator) MoveVolume(
 			Logc(ctx).WithFields(LogFields{
 				"volume":      volume.Config.Name,
 				"backendUUID": volume.BackendUUID,
-			}).WithError(err).Error("Failed to update volume after staging volume move.")
+			}).WithError(err).Error("Failed to update volume after volume move.")
+			return
 		}
+
+		upserter(volume)
 	}()
 
 	err = backend.MoveVolume(ctx, volume.Config, volumeMoveInfo)
@@ -4734,7 +4736,7 @@ func (o *ConcurrentTridentOrchestrator) UnstageVolumeMove(
 		}).WithError(err).Error("Failed to unstage volume move.")
 		return fmt.Errorf("failed to unstage volume move for %s: %w", volume.Config.Name, err)
 	}
-	volume.Config.MoveInfo = nil
+	volume.Config.MoveInfo = volumeMoveInfo.DeepCopy()
 	upserter(volume)
 
 	Logc(ctx).WithFields(LogFields{
