@@ -4,6 +4,10 @@
 # helmHookImage specifies the image used for Helm hook jobs
 helmHookImage: "alpine/k8s:1.33.0"
 
+# namespace overrides the deployment namespace for chart resources when set.
+# Leave empty to use the Helm release namespace.
+namespace: ""
+
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -29,13 +33,12 @@ affinity:
             - key: kubernetes.io/arch
               operator: In
               values:
-              - arm64
-              - amd64
+                - arm64
+                - amd64
             - key: kubernetes.io/os
               operator: In
               values:
-              - linux
-
+                - linux
 
 # tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin.
 # tridentControllerPluginNodeSelector : {}
@@ -46,10 +49,8 @@ affinity:
 # tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin.
 # tridentNodePluginNodeSelector : {}
 
-# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin. 
+# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin.
 # tridentNodePluginTolerations: []
-
-
 
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
@@ -63,8 +64,7 @@ imagePullSecrets: []
 # kubeletDir allows overriding the host location of kubelet's internal state. (default "/var/lib/kubelet").
 kubeletDir: ""
 
-
-# operatorLogLevel allows the log level of the Trident operator to be set to one of these: 
+# operatorLogLevel allows the log level of the Trident operator to be set to one of these:
 # trace, debug, info, warn, error, fatal.
 # operatorLogLevel: "info"
 
@@ -76,7 +76,6 @@ operatorImage: ""
 
 # operatorImageTag allows overriding the tag of the trident-operator image.
 operatorImageTag: ""
-
 
 # tridentIPv6 allows enabling Trident to work in IPv6 clusters.
 tridentIPv6: false
@@ -170,7 +169,7 @@ iscsiSelfHealingWaitTime: "7m0s"
 configuratorReconcileInterval: 30m0s
 
 # forceInstallRancherClusterRoles will install a Rancher specific ClusterRole and ClusterRoleBinding when set to true.
-# When set to false, the ClusterRole and ClusterRoleBinding will be installed only when a Rancher cluster is detected. 
+# When set to false, the ClusterRole and ClusterRoleBinding will be installed only when a Rancher cluster is detected.
 forceInstallRancherClusterRoles: false
 
 # Auto generated ANF backend related fields consumed by the configurator controller.
@@ -191,10 +190,10 @@ anfConfigurator:
 ontapConfigurator:
   enabled: false
   svms:
-    - fsxnID: ''
-      svmName: ''
+    - fsxnID: ""
+      svmName: ""
       protocols: []
-      authType: ''
+      authType: ""
 
 # enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
 enableConcurrency: false
@@ -221,7 +220,7 @@ enableConcurrency: false
 #    sub-sections: 'linux' and 'windows'. Each OS section lists its specific containers.
 #
 # 3. OPERATOR POD:
-#    Unlike controller and node pods, the operator has actual default values directly specified 
+#    Unlike controller and node pods, the operator has actual default values directly specified
 #    (not in comments). If removed, no values will be applied.
 resources:
   controller:

@@ -392,7 +392,7 @@ func ensureLUKSVolumePassphrase(
 		Logc(ctx).WithFields(LogFields{
 			"volume": volumeId,
 		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
-		// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
+		// Disabled in all supported versions until 26.06.1. Users must track LUKS passphrases for volumes.
 		// if forceUpdate {
 		// 	luksPassphraseNames := []string{luksPassphraseName}
 		// 	err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
@@ -421,7 +421,7 @@ func ensureLUKSVolumePassphrase(
 		"volume": volumeId,
 	}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
 
-	// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
+	// Disabled in all supported versions until 26.06.1. Users must track LUKS passphrases for volumes.
 	// Send up current and previous passphrase names, if rotation fails
 	// luksPassphraseNames := []string{luksPassphraseName, previousLUKSPassphraseName}
 	// err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
@@ -449,7 +449,7 @@ func ensureLUKSVolumePassphrase(
 	// isCurrent, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
 	// if err != nil {
 	// 	return fmt.Errorf("could not check current passphrase for LUKS volume; %v", err)
-	// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
+	// Disabled in all supported versions until 26.06.1. Users must track LUKS passphrases for volumes.
 	// } else if isCurrent {
 	// 	// Send only current passphrase up
 	// 	luksPassphraseNames = []string{luksPassphraseName}

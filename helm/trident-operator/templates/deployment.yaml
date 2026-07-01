@@ -8,7 +8,7 @@ metadata:
   labels:
     app: operator.trident.netapp.io
   name: trident-operator
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trident.namespace" . }}
 spec:
   replicas: 1
   strategy:

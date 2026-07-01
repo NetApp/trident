@@ -51,6 +51,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Resolve namespace for namespaced resources.
+*/}}
+{{- define "trident.namespace" -}}
+{{- default .Release.Namespace .Values.namespace -}}
+{{- end }}
+
+{{/*
 Trident operator level
 */}}
 {{- define "trident-operator.logLevel" -}}
@@ -225,7 +232,7 @@ Override auto-detection and force install the roles by setting Values.forceInsta
 */}}
 {{- define "shouldInstallRancherRoles" -}}
 {{- $isRancher := false -}}
-{{- $currentNs := .Release.Namespace -}}
+{{- $currentNs := include "trident.namespace" . -}}
 {{- $currentNsObj := lookup "v1" "Namespace" "" $currentNs -}}
 {{- /* Check if 'forceInstallRancherClusterRoles' is set */ -}}
 {{- if .Values.forceInstallRancherClusterRoles }}
