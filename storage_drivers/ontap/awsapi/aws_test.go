@@ -1040,7 +1040,7 @@ func TestConversionFunctions(t *testing.T) {
 					},
 				}
 
-				volume := client.getVolumeFromFSxVolume(fsxVolume)
+				volume := client.getVolumeFromFSxVolume(context.Background(), fsxVolume)
 
 				assert.Equal(t, testVolumeID, volume.ID)
 				assert.Equal(t, "test-volume", volume.Name)

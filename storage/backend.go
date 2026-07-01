@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strconv"
 	"sync"
 	"time"
 
@@ -21,6 +20,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils/errors"
@@ -819,7 +819,7 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
 	}
-	newSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	newSizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
 	}

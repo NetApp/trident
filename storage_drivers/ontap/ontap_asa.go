@@ -325,7 +325,7 @@ func (d *ASAStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert size %s: %v", volConfig.Size, err)
 	}
-	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	requestedSizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid size: %v", volConfig.Size, err)
 	}
@@ -698,12 +698,16 @@ func (d *ASAStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			return fmt.Errorf("error reading maps for LUN %s: %v", name, err)
 		}
 		if lunID >= 0 {
+			iscsiLunNumber, lunErr := convert.IntToInt32(lunID)
+			if lunErr != nil {
+				return fmt.Errorf("LUN ID %d overflows int32: %w", lunID, lunErr)
+			}
 			publishInfo := models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetIQN: iSCSINodeName,
-						IscsiLunNumber: int32(lunID),
+						IscsiLunNumber: iscsiLunNumber,
 					},
 				},
 			}
@@ -1240,7 +1244,11 @@ func (d *ASAStorageDriver) Resize(
 		return fmt.Errorf("error occurred when checking LUN size; %v", err)
 	}
 
-	lunSizeBytes := uint64(currentLunSize)
+	lunSizeBytes, lunSizeErr := convert.IntToUint64(currentLunSize)
+	if lunSizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(lunSizeErr).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
 	if requestedSizeBytes < lunSizeBytes {
 		return fmt.Errorf("requested size %d is less than existing LUN size %d", requestedSizeBytes, lunSizeBytes)
 	}

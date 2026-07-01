@@ -192,7 +192,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	var transport http.RoundTripper
 	transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: skipVerify,
+			InsecureSkipVerify: skipVerify, // #nosec G402 -- ONTAP REST HTTPS may use default/self-signed certs; trustedCACertificate enables verification above
 			MinVersion:         tridentconfig.MinClientTLSVersion,
 			Certificates:       []tls.Certificate{cert},
 			RootCAs:            caCertPool,
@@ -808,7 +808,7 @@ func (c *RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName
 		return 0, fmt.Errorf("could not find size for volume with name %v", volumeName)
 	}
 
-	return uint64(*volume.Size), nil
+	return convert.Int64ToUint64(*volume.Size)
 }
 
 // getVolumeUsedSizeByNameAndStyle retrieves the used bytes of the the volume of the style and name specified
@@ -1202,7 +1202,7 @@ func (c *RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 
 	if unixPermissions != "" {
 		unixPermissions = convertUnixPermissions(unixPermissions)
-		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		volumePermissions, parseErr := convert.ToInt64(unixPermissions)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
 		}
@@ -1592,7 +1592,7 @@ func (c *RestClient) createVolumeByStyle(
 		volumeInfo.Type = new("DP")
 	} else if unixPermissions != "" {
 		unixPermissions = convertUnixPermissions(unixPermissions)
-		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		volumePermissions, parseErr := convert.ToInt64(unixPermissions)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
 		}
@@ -1693,7 +1693,7 @@ func (c *RestClient) createApplicationContainerByStyle(
 	}
 	if unixPermissions != "" {
 		unixPermissions = convertUnixPermissions(unixPermissions)
-		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		volumePermissions, parseErr := convert.ToInt64(unixPermissions)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
 		}
@@ -1928,7 +1928,7 @@ func (c *RestClient) VolumeCreate(
 	if err != nil {
 		return err
 	}
-	sizeInBytes, err := strconv.ParseInt(sizeBytesStr, 10, 64)
+	sizeInBytes, err := convert.ToInt64(sizeBytesStr)
 	if err != nil {
 		return err
 	}
@@ -1947,7 +1947,7 @@ func (c *RestClient) VolumeCreateBalanced(
 	if err != nil {
 		return err
 	}
-	sizeInBytes, err := strconv.ParseInt(sizeBytesStr, 10, 64)
+	sizeInBytes, err := convert.ToInt64(sizeBytesStr)
 	if err != nil {
 		return err
 	}
@@ -3985,7 +3985,7 @@ func (c *RestClient) LunSetSize(
 		return 0, fmt.Errorf("unexpected response from LUN modify")
 	}
 
-	return uint64(sizeBytes), nil
+	return convert.Int64ToUint64(sizeBytes)
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -5380,7 +5380,7 @@ func (c *RestClient) QtreeCreate(
 	// handle options
 	if unixPermissions != "" {
 		unixPermissions = convertUnixPermissions(unixPermissions)
-		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		volumePermissions, parseErr := convert.ToInt64(unixPermissions)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
 		}
@@ -6085,7 +6085,7 @@ func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, q
 	if diskLimit == "" {
 		return fmt.Errorf("invalid hard disk limit value '%s' for quota modify", diskLimit)
 	}
-	hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+	hardLimit, parseErr := convert.ToInt64(diskLimit)
 	if parseErr != nil {
 		return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
 	}
@@ -6132,7 +6132,7 @@ func (c *RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, q
 
 	// handle options
 	if diskLimit != "" {
-		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+		hardLimit, parseErr := convert.ToInt64(diskLimit)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
 		}

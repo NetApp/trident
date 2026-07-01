@@ -2864,12 +2864,12 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	}
 
 	if volConfig.Size != "" {
-		cloneSourceVolumeSize, err := strconv.ParseInt(sourceVolume.Config.Size, 10, 64)
+		cloneSourceVolumeSize, err := convert.ToInt64(sourceVolume.Config.Size)
 		if err != nil {
 			return nil, fmt.Errorf("could not get size of the clone source volume")
 		}
 
-		cloneVolumeSize, err := strconv.ParseInt(volConfig.Size, 10, 64)
+		cloneVolumeSize, err := convert.ToInt64(volConfig.Size)
 		if err != nil {
 			return nil, fmt.Errorf("could not get size of the clone volume")
 		}
@@ -3577,12 +3577,12 @@ func (o *ConcurrentTridentOrchestrator) validateImportVolume(ctx context.Context
 		return errors.NotFoundError("volume %s was not found: %v", originalName, err)
 	}
 
-	requestedSize, err := strconv.ParseInt(volumeConfig.Size, 10, 64)
+	requestedSize, err := convert.ToInt64(volumeConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not determine requested size to import: %v", err)
 	}
 
-	actualSize, err := strconv.ParseInt(extantVol.Config.Size, 10, 64)
+	actualSize, err := convert.ToInt64(extantVol.Config.Size)
 	if err != nil {
 		return fmt.Errorf("could not determine actual size of the volume being imported: %v", err)
 	}
@@ -4349,7 +4349,7 @@ func (o *ConcurrentTridentOrchestrator) resizeSubordinateVolume(ctx context.Cont
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
 	}
-	newSizeBytes, err := strconv.ParseUint(newSizeStr, 10, 64)
+	newSizeBytes, err := convert.ToUint64(newSizeStr)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
 	}
@@ -4359,7 +4359,7 @@ func (o *ConcurrentTridentOrchestrator) resizeSubordinateVolume(ctx context.Cont
 	if err != nil {
 		return fmt.Errorf("could not convert source volume size %s: %v", sourceVolume.Config.Size, err)
 	}
-	sourceSizeBytes, err := strconv.ParseUint(sourceSizeStr, 10, 64)
+	sourceSizeBytes, err := convert.ToUint64(sourceSizeStr)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid source volume size: %v", sourceVolume.Config.Size, err)
 	}
@@ -4782,7 +4782,7 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for subordinate volume %s", volumeConfig.Name)
 	}
-	volumeSize, err := strconv.ParseUint(volumeSizeStr, 10, 64)
+	volumeSize, err := convert.ToUint64(volumeSizeStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for subordinate volume %s", volumeConfig.Name)
 	}
@@ -4857,7 +4857,7 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
 	}
-	sourceVolumeSize, err := strconv.ParseUint(sourceVolumeSizeStr, 10, 64)
+	sourceVolumeSize, err := convert.ToUint64(sourceVolumeSizeStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
 	}

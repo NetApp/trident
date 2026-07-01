@@ -14,6 +14,7 @@ import (
 
 	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/maths"
 )
 
@@ -136,7 +137,7 @@ func ToBytes(s string) (string, error) {
 	for _, unit := range units2 {
 		if strings.HasSuffix(s, unit) {
 			s = strings.TrimSuffix(s, unit)
-			if i, err := strconv.ParseInt(s, 10, 0); err != nil {
+			if i, err := convert.ToInt64(s); err != nil {
 				return "", fmt.Errorf("invalid size value '%s': %v", s, err)
 			} else {
 				i = i * maths.Pow(1024, lookupTable2[unit])
@@ -150,7 +151,7 @@ func ToBytes(s string) (string, error) {
 	for _, unit := range units10 {
 		if strings.HasSuffix(s, unit) {
 			s = strings.TrimSuffix(s, unit)
-			if i, err := strconv.ParseInt(s, 10, 0); err != nil {
+			if i, err := convert.ToInt64(s); err != nil {
 				return "", fmt.Errorf("invalid size value '%s': %v", s, err)
 			} else {
 				i = i * maths.Pow(1000, lookupTable10[unit])
@@ -161,7 +162,7 @@ func ToBytes(s string) (string, error) {
 	}
 
 	// no valid units found, so ensure the value is a number
-	if _, err := strconv.ParseUint(s, 10, 64); err != nil {
+	if _, err := convert.ToUint64(s); err != nil {
 		return "", fmt.Errorf("invalid size value '%s': %v", s, err)
 	}
 
@@ -211,7 +212,7 @@ func GetVolumeSizeBytes(ctx context.Context, opts map[string]string, defaultVolu
 	if err != nil {
 		return 0, err
 	}
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeBytes, _ := convert.ToUint64(sizeBytesStr)
 
 	logging.Logc(ctx).WithFields(logging.LogFields{
 		"sizeBytes":         sizeBytes,

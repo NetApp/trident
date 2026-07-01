@@ -306,7 +306,7 @@ func (d *ASANVMeStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert size %s: %v", volConfig.Size, err)
 	}
-	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	requestedSizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid size: %v", volConfig.Size, err)
 	}

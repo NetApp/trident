@@ -509,7 +509,7 @@ func (d *SANEconomyStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %w", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %w", volConfig.Size, err)
 	}
@@ -1232,12 +1232,16 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 			return fmt.Errorf("error reading LUN maps for volume %s: %w", name, err)
 		}
 		if lunID >= 0 {
+			iscsiLunNumber, lunErr := convert.IntToInt32(lunID)
+			if lunErr != nil {
+				return fmt.Errorf("LUN ID %d overflows int32: %w", lunID, lunErr)
+			}
 			publishInfo := models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetIQN: iSCSINodeName,
-						IscsiLunNumber: int32(lunID),
+						IscsiLunNumber: iscsiLunNumber,
 					},
 				},
 			}
@@ -1322,7 +1326,7 @@ func newFlexvolBucket(luns api.Luns) (*flexvolBucket, error) {
 func sumLUNBytes(luns api.Luns) (uint64, error) {
 	var total uint64
 	for _, lun := range luns {
-		size, err := strconv.ParseUint(lun.Size, 10, 64)
+		size, err := convert.ToUint64(lun.Size)
 		if err != nil {
 			return 0, fmt.Errorf("invalid LUN size for %q: parsing %q: %w", lun.Name, lun.Size, err)
 		}
@@ -2566,7 +2570,7 @@ func (d *SANEconomyStorageDriver) getLUNSize(ctx context.Context, name, flexvol 
 		return 0, err
 	}
 
-	lunSize, err := strconv.ParseUint(lun.Size, 10, 64)
+	lunSize, err := convert.ToUint64(lun.Size)
 	if err != nil {
 		return 0, fmt.Errorf("error determining LUN size: %w ", err)
 	}
@@ -2952,8 +2956,17 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		volAttrs = nil // grow-mode shrink suppression requires VolumeInfo
 	}
 
+	flexvolSizeInt64, flexvolErr := convert.Uint64ToInt64(flexvolSize)
+	if flexvolErr != nil {
+		return fmt.Errorf("flexvol size overflows int64: %w", flexvolErr)
+	}
+	totalLunSizeInt64, lunSizeErr := convert.Uint64ToInt64(totalLunSize)
+	if lunSizeErr != nil {
+		return fmt.Errorf("total LUN size overflows int64: %w", lunSizeErr)
+	}
+
 	sameSize := capacity.VolumeSizeWithinTolerance(
-		int64(flexvolSize), int64(totalLunSize), tridentconfig.SANResizeDelta,
+		flexvolSizeInt64, totalLunSizeInt64, tridentconfig.SANResizeDelta,
 	)
 
 	// If LUN exists, update the volConfig.InternalID in case it was not set.  This is useful for

@@ -89,9 +89,15 @@ func parseQOS(qosOpt string) (qos api.QoS, err error) {
 	if len(iops) != 3 {
 		return qos, errors.New("qos parameter must have 3 constituents (min/max/burst)")
 	}
-	qos.MinIOPS, err = strconv.ParseInt(iops[0], 10, 64)
-	qos.MaxIOPS, err = strconv.ParseInt(iops[1], 10, 64)
-	qos.BurstIOPS, err = strconv.ParseInt(iops[2], 10, 64)
+	qos.MinIOPS, err = convert.ToInt64(iops[0])
+	if err != nil {
+		return qos, err
+	}
+	qos.MaxIOPS, err = convert.ToInt64(iops[1])
+	if err != nil {
+		return qos, err
+	}
+	qos.BurstIOPS, err = convert.ToInt64(iops[2])
 	return qos, err
 }
 
@@ -866,12 +872,16 @@ func (d *SANStorageDriver) Create(
 		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = convert.ToPositiveInt64(defaultSize)
 	}
-	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(uint64(sizeBytes),
+	sizeBytesU64, err := convert.Int64ToUint64(sizeBytes)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %w", volConfig.Size, err)
+	}
+	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(sizeBytesU64,
 		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
 		return checkMinVolumeSizeError
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, uint64(sizeBytes), d.Config.CommonStorageDriverConfig,
+		ctx, sizeBytesU64, d.Config.CommonStorageDriverConfig,
 	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
@@ -2061,7 +2071,12 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return fmt.Errorf("volume %s does not exist", name)
 	}
 
-	volConfig.Size = strconv.FormatUint(uint64(volume.TotalSize), 10)
+	totalSizeU64, sizeErr := convert.Int64ToUint64(volume.TotalSize)
+	if sizeErr != nil {
+		return fmt.Errorf("volume %s has invalid size: %w", name, sizeErr)
+	}
+
+	volConfig.Size = strconv.FormatUint(totalSizeU64, 10)
 	sameSize := capacity.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
 
 	if sameSize {
@@ -2075,7 +2090,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return nil
 	}
 
-	volSizeBytes := uint64(volume.TotalSize)
+	volSizeBytes := totalSizeU64
 	if sizeBytes < volSizeBytes {
 		return errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes))

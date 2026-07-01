@@ -15,6 +15,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -185,7 +186,7 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 
 	for _, volume := range volumes {
 
-		volumeSize, _ := strconv.ParseUint(volume.Config.Size, 10, 64)
+		volumeSize, _ := convert.ToUint64(volume.Config.Size)
 
 		_ = table.Append([]string{
 			volume.Config.Name,
@@ -219,7 +220,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 
 	for _, volume := range volumes {
 
-		volumeSize, _ := strconv.ParseUint(volume.Config.Size, 10, 64)
+		volumeSize, _ := convert.ToUint64(volume.Config.Size)
 
 		backendName := "unknown"
 		if backend := backendsByUUID[volume.BackendUUID]; backend != nil {

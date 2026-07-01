@@ -13,8 +13,8 @@ import (
 	reflect "reflect"
 	time "time"
 
+	"context"
 	gomock "go.uber.org/mock/gomock"
-	context "golang.org/x/net/context"
 
 	models "github.com/netapp/trident/utils/models"
 )

@@ -26,6 +26,7 @@ import (
 	// Logrus is directly imported here because importing Trident's logging package will cause an import cycle.
 	log "github.com/sirupsen/logrus"
 
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -278,7 +279,11 @@ func DecryptStringWithAES(encryptedText string, key []byte) (string, error) {
 // PKCS7Pad will pad the input to a multiple of blocksize according to PKCS#7 standard.
 func PKCS7Pad(input []byte, blockSize int) []byte {
 	padLength := blockSize - len(input)%blockSize
-	padding := bytes.Repeat([]byte{byte(padLength)}, padLength)
+	padByte, err := convert.IntToByte(padLength)
+	if err != nil {
+		panic(fmt.Sprintf("invalid PKCS7 pad length %d: %v", padLength, err))
+	}
+	padding := bytes.Repeat([]byte{padByte}, padLength)
 	return append(input, padding...)
 }
 
@@ -300,11 +305,16 @@ func RandomNumber(max int) int {
 	if err != nil {
 		log.WithError(err).Error("Unable to generate secure random number")
 		// fallback to math/rand if the crypto/rand secure random number generation fails
-		return mathRand.Intn(max) //nolint:gosec
+		return mathRand.Intn(max) // #nosec G404 -- fallback when crypto/rand is unavailable
 	}
 	// The type conversion converts the larger type int64 to int
 	// the function makes this assumption because the original input parameter is defined as int
-	return int(randomNo.Int64())
+	n, err := convert.Int64ToInt(randomNo.Int64())
+	if err != nil {
+		log.WithError(err).Error("Unable to convert secure random number to int")
+		return mathRand.Intn(max) // #nosec G404 -- fallback when crypto/rand is unavailable
+	}
+	return n
 }
 
 // randReader is the entropy source for random string generation; overridable in tests.
@@ -318,13 +328,14 @@ func RandomLowerAlphaNumericString(n int) string {
 	b := make([]byte, n)
 	if _, err := io.ReadFull(randReader, b); err != nil {
 		log.WithError(err).Warning("Unable to generate secure random bytes; using timestamp-based fallback entropy")
-		nano := time.Now().UnixNano()
+		r := mathRand.New(mathRand.NewSource(time.Now().UnixNano())) // #nosec G404 -- fallback when crypto/rand is unavailable
 		for i := range b {
-			b[i] = byte(nano >> (i * 8))
+			b[i] = chars[r.Intn(len(chars))]
 		}
+		return string(b)
 	}
 	for i := range b {
-		b[i] = chars[b[i]%byte(len(chars))]
+		b[i] = chars[int(b[i])%len(chars)]
 	}
 	return string(b)
 }
@@ -338,7 +349,7 @@ func RandomString(strSize int) string {
 		log.WithError(err).Error("Unable to generate random bytes")
 	}
 	for i, b := range bytes {
-		bytes[i] = chars[b%byte(len(chars))]
+		bytes[i] = chars[int(b)%len(chars)]
 	}
 	return string(bytes)
 }
@@ -379,7 +390,14 @@ func GenerateRandomPassword(ctx context.Context, length int, lowerChar, upperCha
 				log.Warn("Failed to generate random number for password, setting default password")
 				return ""
 			}
-			char := allChars[randomIndex.Int64()]
+			charIdx, err := convert.Int64ToInt(randomIndex.Int64())
+			if err != nil {
+				// Unreachable in practice: rand.Int bounds the index to len(allChars), and
+				// allChars is at most ~100 runes even with every charset enabled.
+				log.Warn("Failed to generate random number for password, setting default password")
+				return ""
+			}
+			char := allChars[charIdx]
 			passwordBytes[i] = char
 			if strings.ContainsRune(lowerChars+upperChars, rune(char)) {
 				hasLetter = true

@@ -3,10 +3,9 @@
 package filesystem
 
 import (
+	"context"
 	"os"
 	"strings"
-
-	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/csiutils"

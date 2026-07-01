@@ -866,13 +866,13 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil || sizeBytes > math.MaxInt64 { // the azure api requires both int64 and uint64
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
 		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		sizeBytes, _ = convert.ToUint64(defaultSize)
 	}
 
 	// Enforce minimum volume size
@@ -1106,6 +1106,13 @@ func (d *NASStorageDriver) Create(
 			}).Debug("Creating volume.")
 		}
 
+		quotaInBytes, quotaErr := convert.Uint64ToInt64(sizeBytes)
+		if quotaErr != nil {
+			Logc(ctx).WithFields(fields).WithField("error", quotaErr).WithField("size", sizeBytes).
+				Error("Invalid volume size.")
+			return errors.New("invalid volume size")
+		}
+
 		createRequest := &api.FilesystemCreateRequest{
 			ResourceGroup:      cPool.ResourceGroup,
 			NetAppAccount:      cPool.NetAppAccount,
@@ -1115,7 +1122,7 @@ func (d *NASStorageDriver) Create(
 			CreationToken:      name,
 			Labels:             labels,
 			ProtocolTypes:      protocolTypes,
-			QuotaInBytes:       int64(sizeBytes),
+			QuotaInBytes:       quotaInBytes,
 			SnapshotDirectory:  snapshotDirBool,
 			NetworkFeatures:    networkFeatures,
 			KerberosEnabled:    kerberosEnabled,
@@ -2220,6 +2227,12 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return errors.New("invalid volume size")
 	}
 
+	requestedQuota, err := convert.Uint64ToInt64(sizeBytes)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithField("error", err).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+
 	// Update resource cache as needed
 	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
 		return fmt.Errorf("could not update ANF resource cache; %v", err)
@@ -2241,15 +2254,21 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return fmt.Errorf("volume %s state is %s, not %s", name, volume.ProvisioningState, api.StateAvailable)
 	}
 
-	volConfig.Size = strconv.FormatUint(uint64(volume.QuotaInBytes), 10)
+	currentQuota, quotaErr := convert.Int64ToUint64(volume.QuotaInBytes)
+	if quotaErr != nil {
+		Logc(ctx).WithFields(fields).WithField("error", quotaErr).WithField("quotaInBytes", volume.QuotaInBytes).
+			Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+	volConfig.Size = strconv.FormatUint(currentQuota, 10)
 
 	// If the volume is already the requested size, there's nothing to do
-	if int64(sizeBytes) == volume.QuotaInBytes {
+	if requestedQuota == volume.QuotaInBytes {
 		return nil
 	}
 
 	// Make sure we're not shrinking the volume
-	if int64(sizeBytes) < volume.QuotaInBytes {
+	if requestedQuota < volume.QuotaInBytes {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volume.QuotaInBytes)
 	}
 
@@ -2263,8 +2282,14 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		sizeBytes = ((sizeBytes / capacity.OneGiB) + 1) * capacity.OneGiB
 	}
 
+	requestedQuota, err = convert.Uint64ToInt64(sizeBytes)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithField("error", err).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+
 	// Resize the volume
-	if err = d.SDK.ResizeVolume(ctx, volume, int64(sizeBytes)); err != nil {
+	if err = d.SDK.ResizeVolume(ctx, volume, requestedQuota); err != nil {
 		return err
 	}
 

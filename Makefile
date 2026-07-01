@@ -31,6 +31,12 @@ HELM_IMAGE ?= alpine/helm:3.16.1
 # HELM_CHART_VERSION overrides the default chart version
 HELM_CHART_VERSION ?=
 
+# GOLANGCI-LINT_VERSION golangci-lint version for install-lint
+GOLANGCI-LINT_VERSION ?= v2.12.2
+
+# GIT_HOOKS_DIR git hooks directory from rev-parse --git-path hooks
+GIT_HOOKS_DIR := $(shell git rev-parse --git-path hooks)
+
 # DOCKER_CLI the docker-compatible cli used to run and tag images
 DOCKER_CLI ?= docker
 
@@ -464,17 +470,17 @@ mocks:
 	@go install go.uber.org/mock/mockgen@v0.6.0
 	@go generate ./...
 
-.git/hooks:
+$(GIT_HOOKS_DIR):
 	@mkdir -p $@
 
 install-lint:
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI-LINT_VERSION}
+	@curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(shell go env GOPATH)/bin $(GOLANGCI-LINT_VERSION)
 
-lint-precommit: .git/hooks install-lint
-	@cp hooks/golangci-lint.sh .git/hooks/pre-commit
+lint-precommit: $(GIT_HOOKS_DIR) install-lint
+	@cp hooks/golangci-lint.sh $(GIT_HOOKS_DIR)/pre-commit
 
-lint-prepush: .git/hooks install-lint .git/hooks/pre-push
-	@cp hooks/golangci-lint.sh .git/hooks/pre-push
+lint-prepush: $(GIT_HOOKS_DIR) install-lint
+	@cp hooks/golangci-lint.sh $(GIT_HOOKS_DIR)/pre-push
 
 EXCLUDE_PACKAGES := client/clientset client/informers client/listers storage/external_test astrads/api/v1alpha1 ontap/api/azgo ontap/api/rest fake github.com/netapp/trident/mocks/ github.com/netapp/trident/operator/controllers/provisioner github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1 github.com/netapp/trident/storage_drivers/astrads/api/v1beta1
 

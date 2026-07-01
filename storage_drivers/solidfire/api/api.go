@@ -59,7 +59,10 @@ type VolType struct {
 
 // NewFromParameters is a factory method to create a new sfapi.Client object using the supplied parameters
 func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err error) {
-	tcfg := tls.Config{MinVersion: tridentconfig.MinClientTLSVersion, InsecureSkipVerify: true}
+	tcfg := tls.Config{
+		MinVersion:         tridentconfig.MinClientTLSVersion,
+		InsecureSkipVerify: true, // #nosec G402 -- Element HTTPS API uses a cluster self-signed cert by default; trustedCACertificate enables verification below
+	}
 	if pcfg.TrustedCACertificate != "" {
 		caCert, err := base64.StdEncoding.DecodeString(pcfg.TrustedCACertificate)
 		if err != nil {

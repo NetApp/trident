@@ -18,6 +18,7 @@ import (
 	"unsafe"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -166,12 +167,27 @@ func (c *Client) getSCSIDeviceUsage(ctx context.Context, devicePath string) (use
 // sgIo executes an SG_IO ioctl command
 func (c *Client) sgIo(_ context.Context, fd int, cmd []byte, response []byte) error {
 	senseBuf := make([]byte, 32)
+	cmdLen, err := convert.IntToByte(len(cmd))
+	if err != nil {
+		return fmt.Errorf("scsi command length %d: %w", len(cmd), err)
+	}
+	mxSbLen, err := convert.IntToByte(len(senseBuf))
+	if err != nil {
+		return fmt.Errorf("scsi sense buffer length %d: %w", len(senseBuf), err)
+	}
+	dxferLenU64, err := convert.IntToUint64(len(response))
+	if err != nil {
+		return fmt.Errorf("scsi response length %d: %w", len(response), err)
+	}
+	if dxferLenU64 > uint64(^uint32(0)) {
+		return fmt.Errorf("scsi response length %d overflows uint32", len(response))
+	}
 	hdr := sgIoHdr{
 		interfaceID:    'S',
 		dxferDirection: SG_DXFER_FROM_DEV,
-		cmdLen:         uint8(len(cmd)),
-		mxSbLen:        uint8(len(senseBuf)),
-		dxferLen:       uint32(len(response)),
+		cmdLen:         cmdLen,
+		mxSbLen:        mxSbLen,
+		dxferLen:       uint32(dxferLenU64),
 		dxferp:         uintptr(unsafe.Pointer(&response[0])), //nolint:gosec // Required for syscall ioctl
 		cmdp:           uintptr(unsafe.Pointer(&cmd[0])),      //nolint:gosec // Required for syscall ioctl
 		sbp:            uintptr(unsafe.Pointer(&senseBuf[0])), //nolint:gosec // Required for syscall ioctl
@@ -345,9 +361,21 @@ func (c *Client) getNVMeUsage(ctx context.Context, devicePath string) (used, ava
 	// - NCAP: Maximum allocatable blocks (represents available pool capacity)
 	// - NSZE: Total namespace size
 	// Using NCAP gives us the true available space in the thin pool
-	used = int64(ns.NUSE * blockSize)
-	available = int64(ns.NCAP * blockSize)
-	capacity = int64(ns.NSZE * blockSize)
+	usedU64 := ns.NUSE * blockSize
+	used, err = convert.Uint64ToInt64(usedU64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("nvme used bytes %d: %w", usedU64, err)
+	}
+	availableU64 := ns.NCAP * blockSize
+	available, err = convert.Uint64ToInt64(availableU64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("nvme available bytes %d: %w", availableU64, err)
+	}
+	capacityU64 := ns.NSZE * blockSize
+	capacity, err = convert.Uint64ToInt64(capacityU64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("nvme capacity bytes %d: %w", capacityU64, err)
+	}
 
 	Logc(ctx).WithFields(LogFields{
 		"NSZE":      ns.NSZE,

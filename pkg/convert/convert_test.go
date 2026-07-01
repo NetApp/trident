@@ -4,6 +4,8 @@ package convert
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -337,6 +339,213 @@ func TestParseIntInRange(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInt64ToInt32(t *testing.T) {
+	t.Parallel()
+
+	v, err := Int64ToInt32(math.MaxInt32)
+	assert.NoError(t, err)
+	assert.Equal(t, int32(math.MaxInt32), v)
+
+	_, err = Int64ToInt32(math.MaxInt32 + 1)
+	assert.Error(t, err)
+}
+
+func TestInt64ToInt(t *testing.T) {
+	t.Parallel()
+
+	v, err := Int64ToInt(42)
+	assert.NoError(t, err)
+	assert.Equal(t, 42, v)
+}
+
+func TestInt64ToUint64(t *testing.T) {
+	t.Parallel()
+
+	v, err := Int64ToUint64(42)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(42), v)
+
+	_, err = Int64ToUint64(-1)
+	assert.Error(t, err)
+}
+
+func TestUint64ToInt64(t *testing.T) {
+	t.Parallel()
+
+	v, err := Uint64ToInt64(42)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), v)
+}
+
+func TestIntToInt32(t *testing.T) {
+	t.Parallel()
+
+	v, err := IntToInt32(42)
+	assert.NoError(t, err)
+	assert.Equal(t, int32(42), v)
+}
+
+func TestIntToByte(t *testing.T) {
+	t.Parallel()
+
+	v, err := IntToByte(42)
+	assert.NoError(t, err)
+	assert.Equal(t, byte(42), v)
+
+	_, err = IntToByte(256)
+	assert.Error(t, err)
+}
+
+func TestUint64ToInt(t *testing.T) {
+	t.Parallel()
+
+	v, err := Uint64ToInt(42)
+	assert.NoError(t, err)
+	assert.Equal(t, 42, v)
+}
+
+func TestToPositiveInt32(t *testing.T) {
+	t.Parallel()
+
+	v, err := ToPositiveInt32("42")
+	assert.NoError(t, err)
+	assert.Equal(t, int32(42), v)
+
+	_, err = ToPositiveInt32("-1")
+	assert.Error(t, err)
+
+	_, err = ToPositiveInt32(fmt.Sprintf("%d", int64(math.MaxInt32)+1))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "out of range")
+}
+
+func TestToUint64(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		val         string
+		expected    uint64
+		errContains string
+	}{
+		{name: "zero", val: "0", expected: 0},
+		{name: "positive", val: "1073741824", expected: 1073741824},
+		{name: "invalid", val: "not-a-number", errContains: "invalid syntax"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			u, err := ToUint64(test.val)
+			if test.errContains == "" {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected, u)
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.errContains)
+			}
+		})
+	}
+}
+
+func TestToInt64(t *testing.T) {
+	t.Parallel()
+
+	v, err := ToInt64("-1000")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(-1000), v)
+}
+
+func TestUint64ToInt32(t *testing.T) {
+	t.Parallel()
+
+	v, err := Uint64ToInt32(42)
+	assert.NoError(t, err)
+	assert.Equal(t, int32(42), v)
+
+	_, err = Uint64ToInt32(uint64(math.MaxInt32) + 1)
+	assert.Error(t, err)
+}
+
+func TestIntToUint64(t *testing.T) {
+	t.Parallel()
+
+	v, err := IntToUint64(42)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(42), v)
+
+	_, err = IntToUint64(-1)
+	assert.Error(t, err)
+}
+
+func TestInt32ToUint64(t *testing.T) {
+	t.Parallel()
+
+	v, err := Int32ToUint64(42)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(42), v)
+
+	_, err = Int32ToUint64(-1)
+	assert.Error(t, err)
+}
+
+func TestToPositiveInt64(t *testing.T) {
+	t.Parallel()
+
+	v, err := ToPositiveInt64("42")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), v)
+
+	_, err = ToPositiveInt64("-1")
+	assert.Error(t, err)
+
+	_, err = ToPositiveInt64("not-a-number")
+	assert.Error(t, err)
+}
+
+func TestToPositiveInt(t *testing.T) {
+	t.Parallel()
+
+	v, err := ToPositiveInt("42")
+	assert.NoError(t, err)
+	assert.Equal(t, 42, v)
+
+	_, err = ToPositiveInt("-1")
+	assert.Error(t, err)
+}
+
+func TestInt64ToInt_overflow(t *testing.T) {
+	t.Parallel()
+
+	if strconv.IntSize == 32 {
+		_, err := Int64ToInt(int64(math.MaxInt32) + 1)
+		assert.Error(t, err)
+	}
+}
+
+func TestUint64ToInt64_overflow(t *testing.T) {
+	t.Parallel()
+
+	_, err := Uint64ToInt64(math.MaxInt64 + 1)
+	assert.Error(t, err)
+}
+
+func TestUint64ToInt_overflow(t *testing.T) {
+	t.Parallel()
+
+	_, err := Uint64ToInt(uint64(math.MaxInt) + 1)
+	assert.Error(t, err)
+}
+
+func TestIntToInt32_overflow(t *testing.T) {
+	t.Parallel()
+
+	_, err := IntToInt32(math.MaxInt32 + 1)
+	assert.Error(t, err)
+
+	_, err = IntToInt32(math.MinInt32 - 1)
+	assert.Error(t, err)
 }
 
 func TestRedactSecretsFromString(t *testing.T) {

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/netapp/trident/pkg/convert"
 )
 
 func UnmarshalRequestMap(mapJSON json.RawMessage) (
@@ -73,12 +75,17 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 		}
 		req = NewBoolRequest(v)
 	case intType:
-		v, err := strconv.ParseInt(val, 10, 0)
+		v, err := convert.ToInt64(val)
 		if err != nil {
 			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val,
 				valType, err)
 		}
-		req = NewIntRequest(int(v))
+		intVal, err := convert.Int64ToInt(v)
+		if err != nil {
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val,
+				valType, err)
+		}
+		req = NewIntRequest(intVal)
 	case stringType:
 		req = NewStringRequest(val)
 	case labelType:

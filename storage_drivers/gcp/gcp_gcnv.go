@@ -322,7 +322,7 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
+		i, err := convert.ToPositiveInt64(config.VolumeCreateTimeout)
 		if err != nil {
 			Logc(ctx).WithField("interval", config.VolumeCreateTimeout).Errorf(
 				"Invalid volume create timeout period. %v", err)
@@ -553,7 +553,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+		if i, parseErr := convert.ToPositiveInt64(d.Config.SDKTimeout); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
 			return nil, parseErr
@@ -564,7 +564,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 
 	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+		if i, parseErr := convert.ToPositiveInt64(d.Config.MaxCacheAge); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
 			return nil, parseErr
@@ -650,7 +650,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 
 		// Validate snapshot reserve
 		if pool.InternalAttributes()[SnapshotReserve] != "" {
-			snapshotReserve, err := strconv.ParseInt(pool.InternalAttributes()[SnapshotReserve], 10, 0)
+			snapshotReserve, err := convert.ToPositiveInt64(pool.InternalAttributes()[SnapshotReserve])
 			if err != nil {
 				return fmt.Errorf("invalid value for snapshotReserve in pool %s: %v", poolName, err)
 			}
@@ -769,7 +769,7 @@ func (d *NASStorageDriver) Create(
 	var snapshotReservePtr *int64
 	var snapshotReserveInt int
 	if snapshotReserve != "" {
-		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
+		snapshotReserveInt64, err := convert.ToPositiveInt64(snapshotReserve)
 		if err != nil {
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
@@ -782,13 +782,13 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
 		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		sizeBytes, _ = convert.ToUint64(defaultSize)
 	}
 
 	if sizeBytes < minimumGCNVVolumeSizeBytes {
@@ -860,8 +860,8 @@ func (d *NASStorageDriver) Create(
 		}
 
 		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
-		coolingDays, _ := strconv.ParseInt(coolingDaysStr, 10, 32)
-		tieringMinimumCoolingDays = new(int32(coolingDays))
+		coolingDays, _ := convert.ToPositiveInt32(coolingDaysStr)
+		tieringMinimumCoolingDays = new(coolingDays)
 	}
 
 	// Determine protocol from mount options
@@ -987,11 +987,16 @@ func (d *NASStorageDriver) Create(
 			}).Debug("Creating volume.")
 		}
 
+		sizeBytesInt64, sizeErr := convert.Uint64ToInt64(sizeWithReserveBytes)
+		if sizeErr != nil {
+			return fmt.Errorf("invalid volume size: %w", sizeErr)
+		}
+
 		createRequest := &api.VolumeCreateRequest{
 			Name:                      volConfig.Name,
 			CreationToken:             name,
 			CapacityPool:              cPool.Name,
-			SizeBytes:                 int64(sizeWithReserveBytes),
+			SizeBytes:                 sizeBytesInt64,
 			ProtocolTypes:             protocolTypes,
 			Labels:                    labels,
 			SnapshotReserve:           snapshotReservePtr,
@@ -1203,8 +1208,8 @@ func (d *NASStorageDriver) CreateClone(
 		}
 
 		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
-		coolingDays, _ := strconv.ParseInt(cloneCoolingDaysStr, 10, 32)
-		cloneTieringMinimumCoolingDays = new(int32(coolingDays))
+		coolingDays, _ := convert.ToPositiveInt32(cloneCoolingDaysStr)
+		cloneTieringMinimumCoolingDays = new(coolingDays)
 	}
 
 	// Update clone config to reflect resolved tiering values used for the clone.
@@ -2108,8 +2113,13 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
 
+	resizeSizeBytes, resizeErr := convert.Uint64ToInt64(sizeWithReserveBytes)
+	if resizeErr != nil {
+		return fmt.Errorf("invalid resize size: %w", resizeErr)
+	}
+
 	// If the volume is already the requested size, there's nothing to do
-	if int64(sizeWithReserveBytes) == volume.SizeBytes {
+	if resizeSizeBytes == volume.SizeBytes {
 		volConfigSize := strconv.FormatUint(sizeBytes, 10)
 		if volConfigSize != volConfig.Size {
 			volConfig.Size = volConfigSize
@@ -2118,7 +2128,7 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Make sure we're not shrinking the volume
-	if int64(sizeWithReserveBytes) < volume.SizeBytes {
+	if resizeSizeBytes < volume.SizeBytes {
 		return fmt.Errorf("requested size %d is less than existing volume size %d",
 			sizeWithReserveBytes, volume.SizeBytes)
 	}
@@ -2130,7 +2140,7 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Resize the volume
-	if err = d.API.ResizeVolume(ctx, volume, int64(sizeWithReserveBytes)); err != nil {
+	if err = d.API.ResizeVolume(ctx, volume, resizeSizeBytes); err != nil {
 		return err
 	}
 

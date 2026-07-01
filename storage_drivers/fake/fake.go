@@ -592,13 +592,13 @@ func (d *StorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
 		defaultSize, _ := capacity.ToBytes(d.Config.Size)
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		sizeBytes, _ = convert.ToUint64(defaultSize)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
@@ -968,10 +968,15 @@ func (d *StorageDriver) CreateSnapshot(
 			"created for a volume"))
 	}
 
+	snapshotSizeBytes, err := convert.Uint64ToInt64(volume.SizeBytes)
+	if err != nil {
+		return nil, fmt.Errorf("volume size overflows int64: %w", err)
+	}
+
 	snapshot := &storage.Snapshot{
 		Config:    snapConfig,
 		Created:   time.Now().UTC().Format(convert.TimestampFormat),
-		SizeBytes: int64(volume.SizeBytes),
+		SizeBytes: snapshotSizeBytes,
 		State:     storage.SnapshotStateOnline,
 	}
 	d.Snapshots[internalVolName][internalSnapName] = snapshot

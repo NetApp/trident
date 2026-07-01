@@ -5,6 +5,7 @@ package gcp
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -1045,7 +1046,7 @@ func TestSANDriver_getVolumeExternal(t *testing.T) {
 		volume := getTestVolume()
 		volume.CreationToken = "test-myvolume" // With prefix "test-"
 
-		ext := driver.getVolumeExternal(volume)
+		ext := driver.getVolumeExternal(ctx, volume)
 
 		assert.Equal(t, "myvolume", ext.Config.Name)
 		assert.Equal(t, "test-myvolume", ext.Config.InternalName)
@@ -1055,7 +1056,7 @@ func TestSANDriver_getVolumeExternal(t *testing.T) {
 		volume := getTestVolume()
 		volume.CreationToken = "other_volume" // No matching prefix
 
-		ext := driver.getVolumeExternal(volume)
+		ext := driver.getVolumeExternal(ctx, volume)
 
 		assert.Equal(t, "other_volume", ext.Config.Name)
 		assert.Equal(t, "other_volume", ext.Config.InternalName)
@@ -1066,7 +1067,7 @@ func TestSANDriver_getVolumeExternal(t *testing.T) {
 		volume.CreationToken = "test-vol"
 		volume.ServiceLevel = api.ServiceLevelPremium
 
-		ext := driver.getVolumeExternal(volume)
+		ext := driver.getVolumeExternal(ctx, volume)
 
 		assert.Equal(t, tridentconfig.OrchestratorAPIVersion, ext.Config.Version)
 		assert.Equal(t, tridentconfig.Block, ext.Config.Protocol)
@@ -1916,6 +1917,30 @@ func TestSANDriver_populateConfigurationDefaults_InvalidVolumeCreateTimeout(t *t
 	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	assert.Error(t, err)
+}
+
+func TestSANDriver_populateConfigurationDefaults_NegativeVolumeCreateTimeout(t *testing.T) {
+	_, driver := newMockSANDriver(t)
+
+	config := &drivers.GCNVStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: tridentconfig.GCNVSANStorageDriverName,
+			DebugTraceFlags:   debugTraceFlags,
+		},
+		VolumeCreateTimeout: "-1",
+	}
+	driver.Config = *config
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+
+	assert.Error(t, err)
+}
+
+func TestGcnvLunIDToInt32(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, int32(7), gcnvLunIDToInt32(ctx, 7))
+	assert.Equal(t, int32(0), gcnvLunIDToInt32(ctx, math.MaxInt32+1))
 }
 
 func TestSANDriver_populateConfigurationDefaults_FormatOptionsForFilesystems(t *testing.T) {

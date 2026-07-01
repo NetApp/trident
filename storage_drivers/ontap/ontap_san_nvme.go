@@ -403,7 +403,7 @@ func (d *NVMeStorageDriver) Create(
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
 
-	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	requestedSizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
@@ -1699,10 +1699,27 @@ func (d *NVMeStorageDriver) Resize(
 	newFlexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexVolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexVolSize))
 
-	sameNamespaceSize := capacity.VolumeSizeWithinTolerance(int64(requestedSizeBytes), nsSizeBytes,
+	requestedSizeInt64, sizeErr := convert.Uint64ToInt64(requestedSizeBytes)
+	if sizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(sizeErr).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size")
+	}
+
+	sameNamespaceSize := capacity.VolumeSizeWithinTolerance(requestedSizeInt64, nsSizeBytes,
 		tridentconfig.SANResizeDelta)
 
-	sameFlexVolSize := capacity.VolumeSizeWithinTolerance(int64(newFlexVolSize), int64(currentFlexVolSize),
+	newFlexVolSizeInt64, flexvolSizeErr := convert.Uint64ToInt64(newFlexVolSize)
+	if flexvolSizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(flexvolSizeErr).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size")
+	}
+	currentFlexvolSizeInt64, currentFlexvolErr := convert.Uint64ToInt64(currentFlexVolSize)
+	if currentFlexvolErr != nil {
+		Logc(ctx).WithFields(fields).WithError(currentFlexvolErr).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size")
+	}
+
+	sameFlexVolSize := capacity.VolumeSizeWithinTolerance(newFlexVolSizeInt64, currentFlexvolSizeInt64,
 		tridentconfig.SANResizeDelta)
 
 	if sameNamespaceSize && sameFlexVolSize {
@@ -1747,7 +1764,7 @@ func (d *NVMeStorageDriver) Resize(
 
 	// Resize namespace.
 	if !sameNamespaceSize {
-		if err = d.API.NVMeNamespaceSetSize(ctx, ns.UUID, int64(requestedSizeBytes)); err != nil {
+		if err = d.API.NVMeNamespaceSetSize(ctx, ns.UUID, requestedSizeInt64); err != nil {
 			Logc(ctx).WithField("error", err).Error("Namespace resize failed.")
 			return fmt.Errorf("volume resize failed")
 		}

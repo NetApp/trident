@@ -23,6 +23,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -510,7 +511,7 @@ func (d *Client) GetVolumes(ctx context.Context) (*[]*Volume, error) {
 		logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
 
 		for _, v := range output.Volumes {
-			volumes = append(volumes, d.getVolumeFromFSxVolume(v))
+			volumes = append(volumes, d.getVolumeFromFSxVolume(ctx, v))
 		}
 	}
 
@@ -565,7 +566,7 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 
 	Logc(ctx).WithFields(logFields).Debug("Found FSx volume by name.")
 
-	return d.getVolumeFromFSxVolume(matchingVolumes[0]), nil
+	return d.getVolumeFromFSxVolume(ctx, matchingVolumes[0]), nil
 }
 
 func (d *Client) GetVolumeByARN(ctx context.Context, volumeARN string) (*Volume, error) {
@@ -609,7 +610,7 @@ func (d *Client) GetVolumeByID(ctx context.Context, volumeID string) (*Volume, e
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
 	Logc(ctx).WithFields(logFields).Debug("Found FSx volume by ID.")
 
-	return d.getVolumeFromFSxVolume(output.Volumes[0]), nil
+	return d.getVolumeFromFSxVolume(ctx, output.Volumes[0]), nil
 }
 
 // GetVolume uses a volume config record to look for a Filesystem by the most efficient means.
@@ -623,7 +624,7 @@ func (d *Client) GetVolume(ctx context.Context, volConfig *storage.VolumeConfig)
 	return d.GetVolumeByName(ctx, volConfig.InternalName)
 }
 
-func (d *Client) getVolumeFromFSxVolume(v fsxtypes.Volume) *Volume {
+func (d *Client) getVolumeFromFSxVolume(ctx context.Context, v fsxtypes.Volume) *Volume {
 	volume := &Volume{
 		FSxObject: FSxObject{
 			ARN:  DerefString(v.ResourceARN),
@@ -639,7 +640,13 @@ func (d *Client) getVolumeFromFSxVolume(v fsxtypes.Volume) *Volume {
 	if v.OntapConfiguration != nil {
 		volume.JunctionPath = DerefString(v.OntapConfiguration.JunctionPath)
 		volume.SecurityStyle = string(v.OntapConfiguration.SecurityStyle)
-		volume.Size = uint64(DerefInt32(v.OntapConfiguration.SizeInMegabytes)) * 1048576
+		sizeMB, sizeErr := convert.Int32ToUint64(DerefInt32(v.OntapConfiguration.SizeInMegabytes))
+		if sizeErr != nil {
+			Logc(ctx).WithField("sizeInMegabytes", DerefInt32(v.OntapConfiguration.SizeInMegabytes)).
+				WithError(sizeErr).Warn("Invalid FSx volume size in megabytes; defaulting to 0.")
+			sizeMB = 0
+		}
+		volume.Size = sizeMB * 1048576
 		volume.SnapshotPolicy = DerefString(v.OntapConfiguration.SnapshotPolicy)
 		volume.SVMID = DerefString(v.OntapConfiguration.StorageVirtualMachineId)
 		volume.UUID = DerefString(v.OntapConfiguration.UUID)
@@ -774,8 +781,13 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 		"volumeName": request.Name,
 	}
 
+	sizeMB, err := convert.Int64ToInt32(request.SizeBytes / 1048576)
+	if err != nil {
+		return nil, fmt.Errorf("volume size overflows int32 megabytes: %w", err)
+	}
+
 	ontapConfig := &fsxtypes.CreateOntapVolumeConfiguration{
-		SizeInMegabytes:          new(int32(request.SizeBytes / 1048576)),
+		SizeInMegabytes:          new(sizeMB),
 		StorageVirtualMachineId:  new(request.SVMID),
 		JunctionPath:             new("/" + request.Name),
 		SecurityStyle:            fsxtypes.SecurityStyleUnix,
@@ -808,7 +820,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 		return nil, fmt.Errorf("error creating volume; %w", err)
 	}
 
-	newVolume := d.getVolumeFromFSxVolume(*output.Volume)
+	newVolume := d.getVolumeFromFSxVolume(ctx, *output.Volume)
 
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
 	logFields["volumeID"] = newVolume.ID
@@ -857,8 +869,13 @@ func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes 
 		"volumeName": volume.Name,
 	}
 
+	sizeMB, err := convert.Uint64ToInt32(newSizeBytes / 1048576)
+	if err != nil {
+		return nil, fmt.Errorf("volume size overflows int32 megabytes: %w", err)
+	}
+
 	ontapConfig := &fsxtypes.UpdateOntapVolumeConfiguration{
-		SizeInMegabytes: new(int32(newSizeBytes / 1048576)),
+		SizeInMegabytes: new(sizeMB),
 	}
 
 	input := &fsx.UpdateVolumeInput{
@@ -877,7 +894,7 @@ func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes 
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
 	Logc(ctx).WithFields(logFields).Info("Volume resized.")
 
-	return d.getVolumeFromFSxVolume(*output.Volume), nil
+	return d.getVolumeFromFSxVolume(ctx, *output.Volume), nil
 }
 
 func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {

@@ -9,11 +9,6 @@ linters:
     - govet
     - nakedret
   settings:
-    gosec:
-      excludes:
-        - G402
-        - G115
-        - G602 # reenable when core/concurrent_cache/concurrent_cache.go passes this check
     govet:
       disable:
         - printf

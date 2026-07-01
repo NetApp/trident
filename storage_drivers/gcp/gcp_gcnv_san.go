@@ -250,7 +250,7 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
+		i, err := convert.ToPositiveInt64(config.VolumeCreateTimeout)
 		if err != nil {
 			Logc(ctx).WithField("interval", config.VolumeCreateTimeout).Errorf(
 				"Invalid volume create timeout period. %v", err)
@@ -470,7 +470,7 @@ func (d *SANStorageDriver) initializeGCNVAPIClient(
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+		if i, parseErr := convert.ToPositiveInt64(d.Config.SDKTimeout); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
 			return nil, parseErr
@@ -481,7 +481,7 @@ func (d *SANStorageDriver) initializeGCNVAPIClient(
 
 	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+		if i, parseErr := convert.ToPositiveInt64(d.Config.MaxCacheAge); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
 			return nil, parseErr
@@ -561,7 +561,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 
 		// Validate snapshot reserve
 		if pool.InternalAttributes()[SnapshotReserve] != "" {
-			snapshotReserve, err := strconv.ParseInt(pool.InternalAttributes()[SnapshotReserve], 10, 0)
+			snapshotReserve, err := convert.ToInt64(pool.InternalAttributes()[SnapshotReserve])
 			if err != nil {
 				return fmt.Errorf("invalid value for snapshotReserve in pool %s: %v", poolName, err)
 			}
@@ -637,7 +637,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Parse size
-	sizeBytes, err := strconv.ParseUint(volConfig.Size, 10, 64)
+	sizeBytes, err := convert.ToUint64(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("invalid volume size: %v", err)
 	}
@@ -684,7 +684,7 @@ func (d *SANStorageDriver) Create(
 	var snapshotReservePtr *int64
 	var snapshotReserveInt int
 	if snapshotReserve != "" {
-		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
+		snapshotReserveInt64, err := convert.ToInt64(snapshotReserve)
 		if err != nil {
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
@@ -703,7 +703,11 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
-	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
+	reserveSizeBytes, reserveErr := convert.Uint64ToInt64(sizeWithReserveBytes)
+	if reserveErr != nil {
+		return fmt.Errorf("invalid volume size: %w", reserveErr)
+	}
+	actualSizeBytes, err := calculateActualSizeBytes(reserveSizeBytes)
 	if err != nil {
 		return err
 	}
@@ -784,7 +788,11 @@ func (d *SANStorageDriver) Create(
 		volConfig.InternalID = volume.FullName
 
 		// Report the actual allocated size so PV reflects what GCNV created (and bills for)
-		volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
+		actualSizeU64, sizeErr := convert.Int64ToUint64(actualSizeBytes)
+		if sizeErr != nil {
+			return fmt.Errorf("invalid allocated volume size: %w", sizeErr)
+		}
+		volConfig.Size = strconv.FormatUint(actualSizeU64, 10)
 
 		Logc(ctx).WithField("capacityPool", cPool.Name).Debug("LUN create request issued.")
 
@@ -912,7 +920,7 @@ func (d *SANStorageDriver) CreateClone(
 	}
 
 	// Parse size
-	sizeBytes, err := strconv.ParseUint(cloneVolConfig.Size, 10, 64)
+	sizeBytes, err := convert.ToUint64(cloneVolConfig.Size)
 	if err != nil {
 		return fmt.Errorf("invalid volume size: %v", err)
 	}
@@ -932,10 +940,14 @@ func (d *SANStorageDriver) CreateClone(
 	// Clone size must be at least as large as the source volume.
 	// Use source volume's actual size (which includes the +1 GiB buffer from Create).
 	cloneSizeBytes := sourceVolume.SizeBytes
-	if int64(sizeBytes) > cloneSizeBytes {
+	requestedCloneSize, cloneSizeErr := convert.Uint64ToInt64(sizeBytes)
+	if cloneSizeErr != nil {
+		return fmt.Errorf("invalid clone size: %w", cloneSizeErr)
+	}
+	if requestedCloneSize > cloneSizeBytes {
 		// If user requests larger than source, apply the buffer to the requested size
 		var err error
-		cloneSizeBytes, err = calculateActualSizeBytes(int64(sizeBytes))
+		cloneSizeBytes, err = calculateActualSizeBytes(requestedCloneSize)
 		if err != nil {
 			return err
 		}
@@ -970,7 +982,11 @@ func (d *SANStorageDriver) CreateClone(
 	cloneVolConfig.InternalID = clone.FullName
 
 	// Report the actual allocated size so PV reflects what GCNV created
-	cloneVolConfig.Size = strconv.FormatUint(uint64(cloneSizeBytes), 10)
+	cloneSizeU64, sizeErr := convert.Int64ToUint64(cloneSizeBytes)
+	if sizeErr != nil {
+		return fmt.Errorf("invalid clone volume size: %w", sizeErr)
+	}
+	cloneVolConfig.Size = strconv.FormatUint(cloneSizeU64, 10)
 
 	// Wait for clone creation to complete so that the volume is ready for publishing
 	return d.waitForVolumeCreate(ctx, clone)
@@ -1891,7 +1907,11 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
 
 	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
-	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
+	reserveSizeBytes, reserveErr := convert.Uint64ToInt64(sizeWithReserveBytes)
+	if reserveErr != nil {
+		return fmt.Errorf("invalid volume size: %w", reserveErr)
+	}
+	actualSizeBytes, err := calculateActualSizeBytes(reserveSizeBytes)
 	if err != nil {
 		return err
 	}
@@ -1929,7 +1949,11 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Report the actual allocated size to match what GCNV shows (and bills for)
-	volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
+	actualSizeU64, sizeErr := convert.Int64ToUint64(actualSizeBytes)
+	if sizeErr != nil {
+		return fmt.Errorf("invalid resized volume size: %w", sizeErr)
+	}
+	volConfig.Size = strconv.FormatUint(actualSizeU64, 10)
 	return nil
 }
 
@@ -2066,7 +2090,7 @@ func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 		return nil, err
 	}
 
-	return d.getVolumeExternal(volume), nil
+	return d.getVolumeExternal(ctx, volume), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -2120,12 +2144,12 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 			continue
 		}
 
-		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(volume), Error: nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(ctx, volume), Error: nil}
 	}
 }
 
 // getVolumeExternal converts a volume from the API to a VolumeExternal representation.
-func (d *SANStorageDriver) getVolumeExternal(volume *api.Volume) *storage.VolumeExternal {
+func (d *SANStorageDriver) getVolumeExternal(ctx context.Context, volume *api.Volume) *storage.VolumeExternal {
 	internalName := volume.CreationToken
 	name := internalName
 	prefix := *d.Config.StoragePrefix
@@ -2147,7 +2171,7 @@ func (d *SANStorageDriver) getVolumeExternal(volume *api.Volume) *storage.Volume
 				IscsiTargetPortal: volume.ISCSITargetPortal,
 				IscsiPortals:      volume.ISCSIPortals,
 				IscsiTargetIQN:    volume.ISCSITargetIQN,
-				IscsiLunNumber:    int32(volume.LunID),
+				IscsiLunNumber:    gcnvLunIDToInt32(ctx, volume.LunID),
 				IscsiLunSerial:    volume.SerialNumber,
 			},
 		},
@@ -2518,4 +2542,13 @@ func calculateActualSizeBytes(requestedBytes int64) (int64, error) {
 	actualGiB := requestedGiB + 1
 
 	return actualGiB * api.GiBBytes, nil
+}
+
+func gcnvLunIDToInt32(ctx context.Context, lunID int) int32 {
+	lunID32, err := convert.IntToInt32(lunID)
+	if err != nil {
+		Logc(ctx).WithField("lunID", lunID).WithError(err).Warn("LUN ID out of int32 range; defaulting to 0.")
+		return 0
+	}
+	return lunID32
 }

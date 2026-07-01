@@ -106,8 +106,9 @@ func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, cli
 	var transport http.RoundTripper
 	transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
-			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
+			InsecureSkipVerify: skipVerify, // #nosec G402 -- ONTAP ZAPI HTTPS may use default/self-signed certs; trustedCACertificate enables verification above
+			MinVersion:         tridentconfig.MinClientTLSVersion,
+			Certificates:       []tls.Certificate{cert}, RootCAs: caCertPool,
 		},
 	}
 	// Create a metrics transport that captures request metrics.

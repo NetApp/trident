@@ -97,7 +97,7 @@ func (h *helper) ImportVolume(
 	}
 
 	// Set the PVC's storage field to the actual volume data size
-	totalSize, err := strconv.ParseUint(extantVol.Config.Size, 10, 64)
+	totalSize, err := convert.ToUint64(extantVol.Config.Size)
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed as volume %v has invalid size %v: %v",
 			request.InternalName, extantVol.Config.Size, err)

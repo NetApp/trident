@@ -438,7 +438,7 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
 
-	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	requestedSizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
@@ -961,12 +961,16 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 				return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 			}
 			if lunID >= 0 {
+				iscsiLunNumber, lunErr := convert.IntToInt32(lunID)
+				if lunErr != nil {
+					return fmt.Errorf("LUN ID %d overflows int32: %w", lunID, lunErr)
+				}
 				publishInfo := models.VolumePublishInfo{
 					DevicePath: "",
 					VolumeAccessInfo: models.VolumeAccessInfo{
 						IscsiAccessInfo: models.IscsiAccessInfo{
 							IscsiTargetIQN: iSCSINodeName,
-							IscsiLunNumber: int32(lunID),
+							IscsiLunNumber: iscsiLunNumber,
 						},
 					},
 				}
@@ -1629,7 +1633,11 @@ func (d *SANStorageDriver) Resize(
 		return fmt.Errorf("error occurred when checking lun size")
 	}
 
-	lunSizeBytes := uint64(currentLunSize)
+	lunSizeBytes, lunSizeErr := convert.IntToUint64(currentLunSize)
+	if lunSizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(lunSizeErr).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
 	if requestedSizeBytes < lunSizeBytes {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, lunSizeBytes)
 	}
@@ -1646,10 +1654,27 @@ func (d *SANStorageDriver) Resize(
 
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
-	sameLUNSize := capacity.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
+	requestedSizeInt64, sizeErr := convert.Uint64ToInt64(requestedSizeBytes)
+	if sizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(sizeErr).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+
+	sameLUNSize := capacity.VolumeSizeWithinTolerance(requestedSizeInt64, int64(currentLunSize),
 		tridentconfig.SANResizeDelta)
 
-	sameFlexvolSize := capacity.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
+	newFlexvolSizeInt64, flexvolSizeErr := convert.Uint64ToInt64(newFlexvolSize)
+	if flexvolSizeErr != nil {
+		Logc(ctx).WithFields(fields).WithError(flexvolSizeErr).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+	currentFlexvolSizeInt64, currentFlexvolErr := convert.Uint64ToInt64(currentFlexvolSize)
+	if currentFlexvolErr != nil {
+		Logc(ctx).WithFields(fields).WithError(currentFlexvolErr).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
+
+	sameFlexvolSize := capacity.VolumeSizeWithinTolerance(newFlexvolSizeInt64, currentFlexvolSizeInt64,
 		tridentconfig.SANResizeDelta)
 
 	if sameLUNSize && sameFlexvolSize {
@@ -1660,7 +1685,12 @@ func (d *SANStorageDriver) Resize(
 			"delta":          tridentconfig.SANResizeDelta,
 		}).Info("Requested size and current LUN size are within the delta and therefore considered the same size" +
 			" for SAN resize operations.")
-		volConfig.Size = strconv.FormatUint(uint64(currentLunSize), 10)
+		currentLunSizeU64, lunSizeErr := convert.IntToUint64(currentLunSize)
+		if lunSizeErr != nil {
+			Logc(ctx).WithFields(fields).WithError(lunSizeErr).Error("Invalid volume size.")
+			return errors.New("invalid volume size")
+		}
+		volConfig.Size = strconv.FormatUint(currentLunSizeU64, 10)
 		return nil
 	}
 

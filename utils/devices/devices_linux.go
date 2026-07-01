@@ -5,20 +5,20 @@
 package devices
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 	"unsafe"
 
-	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
@@ -146,7 +146,7 @@ func (c *Client) deviceSize(ctx context.Context, deviceName string) (int64, erro
 		return 0, fmt.Errorf("failed to read device size for %s: %w", deviceName, err)
 	}
 
-	sectorCount, err := strconv.ParseInt(strings.TrimSpace(string(out)), 10, 64)
+	sectorCount, err := convert.ToInt64(strings.TrimSpace(string(out)))
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse device size for %s: %w", deviceName, err)
 	}

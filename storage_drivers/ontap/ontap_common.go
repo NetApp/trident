@@ -891,7 +891,7 @@ func resizeValidation(
 	if err != nil {
 		return 0, fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	volConfigSizeBytes, err := strconv.ParseUint(volConfigSize, 10, 64)
+	volConfigSizeBytes, err := convert.ToUint64(volConfigSize)
 	if err != nil {
 		return 0, fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
@@ -1297,7 +1297,11 @@ func PublishLUN(
 
 	if config.SANType == sa.ISCSI {
 		// Add fields needed by Attach
-		publishInfo.IscsiLunNumber = int32(lunID)
+		iscsiLunNumber, lunErr := convert.IntToInt32(lunID)
+		if lunErr != nil {
+			return fmt.Errorf("LUN ID %d overflows int32: %w", lunID, lunErr)
+		}
+		publishInfo.IscsiLunNumber = iscsiLunNumber
 		publishInfo.IscsiLunSerial = serial
 		publishInfo.IscsiTargetPortal = filteredIPs[0]
 		publishInfo.IscsiPortals = filteredIPs[1:]
@@ -1322,7 +1326,11 @@ func PublishLUN(
 		publishInfo.SharedTarget = true
 	} else if config.SANType == sa.FCP {
 		// Add fields needed by Attach
-		publishInfo.FCPLunNumber = int32(lunID)
+		fcpLunNumber, lunErr := convert.IntToInt32(lunID)
+		if lunErr != nil {
+			return fmt.Errorf("LUN ID %d overflows int32: %w", lunID, lunErr)
+		}
+		publishInfo.FCPLunNumber = fcpLunNumber
 		publishInfo.FCPLunSerial = serial
 		publishInfo.FCTargetWWNN = nodeName
 		publishInfo.SANType = config.SANType
@@ -2105,7 +2113,7 @@ func PopulateConfigurationDefaults(
 
 	if config.CloneSplitDelay == "" {
 		config.CloneSplitDelay = strconv.FormatInt(DefaultCloneSplitDelay, 10)
-	} else if v, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0); err != nil || v <= 0 {
+	} else if v, err := convert.ToPositiveInt64(config.CloneSplitDelay); err != nil || v <= 0 {
 		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
 	}
 
@@ -2289,7 +2297,7 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 
 	if config.CloneSplitDelay == "" {
 		config.CloneSplitDelay = strconv.FormatInt(DefaultCloneSplitDelay, 10)
-	} else if v, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0); err != nil || v <= 0 {
+	} else if v, err := convert.ToPositiveInt64(config.CloneSplitDelay); err != nil || v <= 0 {
 		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
 	}
 
@@ -2468,7 +2476,7 @@ func checkAggregateLimits(
 func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) uint64 {
 	if sizeBytes == 0 {
 		defaultSize, _ := capacity.ToBytes(poolDefaultSizeBytes)
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		sizeBytes, _ = convert.ToUint64(defaultSize)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
 		Log().Infof("Requested size %v is too small. Setting volume size to the minimum allowable %v.", sizeBytes,
@@ -2499,7 +2507,7 @@ func CheckVolumePoolSizeLimits(
 	if parseErr != nil {
 		return false, 0, fmt.Errorf("error parsing limitVolumePoolSize: %v", parseErr)
 	}
-	volumePoolSizeLimit, _ = strconv.ParseUint(volumePoolSizeLimitStr, 10, 64)
+	volumePoolSizeLimit, _ = convert.ToUint64(volumePoolSizeLimitStr)
 
 	Logc(ctx).WithFields(LogFields{
 		"limitVolumePoolSize": limitVolumePoolSize,
@@ -2754,7 +2762,7 @@ func hasCloneSplitTimerExpired(
 	snapshotID := snapConfig.ID()
 
 	// Find the configured value for cloneSplitDelay
-	delay, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0)
+	delay, err := convert.ToPositiveInt64(config.CloneSplitDelay)
 	if err != nil || delay < 0 {
 		// Should not come here, but just in case.
 		delay = DefaultCloneSplitDelay
@@ -3634,7 +3642,7 @@ func ValidateStoragePools(
 		if defaultSize, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		} else {
-			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
+			sizeBytes, _ := convert.ToUint64(defaultSize)
 			if sizeBytes < MinimumVolumeSizeBytes {
 				return fmt.Errorf("invalid value for size in pool %s. "+
 					"Requested volume size ("+
@@ -3820,7 +3828,7 @@ func ValidateASAStoragePools(
 		if defaultSize, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		} else {
-			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
+			sizeBytes, _ := convert.ToUint64(defaultSize)
 			if sizeBytes < MinimumVolumeSizeBytes {
 				return fmt.Errorf("invalid value for size in pool %s. Requested volume size ("+
 					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes,
@@ -4338,7 +4346,7 @@ func flexvolSizeBytesFromVolume(vol *api.Volume) (uint64, error) {
 	if vol == nil || vol.Size == "" {
 		return 0, fmt.Errorf("volume size is unknown")
 	}
-	sizeBytes, err := strconv.ParseUint(vol.Size, 10, 64)
+	sizeBytes, err := convert.ToUint64(vol.Size)
 	if err != nil {
 		return 0, fmt.Errorf("invalid volume size %q: %w", vol.Size, err)
 	}
@@ -5406,7 +5414,7 @@ func ConstructPoolForLabels(nameTemplate string, labels map[string]string) *stor
 
 func subtractUintFromSizeString(size string, val uint64) (string, error) {
 	sizeBytesString, _ := capacity.ToBytes(size)
-	sizeBytes, err := strconv.ParseUint(sizeBytesString, 10, 64)
+	sizeBytes, err := convert.ToUint64(sizeBytesString)
 	if err != nil {
 		return "", fmt.Errorf("invalid size string: %v", err)
 	}

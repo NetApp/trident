@@ -237,7 +237,7 @@ func (p *Plugin) Activate() error {
 				"volumePath": p.volumePath,
 			}).Info("Activating Docker frontend.")
 			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
-				&tls.Config{InsecureSkipVerify: true, MinVersion: config.MinServerTLSVersion})
+				&tls.Config{MinVersion: config.MinServerTLSVersion})
 		} else {
 			Logc(ctx).WithFields(LogFields{
 				"driverName": p.driverName,

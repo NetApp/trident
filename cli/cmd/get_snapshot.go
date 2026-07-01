@@ -17,6 +17,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -247,11 +248,16 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table.Header(header)
 
 	for _, snapshot := range snapshots {
+		sizeU64, sizeErr := convert.Int64ToUint64(snapshot.SizeBytes)
+		sizeDisplay := humanize.IBytes(0)
+		if sizeErr == nil {
+			sizeDisplay = humanize.IBytes(sizeU64)
+		}
 		_ = table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
 			snapshot.Created,
-			humanize.IBytes(uint64(snapshot.SizeBytes)),
+			sizeDisplay,
 			string(snapshot.State),
 			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 			snapshot.Config.GroupSnapshotName,

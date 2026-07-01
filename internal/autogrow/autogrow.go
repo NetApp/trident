@@ -11,6 +11,7 @@ import (
 
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -163,7 +164,11 @@ func ValidateAutogrowPolicySpec(
 		if qty.Sign() < 0 {
 			return nil, fmt.Errorf("maxSize must not be negative, got %s", maxSize)
 		}
-		result.MaxSizeBytes = uint64(qty.Value())
+		maxSizeBytes, err := convert.Int64ToUint64(qty.Value())
+		if err != nil {
+			return nil, fmt.Errorf("maxSize is out of range: %w", err)
+		}
+		result.MaxSizeBytes = maxSizeBytes
 	}
 
 	// Rule 4: If both maxSize and growthAmount are absolute values, maxSize must be greater than growthAmount
@@ -254,14 +259,18 @@ func CalculateFinalCapacity(req FinalCapacityRequest) (FinalCapacityResponse, er
 	effectiveLimitFromCustomCeiling := customCeilingBytes > 0 && effectiveCapLimitBytes == customCeilingBytes
 
 	if effectiveCapLimitBytes > 0 {
-		capLimitQty := *resource.NewQuantity(int64(effectiveCapLimitBytes), currentSize.Format)
+		capLimitInt64, capErr := convert.Uint64ToInt64(effectiveCapLimitBytes)
+		if capErr != nil {
+			return zero, fmt.Errorf("effective capacity limit is out of range: %w", capErr)
+		}
+		capLimitQty := *resource.NewQuantity(capLimitInt64, currentSize.Format)
 		if currentSize.Cmp(capLimitQty) >= 0 {
 			return zero, errors.AutogrowAlreadyAtMaxSizeError(capLimitQty.String())
 		}
 		if finalCapacity.Cmp(capLimitQty) > 0 {
 			finalCapacity = capLimitQty
 			result.FinalCapacity = finalCapacity
-			result.CappedAtBytes = int64(effectiveCapLimitBytes)
+			result.CappedAtBytes = capLimitInt64
 			result.CappedAtPolicyMaxSize = !effectiveLimitFromCustomCeiling
 			result.CappedAtCustomCeiling = effectiveLimitFromCustomCeiling
 		}

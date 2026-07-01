@@ -1,29 +1,30 @@
 #!/bin/sh
 
-# find staged files that end in .go
-STAGED_GO_DIRS=$(git diff --cached --name-only | grep ".go$" | xargs dirname)
-GO_PACKAGE_DIRS=($(echo "${STAGED_GO_DIRS}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+STAGED_GO_FILES=$(git diff --cached --name-only | grep '\.go$' || true)
 
-# if nothing, don't lint. hook successful.
-if [ "$STAGED_GO_DIRS" = "" ]; then
+if [ -z "$STAGED_GO_FILES" ]; then
   exit 0
 fi
 
+GO_PACKAGE_DIRS=$(
+  printf '%s\n' "$STAGED_GO_FILES" |
+    while read -r file; do
+      dirname "$file"
+    done |
+    sort -u
+)
+
 PASS=true
-for DIR in $GO_PACKAGE_DIRS
-do
-    # This is where we will be testing each of our files.
-    golangci-lint run -E goimports $DIR
-	if [ $? != 0 ]; then
-		PASS=false
-	fi
+for DIR in $GO_PACKAGE_DIRS; do
+  if ! golangci-lint run "./$DIR"; then
+    PASS=false
+  fi
 done
 
 if ! $PASS; then
-    printf "COMMIT FAILED\n"
-    exit 1
-else
-    printf "COMMIT SUCCEEDED\n"
+  printf "COMMIT FAILED\n"
+  exit 1
 fi
 
+printf "COMMIT SUCCEEDED\n"
 exit 0

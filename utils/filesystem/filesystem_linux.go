@@ -16,6 +16,7 @@ import (
 
 	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -34,8 +35,12 @@ func (f *FSClient) GetFilesystemStats(
 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, err)
 	}
 
-	//goland:noinspection GoRedundantConversion
-	size := int64(buf.Blocks) * int64(buf.Bsize)
+	blocks, err := convert.Uint64ToInt64(buf.Blocks)
+	if err != nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("filesystem blocks %d: %w", buf.Blocks, err)
+	}
+	bsize := buf.Bsize
+	size := blocks * bsize
 
 	Logc(ctx).WithFields(LogFields{
 		"path":   path,
@@ -46,14 +51,30 @@ func (f *FSClient) GetFilesystemStats(
 		"free":   buf.Bfree,
 	}).Debug("Filesystem size information")
 
-	//goland:noinspection GoRedundantConversion
-	available = int64(buf.Bavail) * int64(buf.Bsize)
+	bavail, err := convert.Uint64ToInt64(buf.Bavail)
+	if err != nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("filesystem bavail %d: %w", buf.Bavail, err)
+	}
+	bfree, err := convert.Uint64ToInt64(buf.Bfree)
+	if err != nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("filesystem bfree %d: %w", buf.Bfree, err)
+	}
+	files, err := convert.Uint64ToInt64(buf.Files)
+	if err != nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("filesystem files %d: %w", buf.Files, err)
+	}
+	ffree, err := convert.Uint64ToInt64(buf.Ffree)
+	if err != nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("filesystem ffree %d: %w", buf.Ffree, err)
+	}
+
+	available = bavail * bsize
 	capacity = size
 	// Usage should be calculated from Bfree (total free), not Bavail (available to non-root)
 	// The difference between Bfree and Bavail is space reserved for root
-	usage = (int64(buf.Blocks) - int64(buf.Bfree)) * int64(buf.Bsize)
-	inodes = int64(buf.Files)
-	inodesFree = int64(buf.Ffree)
+	usage = (blocks - bfree) * bsize
+	inodes = files
+	inodesFree = ffree
 	inodesUsed = inodes - inodesFree
 	return available, capacity, usage, inodes, inodesFree, inodesUsed, nil
 }

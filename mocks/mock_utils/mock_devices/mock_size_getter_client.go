@@ -12,8 +12,8 @@ package mock_devices
 import (
 	reflect "reflect"
 
+	"context"
 	gomock "go.uber.org/mock/gomock"
-	context "golang.org/x/net/context"
 )
 
 // MockSizeGetter is a mock of SizeGetter interface.

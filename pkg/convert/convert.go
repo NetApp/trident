@@ -120,22 +120,89 @@ func Base64StringToObject(encodedObject string, destination any) error {
 	return nil
 }
 
-// ToPositiveInt32 parses s into an int32 and returns an error if it is negative.
-func ToPositiveInt32(s string) (int32, error) {
-	i, err := parseIntInRange(s, 0, math.MaxInt32)
-	return int32(i), err
+// --- Numeric narrowing (value → value) ---
+
+// Int64ToInt32 converts v to int32 after verifying it fits.
+func Int64ToInt32(v int64) (int32, error) {
+	if v < math.MinInt32 || v > math.MaxInt32 {
+		return 0, fmt.Errorf("value %d overflows int32", v)
+	}
+	return int32(v), nil
 }
 
-// ToPositiveInt64 parses s into an int64 and returns an error if it is negative.
-func ToPositiveInt64(s string) (int64, error) {
-	return parseIntInRange(s, 0, math.MaxInt64)
+// Int64ToInt converts v to int after verifying it fits.
+func Int64ToInt(v int64) (int, error) {
+	if v < math.MinInt || v > math.MaxInt {
+		return 0, fmt.Errorf("value %d overflows int", v)
+	}
+	return int(v), nil
 }
 
-// ToPositiveInt parses s into a platform-dependent int and returns an error if it is negative.
-func ToPositiveInt(s string) (int, error) {
-	i, err := parseIntInRange(s, 0, math.MaxInt)
-	return int(i), err
+// Int64ToUint64 converts non-negative v to uint64.
+func Int64ToUint64(v int64) (uint64, error) {
+	if v < 0 {
+		return 0, fmt.Errorf("value %d overflows uint64", v)
+	}
+	return uint64(v), nil
 }
+
+// Uint64ToInt64 converts v to int64 after verifying it fits.
+func Uint64ToInt64(v uint64) (int64, error) {
+	if v > math.MaxInt64 {
+		return 0, fmt.Errorf("value %d overflows int64", v)
+	}
+	return int64(v), nil
+}
+
+// Uint64ToInt converts v to int after verifying it fits.
+func Uint64ToInt(v uint64) (int, error) {
+	if v > math.MaxInt {
+		return 0, fmt.Errorf("value %d overflows int", v)
+	}
+	return int(v), nil
+}
+
+// Uint64ToInt32 converts v to int32 after verifying it fits.
+func Uint64ToInt32(v uint64) (int32, error) {
+	if v > math.MaxInt32 {
+		return 0, fmt.Errorf("value %d overflows int32", v)
+	}
+	return int32(v), nil
+}
+
+// IntToInt32 converts v to int32 after verifying it fits.
+func IntToInt32(v int) (int32, error) {
+	if v < math.MinInt32 || v > math.MaxInt32 {
+		return 0, fmt.Errorf("value %d overflows int32", v)
+	}
+	return int32(v), nil
+}
+
+// IntToByte converts v to byte after verifying it fits.
+func IntToByte(v int) (byte, error) {
+	if v < 0 || v > math.MaxUint8 {
+		return 0, fmt.Errorf("value %d overflows byte", v)
+	}
+	return byte(v), nil
+}
+
+// IntToUint64 converts non-negative v to uint64.
+func IntToUint64(v int) (uint64, error) {
+	if v < 0 {
+		return 0, fmt.Errorf("value %d overflows uint64", v)
+	}
+	return uint64(v), nil
+}
+
+// Int32ToUint64 converts non-negative v to uint64.
+func Int32ToUint64(v int32) (uint64, error) {
+	if v < 0 {
+		return 0, fmt.Errorf("value %d overflows uint64", v)
+	}
+	return uint64(v), nil
+}
+
+// --- String parsing (string → value) ---
 
 func parseIntInRange(s string, min, max int64) (int64, error) {
 	i, err := strconv.ParseInt(s, 10, 64)
@@ -146,6 +213,56 @@ func parseIntInRange(s string, min, max int64) (int64, error) {
 		return 0, fmt.Errorf("value %s is out of range [%d, %d]", s, min, max)
 	}
 	return i, nil
+}
+
+func parseUintInRange(s string, min, max uint64) (uint64, error) {
+	u, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if u < min || u > max {
+		return 0, fmt.Errorf("value %s is out of range [%d, %d]", s, min, max)
+	}
+	return u, nil
+}
+
+// ToInt64 parses s as a base-10 int64.
+func ToInt64(s string) (int64, error) {
+	return parseIntInRange(s, math.MinInt64, math.MaxInt64)
+}
+
+// ToUint64 parses s as a base-10 uint64.
+func ToUint64(s string) (uint64, error) {
+	return parseUintInRange(s, 0, math.MaxUint64)
+}
+
+// ToPositiveInt32 parses s into an int32 and returns an error if it is negative or out of range.
+func ToPositiveInt32(s string) (int32, error) {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if i >= 0 && i <= math.MaxInt32 {
+		return int32(i), nil
+	}
+	return 0, fmt.Errorf("value %s is out of range [0, %d]", s, math.MaxInt32)
+}
+
+// ToPositiveInt64 parses s into an int64 and returns an error if it is negative.
+func ToPositiveInt64(s string) (int64, error) {
+	return parseIntInRange(s, 0, math.MaxInt64)
+}
+
+// ToPositiveInt parses s into a platform-dependent int and returns an error if it is negative or out of range.
+func ToPositiveInt(s string) (int, error) {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if i >= 0 && i <= math.MaxInt {
+		return int(i), nil
+	}
+	return 0, fmt.Errorf("value %s is out of range [0, %d]", s, math.MaxInt)
 }
 
 // ToStringRedacted identifies attributes of a struct, stringifies them such that they can be consumed by the

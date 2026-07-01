@@ -382,7 +382,7 @@ func (d *NASQtreeStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := convert.ToUint64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
@@ -2052,7 +2052,8 @@ func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(ctx context.Context, 
 
 	var totalDiskLimitBytes uint64
 	for _, rule := range quotaEntries {
-		totalDiskLimitBytes += uint64(rule.DiskLimitBytes)
+		diskLimitBytes, _ := convert.Int64ToUint64(max(0, rule.DiskLimitBytes))
+		totalDiskLimitBytes += diskLimitBytes
 	}
 
 	return totalDiskLimitBytes, nil

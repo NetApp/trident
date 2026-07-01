@@ -22,6 +22,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/maths"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -67,7 +68,7 @@ func (p *Plugin) CreateVolume(
 	if existingVolume != nil {
 
 		// Check if the size of existing volume is compatible with the new request
-		existingSize, _ := strconv.ParseInt(existingVolume.Config.Size, 10, 64)
+		existingSize, _ := convert.ToInt64(existingVolume.Config.Size)
 		if existingSize < req.GetCapacityRange().GetRequiredBytes() {
 			return nil, status.Error(codes.AlreadyExists,
 				fmt.Sprintf("volume %s (with different size) already exists", req.GetName()))
@@ -954,7 +955,7 @@ func (p *Plugin) ControllerExpandVolume(
 	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block
 
 	// Return success if the volume is already at least as large as required
-	if volumeSize, err := strconv.ParseInt(volume.Config.Size, 10, 64); err != nil {
+	if volumeSize, err := convert.ToInt64(volume.Config.Size); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeId":          volumeId,
 			"requestedCapacity": newSize,
@@ -985,7 +986,7 @@ func (p *Plugin) ControllerExpandVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	responseSize, err := strconv.ParseInt(resizedVolume.Config.Size, 10, 64)
+	responseSize, err := convert.ToInt64(resizedVolume.Config.Size)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeId":          volumeId,
@@ -1019,7 +1020,7 @@ func (p *Plugin) ControllerModifyVolume(
 func (p *Plugin) getCSIVolumeFromTridentVolume(
 	ctx context.Context, volume *storage.VolumeExternal,
 ) (*csi.Volume, error) {
-	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
+	capacity, err := convert.ToInt64(volume.Config.Size)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volume": volume.Config.InternalName,
@@ -1077,7 +1078,7 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		}).Error("Could not parse volume size.")
 		return nil, err
 	}
-	volCapacity, err := strconv.ParseInt(volCapacityString, 10, 64)
+	volCapacity, err := convert.ToInt64(volCapacityString)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volume": volume.Config.InternalName,

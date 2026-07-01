@@ -4,6 +4,7 @@ package mount
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -11,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-
-	"golang.org/x/net/context"
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"

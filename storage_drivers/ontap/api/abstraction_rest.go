@@ -1588,7 +1588,7 @@ func (d OntapAPIREST) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, 
 	if diskLimit == "" {
 		diskLimit = "-1"
 	} else {
-		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+		hardLimit, parseErr := convert.ToInt64(diskLimit)
 		if parseErr != nil {
 			return fmt.Errorf("cannot process disk limit value %v", diskLimit)
 		}
@@ -1977,7 +1977,11 @@ func (d OntapAPIREST) VolumeSnapshotDeleteWithRetry(
 	deleteBackoff.MaxElapsedTime = timeout
 
 	// Set a maximum retry count.
-	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, uint64(maxRetries))
+	maxRetryCount, err := convert.IntToUint64(maxRetries)
+	if err != nil {
+		return fmt.Errorf("maxRetries %d overflows uint64: %w", maxRetries, err)
+	}
+	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, maxRetryCount)
 
 	Log().WithField("snapshot", snapshot).Debug("Waiting for snapshot to be deleted.")
 	if err := backoff.RetryNotify(checkDeleted, deleteBackoffWithRetries, checkDeletedNotify); err != nil {
@@ -2608,7 +2612,7 @@ func (d OntapAPIREST) LunCloneCreate(
 
 		osType = lun.OsType
 		sizeBytesStr, _ := capacity.ToBytes(lun.Size)
-		sizeBytes, _ = strconv.ParseInt(sizeBytesStr, 10, 64)
+		sizeBytes, _ = convert.ToInt64(sizeBytesStr)
 	}
 
 	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, osType, qosPolicyGroup)

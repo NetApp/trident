@@ -742,7 +742,11 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 	}
 
 	if lunResponse.SizePtr != nil {
-		responseSize = strconv.FormatUint(uint64(lunResponse.Size()), 10)
+		lunSize, sizeErr := convert.IntToUint64(lunResponse.Size())
+		if sizeErr != nil {
+			return nil, fmt.Errorf("LUN size overflows uint64: %w", sizeErr)
+		}
+		responseSize = strconv.FormatUint(lunSize, 10)
 	}
 
 	if lunResponse.MappedPtr != nil {
@@ -1585,7 +1589,10 @@ func (d OntapAPIZAPI) FlexgroupSetSize(ctx context.Context, name, newSize string
 
 func (d OntapAPIZAPI) FlexgroupSize(_ context.Context, volumeName string) (uint64, error) {
 	size, err := d.api.FlexGroupSize(volumeName)
-	return uint64(size), err
+	if err != nil {
+		return 0, err
+	}
+	return convert.IntToUint64(size)
 }
 
 func (d OntapAPIZAPI) FlexgroupUsedSize(_ context.Context, volumeName string) (int, error) {
@@ -1794,7 +1801,10 @@ func (d OntapAPIZAPI) ExportPolicyCreate(ctx context.Context, policy string) err
 
 func (d OntapAPIZAPI) VolumeSize(_ context.Context, volumeName string) (uint64, error) {
 	size, err := d.api.VolumeSize(volumeName)
-	return uint64(size), err
+	if err != nil {
+		return 0, err
+	}
+	return convert.IntToUint64(size)
 }
 
 func (d OntapAPIZAPI) VolumeUsedSize(_ context.Context, volumeName string) (int, error) {
@@ -2163,7 +2173,7 @@ func (d OntapAPIZAPI) convertQuota(ctx context.Context, quota azgo.QuotaEntryTyp
 	var diskLimit int64
 	var err error
 	if quota.DiskLimitPtr != nil && quota.DiskLimit() != "-" && quota.DiskLimit() != "" {
-		diskLimit, err = strconv.ParseInt(quota.DiskLimit(), 10, 64)
+		diskLimit, err = convert.ToInt64(quota.DiskLimit())
 		if err != nil {
 			msg := fmt.Sprintf("could not parse diskLimit %s", quota.DiskLimit())
 			Logc(ctx).WithError(err).Error(msg)
@@ -2396,7 +2406,11 @@ func (d OntapAPIZAPI) VolumeSnapshotDeleteWithRetry(
 	deleteBackoff.MaxElapsedTime = timeout
 
 	// Set a maximum retry count.
-	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, uint64(maxRetries))
+	maxRetryCount, err := convert.IntToUint64(maxRetries)
+	if err != nil {
+		return fmt.Errorf("maxRetries %d overflows uint64: %w", maxRetries, err)
+	}
+	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, maxRetryCount)
 
 	Log().WithField("snapshot", snapshot).Debug("Waiting for snapshot to be deleted.")
 	if err := backoff.RetryNotify(checkDeleted, deleteBackoffWithRetries, checkDeletedNotify); err != nil {
@@ -2565,9 +2579,11 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 	}
 
 	if info.LastTransferEndTimestampPtr != nil {
-		transferUnix := int64(uint32(info.LastTransferEndTimestamp()))
-		transferTime := time.Unix(transferUnix, 0)
-		transferTime = transferTime.UTC()
+		transferUnix, tsErr := convert.Uint64ToInt64(uint64(info.LastTransferEndTimestamp()))
+		if tsErr != nil {
+			return nil, fmt.Errorf("invalid last transfer end timestamp: %w", tsErr)
+		}
+		transferTime := time.Unix(transferUnix, 0).UTC()
 		snapmirror.EndTransferTime = &transferTime
 	}
 

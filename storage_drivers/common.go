@@ -202,7 +202,7 @@ func CheckVolumeSizeLimits(
 	if parseErr != nil {
 		return false, 0, fmt.Errorf("error parsing limitVolumeSize: %v", parseErr)
 	}
-	volumeSizeLimit, _ = strconv.ParseUint(volumeSizeLimitStr, 10, 64)
+	volumeSizeLimit, _ = convert.ToUint64(volumeSizeLimitStr)
 
 	Logc(ctx).WithFields(LogFields{
 		"limitVolumeSize":    limitVolumeSize,

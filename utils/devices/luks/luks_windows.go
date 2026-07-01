@@ -3,7 +3,7 @@
 package luks
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"

@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -520,7 +521,11 @@ func (client *Client) AttachVolume(
 			// Update to the correct LUN ID and rescan
 			lunID = discoveredLunID
 			// Persist real LUN on publishInfo so staging metadata and NodeExpandVolume scan the correct device.
-			publishInfo.IscsiLunNumber = int32(discoveredLunID)
+			iscsiLunNumber, lunErr := convert.IntToInt32(discoveredLunID)
+			if lunErr != nil {
+				return mpathSize, fmt.Errorf("discovered LUN ID %d overflows int32: %w", discoveredLunID, lunErr)
+			}
+			publishInfo.IscsiLunNumber = iscsiLunNumber
 
 			// Wait for the correct LUN's devices
 			err = client.waitForDeviceScan(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)
@@ -2592,9 +2597,9 @@ func (client *Client) PopulateCurrentSessions(ctx context.Context, currentMappin
 			"targetIQN":       iscsiDevice.IQN,
 		}
 
-		lunNumber, err := strconv.ParseInt(iscsiDevice.LUN, 10, 32)
+		lunNumber, err := convert.ToPositiveInt32(iscsiDevice.LUN)
 		if err != nil {
-			Logc(ctx).WithFields(logFields).WithError(err).Error("Unable to convert LUN to int value.")
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Unable to convert LUN to int32 value.")
 			continue
 		}
 
@@ -2607,7 +2612,7 @@ func (client *Client) PopulateCurrentSessions(ctx context.Context, currentMappin
 
 		var publishInfo models.VolumePublishInfo
 		publishInfo.IscsiAccessInfo = models.IscsiAccessInfo{
-			IscsiLunNumber:    int32(lunNumber),
+			IscsiLunNumber:    lunNumber,
 			IscsiTargetIQN:    iscsiDevice.IQN,
 			IscsiTargetPortal: targetPortal,
 		}

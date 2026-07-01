@@ -2554,7 +2554,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		"Config.Size": sourceVolume.Config.Size,
 	}).Trace("Checking volume size.")
 	if volumeConfig.Size != "" {
-		cloneSourceVolumeSize, err := strconv.ParseInt(sourceVolume.Config.Size, 10, 64)
+		cloneSourceVolumeSize, err := convert.ToInt64(sourceVolume.Config.Size)
 		if err != nil {
 			return nil, fmt.Errorf("could not get size of the clone source volume")
 		}
@@ -2562,7 +2562,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		Logc(ctx).WithFields(LogFields{
 			"Size": volumeConfig.Size,
 		}).Trace("Checking clone volume size.")
-		cloneVolumeSize, err := strconv.ParseInt(volumeConfig.Size, 10, 64)
+		cloneVolumeSize, err := convert.ToInt64(volumeConfig.Size)
 		if err != nil {
 			return nil, fmt.Errorf("could not get size of the clone volume")
 		}
@@ -2932,11 +2932,11 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 		return errors.NotFoundError("volume %s was not found", originalName)
 	}
 
-	requestedSize, err := strconv.ParseInt(volumeConfig.Size, 10, 64)
+	requestedSize, err := convert.ToInt64(volumeConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not determine requested size to import")
 	}
-	actualSize, err := strconv.ParseInt(extantVol.Config.Size, 10, 64)
+	actualSize, err := convert.ToInt64(extantVol.Config.Size)
 	if err != nil {
 		return fmt.Errorf("could not determine actual size of the volume being imported")
 	}
@@ -4243,7 +4243,7 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 	}
 
 	// Ensure requested size is valid
-	volumeSize, err := strconv.ParseUint(volumeConfig.Size, 10, 64)
+	volumeSize, err := convert.ToUint64(volumeConfig.Size)
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for subordinate volume %s", volumeConfig.Name)
 	}
@@ -4292,7 +4292,7 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 	}
 
 	// Ensure requested volume size is not larger than the source
-	sourceVolumeSize, err := strconv.ParseUint(sourceVolume.Config.Size, 10, 64)
+	sourceVolumeSize, err := convert.ToUint64(sourceVolume.Config.Size)
 	if err != nil {
 		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
 	}
@@ -4476,7 +4476,7 @@ func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volum
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
 	}
-	newSizeBytes, err := strconv.ParseUint(newSizeStr, 10, 64)
+	newSizeBytes, err := convert.ToUint64(newSizeStr)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
 	}
@@ -4486,7 +4486,7 @@ func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volum
 	if err != nil {
 		return fmt.Errorf("could not convert source volume size %s: %v", sourceVolume.Config.Size, err)
 	}
-	sourceSizeBytes, err := strconv.ParseUint(sourceSizeStr, 10, 64)
+	sourceSizeBytes, err := convert.ToUint64(sourceSizeStr)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid source volume size: %v", sourceVolume.Config.Size, err)
 	}
