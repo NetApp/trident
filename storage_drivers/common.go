@@ -489,6 +489,18 @@ func NewLimitedRetryTransport(
 	}
 }
 
+// cloneExponentialBackOff returns a per-request backoff copied from src (config template).
+// Each RoundTrip needs its own ExponentialBackOff so concurrent requests do not share mutable retry state.
+func cloneExponentialBackOff(src *backoff.ExponentialBackOff) *backoff.ExponentialBackOff {
+	if src == nil {
+		return backoff.NewExponentialBackOff()
+	}
+
+	clone := *src
+	clone.Reset()
+	return &clone
+}
+
 func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	f := func() error {
@@ -515,8 +527,10 @@ func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, 
 		CaptureOutgoingAPIRequestRetryTotal(req.Context(), lrt.t, req.URL.Host, req.Method)
 		return err
 	}
-	lrt.b.Reset()
-	return resp, backoff.Retry(f, lrt.b)
+	// Build a fresh per-request backoff instance so concurrent requests do not
+	// share ExponentialBackOff internal mutable state.
+	requestBackoff := cloneExponentialBackOff(lrt.b)
+	return resp, backoff.Retry(f, requestBackoff)
 }
 
 // Tiering policy constants (driver-agnostic, can be extended to ANF/ONTAP)

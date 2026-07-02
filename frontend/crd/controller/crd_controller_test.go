@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -62,11 +63,126 @@ func GetTestCrdClientset() *Clientset {
 	return NewFakeClientset()
 }
 
-// testCrdPollInterval is the delay used by delaySeconds() (overridden in TestMain for speed).
-var testCrdPollInterval = 1 * time.Second
+// crdAsyncPollInterval is the tick for assert.Eventually in waitUntilCRD (overridden in TestMain).
+// Keep this coarse enough that tight polling does not starve controller workers.
+var crdAsyncPollInterval = 50 * time.Millisecond
 
-func delaySeconds(n time.Duration) {
-	time.Sleep(n * testCrdPollInterval)
+// crdAsyncWaitTimeout is the assert.Eventually timeout for async CRD controller work.
+const crdAsyncWaitTimeout = 15 * time.Second
+
+func waitUntilCRD(t *testing.T, condition func() bool, msg string) {
+	t.Helper()
+	waitUntilCRDWithTiming(t, condition, crdAsyncWaitTimeout, crdAsyncPollInterval, msg)
+}
+
+func waitUntilCRDWithTiming(
+	t *testing.T, condition func() bool, timeout time.Duration, pollInterval time.Duration, msg string,
+) {
+	t.Helper()
+	assert.Eventually(t, condition, timeout, pollInterval, msg)
+}
+
+func waitForControllerSync(t *testing.T, c *TridentCrdController) {
+	t.Helper()
+	waitUntilCRDWithTiming(
+		t,
+		func() bool {
+			return c.backendsSynced() &&
+				c.backendConfigsSynced() &&
+				c.nodesSynced() &&
+				c.storageClassesSynced() &&
+				c.transactionsSynced() &&
+				c.versionsSynced() &&
+				c.volumesSynced() &&
+				c.volumePublicationsSynced() &&
+				c.mirrorSynced() &&
+				c.snapshotsSynced() &&
+				c.snapshotInfoSynced() &&
+				c.secretsSynced() &&
+				c.autogrowPoliciesSynced() &&
+				c.autogrowRequestInternalSynced() &&
+				c.actionSnapshotRestoreSynced()
+		},
+		30*time.Second,
+		crdAsyncPollInterval,
+		"controller informers did not sync",
+	)
+}
+
+func waitForTridentSnapshotDeleted(t *testing.T, crdClient *Clientset, namespace, name string) {
+	t.Helper()
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentSnapshots(namespace).Get(ctx(), name, getOpts)
+		return k8serrors.IsNotFound(getErr)
+	}, "expected snapshot to be deleted")
+}
+
+func waitForTridentVolumeDeleted(t *testing.T, crdClient *Clientset, namespace, name string) {
+	t.Helper()
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentVolumes(namespace).Get(ctx(), name, getOpts)
+		return k8serrors.IsNotFound(getErr)
+	}, "expected volume to be deleted")
+}
+
+func waitForTAMUComplete(t *testing.T, crdClient *Clientset, namespace, name string) *tridentv1.TridentActionMirrorUpdate {
+	t.Helper()
+
+	var tamu *tridentv1.TridentActionMirrorUpdate
+	waitUntilCRD(t, func() bool {
+		var getErr error
+		tamu, getErr = crdClient.TridentV1().TridentActionMirrorUpdates(namespace).Get(ctx(), name, getOpts)
+		if getErr != nil {
+			return false
+		}
+		return tamu.IsComplete()
+	}, "TAMU operation should complete")
+	return tamu
+}
+
+func waitForTAMUDeleted(t *testing.T, crdClient *Clientset, namespace, name string) {
+	t.Helper()
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentActionMirrorUpdates(namespace).Get(ctx(), name, getOpts)
+		return k8serrors.IsNotFound(getErr)
+	}, "TAMU should be deleted")
+}
+
+func waitForTASRComplete(t *testing.T, crdClient *Clientset, namespace, name string) *tridentv1.TridentActionSnapshotRestore {
+	t.Helper()
+	return waitForTASRCompleteWithTiming(t, crdClient, namespace, name, crdAsyncWaitTimeout, crdAsyncPollInterval)
+}
+
+func waitForTASRCompleteWithTiming(
+	t *testing.T, crdClient *Clientset, namespace, name string, timeout time.Duration, pollInterval time.Duration,
+) *tridentv1.TridentActionSnapshotRestore {
+	t.Helper()
+	var tasr *tridentv1.TridentActionSnapshotRestore
+	waitUntilCRDWithTiming(t, func() bool {
+		var getErr error
+		tasr, getErr = crdClient.TridentV1().TridentActionSnapshotRestores(namespace).Get(ctx(), name, getOpts)
+		if getErr != nil {
+			return false
+		}
+		return tasr.IsComplete()
+	}, timeout, pollInterval, "TASR operation should complete")
+	return tasr
+}
+
+func waitForTASRDeleted(t *testing.T, crdClient *Clientset, namespace, name string) {
+	t.Helper()
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentActionSnapshotRestores(namespace).Get(ctx(), name, getOpts)
+		return k8serrors.IsNotFound(getErr)
+	}, "TASR should be deleted")
+}
+
+func waitForTridentTransactionDeleted(t *testing.T, crdClient *Clientset, namespace, name string) {
+	t.Helper()
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentTransactions(namespace).Get(ctx(), name, getOpts)
+		return k8serrors.IsNotFound(getErr)
+	}, "expected transaction to be deleted")
 }
 
 func newFakeStorageDriverConfigJSON(name string) (string, error) {
@@ -736,7 +852,7 @@ func TestCrdControllerBackendOperations(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
 	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
@@ -824,7 +940,6 @@ func TestCrdControllerBackendOperations(t *testing.T) {
 	}
 
 	// validate we can detect and remove finalizers
-	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n")
 	if !crdByName.HasTridentFinalizers() {
 		t.Fatalf("expected CRD to have finalizers")
 	}
@@ -840,7 +955,6 @@ func TestCrdControllerBackendOperations(t *testing.T) {
 	if crdByName.HasTridentFinalizers() {
 		t.Fatalf("did NOT expect CRD to have finalizers, should've been force removed")
 	}
-	fmt.Printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
 
 	// delete backend, make sure it gets removed
 	deleteErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(ctx(), crdName, deleteOptions)
@@ -896,7 +1010,7 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
 	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
@@ -1040,30 +1154,10 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 
 	Logc(ctx()).Debug("Deleted snapshot.")
 
-	snapshotGone := false
-
-	// Wait until the snapshot disappears, which can only happen if the CRD controller removes the finalizers.
-	for i := 0; i < 5; i++ {
-		time.Sleep(testCrdPollInterval)
-
-		// Get the latest version of the CRD
-		s, getErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).Get(ctx(), "vol1-snap1", getOpts)
-
-		Log().WithFields(LogFields{
-			"snapshot": s,
-			"getErr":   getErr,
-		}).Debug("Checking if snapshot was deleted.")
-
-		if k8serrors.IsNotFound(getErr) {
-			Logc(ctx()).Debug("Snapshot gone.")
-			snapshotGone = true
-			break
-		}
-	}
+	waitForTridentSnapshotDeleted(t, crdClient, tridentNamespace, "vol1-snap1")
 
 	Logc(ctx()).Debug("Deleting volume.")
 
-	// Delete the snapshot
 	deleteErr = crdClient.TridentV1().TridentVolumes(tridentNamespace).Delete(ctx(), "vol1", deleteOptions)
 	if deleteErr != nil {
 		t.Fatalf("unable to delete volume CRD: %v", deleteErr)
@@ -1071,39 +1165,16 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 
 	Logc(ctx()).Debug("Deleted volume.")
 
-	volumeGone := false
-
-	// Wait until the volume disappears, which can only happen if the CRD controller removes the finalizers.
-	for i := 0; i < 5; i++ {
-		time.Sleep(testCrdPollInterval)
-
-		// Get the latest version of the CRD
-		v, getErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).Get(ctx(), "vol1", getOpts)
-
-		Log().WithFields(LogFields{
-			"volume": v,
-			"getErr": getErr,
-		}).Debug("Checking if volume was deleted.")
-
-		if k8serrors.IsNotFound(getErr) {
-			Logc(ctx()).Debug("Volume gone.")
-			volumeGone = true
-			break
-		}
-	}
+	waitForTridentVolumeDeleted(t, crdClient, tridentNamespace, "vol1")
 
 	Logc(ctx()).Debug("Deleting backend.")
 
-	// Delete the snapshot
 	deleteErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(ctx(), backend.Name, deleteOptions)
 	if deleteErr != nil {
 		t.Fatalf("unable to delete backnd CRD: %v", deleteErr)
 	}
 
 	Logc(ctx()).Debug("Deleted backend.")
-
-	assert.True(t, snapshotGone, "expected snapshot to be deleted")
-	assert.True(t, volumeGone, "expected volume to be deleted")
 
 	// Clean up
 	if err = crdController.Deactivate(); err != nil {
@@ -1141,7 +1212,7 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
 	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
@@ -1186,7 +1257,10 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 	}
 
 	Logc(ctx()).Debug("Created transaction.")
-	time.Sleep(testCrdPollInterval)
+	waitUntilCRD(t, func() bool {
+		_, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
+		return getErr == nil
+	}, "expected transaction to be visible after create")
 
 	// Get the CRD
 	savedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
@@ -1213,28 +1287,7 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 
 	Logc(ctx()).Debug("Deleted transaction.")
 
-	transactionGone := false
-
-	// Wait until the CRD disappears, which can only happen if the CRD controller removes the finalizers.
-	for i := 0; i < 5; i++ {
-		time.Sleep(testCrdPollInterval)
-
-		// Get the latest version of the CRD
-		updatedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
-
-		Log().WithFields(LogFields{
-			"txn":    updatedTxn,
-			"getErr": getErr,
-		}).Debug("Checking if transaction was deleted.")
-
-		if k8serrors.IsNotFound(getErr) {
-			Logc(ctx()).Debug("Transaction gone.")
-			transactionGone = true
-			break
-		}
-	}
-
-	assert.True(t, transactionGone, "expected transaction to be deleted")
+	waitForTridentTransactionDeleted(t, crdClient, tridentNamespace, "vol1")
 
 	// Clean up
 	if err = crdController.Deactivate(); err != nil {
@@ -2236,11 +2289,7 @@ func TestControllerLifecycle_Run(t *testing.T) {
 	stopCh := make(chan struct{})
 
 	// Test Run method with immediate stop
-	go func() {
-		// Stop immediately to test graceful shutdown
-		time.Sleep(100 * time.Millisecond)
-		close(stopCh)
-	}()
+	close(stopCh)
 
 	// This should complete without hanging
 	crdController.Run(ctx, 1, stopCh)
@@ -2370,12 +2419,7 @@ func TestControllerLifecycle_RunWithDifferentThreadiness(t *testing.T) {
 
 	for _, threadiness := range testCases {
 		stopCh := make(chan struct{})
-
-		go func() {
-			// Stop immediately to test with different threadiness
-			time.Sleep(50 * time.Millisecond)
-			close(stopCh)
-		}()
+		close(stopCh)
 
 		// This should complete without hanging regardless of threadiness
 		crdController.Run(ctx, threadiness, stopCh)
@@ -2506,9 +2550,6 @@ func TestActivateDeactivate_FullCycle(t *testing.T) {
 	err = controller.Activate()
 	assert.NoError(t, err)
 
-	// Give some time for goroutines to start
-	time.Sleep(100 * time.Millisecond)
-
 	// Verify the controller is active
 	assert.NotNil(t, controller.crdControllerStopChan)
 
@@ -2538,9 +2579,6 @@ func TestRun_CacheSyncAndWorkerManagement(t *testing.T) {
 		controller.Run(ctx, 2, stopCh)
 		done <- true
 	}()
-
-	// Give time for workers to start
-	time.Sleep(200 * time.Millisecond)
 
 	// Stop the controller
 	close(stopCh)
@@ -2576,11 +2614,7 @@ func TestRunWorker_ProcessingLoop(t *testing.T) {
 	}
 	controller.workqueue.Add(keyItem)
 
-	// Shutdown the workqueue after one item to test worker exit
-	go func() {
-		time.Sleep(100 * time.Millisecond)
-		controller.workqueue.ShutDown()
-	}()
+	controller.workqueue.ShutDown()
 
 	// This should process one item and then exit due to shutdown
 	controller.runWorker()
@@ -2762,6 +2796,7 @@ func TestGetTridentBackend_EdgeCases(t *testing.T) {
 // fakeTagriQueue wraps a real RateLimitingInterface and records AddAfter, AddRateLimited, Add, Forget calls.
 type fakeTagriQueue struct {
 	inner         workqueue.RateLimitingInterface
+	mu            sync.Mutex
 	AddAfterCalls []struct {
 		Item interface{}
 		D    time.Duration
@@ -2772,20 +2807,26 @@ type fakeTagriQueue struct {
 }
 
 func (s *fakeTagriQueue) Add(item interface{}) {
+	s.mu.Lock()
 	s.AddCalls = append(s.AddCalls, item)
+	s.mu.Unlock()
 	s.inner.Add(item)
 }
 
 func (s *fakeTagriQueue) AddAfter(item interface{}, d time.Duration) {
+	s.mu.Lock()
 	s.AddAfterCalls = append(s.AddAfterCalls, struct {
 		Item interface{}
 		D    time.Duration
 	}{item, d})
+	s.mu.Unlock()
 	s.inner.AddAfter(item, d)
 }
 
 func (s *fakeTagriQueue) AddRateLimited(item interface{}) {
+	s.mu.Lock()
 	s.AddRateLimitedCalls = append(s.AddRateLimitedCalls, item)
+	s.mu.Unlock()
 	s.inner.AddRateLimited(item)
 }
 
@@ -2798,7 +2839,9 @@ func (s *fakeTagriQueue) Done(item interface{}) {
 }
 
 func (s *fakeTagriQueue) Forget(item interface{}) {
+	s.mu.Lock()
 	s.ForgetCalls = append(s.ForgetCalls, item)
+	s.mu.Unlock()
 	s.inner.Forget(item)
 }
 
@@ -2864,7 +2907,9 @@ func tagriTestKey(name string) string { return config.OrchestratorName + "/" + n
 // setupTagriControllerWithInformerSync creates a controller and populates the informer with the given TAGRI
 // by using a List reactor (avoids fake tracker panic on CreationTimestamp). Starts the informer and waits
 // for cache sync. Caller must defer close(stopCh).
-func setupTagriControllerWithInformerSync(t *testing.T, tagri *tridentv1.TridentAutogrowRequestInternal) (
+func setupTagriControllerWithInformerSyncInternal(
+	t *testing.T, tagri *tridentv1.TridentAutogrowRequestInternal, beforeStart func(*TridentCrdController),
+) (
 	*TridentCrdController, chan struct{},
 ) {
 	t.Helper()
@@ -2890,12 +2935,21 @@ func setupTagriControllerWithInformerSync(t *testing.T, tagri *tridentv1.Trident
 	controller, err := newTridentCrdControllerImpl(orchestrator, config.OrchestratorName, kubeClient, snapClient, crdClient, nil, nil)
 	require.NoError(t, err)
 	controller.recorder = record.NewFakeRecorder(10)
+	if beforeStart != nil {
+		beforeStart(controller)
+	}
 
 	stopCh := make(chan struct{})
 	controller.crdInformerFactory.Start(stopCh)
 	ok := cache.WaitForCacheSync(stopCh, controller.autogrowRequestInternalSynced)
 	require.True(t, ok, "autogrow request internal cache should sync")
 	return controller, stopCh
+}
+
+func setupTagriControllerWithInformerSync(t *testing.T, tagri *tridentv1.TridentAutogrowRequestInternal) (
+	*TridentCrdController, chan struct{},
+) {
+	return setupTagriControllerWithInformerSyncInternal(t, tagri, nil)
 }
 
 func TestProcessNextTagriWorkItem_ReconcileDeferredWithDuration_UsesAddAfter(t *testing.T) {
@@ -2913,11 +2967,12 @@ func TestProcessNextTagriWorkItem_ReconcileDeferredWithDuration_UsesAddAfter(t *
 		},
 		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Rejected"},
 	}
-	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	var fake *fakeTagriQueue
+	controller, stopCh := setupTagriControllerWithInformerSyncInternal(t, tagri, func(c *TridentCrdController) {
+		fake = &fakeTagriQueue{inner: c.tagriWorkqueue}
+		c.tagriWorkqueue = fake
+	})
 	defer close(stopCh)
-
-	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
-	controller.tagriWorkqueue = fake
 
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
@@ -2947,11 +3002,12 @@ func TestProcessNextTagriWorkItem_ReconcileDeferredWithMaxDuration_NextDelayExce
 		},
 		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Failed"},
 	}
-	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	var fake *fakeTagriQueue
+	controller, stopCh := setupTagriControllerWithInformerSyncInternal(t, tagri, func(c *TridentCrdController) {
+		fake = &fakeTagriQueue{inner: c.tagriWorkqueue}
+		c.tagriWorkqueue = fake
+	})
 	defer close(stopCh)
-
-	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
-	controller.tagriWorkqueue = fake
 	// Next backoff (10min) > timeUntilTimeout (~4min) => use AddAfter(timeUntilTimeout) and Forget.
 	controller.tagriRateLimiter = &fixedWhenRateLimiter{WhenDelay: 10 * time.Minute}
 
@@ -2984,11 +3040,12 @@ func TestProcessNextTagriWorkItem_ReconcileDeferredWithMaxDuration_NextDelayWith
 		},
 		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Failed"},
 	}
-	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	var fake *fakeTagriQueue
+	controller, stopCh := setupTagriControllerWithInformerSyncInternal(t, tagri, func(c *TridentCrdController) {
+		fake = &fakeTagriQueue{inner: c.tagriWorkqueue}
+		c.tagriWorkqueue = fake
+	})
 	defer close(stopCh)
-
-	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
-	controller.tagriWorkqueue = fake
 
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
@@ -3013,11 +3070,12 @@ func TestProcessNextTagriWorkItem_Success_ForgetCalled(t *testing.T) {
 		},
 		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Completed"},
 	}
-	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	var fake *fakeTagriQueue
+	controller, stopCh := setupTagriControllerWithInformerSyncInternal(t, tagri, func(c *TridentCrdController) {
+		fake = &fakeTagriQueue{inner: c.tagriWorkqueue}
+		c.tagriWorkqueue = fake
+	})
 	defer close(stopCh)
-
-	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
-	controller.tagriWorkqueue = fake
 
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}

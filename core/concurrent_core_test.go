@@ -50,6 +50,12 @@ func init() {
 
 func persistenceCleanup(t *testing.T, o *ConcurrentTridentOrchestrator) {
 	t.Helper()
+
+	// Wait for any detached bootstrap goroutines (e.g. the async volume-publication
+	// sync) to finish before the test's mock controller is torn down. Otherwise a
+	// late background call can fail on a completed *testing.T and crash the suite.
+	o.bgTasks.stop()
+
 	// We do not want to cleanup for MockStoreClient
 	_, ok := o.storeClient.(*persistentstore.InMemoryClient)
 	if !ok {
@@ -575,8 +581,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
-				// VP sync happens asynchronously, so we allow UpdateVolumePublication to be called
+				// Bootstrap backfills the node-name label on existing publications,
+				// which triggers an asynchronous UpdateVolumePublication; allow it.
 				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			},
 			verifyError: func(err error) {
@@ -676,8 +682,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
-				// VP sync happens asynchronously, so we allow UpdateVolumePublication to be called
+				// Bootstrap backfills the node-name label on existing publications,
+				// which triggers an asynchronous UpdateVolumePublication; allow it.
 				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			},
 			verifyError: func(err error) {
@@ -13702,12 +13708,12 @@ func TestPeriodicallyReconcileNodeAccessOnBackendsConcurrentCore(t *testing.T) {
 
 			// Start loop
 			go o.PeriodicallyReconcileNodeAccessOnBackends()
-			for o.stopNodeAccessLoop == nil {
+			for o.getStopNodeAccessLoop() == nil {
 				// Wait for loop to initialize
 				time.Sleep(10 * time.Millisecond)
 			}
 
-			assert.NotNil(t, o.stopNodeAccessLoop, "loop channel should be initialized")
+			assert.NotNil(t, o.getStopNodeAccessLoop(), "loop channel should be initialized")
 
 			time.Sleep(500 * time.Millisecond) // Wait for loop to do some work
 
@@ -13731,7 +13737,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 				// No setup needed for zero interval test
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
-				assert.Nil(t, o.stopReconcileBackendLoop, "reconcile backend loop should not have started")
+				assert.Nil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should not have started")
 			},
 		},
 		{
@@ -13752,7 +13758,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should be running (stopReconcileBackendLoop should not be nil)
-				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
 			},
 		},
 		{
@@ -13763,7 +13769,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should still be running even with no backends
-				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
 			},
 		},
 		{
@@ -13784,7 +13790,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should be running
-				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
 			},
 		},
 	}
@@ -13807,7 +13813,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 
 			go o.PeriodicallyReconcileBackendState(tt.pollInterval)
 			if tt.pollInterval > 0 {
-				for o.stopReconcileBackendLoop == nil {
+				for o.getStopReconcileBackendLoop() == nil {
 					// Wait for loop to initialize
 					time.Sleep(10 * time.Millisecond)
 				}

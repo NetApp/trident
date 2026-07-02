@@ -33,7 +33,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-// volumesScheduledEventSeq adds entropy when timestamp and TVP count match across back-to-back publishes.
+// volumesScheduledEventSeq ensures generateEventID stays unique when timestamp and TVP count match.
 var volumesScheduledEventSeq uint64
 
 // createPublishFunc creates the publish callback function for the assorter

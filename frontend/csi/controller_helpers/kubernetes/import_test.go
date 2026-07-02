@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -635,7 +636,8 @@ func TestImportVolume_SuccessfulImportFlow(t *testing.T) {
 	mockOrchestrator.EXPECT().GetVolumeByInternalName(gomock.Any(), "test-internal-volume").
 		Return("", errors.NotFoundError("not managed")) // Volume not already managed
 
-	var createdPVCUID string
+	var createdPVCUID atomic.Value
+	createdPVCUID.Store("")
 
 	// Mock successful PVC creation
 	kubeClient.PrependReactor("create", "persistentvolumeclaims", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
@@ -644,7 +646,7 @@ func TestImportVolume_SuccessfulImportFlow(t *testing.T) {
 
 		// Set a UID for the created PVC
 		createdPVC.UID = "test-pvc-uid-12345"
-		createdPVCUID = string(createdPVC.UID)
+		createdPVCUID.Store(string(createdPVC.UID))
 
 		// Add the PVC to our test client
 		return false, nil, nil // Let the default handler create it
@@ -654,7 +656,7 @@ func TestImportVolume_SuccessfulImportFlow(t *testing.T) {
 		// Give some time for the import to start, then add a PV to the cache
 		time.Sleep(100 * time.Millisecond)
 
-		expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID)
+		expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID.Load().(string))
 
 		// Create a mock PV and add it to the cache
 		mockPV := &v1.PersistentVolume{
@@ -676,7 +678,7 @@ func TestImportVolume_SuccessfulImportFlow(t *testing.T) {
 	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, pvName string) (*storage.VolumeExternal, error) {
 			// Verify we're getting the expected PV name format
-			expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID)
+			expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID.Load().(string))
 			assert.Equal(t, expectedPVName, pvName, "PV name should match expected format")
 			return expectedVolume, nil
 		},
@@ -758,7 +760,8 @@ func TestImportVolume_GetVolumeFinalFailure(t *testing.T) {
 	mockOrchestrator.EXPECT().GetVolumeByInternalName(gomock.Any(), "test-internal-volume").
 		Return("", errors.NotFoundError("not managed")) // Volume not already managed
 
-	var createdPVCUID string
+	var createdPVCUID atomic.Value
+	createdPVCUID.Store("")
 
 	// Mock successful PVC creation
 	kubeClient.PrependReactor("create", "persistentvolumeclaims", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
@@ -767,7 +770,7 @@ func TestImportVolume_GetVolumeFinalFailure(t *testing.T) {
 
 		// Set a UID for the created PVC
 		createdPVC.UID = "test-pvc-uid-getvolume-fail"
-		createdPVCUID = string(createdPVC.UID)
+		createdPVCUID.Store(string(createdPVC.UID))
 
 		return false, nil, nil // Let the default handler create it
 	})
@@ -776,7 +779,7 @@ func TestImportVolume_GetVolumeFinalFailure(t *testing.T) {
 		// Give some time for the import to start, then add a PV to the cache
 		time.Sleep(100 * time.Millisecond)
 
-		expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID)
+		expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID.Load().(string))
 
 		// Create a mock PV and add it to the cache
 		mockPV := &v1.PersistentVolume{
@@ -798,7 +801,7 @@ func TestImportVolume_GetVolumeFinalFailure(t *testing.T) {
 	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, pvName string) (*storage.VolumeExternal, error) {
 			// Verify we're getting the expected PV name format
-			expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID)
+			expectedPVName := fmt.Sprintf("pvc-%s", createdPVCUID.Load().(string))
 			assert.Equal(t, expectedPVName, pvName, "PV name should match expected format")
 			return nil, errors.New("orchestrator GetVolume failed")
 		},

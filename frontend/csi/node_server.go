@@ -120,9 +120,10 @@ const (
 var (
 	csiNodeLockTimeout = 60 * time.Second
 
-	topologyLabels = make(map[string]string)
-	iscsiUtils     = iscsi.IscsiUtils
-	fcpUtils       = utils.FcpUtils
+	topologyLabels     = make(map[string]string)
+	topologyLabelsLock sync.RWMutex
+	iscsiUtils         = iscsi.IscsiUtils
+	fcpUtils           = utils.FcpUtils
 
 	publishedISCSISessions, currentISCSISessions *models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   nvme.NVMeSessions
@@ -146,6 +147,18 @@ var (
 	nvmeSelfHealingLock           = sync.RWMutex{}
 	nvmeNodeOperationWaitingCount atomic.Int32
 )
+
+func getTopologyLabelsCopy() map[string]string {
+	topologyLabelsLock.RLock()
+	defer topologyLabelsLock.RUnlock()
+
+	labels := make(map[string]string, len(topologyLabels))
+	for k, v := range topologyLabels {
+		labels[k] = v
+	}
+
+	return labels
+}
 
 const (
 	removeMultipathDeviceMappingRetries    = 4
@@ -814,7 +827,7 @@ func (p *Plugin) NodeGetInfo(
 	return &csi.NodeGetInfoResponse{
 		NodeId: p.nodeName,
 		AccessibleTopology: &csi.Topology{
-			Segments: topologyLabels,
+			Segments: getTopologyLabelsCopy(),
 		},
 	}, nil
 }
@@ -933,12 +946,18 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	registerNode := func() error {
 		nodeDetails, err := p.restClient.CreateNode(ctx, node)
 		if err == nil {
+			topologyLabelsLock.Lock()
 			topologyLabels = nodeDetails.TopologyLabels
 			node.TopologyLabels = nodeDetails.TopologyLabels
+			labels := make(map[string]string, len(topologyLabels))
+			for k, v := range topologyLabels {
+				labels[k] = v
+			}
+			topologyLabelsLock.Unlock()
 
 			// Assume topology to be in use only if there exists a topology label with key "topology.kubernetes.io/region" on the node.
-			if len(topologyLabels) > 0 {
-				val, ok := topologyLabels[K8sTopologyRegionLabel]
+			if len(labels) > 0 {
+				val, ok := labels[K8sTopologyRegionLabel]
 				fields := LogFields{"topologyLabelKey": K8sTopologyRegionLabel, "value": val}
 				if ok && val != "" {
 					Logc(ctx).WithFields(fields).Infof("%s label found on node. Assuming topology to be in use.", K8sTopologyRegionLabel)
@@ -983,7 +1002,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 		Logc(ctx).WithError(err).Error("Unable to update Trident controller with node registration.")
 	} else {
 		Logc(ctx).WithField("node", p.nodeName).Info("Updated Trident controller with node registration.")
-		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
+		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", getTopologyLabelsCopy())
 	}
 
 	p.markNodeReady()
@@ -1092,13 +1111,15 @@ func (p *Plugin) nodePublishNFSVolume(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
-	publishInfo := &trackingInfo.VolumePublishInfo
+	// Request-local copy so mount-option edits do not mutate the struct returned by
+	// ReadTrackingInfo; per-volume locks already serialize concurrent publishes.
+	publishInfo := trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
-	err = p.mount.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, publishInfo)
+	err = p.mount.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, &publishInfo)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())
@@ -1707,7 +1728,9 @@ func (p *Plugin) nodePublishFCPVolume(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
-	publishInfo := &trackingInfo.VolumePublishInfo
+	// Request-local copy so mount-option edits do not mutate the struct returned by
+	// ReadTrackingInfo; per-volume locks already serialize concurrent publishes.
+	publishInfo := trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
@@ -2347,7 +2370,9 @@ func (p *Plugin) nodePublishISCSIVolume(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
-	publishInfo := &trackingInfo.VolumePublishInfo
+	// Request-local copy so mount-option edits do not mutate the struct returned by
+	// ReadTrackingInfo; per-volume locks already serialize concurrent publishes.
+	publishInfo := trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
@@ -3320,7 +3345,9 @@ func (p *Plugin) nodePublishNVMeVolume(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
-	publishInfo := &trackingInfo.VolumePublishInfo
+	// Request-local copy so mount-option edits do not mutate the struct returned by
+	// ReadTrackingInfo; per-volume locks already serialize concurrent publishes.
+	publishInfo := trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")

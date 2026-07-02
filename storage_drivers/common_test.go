@@ -13,9 +13,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/sync/semaphore"
 
@@ -839,6 +841,87 @@ func TestLimitedRetryTransport(t *testing.T) {
 		assert.NoError(t, err, "LimitedRetryTransport must retry when EOF is wrapped inside ServerBackPressureError")
 		assert.Equal(t, eofRetries+1, calls)
 	})
+}
+
+func TestCloneExponentialBackOff(t *testing.T) {
+	t.Run("nil source", func(t *testing.T) {
+		clone := cloneExponentialBackOff(nil)
+		assert.NotNil(t, clone)
+	})
+
+	t.Run("returns independent instance with copied config", func(t *testing.T) {
+		src := backoff.NewExponentialBackOff()
+		src.InitialInterval = 25 * time.Millisecond
+		src.Multiplier = 2
+		src.RandomizationFactor = 0
+		src.MaxInterval = 100 * time.Millisecond
+
+		// Advance template internal retry state; clones must not inherit this progress.
+		_ = src.NextBackOff()
+		_ = src.NextBackOff()
+
+		clone := cloneExponentialBackOff(src)
+		assert.NotSame(t, src, clone)
+		assert.Equal(t, src.InitialInterval, clone.InitialInterval)
+		assert.Equal(t, src.Multiplier, clone.Multiplier)
+		assert.Equal(t, src.RandomizationFactor, clone.RandomizationFactor)
+		assert.Equal(t, src.MaxInterval, clone.MaxInterval)
+
+		// Reset on clone starts a fresh retry session at InitialInterval.
+		assert.Equal(t, src.InitialInterval, clone.NextBackOff())
+
+		// Using the clone must not rewind or otherwise mutate template retry progress.
+		advanced := src.NextBackOff()
+		assert.Greater(t, advanced, src.InitialInterval)
+	})
+}
+
+func TestLimitedRetryTransport_concurrentRoundTripsUseIndependentBackoff(t *testing.T) {
+	const (
+		numRequests = 16
+		eofRetries  = 2
+	)
+
+	var callCount sync.Map
+
+	tr := NewLimitedRetryTransport(semaphore.NewWeighted(numRequests), TestTransport(func(req *http.Request) (*http.Response, error) {
+		val, _ := callCount.LoadOrStore(req.URL.Path, new(atomic.Int32))
+		count := val.(*atomic.Int32)
+		if count.Add(1) <= eofRetries {
+			return nil, io.EOF
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}, nil
+	}), ContextRequestTargetONTAP)
+	tr.b.InitialInterval = 5 * time.Millisecond
+	tr.b.MaxInterval = 20 * time.Millisecond
+	tr.b.Multiplier = 1.2
+	tr.b.RandomizationFactor = 0
+
+	var wg sync.WaitGroup
+	errs := make(chan error, numRequests)
+	for i := 0; i < numRequests; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://ontap.local/%d", i), nil)
+			if err != nil {
+				errs <- err
+				return
+			}
+			_, err = tr.RoundTrip(req)
+			errs <- err
+		}(i)
+	}
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		assert.NoError(t, err)
+	}
 }
 
 // TestSemaphore tests that New and Free won't cause deadlocks, and at the end everything is cleaned up

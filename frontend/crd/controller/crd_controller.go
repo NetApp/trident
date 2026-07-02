@@ -90,6 +90,11 @@ var (
 	getOpts    = metav1.GetOptions{}
 	createOpts = metav1.CreateOptions{}
 	updateOpts = metav1.UpdateOptions{}
+	// crdWorkqueueRateLimiterFactory creates a fresh rate limiter per controller instance.
+	// Tests may replace this in TestMain.
+	crdWorkqueueRateLimiterFactory = func() workqueue.RateLimiter {
+		return workqueue.DefaultControllerRateLimiter()
+	}
 )
 
 func Logx(ctx context.Context) LogEntry {
@@ -348,7 +353,7 @@ func newTridentCrdControllerImpl(
 		autogrowRequestInternalSynced: autogrowRequestInternalInformer.Informer().HasSynced,
 		volumeMoveLister:              volumeMoveInformer.Lister(),
 		volumeMoveSynced:              volumeMoveInformer.Informer().HasSynced,
-		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
+		workqueue: workqueue.NewNamedRateLimitingQueue(crdWorkqueueRateLimiterFactory(),
 			crdControllerQueueName),
 		tagriRateLimiter:     tagriRateLimiter,
 		tagriWorkqueue:       workqueue.NewNamedRateLimitingQueue(tagriRateLimiter, tagriWorkqueueName),

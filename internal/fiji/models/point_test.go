@@ -79,10 +79,10 @@ func TestFaultPoint_SetHandler_Async(t *testing.T) {
 	assert.NoError(t, err)
 
 	// This starts a routine that will "inject" a pause.
-	var errFromSleep error
+	errFromSleepCh := make(chan error, 1)
 	go func() {
 		// This should induce a sleep for the length of "duration" that holds the point's mutex.
-		errFromSleep = point.Inject()
+		errFromSleepCh <- point.Inject()
 	}()
 	// Add a short sleep here to ensure the go routine has time to
 	// call "point.Inject" before resetting the handler config.
@@ -101,5 +101,6 @@ func TestFaultPoint_SetHandler_Async(t *testing.T) {
 	err = point.Inject()
 	assert.LessOrEqual(t, time.Since(afterChangingHandler), duration)
 	assert.NotNil(t, err)
+	errFromSleep := <-errFromSleepCh
 	assert.NotEqual(t, err, errFromSleep)
 }

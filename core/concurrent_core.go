@@ -62,6 +62,11 @@ type ConcurrentTridentOrchestrator struct {
 
 	stopNodeAccessLoop       chan bool
 	stopReconcileBackendLoop chan bool
+
+	// bgTasks tracks detached goroutines (e.g. the asynchronous volume-publication
+	// sync started during bootstrap) so they can be cancelled and awaited rather
+	// than outliving the orchestrator.
+	bgTasks backgroundTasks
 }
 
 var (
@@ -738,10 +743,11 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 
 	Logc(ctx).Infof("Added %d existing volume publications(s).", vpCount)
 
-	// Asynchronously persist VPs that need syncing (e.g., after upgrade)
-	// The goroutine will wait for bootstrap to complete before proceeding
+	// Asynchronously persist VPs that need syncing (e.g., after upgrade).
+	// The task waits for bootstrap to complete before proceeding, and is tracked
+	// so it can be cancelled and awaited instead of outliving the orchestrator.
 	if len(vpsToBeSynced) > 0 {
-		go func() {
+		o.bgTasks.launch(ctx, func(syncCtx context.Context) {
 			// Wait for bootstrap to complete
 			o.bootstrapCond.L.Lock()
 			for !o.bootstrapped && (o.bootstrapError == nil || errors.IsNotReadyError(o.bootstrapError)) {
@@ -751,13 +757,13 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 			o.bootstrapCond.L.Unlock()
 
 			if err != nil {
-				Logc(ctx).WithError(err).Error("Bootstrap failed, skipping volume publication sync")
+				Logc(syncCtx).WithError(err).Error("Bootstrap failed, skipping volume publication sync")
 				return
 			}
 
 			// Now safe to proceed with sync
-			o.SyncVolumePublications(ctx, vpsToBeSynced)
-		}()
+			o.SyncVolumePublications(syncCtx, vpsToBeSynced)
+		})
 	}
 
 	return nil
@@ -901,15 +907,42 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 	}
 }
 
+func (o *ConcurrentTridentOrchestrator) setStopReconcileBackendLoop(ch chan bool) {
+	o.mtx.Lock()
+	o.stopReconcileBackendLoop = ch
+	o.mtx.Unlock()
+}
+
+func (o *ConcurrentTridentOrchestrator) setStopNodeAccessLoop(ch chan bool) {
+	o.mtx.Lock()
+	o.stopNodeAccessLoop = ch
+	o.mtx.Unlock()
+}
+
+func (o *ConcurrentTridentOrchestrator) getStopReconcileBackendLoop() chan bool {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+	return o.stopReconcileBackendLoop
+}
+
+func (o *ConcurrentTridentOrchestrator) getStopNodeAccessLoop() chan bool {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+	return o.stopNodeAccessLoop
+}
+
 // Stop stops the orchestrator core; this is expected to be called during shutdown,
 // and new cache locks will block forever.
 func (o *ConcurrentTridentOrchestrator) Stop() {
+	// Cancel and wait for detached background tasks (e.g. async VP sync).
+	o.bgTasks.stop()
+
 	// Stop the node access and backends' state reconciliation background tasks
-	if o.stopNodeAccessLoop != nil {
-		o.stopNodeAccessLoop <- true
+	if stopNodeAccessLoop := o.getStopNodeAccessLoop(); stopNodeAccessLoop != nil {
+		stopNodeAccessLoop <- true
 	}
-	if o.stopReconcileBackendLoop != nil {
-		o.stopReconcileBackendLoop <- true
+	if stopReconcileBackendLoop := o.getStopReconcileBackendLoop(); stopReconcileBackendLoop != nil {
+		stopReconcileBackendLoop <- true
 	}
 
 	_, _, _, err := db.Lock(context.Background(), db.Query(db.LockCache()))
@@ -7131,7 +7164,8 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 }
 
 func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
-	o.stopNodeAccessLoop = make(chan bool)
+	stopNodeAccessLoop := make(chan bool)
+	o.setStopNodeAccessLoop(stopNodeAccessLoop)
 	ctx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowCoreNodeReconcile, LogLayerCore)
 
 	Logc(ctx).Info("Starting periodic node access reconciliation service.")
@@ -7143,7 +7177,7 @@ func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackend
 
 	for {
 		select {
-		case <-o.stopNodeAccessLoop:
+		case <-stopNodeAccessLoop:
 			// Exit on shutdown signal
 			return
 
@@ -7176,7 +7210,8 @@ func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileBackendState(pollIn
 	Logc(ctx).WithField("pollInterval", pollInterval).Info("Starting periodic backend state reconciliation service.")
 	defer Logc(ctx).WithField("pollInterval", pollInterval).Info("Stopping periodic backend state reconciliation service.")
 
-	o.stopReconcileBackendLoop = make(chan bool)
+	stopReconcileBackendLoop := make(chan bool)
+	o.setStopReconcileBackendLoop(stopReconcileBackendLoop)
 	reconcileBackendTimer := time.NewTimer(pollInterval)
 	defer func(t *time.Timer) {
 		if !t.Stop() {
@@ -7186,7 +7221,7 @@ func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileBackendState(pollIn
 
 	for {
 		select {
-		case <-o.stopReconcileBackendLoop:
+		case <-stopReconcileBackendLoop:
 			// Exit on shutdown signal.
 			return
 

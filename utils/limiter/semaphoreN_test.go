@@ -19,7 +19,7 @@ func TestSemaphoreN_Wait(t *testing.T) {
 
 	// Test 1 (Negative Test): Expect an error when a goroutine attempts to call Wait()
 	//          after all expected goroutines have successfully acquired Wait().
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	lim, _ := New(ctx, limID, TypeSemaphoreN, WithSemaphoreNSize(ctx, numOfGoroutines))
@@ -44,8 +44,15 @@ func TestSemaphoreN_Wait(t *testing.T) {
 	for i := 0; i < numOfGoroutines; i++ {
 		<-inward
 	}
-	err := lim.Wait(ctx)
+	const waitTimeout = time.Second
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), waitTimeout)
+	defer waitCancel()
+	start := time.Now()
+	err := lim.Wait(waitCtx)
+	elapsed := time.Since(start)
 	assert.Error(t, err)
+	assert.GreaterOrEqual(t, elapsed, 50*time.Millisecond, "Wait should block until context deadline")
+	assert.Less(t, elapsed, waitTimeout+100*time.Millisecond)
 
 	for i := 0; i < numOfGoroutines; i++ {
 		outward <- struct{}{}
@@ -53,8 +60,6 @@ func TestSemaphoreN_Wait(t *testing.T) {
 	wg.Wait()
 
 	// Test 2 (Positive Test): Successfully acquiring the expected number of wait()
-	ctx, cancel = context.WithTimeout(context.Background(), 1*time.Millisecond)
-	defer cancel()
 	for i := 0; i < numOfGoroutines; i++ {
 		wg.Add(1)
 		go func() {
@@ -72,7 +77,7 @@ func TestSemaphoreN_Release(t *testing.T) {
 	numOfGoroutines := 2
 
 	// Test 1 (Positive Test): Successfully releasing the acquired wait.
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	lim, _ := New(ctx, limID, TypeSemaphoreN, WithSemaphoreNSize(ctx, numOfGoroutines))

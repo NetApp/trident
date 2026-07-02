@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -43,12 +44,21 @@ func TestMain(m *testing.M) {
 	// Disable any standard log output
 	logging.InitLogOutput(io.Discard)
 
-	// Speed up VP sync backoff/retry paths exercised by orchestrator tests.
+	// Use shorter VP sync backoff intervals in orchestrator unit tests.
 	vpSyncRateLimiterBackoffInitial = 10 * time.Millisecond
 	vpStoreBackoffInitialInterval = 10 * time.Millisecond
 	vpStoreBackoffMaxInterval = 50 * time.Millisecond
 
 	os.Exit(m.Run())
+}
+
+const vpSyncTestEventuallyTimeout = 5 * time.Second
+
+func withUnlimitedVPSyncRateLimiter(t *testing.T) {
+	t.Helper()
+	origLimiter := vpSyncRateLimiter
+	vpSyncRateLimiter = rate.NewLimiter(rate.Limit(1000), 1000)
+	t.Cleanup(func() { vpSyncRateLimiter = origLimiter })
 }
 
 var (
@@ -75,6 +85,10 @@ type recoveryTest struct {
 }
 
 func cleanup(t *testing.T, o *TridentOrchestrator) {
+	// Wait for any detached background goroutines (e.g. async volume-publication
+	// sync) before tearing down, so they cannot touch a completed *testing.T.
+	o.bgTasks.stop()
+
 	err := o.storeClient.DeleteBackends(ctx())
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up backends: ", err)
@@ -289,21 +303,14 @@ type storageClassTest struct {
 }
 
 func getOrchestrator(t *testing.T, monitorTransactions bool) *TridentOrchestrator {
-	var (
-		storeClient persistentstore.Client
-		err         error
-	)
 	// This will have been created as not nil in init
 	// We can't create a new one here because tests that exercise
 	// bootstrapping need to have their data persist.
-	storeClient = inMemoryClient
+	storeClient := inMemoryClient
 
-	o, err := NewTridentOrchestrator(storeClient)
-	if err != nil {
-		t.Fatal("Unable to create orchestrator: ", err)
-	}
+	o := newTestTridentOrchestrator(t, storeClient)
 
-	if err = o.Bootstrap(monitorTransactions); err != nil {
+	if err := o.Bootstrap(monitorTransactions); err != nil {
 		t.Fatal("Failure occurred during bootstrapping: ", err)
 	}
 
@@ -4108,16 +4115,19 @@ func TestSyncVolumePublications_StoreError(t *testing.T) {
 	}
 
 	// Simulate store error - retry logic keeps calling until VP is removed from cache.
-	updateCallCount := 0
+	// updateCallCount is read by the assert.Eventually poller while the background
+	// sync goroutine writes it, so it must be accessed atomically.
+	var updateCallCount atomic.Int32
 	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).DoAndReturn(
 		func(ctx context.Context, pub *models.VolumePublication) error {
-			updateCallCount++
+			updateCallCount.Add(1)
 			return fmt.Errorf("store error")
 		},
 	).MinTimes(1)
 
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
+	withUnlimitedVPSyncRateLimiter(t)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -4136,8 +4146,8 @@ func TestSyncVolumePublications_StoreError(t *testing.T) {
 	}()
 
 	assert.Eventually(t, func() bool {
-		return updateCallCount >= 1
-	}, 200*time.Millisecond, 5*time.Millisecond, "SyncVolumePublications should attempt at least one store update")
+		return updateCallCount.Load() >= 1
+	}, vpSyncTestEventuallyTimeout, 10*time.Millisecond, "SyncVolumePublications should attempt at least one store update")
 
 	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
 
@@ -4147,7 +4157,7 @@ func TestSyncVolumePublications_StoreError(t *testing.T) {
 		t.Fatal("background SyncVolumePublications should return after VP is removed from cache")
 	}
 
-	assert.GreaterOrEqual(t, updateCallCount, 1)
+	assert.GreaterOrEqual(t, int(updateCallCount.Load()), 1)
 
 	// VP should no longer be in cache
 	cachedVP := orchestrator.volumePublications.Get(vp.VolumeName, vp.NodeName)
@@ -4245,11 +4255,7 @@ func TestSyncVolumePublications_RateLimiterBackoff(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
-
-	// Raise VP sync rate limit after NewTridentOrchestrator; production 1 QPS dominates runtime.
-	origLimiter := vpSyncRateLimiter
-	vpSyncRateLimiter = rate.NewLimiter(rate.Limit(1000), 1000)
-	t.Cleanup(func() { vpSyncRateLimiter = origLimiter })
+	withUnlimitedVPSyncRateLimiter(t)
 
 	// Add all VPs to cache
 	for _, vp := range vps {
@@ -4283,12 +4289,13 @@ func TestSyncVolumePublications_VPDeletedDuringRetry(t *testing.T) {
 		VolumeName: "vol1",
 	}
 
-	// Simulate store failure first, then VP gets deleted from cache
-	callCount := 0
+	// Simulate store failure first, then VP gets deleted from cache.
+	// callCount is read from the assert.Eventually poller while the background
+	// sync goroutine writes it, so it must be accessed atomically.
+	var callCount atomic.Int32
 	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).DoAndReturn(
 		func(ctx context.Context, pub *models.VolumePublication) error {
-			callCount++
-			if callCount == 1 {
+			if callCount.Add(1) == 1 {
 				return fmt.Errorf("temporary store error")
 			}
 			// Should not reach here as VP will be deleted
@@ -4298,6 +4305,7 @@ func TestSyncVolumePublications_VPDeletedDuringRetry(t *testing.T) {
 
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
+	withUnlimitedVPSyncRateLimiter(t)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -4310,23 +4318,23 @@ func TestSyncVolumePublications_VPDeletedDuringRetry(t *testing.T) {
 
 	// Wait for at least one persist attempt before deleting from cache.
 	assert.Eventually(t, func() bool {
-		return callCount >= 1
-	}, 200*time.Millisecond, 5*time.Millisecond, "Expected an initial persist attempt")
+		return callCount.Load() >= 1
+	}, vpSyncTestEventuallyTimeout, 10*time.Millisecond, "Expected an initial persist attempt")
 
 	// Delete VP from cache (simulates deletion during retry)
 	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
 
 	// Ensure retries stop quickly once the cache entry is removed.
-	lastCount := callCount
+	lastCount := callCount.Load()
 	assert.Eventually(t, func() bool {
-		current := callCount
+		current := callCount.Load()
 		stable := current == lastCount
 		lastCount = current
 		return stable
-	}, 300*time.Millisecond, 10*time.Millisecond, "Expected retries to stop after VP deletion")
+	}, vpSyncTestEventuallyTimeout, 10*time.Millisecond, "Expected retries to stop after VP deletion")
 
 	// Should have attempted at least once, but stopped retrying after VP was deleted
-	assert.GreaterOrEqual(t, callCount, 1, "Expected at least one attempt")
+	assert.GreaterOrEqual(t, int(callCount.Load()), 1, "Expected at least one attempt")
 }
 
 func TestPersistVolumePublicationUpdate_Success(t *testing.T) {
@@ -5402,7 +5410,7 @@ func TestAddStorageClass_PersistentStoreError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator := newTestTridentOrchestrator(t, mockStoreClient)
 	orchestrator.bootstrapped = true
 	orchestrator.bootstrapError = nil
 
@@ -5440,7 +5448,7 @@ func TestUpdateStorageClass(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator := newTestTridentOrchestrator(t, mockStoreClient)
 	orchestrator.bootstrapError = nil
 
 	// Test 1: Update existing storage class
@@ -5449,7 +5457,7 @@ func TestUpdateStorageClass(t *testing.T) {
 	orchestrator.storageClasses[sc.GetName()] = sc
 
 	mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), sc).Return(nil).Times(1)
-	_, err = orchestrator.UpdateStorageClass(ctx(), scConfig)
+	_, err := orchestrator.UpdateStorageClass(ctx(), scConfig)
 	assert.NoError(t, err, "should not return an error when updating an existing storage class")
 
 	// Test 2: Update non-existing storage class
@@ -5474,7 +5482,7 @@ func TestUpdateStorageClassWithBackends(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator := newTestTridentOrchestrator(t, mockStoreClient)
 	orchestrator.bootstrapped = true
 	orchestrator.bootstrapError = nil
 
@@ -5544,7 +5552,7 @@ func TestUpdateStorageClassWithBackends_PersistentStoreError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator := newTestTridentOrchestrator(t, mockStoreClient)
 	orchestrator.bootstrapped = true
 	orchestrator.bootstrapError = nil
 
@@ -13646,6 +13654,9 @@ func TestUpdateVolumeAutogrowPolicy_WithMultipleVPs(t *testing.T) {
 		mutex:              &sync.Mutex{},
 		bootstrapped:       true,
 	}
+	// The > 1 VP path spawns a background sync goroutine; drain it before the test
+	// ends so it can't race the next test (e.g. on the global VP rate limiter).
+	defer o.bgTasks.stop()
 
 	// Add 3 VPs with proper labels to trigger goroutine path (> 1 VP)
 	for i := 1; i <= 3; i++ {

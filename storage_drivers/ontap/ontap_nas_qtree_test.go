@@ -458,12 +458,13 @@ func TestInitialize_WithDifferentQtreePerFlexvol(t *testing.T) {
 		},
 	}
 
-	// Create mock driver and mockAPI
-	mockAPI, driver := newMockOntapNasQtreeDriver(t)
-	addCommonExpectToMockApiForInitialize(mockAPI)
-
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			// Use a fresh driver per subtest so housekeeping goroutines from one
+			// initialize path can't race with the next test case.
+			mockAPI, driver := newMockOntapNasQtreeDriver(tt)
+			addCommonExpectToMockApiForInitialize(mockAPI)
+
 			driver.Config.CommonStorageDriverConfig = nil
 
 			// Get structs needed for initializing driver

@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/discovery"
 	discoveryfake "k8s.io/client-go/discovery/fake"
 	clientgotesting "k8s.io/client-go/testing"
+	"k8s.io/client-go/util/workqueue"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -45,7 +46,10 @@ func TestMain(m *testing.M) {
 
 	// Speed up remediation and integration-test polling in this package.
 	failoverDetachPostDeleteDelay = 1 * time.Millisecond
-	testCrdPollInterval = 1 * time.Millisecond
+	crdAsyncPollInterval = 25 * time.Millisecond
+	crdWorkqueueRateLimiterFactory = func() workqueue.RateLimiter {
+		return workqueue.NewItemExponentialFailureRateLimiter(1*time.Millisecond, 30*time.Second)
+	}
 
 	// Run all tests
 	code := m.Run()

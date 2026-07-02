@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -830,13 +831,8 @@ func TestRequestAndRetry(t *testing.T) {
 func TestRequestAndRetrySucceedsAfterTooManyRequests(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	wg := &sync.WaitGroup{}
-
-	// Setting this up here will allow changing the response data
-	// even after requestAndRetry starts calling the requestFunc.
-	response := &http.Response{
-		StatusCode: http.StatusTooManyRequests,
-		Header:     make(http.Header, 0),
-	}
+	var statusCode atomic.Int32
+	statusCode.Store(http.StatusTooManyRequests)
 
 	// Ensure this change happens after the first request but before the second.
 	wg.Add(1)
@@ -846,12 +842,15 @@ func TestRequestAndRetrySucceedsAfterTooManyRequests(t *testing.T) {
 		// Sleep for a bit to give requestAndRetry a chance to retry.
 		time.Sleep(100 * time.Millisecond)
 		// Changing this here will allow requestAndRetry to exit.
-		response.StatusCode = http.StatusAccepted
+		statusCode.Store(http.StatusAccepted)
 	}()
 
-	// Set up a closure so the response can be modified after this has been passed to requestAndRetry.
+	// Build a fresh response per call, while status transitions are synchronized via atomics.
 	requestFunc := func() (*http.Response, []byte, error) {
-		// Set up some delay here so that requestAndRetry can run a few iterations.
+		response := &http.Response{
+			StatusCode: int(statusCode.Load()),
+			Header:     make(http.Header, 1),
+		}
 		response.Header.Set("Retry-After", "200ms")
 		return response, []byte{}, nil
 	}

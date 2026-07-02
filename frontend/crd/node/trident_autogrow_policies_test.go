@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -1096,16 +1097,21 @@ func TestHandleTridentAutogrowPolicies_Concurrent(t *testing.T) {
 			// Process events concurrently
 			errs := make([]error, len(keyItems))
 			done := make(chan struct{})
+			var wg sync.WaitGroup
 
 			for i := range keyItems {
 				i := i // Capture loop variable
+				wg.Add(1)
 				go func() {
+					defer wg.Done()
 					errs[i] = controller.handleTridentAutogrowPolicies(keyItems[i])
-					if i == len(keyItems)-1 {
-						close(done)
-					}
 				}()
 			}
+
+			go func() {
+				wg.Wait()
+				close(done)
+			}()
 
 			// Wait for all to complete
 			select {

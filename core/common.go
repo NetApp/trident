@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -16,6 +17,90 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/models"
 )
+
+// backgroundTasks tracks detached goroutines spawned by an orchestrator (such as
+// the asynchronous volume-publication sync started during bootstrap). It lets the
+// orchestrator cancel and wait for that work instead of letting it outlive the
+// orchestrator, which keeps shutdown deterministic and unit tests free of leaked
+// goroutines that can fail on a completed *testing.T. The zero value is ready to
+// use and is shared by both the serial and concurrent cores.
+type backgroundTasks struct {
+	mu      sync.Mutex
+	wg      sync.WaitGroup
+	nextID  uint64
+	cancels map[uint64]context.CancelFunc
+	stopped bool
+}
+
+// launch runs fn in a tracked goroutine under a cancelable context derived from
+// parent (preserving its logging values). The context is cancelled when fn
+// returns or when stop is called, whichever happens first.
+func (b *backgroundTasks) launch(parent context.Context, fn func(ctx context.Context)) {
+	ctx, cancel := context.WithCancel(parent)
+
+	b.mu.Lock()
+	if b.stopped {
+		b.mu.Unlock()
+		cancel()
+		return
+	}
+	if b.cancels == nil {
+		b.cancels = make(map[uint64]context.CancelFunc)
+	}
+	id := b.nextID
+	b.nextID++
+	b.cancels[id] = cancel
+	b.wg.Add(1)
+	b.mu.Unlock()
+
+	go func() {
+		defer b.wg.Done()
+		defer func() {
+			cancel()
+			b.mu.Lock()
+			delete(b.cancels, id)
+			b.mu.Unlock()
+		}()
+		fn(ctx)
+	}()
+}
+
+// backgroundTaskStopTimeout bounds how long stop waits for tracked goroutines to
+// finish before giving up. It is generous enough never to trip when tasks honor
+// context cancellation; exceeding it indicates a task that ignores its context
+// (a bug worth surfacing) rather than normal shutdown.
+var backgroundTaskStopTimeout = 30 * time.Second
+
+// stop cancels every in-flight task's context and waits (up to
+// backgroundTaskStopTimeout) for all tracked goroutines to finish. It is safe to
+// call when no task is running and may be called more than once. If the timeout
+// elapses it logs a warning and returns rather than blocking forever, so a task
+// that ignores cancellation cannot wedge shutdown.
+func (b *backgroundTasks) stop() {
+	b.mu.Lock()
+	b.stopped = true
+	cancels := make([]context.CancelFunc, 0, len(b.cancels))
+	for _, cancel := range b.cancels {
+		cancels = append(cancels, cancel)
+	}
+	b.mu.Unlock()
+
+	for _, cancel := range cancels {
+		cancel()
+	}
+
+	done := make(chan struct{})
+	go func() {
+		b.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(backgroundTaskStopTimeout):
+		Log().Warn("Timed out waiting for background tasks to stop; continuing without them.")
+	}
+}
 
 const (
 	NodeAccessReconcilePeriod      = time.Second * 30

@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -425,6 +426,10 @@ func TestPlugin_Activate(t *testing.T) {
 			mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
 			mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
 			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+			mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// Setup expectations for controller operations
 			// if tc.expectControllerOperations {
@@ -434,16 +439,21 @@ func TestPlugin_Activate(t *testing.T) {
 			// }
 
 			setupRestClientMock := func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
-				mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, errors.New("")).AnyTimes()
+				mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
+				mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, nil).AnyTimes()
+				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 				return mockRestClient
 			}
 
-			mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+			mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
 			mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-			mockNVMeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+			mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
 			mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+
+			socketPath := filepath.Join(os.TempDir(), fmt.Sprintf("csi-activate-%d.sock", time.Now().UnixNano()))
+			t.Cleanup(func() { _ = os.Remove(socketPath) })
+
 			plugin := &Plugin{
 				orchestrator:             mockOrchestrator,
 				controllerHelper:         mockControllerHelper,
@@ -451,7 +461,7 @@ func TestPlugin_Activate(t *testing.T) {
 				role:                     tc.role,
 				restClient:               setupRestClientMock(),
 				nodeName:                 "test-node",
-				endpoint:                 "unix:///tmp/test.sock",
+				endpoint:                 "unix://" + socketPath,
 				enableForceDetach:        tc.enableForceDetach,
 				iSCSISelfHealingInterval: tc.iSCSISelfHealingInterval,
 				nvmeSelfHealingInterval:  tc.nvmeSelfHealingInterval,
@@ -463,16 +473,20 @@ func TestPlugin_Activate(t *testing.T) {
 				nodeReadyCh:              make(chan struct{}),
 			}
 
-			err := plugin.Activate()
+			activateErr := plugin.Activate()
 
 			// Activation should always return nil immediately
-			assert.NoError(t, err)
+			assert.NoError(t, activateErr)
 
-			// Give some time for goroutine to execute
-			time.Sleep(100 * time.Millisecond)
+			// Verify GRPC server is created without relying on fixed timing.
+			assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
 
-			// Verify GRPC server was created (will be set by NewNonBlockingGRPCServer)
-			assert.NotNil(t, plugin.grpc)
+			activationCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			assert.NoError(t, plugin.WaitForActivation(activationCtx))
+
+			// Ensure background resources from Activate do not leak into the next subtest.
+			assert.NoError(t, plugin.Deactivate())
 		})
 	}
 }
@@ -539,8 +553,8 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		if plugin.grpc != nil {
-			plugin.grpc.Stop()
+		if grpcServer := plugin.getGRPC(); grpcServer != nil {
+			grpcServer.Stop()
 		}
 		ctrl.Finish()
 	})
@@ -561,17 +575,14 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 	// The node-driver-registrar sidecar has a hard ~30s connection deadline.
 	// With a 2-second sleep in CreateNode, the socket must appear within 1 second to
 	// prove that Activate() prioritizes gRPC listener startup over controller registration.
-	deadline := time.Now().Add(1 * time.Second)
-	socketFound := false
-	for time.Now().Before(deadline) {
-		if _, statErr := os.Stat(socketPath); statErr == nil {
-			socketFound = true
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	assert.Eventually(t, func() bool {
+		_, statErr := os.Stat(socketPath)
+		return statErr == nil
+	}, 1*time.Second, 10*time.Millisecond, "expected gRPC socket to be created before slow node registration finishes")
 
-	assert.True(t, socketFound, "expected gRPC socket to be created before slow node registration finishes")
+	// Wait for node registration completion so this test does not leak an activation
+	// goroutine into the next race-enabled test.
+	assert.Eventually(t, plugin.IsReady, 5*time.Second, 50*time.Millisecond)
 }
 
 // TestPlugin_Activate_ReproduceCustomerIssue_TRID19339 reproduces the exact customer scenario:
@@ -647,8 +658,8 @@ func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		if plugin.grpc != nil {
-			plugin.grpc.Stop()
+		if grpcServer := plugin.getGRPC(); grpcServer != nil {
+			grpcServer.Stop()
 		}
 		ctrl.Finish()
 	})

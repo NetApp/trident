@@ -384,6 +384,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		orchestrator = oldOrchestrator
 	}()
 	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockK8sHelper := mockk8scontrollerhelper.NewMockK8SControllerHelperPlugin(mockCtrl)
 
@@ -400,22 +401,36 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		wg                         sync.WaitGroup
 		updateNodeCalled           time.Time
 		updateNodeResponseReceived time.Time
+		listNodesStarted           = make(chan struct{}, 1)
+		allowListNodesReturn       = make(chan struct{}, 1)
 	)
+	t.Cleanup(func() {
+		select {
+		case allowListNodesReturn <- struct{}{}:
+		default:
+		}
+	})
 
 	// Setup test http server.
 	orchestrator = mockOrchestrator
 	ts := httptest.NewServer(NewRouter(false))
+	defer ts.Close()
 
-	// Set up the expected mock calls and add wait groups to those that are async.
+	// ListNodes is not in gomock.InOrder; only the UpdateNode handler chain is ordered.
+	// The mutex blocks UpdateNode until ListNodes completes.
 	wg.Add(3)
+	mockOrchestrator.EXPECT().ListNodes(gomock.Any()).
+		DoAndReturn(func(_ context.Context) ([]models.Node, error) {
+			m.Lock()
+			defer m.Unlock()
+			select {
+			case listNodesStarted <- struct{}{}:
+			default:
+			}
+			<-allowListNodesReturn
+			return nil, nil
+		})
 	gomock.InOrder(
-		mockOrchestrator.EXPECT().ListNodes(gomock.Any()).
-			DoAndReturn(func(_ context.Context) ([]models.Node, error) {
-				m.Lock()
-				defer m.Unlock()
-				time.Sleep(200 * time.Millisecond)
-				return nil, nil
-			}),
 		mockOrchestrator.EXPECT().GetFrontend(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(_ context.Context, _ string) (frontend.Plugin, error) {
 				return mockK8sHelper, nil
@@ -441,8 +456,17 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 	}()
 	go func() {
 		defer wg.Done()
-		// Ensure this request occurs after first request.
-		time.Sleep(20 * time.Millisecond)
+		// Ensure this request occurs after ListNodes has started.
+		select {
+		case <-listNodesStarted:
+		case <-time.After(5 * time.Second):
+			t.Error("timed out waiting for ListNodes to start")
+			select {
+			case allowListNodesReturn <- struct{}{}:
+			default:
+			}
+			return
+		}
 
 		nodeState := models.NodePublicationStateFlags{ProvisionerReady: new(true)}
 		data, err := json.Marshal(nodeState)
@@ -456,8 +480,21 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		updateNodeResponseReceived = time.Now()
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusAccepted, res.StatusCode)
+		select {
+		case allowListNodesReturn <- struct{}{}:
+		default:
+		}
 	}()
-	wg.Wait()
+	waitDone := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(waitDone)
+	}()
+	select {
+	case <-waitDone:
+	case <-time.After(10 * time.Second):
+		t.Fatal("timed out waiting for async UpdateNode test to complete")
+	}
 	assert.True(t, updateNodeResponseReceived.Before(updateNodeCalled),
 		"response must be received before handler called")
 }

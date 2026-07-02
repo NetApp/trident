@@ -64,7 +64,8 @@ type Plugin struct {
 
 	aesKey []byte
 
-	grpc NonBlockingGRPCServer
+	grpc     NonBlockingGRPCServer
+	grpcLock sync.RWMutex
 
 	csCap  []*csi.ControllerServiceCapability
 	nsCap  []*csi.NodeServiceCapability
@@ -421,7 +422,7 @@ func (p *Plugin) Activate() error {
 		if p.role == CSINode || p.role == CSIAllInOne {
 			extraInterceptors = append(extraInterceptors, nodeRegistrationInterceptor)
 		}
-		p.grpc = NewNonBlockingGRPCServer(extraInterceptors...)
+		p.setGRPC(NewNonBlockingGRPCServer(extraInterceptors...))
 
 		fields := LogFields{"nodeName": p.nodeName, "role": p.role}
 		Logc(ctx).WithFields(fields).Info("Activating CSI frontend.")
@@ -429,7 +430,7 @@ func (p *Plugin) Activate() error {
 		// Start the gRPC server immediately so node-driver-registrar can connect to /plugin/csi.sock
 		// within its ~30s connection deadline, even if controller registration (nodeRegisterWithController)
 		// is slow or retrying. TRID-19339: Decouples socket availability from controller readiness.
-		p.grpc.Start(p.endpoint, p, p, p, p)
+		p.getGRPC().Start(p.endpoint, p, p, p, p)
 
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
@@ -482,8 +483,8 @@ func (p *Plugin) Deactivate() error {
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
 	// Safely stop gRPC server only if it was initialized by Activate().
-	if p.grpc != nil {
-		p.grpc.GracefulStop()
+	if grpcServer := p.getGRPC(); grpcServer != nil {
+		grpcServer.GracefulStop()
 	}
 
 	// Stop iSCSI self-healing thread
@@ -491,6 +492,18 @@ func (p *Plugin) Deactivate() error {
 	p.stopNVMeSelfHealingThread(ctx)
 
 	return nil
+}
+
+func (p *Plugin) setGRPC(server NonBlockingGRPCServer) {
+	p.grpcLock.Lock()
+	p.grpc = server
+	p.grpcLock.Unlock()
+}
+
+func (p *Plugin) getGRPC() NonBlockingGRPCServer {
+	p.grpcLock.RLock()
+	defer p.grpcLock.RUnlock()
+	return p.grpc
 }
 
 func (p *Plugin) GetName() string {

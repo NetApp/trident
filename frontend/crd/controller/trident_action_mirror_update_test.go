@@ -136,7 +136,7 @@ func TestHandleActionMirrorUpdate(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
 	pvc := fakePVC(pvc1, namespace1, pv1)
 	_, _ = kubeClient.CoreV1().PersistentVolumeClaims(namespace1).Create(ctx(), pvc, createOpts)
@@ -147,20 +147,7 @@ func TestHandleActionMirrorUpdate(t *testing.T) {
 	tamu := fakeTAMU(tamu1, namespace1, tmrName1, snapHandle1)
 	_, _ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Create(ctx(), tamu, createOpts)
 
-	// Wait until the operation completes
-	for i := 0; i < 5; i++ {
-		time.Sleep(250 * time.Millisecond)
-
-		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-			break
-		} else if tamu.IsComplete() {
-			break
-		}
-	}
+	tamu = waitForTAMUComplete(t, crdClient, namespace1, tamu1)
 
 	assert.True(t, tamu.Succeeded(), "TAMU operation failed")
 
@@ -171,15 +158,7 @@ func TestHandleActionMirrorUpdate(t *testing.T) {
 
 	_ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Delete(ctx(), tamu1, deleteOptions)
 
-	// Wait until the TASR disappears
-	for i := 0; i < 5; i++ {
-		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
-		if apierrors.IsNotFound(err) {
-			break
-		}
-
-		time.Sleep(250 * time.Millisecond)
-	}
+	waitForTAMUDeleted(t, crdClient, namespace1, tamu1)
 
 	tamu, err = crdController.validateActionMirrorUpdateCR(ctx(), namespace1, tamu1)
 
@@ -308,7 +287,7 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
 	pvc := fakePVC(pvc1, namespace1, pv1)
 	_, _ = kubeClient.CoreV1().PersistentVolumeClaims(namespace1).Create(ctx(), pvc, createOpts)
@@ -319,20 +298,7 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 	tamu := fakeTAMU(tamu1, namespace1, tmrName1, snapHandle1)
 	_, _ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Create(ctx(), tamu, createOpts)
 
-	// Wait until the operation completes
-	for i := 0; i < 5; i++ {
-		time.Sleep(250 * time.Millisecond)
-
-		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-			break
-		} else if tamu.IsComplete() {
-			break
-		}
-	}
+	tamu = waitForTAMUComplete(t, crdClient, namespace1, tamu1)
 
 	assert.True(t, endTransferTime.After(tamu.Status.PreviousTransferTime.Time), "End transfer time is not after start")
 	assert.True(t, tamu.Succeeded(), "TAMU operation failed")
@@ -367,22 +333,9 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 	if err = crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
-	delaySeconds(1)
+	waitForControllerSync(t, crdController)
 
-	// Wait until the operation completes
-	for i := 0; i < 5; i++ {
-		time.Sleep(250 * time.Millisecond)
-
-		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-			break
-		} else if tamu.IsComplete() {
-			break
-		}
-	}
+	tamu = waitForTAMUComplete(t, crdClient, namespace1, tamu1)
 
 	assert.True(t, tamu.Failed(), "TAMU operation did not fail")
 }

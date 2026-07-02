@@ -5,10 +5,12 @@
 package csi
 
 import (
+	"errors"
 	"net"
 	"os"
 	"path"
 	"runtime"
+	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"google.golang.org/grpc"
@@ -40,6 +42,9 @@ func NewNonBlockingGRPCServer(extraInterceptors ...grpc.UnaryServerInterceptor) 
 type nonBlockingGRPCServer struct {
 	server            *grpc.Server
 	extraInterceptors []grpc.UnaryServerInterceptor
+	mu                sync.RWMutex
+	stopRequested     bool
+	gracefulStop      bool
 }
 
 func (s *nonBlockingGRPCServer) Start(
@@ -49,14 +54,14 @@ func (s *nonBlockingGRPCServer) Start(
 }
 
 func (s *nonBlockingGRPCServer) GracefulStop() {
-	if s.server != nil {
-		s.server.GracefulStop()
+	if server, shouldStop := s.markStopRequested(true); shouldStop {
+		server.GracefulStop()
 	}
 }
 
 func (s *nonBlockingGRPCServer) Stop() {
-	if s.server != nil {
-		s.server.Stop()
+	if server, shouldStop := s.markStopRequested(false); shouldStop {
+		server.Stop()
 	}
 }
 
@@ -131,7 +136,18 @@ func (s *nonBlockingGRPCServer) serve(
 		grpc.ChainUnaryInterceptor(s.buildInterceptorChain()...),
 	}
 	server := grpc.NewServer(opts...)
-	s.server = server
+	s.setServer(server)
+	defer s.setServer(nil)
+
+	if shouldStop, graceful := s.consumePendingStop(); shouldStop {
+		if graceful {
+			server.GracefulStop()
+		} else {
+			server.Stop()
+		}
+		_ = listener.Close()
+		return
+	}
 
 	if ids != nil {
 		csi.RegisterIdentityServer(server, ids)
@@ -150,7 +166,44 @@ func (s *nonBlockingGRPCServer) serve(
 		Log().Debug("Registered CSI group controller server.")
 	}
 
-	if err := server.Serve(listener); err != nil {
+	if err := server.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 		Log().Fatal(err)
 	}
+}
+
+func (s *nonBlockingGRPCServer) setServer(server *grpc.Server) {
+	s.mu.Lock()
+	s.server = server
+	s.mu.Unlock()
+}
+
+func (s *nonBlockingGRPCServer) getServer() *grpc.Server {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.server
+}
+
+func (s *nonBlockingGRPCServer) markStopRequested(graceful bool) (*grpc.Server, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.stopRequested = true
+	if graceful {
+		s.gracefulStop = true
+	}
+
+	if s.server == nil {
+		return nil, false
+	}
+	return s.server, true
+}
+
+func (s *nonBlockingGRPCServer) consumePendingStop() (bool, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.stopRequested {
+		return false, false
+	}
+	return true, s.gracefulStop
 }

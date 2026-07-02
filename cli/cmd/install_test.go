@@ -176,7 +176,6 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fmt.Println(tt.name)
 			originalDeploymentPath := deploymentPath
 			testDeploymentPath := filepath.Join(tempDir, "deployment.yaml")
 
@@ -3114,9 +3113,9 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			name:          "file_read_fails",
 			useYAML:       true,
 			fileExists:    true,
-			createFile:    true,
+			createFile:    false,
 			setupMocks:    func(mockClient *mockK8sClient.MockKubernetesClient) {},
-			expectedError: "permission denied",
+			expectedError: "directory",
 		},
 	}
 
@@ -3133,6 +3132,11 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			if tt.useYAML {
 				tempDir := t.TempDir()
 				crdsPath = filepath.Join(tempDir, "crds.yaml")
+
+				if tt.fileExists && !tt.createFile && tt.name == "file_read_fails" {
+					// Point to a directory to force a deterministic read error across platforms (including root in containers).
+					crdsPath = tempDir
+				}
 
 				if tt.fileExists && tt.createFile {
 					crdContent := k8sclient.GetCRDsYAML()

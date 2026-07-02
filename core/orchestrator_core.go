@@ -79,6 +79,11 @@ type TridentOrchestrator struct {
 	fs                       filesystem.Filesystem
 	fcp                      fcp.FCP
 	mount                    mount.Mount
+
+	// bgTasks tracks detached goroutines (e.g. the asynchronous volume-publication
+	// sync started during bootstrap or autogrow-policy updates) so they can be
+	// cancelled and awaited rather than outliving the orchestrator.
+	bgTasks backgroundTasks
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -645,9 +650,13 @@ func (o *TridentOrchestrator) bootstrapVolumePublications(ctx context.Context) e
 		}
 	}
 
-	// Asynchronously persist VPs that need syncing (e.g., after upgrade)
+	// Asynchronously persist VPs that need syncing (e.g., after upgrade). Tracked
+	// so the goroutine can be cancelled and awaited instead of outliving the
+	// orchestrator.
 	if len(vpsToBeSynced) > 0 {
-		go o.SyncVolumePublications(ctx, vpsToBeSynced)
+		o.bgTasks.launch(ctx, func(syncCtx context.Context) {
+			o.SyncVolumePublications(syncCtx, vpsToBeSynced)
+		})
 	}
 
 	return err
@@ -743,6 +752,9 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 // Stop stops the orchestrator core.
 func (o *TridentOrchestrator) Stop() {
+	// Cancel and wait for detached background tasks (e.g. async VP sync).
+	o.bgTasks.stop()
+
 	// Stop the node access and backends' state reconciliation background tasks
 	if o.stopNodeAccessLoop != nil {
 		o.stopNodeAccessLoop <- true
@@ -8367,7 +8379,9 @@ func (o *TridentOrchestrator) UpdateVolumeAutogrowPolicy(
 	// will acquire o.mutex internally
 	if len(syncNeededVPS) > 1 {
 		o.mutex.Unlock()
-		go o.SyncVolumePublications(ctx, syncNeededVPS)
+		o.bgTasks.launch(ctx, func(syncCtx context.Context) {
+			o.SyncVolumePublications(syncCtx, syncNeededVPS)
+		})
 		return policyErr
 	}
 

@@ -5047,22 +5047,30 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		mockFilesystem := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
 
 		for i := 0; i < numOfRequests; i++ {
-			nfsVolumeTrackingInfo := &models.VolumeTrackingInfo{
-				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
-			}
-			smbVolumeTrackingInfo := &models.VolumeTrackingInfo{
-				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
-			}
-
 			// Setting up mocks expectation for NAS request.
-			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
-			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
+			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+					return &models.VolumeTrackingInfo{
+						VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+					}, nil
+				})
+			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+					return &models.VolumeTrackingInfo{
+						VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+					}, nil
+				})
 			mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
 			mockMount.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockTrackingClientNFS.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			// Setting up mocks expectation for SMB request.
-			mockTrackingClientSMB.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(smbVolumeTrackingInfo, nil)
+			mockTrackingClientSMB.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+					return &models.VolumeTrackingInfo{
+						VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+					}, nil
+				})
 			mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
 			mockMount.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
@@ -5094,20 +5102,20 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		// Spinning up go-routine for NFS requests.
 		for i := 0; i < numOfRequests; i++ {
-			go func() {
+			go func(index int) {
 				defer wg.Done()
-				_, err := pluginNFS.NodePublishVolume(context.Background(), NFSrequests[i])
+				_, err := pluginNFS.NodePublishVolume(context.Background(), NFSrequests[index])
 				assert.NoError(t, err)
-			}()
+			}(i)
 		}
 
 		// Spinning up go-routine for SMB requests.
 		for i := 0; i < numOfRequests; i++ {
-			go func() {
+			go func(index int) {
 				defer wg.Done()
-				_, err := pluginSMB.NodePublishVolume(context.Background(), SMBrequests[i])
+				_, err := pluginSMB.NodePublishVolume(context.Background(), SMBrequests[index])
 				assert.NoError(t, err)
-			}()
+			}(i)
 		}
 
 		wg.Wait()
@@ -5977,14 +5985,14 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		mockOSUtils := mock_osutils.NewMockUtils(ctrl)
 
 		// Setting up expectations for the first request.
-		mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
-		mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
+		mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil).Times(1)
+		mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
 		mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, resource string) error {
 			signalChan <- struct{}{}
-			time.Sleep(testNodeSlowOpDelay)
+			time.Sleep(testNodeCase2SlowOpDelay)
 			return nil
-		})
-		mockTrackingClient.EXPECT().RemovePublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}).Times(1)
+		mockTrackingClient.EXPECT().RemovePublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		plugin := &Plugin{
 			command:          execCmd.NewCommand(),
@@ -6000,22 +6008,27 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		var wg sync.WaitGroup
 		wg.Add(numOfRequests)
 
+		// Block waiters until the holder is in the slow path so every contender queues on the lock
+		// before the holder releases it (avoids late-scheduled goroutines passing attemptLock).
+		proceed := make(chan struct{})
+		for i := 1; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				<-proceed
+				_, err := plugin.NodeUnpublishVolume(context.Background(), requests[index])
+				assert.Error(t, err)
+			}(i)
+		}
+
 		go func() {
 			defer wg.Done()
 			_, err := plugin.NodeUnpublishVolume(context.Background(), requests[0])
 			assert.NoError(t, err)
 		}()
 
-		// Waiting on signal to ensure the first requests acquires the lock.
+		// Waiting on signal to ensure the first request acquires the lock.
 		<-signalChan
-
-		for i := 1; i < numOfRequests; i++ {
-			go func(index int) {
-				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(context.Background(), requests[index])
-				assert.Error(t, err)
-			}(i)
-		}
+		close(proceed)
 
 		wg.Wait()
 	})
@@ -7701,7 +7714,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
 			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
-			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, gomock.Any(), requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
 
 		// Creating a node plugin
@@ -7782,7 +7795,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 				time.Sleep(testNodeCase2SlowOpDelay)
 				return nil
 			}).Times(2) // Initial and deferred write
-			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, gomock.Any(), requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
 
 		// Creating a node plugin
@@ -7870,7 +7883,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 				time.Sleep(testNodeSlowOpDelayBrief)
 				return nil
 			}).Times(2) // Initial and deferred write
-			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, gomock.Any(), requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
 
 		// Setting up expectations for remaining requests
@@ -7882,7 +7895,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
 			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
-			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, gomock.Any(), requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
 
 		// Creating a node plugin
