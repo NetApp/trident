@@ -2670,9 +2670,35 @@ spec:
       served: true
       storage: true
       schema:
-          openAPIV3Schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
               type: object
               x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                backendNames:
+                  type: array
+                  items:
+                    type: string
+                message:
+                  type: string
+                deletionPolicy:
+                  type: string
+                phase:
+                  type: string
+                lastOperationStatus:
+                  type: string
+                cloudProvider:
+                  type: string
       subresources:
         status: {}
       additionalPrinterColumns:
@@ -3028,7 +3054,224 @@ spec:
       schema:
         openAPIV3Schema:
           type: object
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              properties:
+                enableForceDetach:
+                  type: boolean
+                disableAuditLog:
+                  type: boolean
+                namespace:
+                  type: string
+                IPv6:
+                  type: boolean
+                k8sTimeout:
+                  type: integer
+                httpRequestTimeout:
+                  type: string
+                silenceAutosupport:
+                  type: boolean
+                excludeAutosupport:
+                  type: boolean
+                autosupportImage:
+                  type: string
+                autosupportProxy:
+                  type: string
+                autosupportInsecure:
+                  type: boolean
+                autosupportSerialNumber:
+                  type: string
+                autosupportHostname:
+                  type: string
+                uninstall:
+                  type: boolean
+                logFormat:
+                  type: string
+                logLevel:
+                  type: string
+                debug:
+                  type: boolean
+                logWorkflows:
+                  type: string
+                logLayers:
+                  type: string
+                probePort:
+                  type: integer
+                  format: int64
+                tridentImage:
+                  type: string
+                imageRegistry:
+                  type: string
+                kubeletDir:
+                  type: string
+                wipeout:
+                  type: array
+                  items:
+                    type: string
+                imagePullSecrets:
+                  type: array
+                  items:
+                    type: string
+                controllerPluginNodeSelector:
+                  type: object
+                  additionalProperties:
+                    type: string
+                controllerPluginTolerations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      effect:
+                        type: string
+                      key:
+                        type: string
+                      value:
+                        type: string
+                      operator:
+                        type: string
+                      tolerationSeconds:
+                        type: integer
+                nodePluginNodeSelector:
+                  type: object
+                  additionalProperties:
+                    type: string
+                nodePluginTolerations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      effect:
+                        type: string
+                      key:
+                        type: string
+                      value:
+                        type: string
+                      operator:
+                        type: string
+                      tolerationSeconds:
+                        type: integer
+                windows:
+                  type: boolean
+                imagePullPolicy:
+                  type: string
+                cloudProvider:
+                  type: string
+                cloudIdentity:
+                  type: string
+                enableACP:
+                  type: boolean
+                acpImage:
+                  type: string
+                enableAutoBackendConfig:
+                  type: boolean
+                iscsiSelfHealingInterval:
+                  type: string
+                iscsiSelfHealingWaitTime:
+                  type: string
+                k8sAPIQPS:
+                  type: integer
+                fsGroupPolicy:
+                  type: string
+                nodePrep:
+                  type: array
+                  items:
+                    type: string
+                skipCRDsToObliviate:
+                  type: array
+                  items:
+                    type: string
+                enableConcurrency:
+                  type: boolean
+                resources:
+                  type: object
+                  properties:
+                    controller:
+                      type: object
+                      additionalProperties:
+                        type: object
+                        properties:
+                          requests:
+                            type: object
+                            properties:
+                              cpu:
+                                type: string
+                              memory:
+                                type: string
+                          limits:
+                            type: object
+                            properties:
+                              cpu:
+                                type: string
+                              memory:
+                                type: string
+                    node:
+                      type: object
+                      properties:
+                        linux:
+                          type: object
+                          additionalProperties:
+                            type: object
+                            properties:
+                              requests:
+                                type: object
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                              limits:
+                                type: object
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                        windows:
+                          type: object
+                          additionalProperties:
+                            type: object
+                            properties:
+                              requests:
+                                type: object
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                              limits:
+                                type: object
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                httpsMetrics:
+                  type: boolean
+                hostNetwork:
+                  type: boolean
+            status:
+              type: object
+              properties:
+                message:
+                  type: string
+                status:
+                  type: string
+                version:
+                  type: string
+                namespace:
+                  type: string
+                currentInstallationParams:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                acpVersion:
+                  type: string
       subresources:
         status: {}
   names:
