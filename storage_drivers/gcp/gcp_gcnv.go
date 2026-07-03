@@ -1358,25 +1358,37 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			if unixPermissions == "" {
 				unixPermissions = volume.UnixPermissions
 			}
+			var unixPermissionsPtr *string
 			if unixPermissions != "" {
-				if err = filesystem.ValidateOctalUnixPermissions(unixPermissions); err != nil {
-					return fmt.Errorf("could not import volume %s; %v", originalName, err)
+				if volume.SecurityStyle == api.SecurityStyleUnix {
+					if err = filesystem.ValidateOctalUnixPermissions(unixPermissions); err != nil {
+						return fmt.Errorf("could not import volume %s; %v", originalName, err)
+					}
+					unixPermissionsPtr = new(unixPermissions)
+				} else {
+					Logc(ctx).WithFields(LogFields{
+						"originalName":  originalName,
+						"securityStyle": volume.SecurityStyle,
+					}).Debug("Skipping unixPermissions update for non-UNIX security style")
 				}
 			}
 
-			err = d.API.UpdateNASVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, nil)
+			err = d.API.UpdateNASVolume(ctx, volume, labels, unixPermissionsPtr, &snapshotDirAccess, nil)
 			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
 			}
 
-			Logc(ctx).WithFields(LogFields{
-				"name":            volume.Name,
-				"creationToken":   volume.CreationToken,
-				"labels":          labels,
-				"unixPermissions": unixPermissions,
-			}).Info("Volume modified.")
+			logFields := LogFields{
+				"name":          volume.Name,
+				"creationToken": volume.CreationToken,
+				"labels":        labels,
+			}
+			if unixPermissionsPtr != nil {
+				logFields["unixPermissions"] = unixPermissions
+			}
+			Logc(ctx).WithFields(logFields).Info("Volume modified.")
 		} else {
 			return fmt.Errorf("could not import volume '%s' due to backend and volume mismatch", originalName)
 		}

@@ -4184,6 +4184,43 @@ func TestImport_Managed(t *testing.T) {
 	assert.Equal(t, originalVolume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
+func TestImport_Managed_NonUnixSecurityStyle(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+	driver.Config.UnixPermissions = "0770"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
+	originalVolume.SecurityStyle = api.SecurityStyleNTFS
+	volConfig.UnixPermissions = "8888"
+
+	expectedLabels := driver.updateTelemetryLabels(ctx, originalVolume)
+	var snapshotDirAccess bool
+	originalName := "importMe"
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
+
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, nil, &snapshotDirAccess, nil).Return(nil).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalVolume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
 func TestImport_ManagedVolumeFullName(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
