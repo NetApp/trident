@@ -519,8 +519,8 @@ func main() {
 			fijiFrontend = fiji.NewFrontend(":50001")
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, nodeHelper, *enableForceDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
+				*httpsClientKey, *aesKey, orchestrator, controllerHelper, *csiUnsafeNodeDetach, nodeHelper,
+				*enableForceDetach, *iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 

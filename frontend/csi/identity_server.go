@@ -46,7 +46,7 @@ func (p *Plugin) GetPluginInfo(
 func (p *Plugin) GetPluginCapabilities(
 	ctx context.Context, req *csi.GetPluginCapabilitiesRequest,
 ) (res *csi.GetPluginCapabilitiesResponse, err error) {
-	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.topologyInUse}
+	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.topologyInUse.Load()}
 	Logc(ctx).WithFields(fields).Trace(">>>> GetPluginCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GetPluginCapabilities")
 
@@ -76,7 +76,7 @@ func (p *Plugin) GetPluginCapabilities(
 	}
 
 	// If topology is in use, add VOLUME_ACCESSIBILITY_CONSTRAINTS capability
-	if p.topologyInUse {
+	if p.topologyInUse.Load() {
 		Logc(ctx).WithFields(fields).Info("Topology is in use. Adding VOLUME_ACCESSIBILITY_CONSTRAINTS capability.")
 		csiPluginCap = append(csiPluginCap, &csi.PluginCapability{
 			Type: &csi.PluginCapability_Service_{
