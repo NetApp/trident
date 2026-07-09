@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"maps"
 	"math/big"
 	"os"
 	"path"
@@ -64,6 +65,8 @@ const (
 	maximumNodeReconciliationJitter  = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration         = 6 * time.Minute
 
+	snswAlreadyPublishedElsewhereMsg = "volume uses SINGLE_NODE_SINGLE_WRITER access mode and is already mounted at a different target path"
+
 	// Node Scalability constants.
 	maxNodeStageNFSVolumeOperations     = 10
 	maxNodeStageSMBVolumeOperations     = 10
@@ -120,7 +123,9 @@ const (
 var (
 	csiNodeLockTimeout = 60 * time.Second
 
-	topologyLabels     = make(map[string]string)
+	// topologyLabels: nil = not yet loaded; non-nil (possibly empty) = loaded.
+	// Cache writes store {} instead of nil so != nil acts as the initialized sentinel.
+	topologyLabels     map[string]string
 	topologyLabelsLock sync.RWMutex
 	iscsiUtils         = iscsi.IscsiUtils
 	fcpUtils           = utils.FcpUtils
@@ -148,22 +153,58 @@ var (
 	nvmeNodeOperationWaitingCount atomic.Int32
 )
 
-func getTopologyLabelsCopy() map[string]string {
-	topologyLabelsLock.RLock()
-	defer topologyLabelsLock.RUnlock()
-
-	labels := make(map[string]string, len(topologyLabels))
-	for k, v := range topologyLabels {
-		labels[k] = v
-	}
-
-	return labels
-}
-
 const (
 	removeMultipathDeviceMappingRetries    = 4
 	removeMultipathDeviceMappingRetryDelay = 500 * time.Millisecond
 )
+
+// getTopologyLabelsCopy returns a shallow copy of the cached labels.
+// maps.Clone(nil) is safe and returns nil (not {}); shallow copy suffices because values are strings.
+func getTopologyLabelsCopy() map[string]string {
+	topologyLabelsLock.RLock()
+	defer topologyLabelsLock.RUnlock()
+	return maps.Clone(topologyLabels)
+}
+
+// getTopologyLabels lazily loads topology segments once. Return paths keep maps.Clone results as-is:
+// nil and {} are equivalent for read-only CSI Segments, and not normalizing on error preserves retry.
+func (p *Plugin) getTopologyLabels(ctx context.Context) map[string]string {
+	topologyLabelsLock.RLock()
+	if topologyLabels != nil || p.controllerHelper == nil {
+		labels := maps.Clone(topologyLabels)
+		topologyLabelsLock.RUnlock()
+		return labels
+	}
+	topologyLabelsLock.RUnlock()
+
+	labels, err := p.controllerHelper.GetNodeTopologyLabels(ctx, p.nodeName)
+	if err != nil {
+		Logc(ctx).WithError(err).Debug("Unable to get topology labels from node; falling back to registered labels.")
+		topologyLabelsLock.RLock()
+		defer topologyLabelsLock.RUnlock()
+		return maps.Clone(topologyLabels)
+	}
+
+	topologyLabelsLock.Lock()
+	defer topologyLabelsLock.Unlock()
+
+	if topologyLabels != nil {
+		return maps.Clone(topologyLabels)
+	}
+
+	topologyLabels = maps.Clone(labels)
+	if topologyLabels == nil {
+		topologyLabels = map[string]string{} // mark cache initialized so we do not re-fetch K8s
+	}
+	if len(labels) > 0 {
+		val, ok := labels[K8sTopologyRegionLabel]
+		if ok && val != "" {
+			p.topologyInUse.Store(true)
+		}
+	}
+
+	return maps.Clone(labels)
+}
 
 func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout time.Duration) bool {
 	startTime := time.Now()
@@ -316,16 +357,36 @@ func (p *Plugin) NodePublishVolume(
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
 
+	var (
+		trackingInfo    *models.VolumeTrackingInfo
+		trackingInfoErr error
+		trackingLoaded  bool
+	)
+	loadTrackingInfo := func() error {
+		if trackingLoaded {
+			return trackingInfoErr
+		}
+		trackingInfo, trackingInfoErr = p.nodeHelper.ReadTrackingInfo(ctx, req.GetVolumeId())
+		trackingLoaded = true
+		return trackingInfoErr
+	}
+
+	if hasSingleNodeSingleWriterAccessMode(req) {
+		if err := loadTrackingInfo(); err != nil && !errors.IsNotFoundError(err) {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if trackingInfo != nil && isVolumePublishedElsewhere(trackingInfo, req.GetTargetPath()) {
+			return nil, status.Error(codes.FailedPrecondition, snswAlreadyPublishedElsewhereMsg)
+		}
+	}
+
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
-		var trackingInfo *models.VolumeTrackingInfo
-		trackingInfo, err = p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
-		if err != nil {
+		if err := loadTrackingInfo(); err != nil {
 			if errors.IsNotFoundError(err) {
 				return nil, status.Error(codes.FailedPrecondition, err.Error())
-			} else {
-				return nil, status.Error(codes.Internal, err.Error())
 			}
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 		if trackingInfo.VolumePublishInfo.FilesystemType == smb.SMB {
 			res, err = p.nodePublishSMBVolume(ctx, req)
@@ -827,7 +888,7 @@ func (p *Plugin) NodeGetInfo(
 	return &csi.NodeGetInfoResponse{
 		NodeId: p.nodeName,
 		AccessibleTopology: &csi.Topology{
-			Segments: getTopologyLabelsCopy(),
+			Segments: p.getTopologyLabels(ctx), // nil Segments is valid; nil vs {} equivalent for kubelet
 		},
 	}, nil
 }
@@ -947,12 +1008,12 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 		nodeDetails, err := p.restClient.CreateNode(ctx, node)
 		if err == nil {
 			topologyLabelsLock.Lock()
-			topologyLabels = nodeDetails.TopologyLabels
-			node.TopologyLabels = nodeDetails.TopologyLabels
-			labels := make(map[string]string, len(topologyLabels))
-			for k, v := range topologyLabels {
-				labels[k] = v
+			topologyLabels = maps.Clone(nodeDetails.TopologyLabels)
+			if topologyLabels == nil {
+				topologyLabels = map[string]string{} // same initialized sentinel as getTopologyLabels
 			}
+			node.TopologyLabels = nodeDetails.TopologyLabels
+			labels := maps.Clone(topologyLabels)
 			topologyLabelsLock.Unlock()
 
 			// Assume topology to be in use only if there exists a topology label with key "topology.kubernetes.io/region" on the node.
@@ -961,10 +1022,10 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 				fields := LogFields{"topologyLabelKey": K8sTopologyRegionLabel, "value": val}
 				if ok && val != "" {
 					Logc(ctx).WithFields(fields).Infof("%s label found on node. Assuming topology to be in use.", K8sTopologyRegionLabel)
-					p.topologyInUse = true
+					p.topologyInUse.Store(true)
 				} else {
 					Logc(ctx).WithFields(fields).Infof("%s label not found on node. Assuming topology not in use.", K8sTopologyRegionLabel)
-					p.topologyInUse = false
+					p.topologyInUse.Store(false)
 				}
 			}
 
@@ -3800,4 +3861,17 @@ func (p *Plugin) nodePruneISCSIAttachment(
 		VolumeName:       req.VolumeName,
 		Protocol:         req.Protocol,
 	}, nil
+}
+
+func hasSingleNodeSingleWriterAccessMode(req *csi.NodePublishVolumeRequest) bool {
+	accessMode := req.GetVolumeCapability().GetAccessMode()
+	return accessMode != nil &&
+		accessMode.GetMode() == csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER
+}
+
+func isVolumePublishedElsewhere(trackingInfo *models.VolumeTrackingInfo, targetPath string) bool {
+	if _, ok := trackingInfo.PublishedPaths[targetPath]; ok {
+		return false
+	}
+	return len(trackingInfo.PublishedPaths) > 0
 }

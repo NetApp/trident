@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -72,7 +73,7 @@ type Plugin struct {
 	vCap   []*csi.VolumeCapability_AccessMode
 	gcsCap []*csi.GroupControllerServiceCapability
 
-	topologyInUse bool
+	topologyInUse atomic.Bool
 
 	opCache sync.Map
 
@@ -172,8 +173,8 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	unsafeDetach bool, helper nodehelpers.NodeHelper, enableForceDetach bool,
-	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
+	controllerHelper controllerhelpers.ControllerHelper, unsafeDetach bool, helper nodehelpers.NodeHelper,
+	enableForceDetach bool, iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
@@ -212,6 +213,7 @@ func NewNodePlugin(
 		version:                  tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:                 endpoint,
 		role:                     CSINode,
+		controllerHelper:         controllerHelper,
 		nodeHelper:               helper,
 		enableForceDetach:        enableForceDetach,
 		unsafeDetach:             unsafeDetach,
@@ -462,7 +464,7 @@ func (p *Plugin) Activate() error {
 		if p.role == CSIController || p.role == CSIAllInOne {
 			// Check if topology is in use and store it in the plugin
 			topologyInUse := p.controllerHelper.IsTopologyInUse(ctx)
-			p.topologyInUse = topologyInUse
+			p.topologyInUse.Store(topologyInUse)
 		}
 
 		// Communicate the plugin is activated.

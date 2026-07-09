@@ -35,6 +35,7 @@ import (
 	"github.com/netapp/trident/internal/crypto"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
+	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/mocks/mock_utils/mock_blockdevice"
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
@@ -2087,7 +2088,7 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 
 			// assert node is registered and topology in use is as expected
 			assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
-			assert.Equal(t, data.expected, nodeServer.topologyInUse, "topologyInUse not as expected")
+			assert.Equal(t, data.expected, nodeServer.topologyInUse.Load(), "topologyInUse not as expected")
 		})
 	}
 }
@@ -10850,6 +10851,56 @@ func TestReconcileNodePublicationState(t *testing.T) {
 	}
 }
 
+func TestHasSingleNodeSingleWriterAccessMode(t *testing.T) {
+	t.Run("SNSW access mode", func(t *testing.T) {
+		req := &csi.NodePublishVolumeRequest{
+			VolumeCapability: &csi.VolumeCapability{
+				AccessMode: &csi.VolumeCapability_AccessMode{
+					Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER,
+				},
+			},
+		}
+		assert.True(t, hasSingleNodeSingleWriterAccessMode(req))
+	})
+
+	t.Run("other access mode", func(t *testing.T) {
+		req := &csi.NodePublishVolumeRequest{
+			VolumeCapability: &csi.VolumeCapability{
+				AccessMode: &csi.VolumeCapability_AccessMode{
+					Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_MULTI_WRITER,
+				},
+			},
+		}
+		assert.False(t, hasSingleNodeSingleWriterAccessMode(req))
+	})
+
+	t.Run("nil capability", func(t *testing.T) {
+		assert.False(t, hasSingleNodeSingleWriterAccessMode(&csi.NodePublishVolumeRequest{}))
+	})
+}
+
+func TestIsVolumePublishedElsewhere(t *testing.T) {
+	trackingInfo := &models.VolumeTrackingInfo{
+		PublishedPaths: map[string]struct{}{
+			"/path/a": {},
+		},
+	}
+
+	assert.False(t, isVolumePublishedElsewhere(trackingInfo, "/path/a"))
+	assert.True(t, isVolumePublishedElsewhere(trackingInfo, "/path/b"))
+	assert.False(t, isVolumePublishedElsewhere(&models.VolumeTrackingInfo{}, "/path/b"))
+
+	t.Run("target path present with stale path is idempotent", func(t *testing.T) {
+		info := &models.VolumeTrackingInfo{
+			PublishedPaths: map[string]struct{}{
+				"/path/a": {},
+				"/path/b": {},
+			},
+		}
+		assert.False(t, isVolumePublishedElsewhere(info, "/path/a"))
+	})
+}
+
 func TestNodePublishVolumeCases(t *testing.T) {
 	testCases := []struct {
 		name                     string
@@ -10863,6 +10914,64 @@ func TestNodePublishVolumeCases(t *testing.T) {
 		setupMount               func() mount.Mount
 		contextTimeoutBeforeCall bool
 	}{
+		{
+			name: "Error - SNSW volume already published at different target path",
+			req: func() *csi.NodePublishVolumeRequest {
+				req := NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
+				req.TargetPath = "/tmp/other"
+				req.VolumeCapability = &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{FsType: "nfs"},
+					},
+					AccessMode: &csi.VolumeCapability_AccessMode{
+						Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER,
+					},
+				}
+				return req
+			}(),
+			expErrCode: codes.FailedPrecondition,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+					PublishedPaths: map[string]struct{}{
+						"/tmp/existing": {},
+					},
+				}, nil).Times(1)
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success - SNSW NFS volume publish avoids duplicate NodePublishVolume read",
+			req: func() *csi.NodePublishVolumeRequest {
+				req := NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
+				req.VolumeCapability = &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{FsType: "nfs"},
+					},
+					AccessMode: &csi.VolumeCapability_AccessMode{
+						Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER,
+					},
+				}
+				return req
+			}(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).Times(2)
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
 		{
 			name:             "Success - NFS Volume publish",
 			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
@@ -12111,6 +12220,89 @@ func TestPlugin_NodeGetInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.Equal(t, nodeName, resp.NodeId)
+}
+
+func TestPlugin_NodeGetInfoTopologyFromControllerHelperBeforeRegistration(t *testing.T) {
+	topologyLabelsLock.Lock()
+	topologyLabels = nil
+	topologyLabelsLock.Unlock()
+	t.Cleanup(func() {
+		topologyLabelsLock.Lock()
+		topologyLabels = nil
+		topologyLabelsLock.Unlock()
+	})
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+	expectedLabels := map[string]string{
+		K8sTopologyRegionLabel:        "us-east-1",
+		"topology.kubernetes.io/zone": "us-east-1a",
+	}
+	mockControllerHelper.EXPECT().
+		GetNodeTopologyLabels(gomock.Any(), "test-node").
+		Return(expectedLabels, nil).
+		Times(1)
+
+	plugin := &Plugin{
+		nodeName:         "test-node",
+		controllerHelper: mockControllerHelper,
+		nodeReadyCh:      make(chan struct{}),
+	}
+
+	resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, expectedLabels, resp.AccessibleTopology.Segments)
+	assert.True(t, plugin.topologyInUse.Load(), "region label should set topologyInUse on first populate")
+	assert.False(t, plugin.IsReady(), "node should not be registered yet")
+	assert.Equal(t, expectedLabels, getTopologyLabelsCopy(), "labels should be cached globally")
+
+	resp.AccessibleTopology.Segments["mutated"] = "value"
+	assert.Equal(t, expectedLabels, getTopologyLabelsCopy(), "caller mutation must not affect cached labels")
+
+	resp2, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, expectedLabels, resp2.AccessibleTopology.Segments, "second call should use cache")
+}
+
+func TestPlugin_NodeGetInfoNilTopologyLabelsCacheNormalization(t *testing.T) {
+	topologyLabelsLock.Lock()
+	topologyLabels = nil
+	topologyLabelsLock.Unlock()
+	t.Cleanup(func() {
+		topologyLabelsLock.Lock()
+		topologyLabels = nil
+		topologyLabelsLock.Unlock()
+	})
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+	mockControllerHelper.EXPECT().
+		GetNodeTopologyLabels(gomock.Any(), "test-node").
+		Return(nil, nil).
+		Times(1)
+
+	plugin := &Plugin{
+		nodeName:         "test-node",
+		controllerHelper: mockControllerHelper,
+		nodeReadyCh:      make(chan struct{}),
+	}
+
+	resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+	assert.NoError(t, err)
+	assert.Nil(t, resp.AccessibleTopology.Segments, "nil controller labels clone to nil on return")
+	assert.NotNil(t, getTopologyLabelsCopy(), "nil labels normalize to empty map in cache")
+	assert.Empty(t, getTopologyLabelsCopy())
+
+	resp2, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, resp2.AccessibleTopology.Segments, "cached empty map clones to non-nil empty map")
+	assert.Empty(t, resp2.AccessibleTopology.Segments)
 }
 
 func TestNodeGetInfo(t *testing.T) {

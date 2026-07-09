@@ -220,7 +220,7 @@ func TestNewNodePlugin(t *testing.T) {
 
 			plugin, err := NewNodePlugin(
 				"test-node", "unix:///tmp/csi.sock", "ca-cert", "client-cert", "client-key", aesKeyFile,
-				mockOrchestrator, false, mockHelper, true,
+				mockOrchestrator, nil, false, mockHelper, true,
 				time.Minute, time.Minute*2, time.Minute*3,
 			)
 

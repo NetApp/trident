@@ -148,9 +148,8 @@ func TestGetPluginCapabilities(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{
-				topologyInUse: tc.topologyInUse,
-			}
+			plugin := &Plugin{}
+			plugin.topologyInUse.Store(tc.topologyInUse)
 			resp, err := plugin.GetPluginCapabilities(context.Background(), &csi.GetPluginCapabilitiesRequest{})
 
 			assert.NoError(t, err)
