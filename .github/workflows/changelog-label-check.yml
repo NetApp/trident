@@ -1,0 +1,60 @@
+name: changelog-label-check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+    branches:
+      - master
+      - stable/v**
+
+permissions:
+  pull-requests: read
+
+jobs:
+  changelog-label-check:
+    name: Changelog label validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
+      - name: Validate changelog label on PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          repo="${{ github.repository }}"
+          pr="${{ github.event.pull_request.number }}"
+
+          mapfile -t labels < <(gh api "repos/${repo}/pulls/${pr}" --jq '.labels[].name')
+
+          has_needs=false
+          has_no=false
+          for label in "${labels[@]}"; do
+            case "$label" in
+              needs-changelog) has_needs=true ;;
+              no-changelog) has_no=true ;;
+            esac
+          done
+
+          if [[ "$has_needs" == true && "$has_no" == true ]]; then
+            echo "::error::PR has both \`needs-changelog\` and \`no-changelog\` labels. Remove one so exactly one remains."
+            echo "::error::Comment on this PR with \`/needs-changelog\` or \`/no-changelog\` (PR author or collaborator), or edit labels in the GitHub UI."
+            exit 1
+          fi
+
+          if [[ "$has_needs" == false && "$has_no" == false ]]; then
+            echo "::error::PR is missing a changelog label. Add exactly one: \`needs-changelog\` or \`no-changelog\`."
+            echo "::error::Comment on this PR with \`/needs-changelog\` (user-facing change; add a release note in the PR description) or \`/no-changelog\` (no release note needed; add a brief rationale in the PR description)."
+            echo "::error::PR author and collaborators can use those slash commands; maintainers may also set labels in the GitHub UI."
+            exit 1
+          fi
+
+          if [[ "$has_needs" == true ]]; then
+            echo "Changelog label \`needs-changelog\` is set."
+          else
+            echo "Changelog label \`no-changelog\` is set."
+          fi
