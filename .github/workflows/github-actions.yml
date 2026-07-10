@@ -25,7 +25,7 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Check base ref
@@ -48,11 +48,11 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install golangci-lint
         run: make install-lint
       - name: golangci-lint
@@ -67,8 +67,8 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
@@ -88,12 +88,12 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v5
+      - uses: actions/cache@v5
         with:
           # In order:
           # * Module download cache
@@ -153,7 +153,7 @@ jobs:
           echo "PR_Number=${{ github.event.pull_request.number }}"
       - if: runner.os != 'Windows'
         name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: "coverage-report-${{ runner.os }}-${{ github.run_number }}.html"
           path: ${{ runner.os }}-coverage.html
@@ -168,10 +168,10 @@ jobs:
             egress-policy: audit
 
         - name: Check out code
-          uses: actions/checkout@v4
+          uses: actions/checkout@v5
 
         - name: Setup Golang for unit test
-          uses: actions/setup-go@v5
+          uses: actions/setup-go@v6
           with:
             go-version-file: "${{ github.workspace }}/go.mod"
             cache: false
@@ -287,14 +287,14 @@ jobs:
             PY
 
         - name: Add coverage PR comment
-          uses: marocchino/sticky-pull-request-comment@v2
+          uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
           if: github.event_name == 'pull_request'
           with:
             recreate: true
             path: code-coverage-results.md
 
         - name: Upload coverage as artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v6
           if: always()
           with:
             name: code-coverage
