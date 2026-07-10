@@ -9,10 +9,9 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/models"
-
-	"github.com/netapp/trident/pkg/collection"
 )
 
 func (in *TridentVolumeMove) Persistent() (*storage.VolumeMoveExternal, error) {

@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/netapp/trident/utils/errors"
-
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
@@ -19,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
 )
@@ -247,13 +246,13 @@ func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publish
 
 	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
-		return fmt.Errorf("failed to read the tracking file; %v", err)
+		return fmt.Errorf("failed to read the tracking file; %w", err)
 	}
 
 	volTrackingInfo.VolumePublishInfo = *publishInfo
 
 	if err := h.WriteTrackingInfo(ctx, volumeID, volTrackingInfo); err != nil {
-		return fmt.Errorf("failed to update the tracking file; %v", err)
+		return fmt.Errorf("failed to update the tracking file; %w", err)
 	}
 	return nil
 }

@@ -147,7 +147,7 @@ func (d OntapAPIZAPI) VolumeModify(ctx context.Context, volume Volume) error {
 }
 
 func (d OntapAPIZAPI) VolumeMove(ctx context.Context, volumeName string, destinationAggregateName string, dryRun bool) (string, error) {
-	return "", fmt.Errorf("VolumeMove is not implemented for ZAPI")
+	return "", errors.UnsupportedError("VolumeMove is not implemented for ZAPI")
 }
 
 func (d OntapAPIZAPI) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
@@ -910,11 +910,11 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 }
 
 func (d OntapAPIZAPI) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
-	return fmt.Errorf("LunMapAddReportingNode is not implemented for ZAPI")
+	return errors.UnsupportedError("LunMapAddReportingNode is not implemented for ZAPI")
 }
 
 func (d OntapAPIZAPI) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
-	return fmt.Errorf("LunMapRemoveReportingNode is not implemented for ZAPI")
+	return errors.UnsupportedError("LunMapRemoveReportingNode is not implemented for ZAPI")
 }
 
 func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
@@ -1619,7 +1619,7 @@ func (d OntapAPIZAPI) FlexgroupUnmount(ctx context.Context, name string, force b
 }
 
 func (d OntapAPIZAPI) GetNodeForAggregate(ctx context.Context, aggregate string) (*Node, error) {
-	return nil, fmt.Errorf("GetNodeForAggregate not implemented for ZAPI")
+	return nil, errors.UnsupportedError("GetNodeForAggregate not implemented for ZAPI")
 }
 
 func (d OntapAPIZAPI) GetSVMAggregateAttributes(_ context.Context) (aggrList map[string]string, err error) {
@@ -2776,7 +2776,7 @@ func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule
 }
 
 func (d OntapAPIZAPI) JobGet(ctx context.Context, jobID string) (*Job, error) {
-	return nil, fmt.Errorf("JobGet not implemented for ZAPI")
+	return nil, errors.UnsupportedError("JobGet not implemented for ZAPI")
 }
 
 func (d OntapAPIZAPI) GetSVMPeers(ctx context.Context) ([]string, error) {

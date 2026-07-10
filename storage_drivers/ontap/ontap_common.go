@@ -1254,7 +1254,7 @@ func PublishLUN(
 				Logc(ctx).WithFields(fields).WithField(
 					"targetNode", targetNode,
 				).Trace("Could not add reporting node to LUN igroup mapping.")
-				return fmt.Errorf("failed to add reporting node %s for LUN %s: %v", targetNode, lunPath, err)
+				return fmt.Errorf("failed to add reporting node %s for LUN %s: %w", targetNode, lunPath, err)
 			}
 
 			// Additionally, remove the old reporting node from the new LUN igroup mapping.
@@ -1269,7 +1269,7 @@ func PublishLUN(
 					Logc(ctx).WithFields(fields).WithField(
 						"sourceNode", sourceNode,
 					).WithError(err).Error("Could not remove reporting node from LUN igroup mapping.")
-					return fmt.Errorf("failed to remove reporting node %s for LUN %s: %v", sourceNode, lunPath, err)
+					return fmt.Errorf("failed to remove reporting node %s for LUN %s: %w", sourceNode, lunPath, err)
 				}
 			}
 		}

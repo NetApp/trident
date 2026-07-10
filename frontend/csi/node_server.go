@@ -3618,6 +3618,11 @@ func (p *Plugin) disconnectNVMeSubsystemIfNeeded(
 	return nil
 }
 
+// NodeGraftAttachment reconciles an existing volume attachment by updating iSCSI session and portal
+// information without tearing down current paths or devices. It reads the persisted tracking info for
+// the named volume, validates that invariant fields (LUN number, target IQN, portals) are consistent
+// with the incoming request, then delegates to the protocol-specific graft handler. Only Block (iSCSI)
+// protocol is supported; File protocol returns a terminal reconciliation error.
 func (p *Plugin) NodeGraftAttachment(
 	ctx context.Context, req *models.GraftAttachmentRequest,
 ) (*models.GraftAttachmentResponse, error) {
@@ -3667,7 +3672,6 @@ func (p *Plugin) NodeGraftAttachment(
 
 	switch req.Protocol {
 	case tridentconfig.Block:
-		// TODO: Add NVMe check and support.
 		return p.nodeGraftISCSIAttachment(ctx, req, publishInfo)
 	case tridentconfig.File:
 		fallthrough

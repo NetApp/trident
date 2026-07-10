@@ -15,7 +15,6 @@ import (
 
 	"context"
 	gomock "go.uber.org/mock/gomock"
-
 	models "github.com/netapp/trident/utils/models"
 )
 
