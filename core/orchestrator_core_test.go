@@ -1343,6 +1343,63 @@ func TestCloneVolume_VolumeDataSource_LUKS(t *testing.T) {
 	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
 }
 
+func TestCloneVolume_CrossStorageClassAndAccessMode(t *testing.T) {
+	// Setup
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Create backend
+	poolNames := []string{tu.SlowSnapshots}
+	pools := make(map[string]*fake.StoragePool, len(poolNames))
+	for _, poolName := range poolNames {
+		pools[poolName] = mockPools[poolName]
+	}
+	volumes := make([]fake.Volume, 0)
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("slow-block", "block", pools, volumes)
+	assert.NoError(t, err)
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	assert.NoError(t, err)
+	defer orchestrator.DeleteBackend(ctx(), "slow-block")
+
+	// Create StorageClass 'sc-rwo'
+	storageClassRWO := &storageclass.Config{Name: "sc-rwo"}
+	_, err = orchestrator.AddStorageClass(ctx(), storageClassRWO)
+	defer orchestrator.DeleteStorageClass(ctx(), storageClassRWO.Name)
+	assert.NoError(t, err)
+
+	// Create StorageClass 'sc-rwx'
+	storageClassRWX := &storageclass.Config{Name: "sc-rwx"}
+	_, err = orchestrator.AddStorageClass(ctx(), storageClassRWX)
+	defer orchestrator.DeleteStorageClass(ctx(), storageClassRWX.Name)
+	assert.NoError(t, err)
+
+	// Create the Source Volume using 'sc-rwo' and ReadWriteOnce
+	volConfig := tu.GenerateVolumeConfig("block", 1, "sc-rwo", config.Block)
+	volConfig.AccessMode = config.ReadWriteOnce
+	_, err = orchestrator.AddVolume(ctx(), volConfig)
+	assert.NoError(t, err)
+	defer orchestrator.DeleteVolume(ctx(), volConfig.Name)
+
+	// Now clone the volume into 'sc-rwx' and ReadWriteMany
+	cloneName := volConfig.Name + "_clone"
+	cloneConfig := &storage.VolumeConfig{
+		Name:              cloneName,
+		StorageClass:      "sc-rwx",
+		AccessMode:        config.ReadWriteMany,
+		CloneSourceVolume: volConfig.Name,
+		VolumeMode:        volConfig.VolumeMode,
+	}
+	cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+	assert.NoError(t, err)
+	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
+
+	// Verify that the clone has the requested StorageClass and AccessMode,
+	// rather than inheriting the source volume's configuration.
+	assert.Equal(t, "sc-rwx", cloneResult.Config.StorageClass)
+	assert.Equal(t, config.ReadWriteMany, cloneResult.Config.AccessMode)
+}
+
+
 func TestCloneVolume_WithImportNotManaged(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	defer cleanup(t, orchestrator)
