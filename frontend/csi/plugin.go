@@ -5,6 +5,7 @@ package csi
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"runtime"
 	"strings"
@@ -41,6 +42,10 @@ const (
 	CSINode       = "node"
 	CSIAllInOne   = "allInOne"
 )
+
+func controllerRestURL(host, port string) string {
+	return "https://" + net.JoinHostPort(host, port)
+}
 
 type Plugin struct {
 	orchestrator  core.Orchestrator
@@ -262,7 +267,7 @@ func NewNodePlugin(
 		hostname = tridentconfig.ServerCertName
 	}
 
-	restURL := "https://" + hostname + ":" + port
+	restURL := controllerRestURL(hostname, port)
 	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err
@@ -354,7 +359,7 @@ func NewAllInOnePlugin(
 			break
 		}
 	}
-	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
+	restURL := controllerRestURL(tridentconfig.ServerCertName, port)
 	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err
