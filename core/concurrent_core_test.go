@@ -441,6 +441,34 @@ func getFakeVolume(name, backendUUID string) *storage.Volume {
 	return fakeVolume
 }
 
+func countBackendVolumes(backend storage.Backend) int {
+	if backend == nil {
+		return 0
+	}
+
+	count := 0
+	backend.Volumes().Range(func(_, _ any) bool {
+		count++
+		return true
+	})
+
+	return count
+}
+
+func requireBackendVolume(
+	t *testing.T, backend storage.Backend, volumeName, expectedBackendUUID string,
+) {
+	t.Helper()
+
+	value, found := backend.Volumes().Load(volumeName)
+	require.Truef(t, found, "volume %q is absent from backend %q", volumeName, backend.Name())
+
+	volume, ok := value.(*storage.Volume)
+	require.Truef(t, ok, "unexpected value type for volume %q: %T", volumeName, value)
+	require.Equal(t, volumeName, volume.Config.Name)
+	require.Equal(t, expectedBackendUUID, volume.BackendUUID)
+}
+
 func getFakeNode(name string) *models.Node {
 	fakeNode := &models.Node{
 		Name: name,
@@ -581,9 +609,7 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				// Bootstrap backfills the node-name label on existing publications,
-				// which triggers an asynchronous UpdateVolumePublication; allow it.
-				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -682,9 +708,7 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				// Bootstrap backfills the node-name label on existing publications,
-				// which triggers an asynchronous UpdateVolumePublication; allow it.
-				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -13708,12 +13732,12 @@ func TestPeriodicallyReconcileNodeAccessOnBackendsConcurrentCore(t *testing.T) {
 
 			// Start loop
 			go o.PeriodicallyReconcileNodeAccessOnBackends()
-			for o.getStopNodeAccessLoop() == nil {
+			for o.stopNodeAccessLoop == nil {
 				// Wait for loop to initialize
 				time.Sleep(10 * time.Millisecond)
 			}
 
-			assert.NotNil(t, o.getStopNodeAccessLoop(), "loop channel should be initialized")
+			assert.NotNil(t, o.stopNodeAccessLoop, "loop channel should be initialized")
 
 			time.Sleep(500 * time.Millisecond) // Wait for loop to do some work
 
@@ -13737,7 +13761,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 				// No setup needed for zero interval test
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
-				assert.Nil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should not have started")
+				assert.Nil(t, o.stopReconcileBackendLoop, "reconcile backend loop should not have started")
 			},
 		},
 		{
@@ -13758,7 +13782,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should be running (stopReconcileBackendLoop should not be nil)
-				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
 			},
 		},
 		{
@@ -13769,7 +13793,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should still be running even with no backends
-				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
 			},
 		},
 		{
@@ -13790,7 +13814,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// The loop should be running
-				assert.NotNil(t, o.getStopReconcileBackendLoop(), "reconcile backend loop should have started")
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
 			},
 		},
 	}
@@ -13813,7 +13837,7 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 
 			go o.PeriodicallyReconcileBackendState(tt.pollInterval)
 			if tt.pollInterval > 0 {
-				for o.getStopReconcileBackendLoop() == nil {
+				for o.stopReconcileBackendLoop == nil {
 					// Wait for loop to initialize
 					time.Sleep(10 * time.Millisecond)
 				}
@@ -13840,6 +13864,7 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 		backendUUID string
 		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend
 		verifyError func(t *testing.T, err error)
+		verifyState func(t *testing.T)
 	}{
 		{
 			name:        "BackendNotFound",
@@ -14006,7 +14031,7 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name:        "ReconcileBackendPoolsChange",
+			name:        "ReconcileBackendPoolsChangePreservesVolumes",
 			backendUUID: "uuid1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
 				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
@@ -14021,7 +14046,14 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				fakeBackend := getFakeBackend("backend1", "uuid1", nil)
 				fakeConfigBytes, _ := fakeBackend.MarshalDriverConfig()
 
-				// Setup backend expectations for offline backend
+				volume1 := getFakeVolume("volume1", "uuid1")
+				volume2 := getFakeVolume("volume2", "uuid1")
+				backendVolumes := makeSyncMapFromMap(map[string]*storage.Volume{
+					volume1.Config.Name: volume1,
+					volume2.Config.Name: volume2,
+				})
+
+				// Setup backend expectations.
 				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
 				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(2)
 				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
@@ -14034,18 +14066,32 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 				mockBackend.EXPECT().Online().Return(true).AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
+				mockBackend.EXPECT().Volumes().Return(backendVolumes).AnyTimes()
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
 				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-				// Add backend to cache
+				// Model the state created by bootstrap: both the global volume cache
+				// and the original backend-local volume map contain the volumes.
 				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, volume1, volume2)
 
 				return mockBackend
 			},
 			verifyError: func(t *testing.T, err error) {
 				assert.NoError(t, err)
+			},
+			verifyState: func(t *testing.T) {
+				replacement := getBackendByUuidFromCache(t, "uuid1")
+				require.NotNil(t, replacement)
+				require.Equal(t, 2, countBackendVolumes(replacement))
+				requireBackendVolume(t, replacement, "volume1", "uuid1")
+				requireBackendVolume(t, replacement, "volume2", "uuid1")
+
+				// The independent global volume cache must remain intact as well.
+				require.Equal(t, "uuid1", getVolumeByNameFromCache(t, "volume1").BackendUUID)
+				require.Equal(t, "uuid1", getVolumeByNameFromCache(t, "volume2").BackendUUID)
 			},
 		},
 		{
@@ -14109,6 +14155,9 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 
 			if tt.verifyError != nil {
 				tt.verifyError(t, err)
+			}
+			if tt.verifyState != nil {
+				tt.verifyState(t)
 			}
 
 			persistenceCleanup(t, o)
@@ -23219,7 +23268,7 @@ func TestConcurrentTridentOrchestrator_StageVolumeMove(t *testing.T) {
 		assert.Nil(t, cached.Config.MoveInfo, "backend stage failure must not set MoveInfo")
 	})
 
-	t.Run("happy path sets MoveInfo on success", func(t *testing.T) {
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 
 		mockBackend.EXPECT().StageVolumeMove(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -23232,7 +23281,7 @@ func TestConcurrentTridentOrchestrator_StageVolumeMove(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		require.NotNil(t, cached.Config.MoveInfo, "StageVolumeMove must set MoveInfo on success")
+		require.NotNil(t, cached.Config.MoveInfo)
 		assert.Equal(t, models.VolumeMoveStateControllerStaging, cached.Config.MoveInfo.State)
 	})
 }
@@ -23275,7 +23324,7 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 		assert.True(t, errors.IsVolumeStateError(err))
 	})
 
-	t.Run("backend transient error does not project MoveInfo", func(t *testing.T) {
+	t.Run("backend transient error still updates MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 		vol.Pool = "pool-original"
 		addVolumesToCache(t, vol)
@@ -23289,11 +23338,12 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		assert.Nil(t, cached.Config.MoveInfo, "MoveVolume must not project MoveInfo; commitState owns projection")
+		require.NotNil(t, cached.Config.MoveInfo, "transient error must still update MoveInfo")
+		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
 		assert.Equal(t, "pool-original", cached.Pool, "pool should not change on transient move errors")
 	})
 
-	t.Run("happy path persists target pool and sets MoveInfo", func(t *testing.T) {
+	t.Run("happy path records MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 		vol.Pool = "pool-original"
 		addVolumesToCache(t, vol)
@@ -23310,7 +23360,7 @@ func TestConcurrentTridentOrchestrator_MoveVolume(t *testing.T) {
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
 		require.NotNil(t, cached.Config.MoveInfo)
-		assert.NotNil(t, cached.Config.MoveInfo, "MoveVolume must set MoveInfo on success")
+		assert.Equal(t, models.VolumeMoveStateMoving, cached.Config.MoveInfo.State)
 		assert.Equal(t, "pool-target", cached.Pool, "pool should be updated to move target on success")
 	})
 }
@@ -23360,7 +23410,7 @@ func TestConcurrentTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 			"backend unstage failure must leave MoveInfo untouched")
 	})
 
-	t.Run("happy path does not clear MoveInfo", func(t *testing.T) {
+	t.Run("happy path clears MoveInfo", func(t *testing.T) {
 		o, vol, mockBackend, mockStoreClient, _ := setupConcurrentMoveInfoFixture(t)
 
 		vol.Config.MoveInfo = newConcMoveInfo(vol.Config.Name, models.VolumeMoveStateControllerUnstaging)
@@ -23376,7 +23426,8 @@ func TestConcurrentTridentOrchestrator_UnstageVolumeMove(t *testing.T) {
 
 		cached := getVolumeByNameFromCache(t, vol.Config.Name)
 		require.NotNil(t, cached)
-		assert.NotNil(t, cached.Config.MoveInfo, "UnstageVolumeMove must not clear MoveInfo")
+		assert.Nil(t, cached.Config.MoveInfo,
+			"successful unstage must clear MoveInfo")
 	})
 }
 
