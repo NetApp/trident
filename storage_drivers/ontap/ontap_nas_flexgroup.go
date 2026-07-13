@@ -1369,6 +1369,13 @@ func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfi
 		if d.Config.NASType == sa.SMB {
 			volConfig.AccessInfo.SMBPath = ConstructOntapNASFlexGroupSMBVolumePath(ctx, d.Config.SMBShare,
 				flexgroup.JunctionPath)
+
+			// The volume already exists and is mounted, which happens on a CSI retry after the initial
+			// Create returned VolumeExistsError before reaching SMB share creation. Ensure the share
+			// exists here so the volume is not left without an SMB share. EnsureSMBShare is idempotent.
+			if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName); err != nil {
+				return err
+			}
 		} else {
 			volConfig.AccessInfo.NfsPath = flexgroup.JunctionPath
 		}

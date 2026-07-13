@@ -1658,6 +1658,17 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		if d.Config.NASType == sa.SMB {
 			volConfig.AccessInfo.SMBPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
 				flexvol.JunctionPath, volConfig, sa.SMB)
+
+			// The volume already exists and is mounted, which happens on a CSI retry after the initial
+			// Create returned VolumeExistsError before reaching SMB share creation. Ensure the share
+			// exists here so the volume is not left without an SMB share. EnsureSMBShare is idempotent.
+			// Read-only clones are skipped; their share handling is done in CreateClone.
+			if !volConfig.ReadOnlyClone {
+				if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName,
+					volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
+					return err
+				}
+			}
 		} else {
 			volConfig.AccessInfo.NfsPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
 				flexvol.JunctionPath, volConfig, sa.NFS)

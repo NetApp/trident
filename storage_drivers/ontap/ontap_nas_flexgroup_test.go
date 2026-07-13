@@ -3775,6 +3775,10 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_WithJunctionPath_NASType_S
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
+	// Even when the volume already exists and is mounted (junction path set), the SMB share
+	// must be ensured idempotently so a CSI retry does not leave the volume without a share.
+	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
 
 	result := driver.CreateFollowup(ctx, volConfig)
 
