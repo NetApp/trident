@@ -17,6 +17,7 @@ on:
     types: [created]
 
 permissions:
+  actions: write
   pull-requests: write
   issues: write
 
@@ -97,9 +98,10 @@ jobs:
         with:
           header: changelog-label
           number: ${{ github.event.pull_request.number }}
-          message: ''
+          delete: true
 
       - name: Apply changelog label from slash command
+        id: slash_command
         if: github.event_name == 'issue_comment' && github.event.issue.pull_request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -166,3 +168,28 @@ jobs:
             ack="Applied label \`no-changelog\`. Please add a brief note in the PR description explaining why a release note is not needed (e.g. under the changelog question in the PR template). Merge is not blocked on this — only the label is required."
           fi
           gh api "repos/${repo}/issues/${pr}/comments" -f "body=${ack}"
+
+          # Sticky removal must proceed even if the recheck below fails.
+          echo "applied=true" >> "$GITHUB_OUTPUT"
+
+          # GITHUB_TOKEN label changes do not re-trigger pull_request workflows; rerun the PR check (best-effort).
+          run_id=""
+          page=1
+          while [[ -z "${run_id}" && "${page}" -le 10 ]]; do
+            run_id="$(gh api "repos/${repo}/actions/workflows/changelog-label-check.yml/runs?per_page=100&page=${page}&event=pull_request" \
+              --jq ".workflow_runs[] | select(any(.pull_requests[]?; .number == ${pr})) | .id" 2>/dev/null | head -1)" || true
+            page=$((page + 1))
+          done
+          if [[ -n "${run_id}" ]]; then
+            gh run rerun "${run_id}" || echo "::warning::Failed to rerun changelog-label-check run ${run_id} for PR ${pr}"
+          else
+            echo "::warning::No pull_request changelog-label-check run found for PR ${pr}; merge gate may need a manual re-run."
+          fi
+
+      - name: Remove sticky changelog reminder after slash command
+        if: github.event_name == 'issue_comment' && steps.slash_command.outputs.applied == 'true'
+        uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
+        with:
+          header: changelog-label
+          number: ${{ github.event.issue.number }}
+          delete: true

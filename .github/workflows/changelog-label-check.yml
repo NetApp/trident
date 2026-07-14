@@ -23,11 +23,17 @@ jobs:
       - name: Validate changelog label on PR
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
 
           repo="${{ github.repository }}"
-          pr="${{ github.event.pull_request.number }}"
+          pr="${PR_NUMBER}"
+
+          if [[ ! "${pr}" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid pull request number: ${pr}"
+            exit 1
+          fi
 
           mapfile -t labels < <(gh api "repos/${repo}/pulls/${pr}" --jq '.labels[].name')
 
