@@ -98,13 +98,13 @@ func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove
 func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error {
 	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
-		return fmt.Errorf("failed to read the tracking file; %v", err)
+		return fmt.Errorf("failed to read the tracking file; %w", err)
 	}
 
 	volTrackingInfo.VolumePublishInfo = *publishInfo
 
 	if err := h.WriteTrackingInfo(ctx, volumeID, volTrackingInfo); err != nil {
-		return fmt.Errorf("failed to update the tracking file; %v", err)
+		return fmt.Errorf("failed to update the tracking file; %w", err)
 	}
 	return nil
 }

@@ -316,6 +316,15 @@ func NewHelper(
 	)
 	p.vrefIndexer = p.vrefController.GetIndexer()
 
+	p.tvmSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return clients.TridentClient.TridentV1().TridentVolumeMoves(v1.NamespaceAll).List(ctx, options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return clients.TridentClient.TridentV1().TridentVolumeMoves(v1.NamespaceAll).Watch(ctx, options)
+		},
+	}
+
 	p.tvmController = cache.NewSharedIndexInformer(
 		p.tvmSource,
 		&netappv1.TridentVolumeMove{},

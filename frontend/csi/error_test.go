@@ -6,9 +6,9 @@ import (
 	"errors"
 	"testing"
 
-	errors2 "github.com/netapp/trident/utils/errors"
-
 	"github.com/stretchr/testify/assert"
+
+	tridenterrors "github.com/netapp/trident/utils/errors"
 )
 
 func TestInvalidTrackingFileError(t *testing.T) {
@@ -30,6 +30,6 @@ func TestInvalidTrackingFileError(t *testing.T) {
 	assert.False(t, IsInvalidTrackingFileError(errors.New("other error")))
 
 	// Should be false for terminalReconciliationError
-	terr := errors2.TerminalReconciliationError("terminal")
+	terr := tridenterrors.TerminalReconciliationError("terminal")
 	assert.False(t, IsInvalidTrackingFileError(terr))
 }

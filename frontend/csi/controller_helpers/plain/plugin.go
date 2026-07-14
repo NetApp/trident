@@ -5,8 +5,6 @@ package plain
 import (
 	"context"
 
-	"github.com/netapp/trident/utils/errors"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -18,6 +16,7 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 

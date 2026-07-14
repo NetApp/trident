@@ -152,7 +152,7 @@ type VolumeMoveInfo struct {
 }
 
 // Equals compares the meaningful state changes to values in a VolumeMoveInfo.
-// Two VolumeMoveInfo's are equivalent if all values are equivalent.
+// Two VolumeMoveInfo's are equivalent if State, TargetNode, TargetPool, and BackendContext values are equivalent.
 func (i *VolumeMoveInfo) Equals(other *VolumeMoveInfo) bool {
 	if i == nil {
 		return other == nil
