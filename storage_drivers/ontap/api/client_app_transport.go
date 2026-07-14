@@ -14,7 +14,7 @@ import (
 const ClientAppHeader = "X-Dot-Client-App"
 
 // ClientAppHeaderValue returns the value to send in the X-Dot-Client-App header
-// for every REST/ZAPI request Trident issues to ONTAP, e.g. "Trident/26.06.0".
+// for every REST/ZAPI request Trident issues to ONTAP, e.g. "Trident/26.10.0".
 func ClientAppHeaderValue() string {
 	return "Trident/" + tridentconfig.OrchestratorVersion.ShortString()
 }

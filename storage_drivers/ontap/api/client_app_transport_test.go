@@ -36,7 +36,7 @@ func TestClientAppHeaderName(t *testing.T) {
 // TestClientAppTransport_RoundTrip verifies the transport stamps the header
 // on every outgoing request.
 func TestClientAppTransport_RoundTrip(t *testing.T) {
-	const want = "Trident/26.06.0"
+	const want = "Trident/26.10.0"
 
 	var seen atomic.Int32
 	base := roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -71,7 +71,7 @@ func TestClientAppTransport_RoundTrip(t *testing.T) {
 // on the incoming request is overwritten with our value (without mutating the
 // caller's request object).
 func TestClientAppTransport_OverwritesExistingHeader(t *testing.T) {
-	const want = "Trident/26.06.1"
+	const want = "Trident/26.10.1"
 
 	base := roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		assert.Equal(t, want, r.Header.Get("X-Dot-Client-App"))
