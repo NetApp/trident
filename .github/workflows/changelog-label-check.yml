@@ -48,14 +48,13 @@ jobs:
 
           if [[ "$has_needs" == true && "$has_no" == true ]]; then
             echo "::error::PR has both \`needs-changelog\` and \`no-changelog\` labels. Remove one so exactly one remains."
-            echo "::error::Comment on this PR with \`/needs-changelog\` or \`/no-changelog\` (PR author or collaborator), or edit labels in the GitHub UI."
+            echo "::error::Edit labels on this PR in the GitHub UI so only one changelog label remains."
             exit 1
           fi
 
           if [[ "$has_needs" == false && "$has_no" == false ]]; then
             echo "::error::PR is missing a changelog label. Add exactly one: \`needs-changelog\` or \`no-changelog\`."
-            echo "::error::Comment on this PR with \`/needs-changelog\` (user-facing change; add a release note in the PR description) or \`/no-changelog\` (no release note needed; add a brief rationale in the PR description)."
-            echo "::error::PR author and collaborators can use those slash commands; maintainers may also set labels in the GitHub UI."
+            echo "::error::Set \`needs-changelog\` (user-facing change; add a release note in the PR description) or \`no-changelog\` (no release note needed; add a brief rationale in the PR description) in the GitHub labels panel."
             exit 1
           fi
 

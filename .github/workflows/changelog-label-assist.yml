@@ -1,10 +1,10 @@
-# Remind PR authors to set a changelog label and apply labels from slash commands.
+# Post a sticky reminder when a PR is missing a changelog label.
 #
 # Labels: needs-changelog (user-facing change; add release note in PR description)
 #         no-changelog (no release note needed)
 #
-# PR authors and collaborators may comment /needs-changelog or /no-changelog on the PR.
-# changelog-label-check.yml enforces exactly one of these labels before merge.
+# Authors set one of those labels in the GitHub UI (or maintainers do). That fires
+# pull_request labeled events and changelog-label-check.yml re-runs automatically.
 name: Changelog label assist
 
 on:
@@ -13,21 +13,12 @@ on:
     branches:
       - master
       - stable/v**
-  issue_comment:
-    types: [created]
 
 permissions:
-  actions: write
   pull-requests: write
-  issues: write
 
 concurrency:
-  group: >-
-    ${{
-      github.event_name == 'pull_request_target'
-        && format('changelog-label-pr-{0}', github.event.pull_request.number)
-        || format('changelog-label-comment-{0}', github.event.issue.number)
-    }}
+  group: changelog-label-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -40,9 +31,8 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Resolve changelog label state (PR events)
+      - name: Resolve changelog label state
         id: pr_labels
-        if: github.event_name == 'pull_request_target'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -70,7 +60,7 @@ jobs:
           fi
 
       - name: Post sticky changelog reminder
-        if: github.event_name == 'pull_request_target' && steps.pr_labels.outputs.show_reminder == 'true'
+        if: steps.pr_labels.outputs.show_reminder == 'true'
         uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
         with:
           header: changelog-label
@@ -83,113 +73,14 @@ jobs:
             - **`needs-changelog`** — user-facing change; add a release-note entry in the PR description (e.g. under a `## Changelog` section)
             - **`no-changelog`** — no release note needed; please add a brief rationale in the PR description (e.g. under the changelog question in the PR template)
 
-            **PR author or collaborator:** comment on this PR with one of:
-
-            - `/needs-changelog`
-            - `/no-changelog`
-
-            Maintainers may also set `needs-changelog` or `no-changelog` in the GitHub UI.
+            Set **`needs-changelog`** or **`no-changelog`** on this PR in the GitHub labels panel (right sidebar). That re-runs the required **Changelog label validation** check automatically.
 
             Merge is blocked only until one of these labels is set — release note or rationale text in the PR description is encouraged but not required to merge.
 
       - name: Remove sticky changelog reminder
-        if: github.event_name == 'pull_request_target' && steps.pr_labels.outputs.show_reminder == 'false'
+        if: steps.pr_labels.outputs.show_reminder == 'false'
         uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
         with:
           header: changelog-label
           number: ${{ github.event.pull_request.number }}
-          delete: true
-
-      - name: Apply changelog label from slash command
-        id: slash_command
-        if: github.event_name == 'issue_comment' && github.event.issue.pull_request
-        env:
-          GH_TOKEN: ${{ github.token }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
-          COMMENT_USER: ${{ github.event.comment.user.login }}
-          AUTHOR_ASSOCIATION: ${{ github.event.comment.author_association }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          set -euo pipefail
-
-          repo="${{ github.repository }}"
-          pr="${ISSUE_NUMBER}"
-
-          base_ref="$(gh api "repos/${repo}/pulls/${pr}" --jq '.base.ref')"
-          if [[ "$base_ref" != "master" && ! "$base_ref" =~ ^stable/v ]]; then
-            echo "PR base '${base_ref}' is not master or stable/v*; skipping."
-            exit 0
-          fi
-
-          chosen=""
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            line="${line%%$'\r'}"
-            if [[ "$line" =~ ^/needs-changelog([[:space:]]|$) ]]; then
-              chosen=needs-changelog
-              break
-            elif [[ "$line" =~ ^/no-changelog([[:space:]]|$) ]]; then
-              chosen=no-changelog
-              break
-            fi
-          done <<< "${COMMENT_BODY:-}"
-
-          if [[ -z "$chosen" ]]; then
-            echo "No changelog slash command in comment; skipping."
-            exit 0
-          fi
-
-          pr_author="$(gh api "repos/${repo}/pulls/${pr}" --jq '.user.login')"
-          allowed=false
-          if [[ "$COMMENT_USER" == "$pr_author" ]]; then
-            allowed=true
-          fi
-          case "${AUTHOR_ASSOCIATION:-NONE}" in
-            OWNER|MEMBER|COLLABORATOR|MAINTAINER) allowed=true ;;
-          esac
-
-          if [[ "$allowed" != true ]]; then
-            gh api "repos/${repo}/issues/${pr}/comments" \
-              -f body="Only the PR author or a collaborator can use \`/${chosen}\` to set the changelog label."
-            exit 0
-          fi
-
-          if [[ "$chosen" == "needs-changelog" ]]; then
-            other=no-changelog
-          else
-            other=needs-changelog
-          fi
-
-          gh api -X POST "repos/${repo}/issues/${pr}/labels" -f "labels[]=${chosen}"
-          gh api -X DELETE "repos/${repo}/issues/${pr}/labels/${other}" --silent 2>/dev/null || true
-
-          if [[ "$chosen" == "needs-changelog" ]]; then
-            ack="Applied label \`needs-changelog\`. Please add a release-note entry in the PR description (e.g. under a \`## Changelog\` section). Merge is not blocked on this — only the label is required."
-          else
-            ack="Applied label \`no-changelog\`. Please add a brief note in the PR description explaining why a release note is not needed (e.g. under the changelog question in the PR template). Merge is not blocked on this — only the label is required."
-          fi
-          gh api "repos/${repo}/issues/${pr}/comments" -f "body=${ack}"
-
-          # Sticky removal must proceed even if the recheck below fails.
-          echo "applied=true" >> "$GITHUB_OUTPUT"
-
-          # GITHUB_TOKEN label changes do not re-trigger pull_request workflows; rerun the PR check (best-effort).
-          run_id=""
-          page=1
-          while [[ -z "${run_id}" && "${page}" -le 10 ]]; do
-            run_id="$(gh api "repos/${repo}/actions/workflows/changelog-label-check.yml/runs?per_page=100&page=${page}&event=pull_request" \
-              --jq ".workflow_runs[] | select(any(.pull_requests[]?; .number == ${pr})) | .id" 2>/dev/null | head -1)" || true
-            page=$((page + 1))
-          done
-          if [[ -n "${run_id}" ]]; then
-            gh run rerun "${run_id}" || echo "::warning::Failed to rerun changelog-label-check run ${run_id} for PR ${pr}"
-          else
-            echo "::warning::No pull_request changelog-label-check run found for PR ${pr}; merge gate may need a manual re-run."
-          fi
-
-      - name: Remove sticky changelog reminder after slash command
-        if: github.event_name == 'issue_comment' && steps.slash_command.outputs.applied == 'true'
-        uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
-        with:
-          header: changelog-label
-          number: ${{ github.event.issue.number }}
           delete: true

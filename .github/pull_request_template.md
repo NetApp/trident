@@ -29,8 +29,8 @@
 
 
 ## Does this code need a note in the changelog?
-<!-- Comment `/needs-changelog` or `/no-changelog` on this PR (author or collaborator). Maintainers may also set those labels in the GitHub UI. -->
-<!-- If `/needs-changelog`, add a release-note entry under `## Changelog` below. If `/no-changelog`, add a brief explanation there of why no release note is needed. Merge requires exactly one label — not changelog text in the description. -->
+<!-- Set the `needs-changelog` or `no-changelog` label on this PR in the GitHub labels panel. -->
+<!-- If `needs-changelog`, add a release-note entry under `## Changelog` below. If `no-changelog`, add a brief explanation there of why no release note is needed. Merge requires exactly one label — not changelog text in the description. -->
 
 
 ## Changelog
