@@ -1781,7 +1781,7 @@ func createRBACObjects() (returnError error) {
 			// Identify the label to add based on the resource name
 			_, label := getAppLabelForResource(user)
 			// Create multiple SCC with name same as 'user'
-			// This will be changed in the future to accomodate one SCC to hold all three users
+			// This will be changed in the future to accommodate one SCC to hold all three users
 			if returnError = CreateOpenShiftTridentSCC(user, strings.Split(label, "=")[1]); returnError != nil {
 				returnError = fmt.Errorf("could not create security context constraint; %v", returnError)
 				return returnError
