@@ -7817,20 +7817,6 @@ func (c *RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID strin
 	return nil, fmt.Errorf("get hosts of a subsystem call failed")
 }
 
-// NVMeNamespaceSize returns the size of the namespace
-func (c *RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
-	fields := []string{"space.size"}
-	namespace, err := c.NVMeNamespaceGetByName(ctx, namespacePath, fields)
-	if err != nil {
-		return 0, err
-	}
-	if namespace == nil {
-		return 0, errors.NotFoundError("could not find namespace with name %v", namespace)
-	}
-	size := namespace.Space.Size
-	return int(*size), nil
-}
-
 // ///////////////////////////////////////////////////////////////////////////
 
 // ////////////////////////////////////////////////////////////////////////////

@@ -447,8 +447,6 @@ type RestClientInterface interface {
 	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error
 	// NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
 	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
-	// NVMeNamespaceSize returns the size of the namespace
-	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
 	// NVMeGetSubsystemsForNamespace retrieves all subsystems that a namespace is mapped to
 	NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error)
 	// StorageUnitGetByName gets the storage unit with the specified name

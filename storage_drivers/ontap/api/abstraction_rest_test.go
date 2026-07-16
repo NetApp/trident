@@ -384,6 +384,70 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNVMeNamespaceGetSize(t *testing.T) {
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+
+	name := "fakeNS"
+	uuid := "fakeUUID"
+	location := &models.NvmeNamespaceInlineLocation{
+		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
+			Name: &name,
+		},
+	}
+	spaceWithSize := &models.NvmeNamespaceInlineSpace{
+		BlockSize: new(int64(4096)),
+		Size:      new(int64(99999)),
+	}
+	spaceWithoutSize := &models.NvmeNamespaceInlineSpace{
+		BlockSize: new(int64(4096)),
+	}
+	status := &models.NvmeNamespaceInlineStatus{
+		State: new("fakeState"),
+	}
+	nsWithSize := &models.NvmeNamespace{
+		Name:     &name,
+		UUID:     &uuid,
+		OsType:   new("fakeOS"),
+		Location: location,
+		Space:    spaceWithSize,
+		Status:   status,
+	}
+	nsWithoutSize := &models.NvmeNamespace{
+		Name:     &name,
+		UUID:     &uuid,
+		OsType:   new("fakeOS"),
+		Location: location,
+		Space:    spaceWithoutSize,
+		Status:   status,
+	}
+
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, name, gomock.Any()).Return(nsWithSize, nil)
+	size, err := oapi.NVMeNamespaceGetSize(ctx, name)
+	assert.NoError(t, err)
+	assert.Equal(t, 99999, size)
+
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, name, gomock.Any()).Return(nil, errors.New("error while getting namespace"))
+	size, err = oapi.NVMeNamespaceGetSize(ctx, name)
+	assert.Error(t, err)
+	assert.Zero(t, size)
+
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, name, gomock.Any()).Return(nsWithoutSize, nil)
+	size, err = oapi.NVMeNamespaceGetSize(ctx, name)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+	assert.Zero(t, size)
+}
+
 func TestNVMeNamespaceList(t *testing.T) {
 	clientConfig := api.ClientConfig{
 		DebugTraceFlags: map[string]bool{"method": true},

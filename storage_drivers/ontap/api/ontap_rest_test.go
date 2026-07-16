@@ -4104,34 +4104,6 @@ func TestOntapRestNVMeGetHostsOfSubsystem(t *testing.T) {
 	}
 }
 
-func TestOntapRestNVMeNamespaceSize(t *testing.T) {
-	tests := []struct {
-		name            string
-		mockFunction    func(w http.ResponseWriter, r *http.Request)
-		isErrorExpected bool
-	}{
-		{"PositiveTest", mockNvmeNamespaceResponse, false},
-		{"BackendReturnError", mockNvmeResourceNotFound, true},
-		{"BackendReturnNilResponse", mockNvmeNamespaceResponseNil, true},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
-			rs := newRestClient(server.Listener.Addr().String(), server.Client())
-			assert.NotNil(t, rs)
-
-			size, err := rs.NVMeNamespaceSize(ctx, "namespace1")
-			if !test.isErrorExpected {
-				assert.NoError(t, err, "failed to get NVMe namespace size")
-				assert.Equal(t, 1073741824, size)
-			} else {
-				assert.Error(t, err, "get the NVMe namespace size")
-			}
-			server.Close()
-		})
-	}
-}
-
 func mockSVM(w http.ResponseWriter, r *http.Request) {
 	mocksvm := models.Svm{
 		UUID:  new("1234"),

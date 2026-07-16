@@ -3897,7 +3897,18 @@ func (d OntapAPIREST) NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, sub
 }
 
 func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error) {
-	return d.api.NVMeNamespaceSize(ctx, namespacePath)
+	ns, err := d.NVMeNamespaceGetByName(ctx, namespacePath)
+	if err != nil {
+		return 0, err
+	}
+	if ns.Size == "" {
+		return 0, errors.NotFoundError("namespace %s size not yet available", namespacePath)
+	}
+	size, err := strconv.Atoi(ns.Size)
+	if err != nil {
+		return 0, fmt.Errorf("namespace %s: invalid size %q: %w", namespacePath, ns.Size, err)
+	}
+	return size, nil
 }
 
 func (d OntapAPIREST) StorageUnitExists(ctx context.Context, suName string) (bool, error) {
