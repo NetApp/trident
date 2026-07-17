@@ -1725,6 +1725,15 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 		if err != nil {
 			return nil, err
 		}
+		// A replacement backend is created with an empty local volume map.
+		// Preserve the existing backend-to-volume associations before node
+		// access reconciliation and before replacing the cached backend.
+		volumeCount := copyBackendVolumes(originalBackend, backend)
+		Logc(ctx).WithFields(LogFields{
+			"backend":     backend.Name(),
+			"backendUUID": backend.BackendUUID(),
+			"volumeCount": volumeCount,
+		}).Debug("Copied volume associations to replacement backend.")
 	}
 
 	// Node access rules may have changed in the backend config
@@ -9655,4 +9664,23 @@ func (o *ConcurrentTridentOrchestrator) resolveAndSetEffectiveAutogrowPolicy(
 	vol.EffectiveAGPolicy = effectiveAGPolicy
 
 	return effectiveAGPolicy, policyErr
+}
+
+func copyBackendVolumes(originalBackend, newBackend storage.Backend) int {
+	if originalBackend == nil || newBackend == nil {
+		return 0
+	}
+
+	if originalBackend.BackendUUID() != newBackend.BackendUUID() {
+		return 0
+	}
+
+	count := 0
+	originalBackend.Volumes().Range(func(key, value interface{}) bool {
+		newBackend.Volumes().Store(key, value)
+		count++
+		return true
+	})
+
+	return count
 }
