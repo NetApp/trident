@@ -71,6 +71,18 @@ const (
 	temporaryMountDir = "/tmp_mnt"
 
 	devicesRemovalMaxWaitTime = 5 * time.Second
+
+	// multipathDevicePollInterval bounds how often we rescan and re-check sysfs while waiting for a
+	// multipath dm device during attach.
+	multipathDevicePollInterval = 300 * time.Millisecond
+	// multipathDeviceWaitBudgetPercent reserves most of the caller's remaining time budget for waiting on DM readiness.
+	multipathDeviceWaitBudgetPercent = 80
+	// multipathDeviceWaitMinTimeout ensures each wait attempt has enough time to make meaningful progress.
+	multipathDeviceWaitMinTimeout = 5 * time.Second
+	// multipathDevicePostWaitBuffer keeps some caller budget for post-wait attach steps.
+	multipathDevicePostWaitBuffer = 5 * time.Second
+	// multipathDeviceNoDeadlineTimeout bounds wait attempts when callers do not set a context deadline.
+	multipathDeviceNoDeadlineTimeout = 15 * time.Second
 )
 
 var (
@@ -212,12 +224,15 @@ func (client *Client) AttachVolumeRetry(
 	var err error
 	var mpathSize int64
 
-	if err = client.PreChecks(ctx); err != nil {
-		return mpathSize, err
+	attachCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	if err = client.PreChecks(attachCtx); err != nil {
+		return mpathSize, backoff.Permanent(err)
 	}
 
 	checkAttachISCSIVolume := func() error {
-		mpathSize, err = client.AttachVolume(ctx, publishInfo)
+		mpathSize, err = client.AttachVolume(attachCtx, publishInfo)
 		return err
 	}
 
@@ -234,7 +249,7 @@ func (client *Client) AttachVolumeRetry(
 	attachBackoff.RandomizationFactor = 0.1
 	attachBackoff.MaxElapsedTime = timeout
 
-	err = backoff.RetryNotify(checkAttachISCSIVolume, attachBackoff, attachNotify)
+	err = backoff.RetryNotify(checkAttachISCSIVolume, backoff.WithContext(attachBackoff, attachCtx), attachNotify)
 	return mpathSize, err
 }
 
@@ -439,9 +454,6 @@ func (client *Client) AttachVolume(
 		publishInfo.IscsiTargetIQN = discoveredIQN
 	}
 
-	if err = client.PreChecks(ctx); err != nil {
-		return mpathSize, err
-	}
 	// Ensure we are logged into correct portals
 	pendingPortalsToLogin, loggedIn, err := client.portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
 	if err != nil {
@@ -920,11 +932,26 @@ func (client *Client) rescanOneLun(ctx context.Context, path string) error {
 	return nil
 }
 
+func (client *Client) iscsiDeviceAddressesForLUN(hostSessionMap map[int]int, lunID int) []models.ScsiDeviceAddress {
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0, len(hostSessionMap))
+	for hostNumber := range hostSessionMap {
+		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
+			Host:    strconv.Itoa(hostNumber),
+			Channel: models.ScanSCSIDeviceAddressZero,
+			Target:  models.ScanSCSIDeviceAddressZero,
+			LUN:     strconv.Itoa(lunID),
+		})
+	}
+	return deviceAddresses
+}
+
 // waitForMultipathDeviceForLUN
 // for the given LUN, this function waits for the associated multipath device to be present
-// first find the /dev/sd* devices assocaited with the LUN
-// Wait for the maultipath device dm-* for the /dev/sd* devices.
-func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string) error {
+// first find the /dev/sd* devices associated with the LUN
+// Wait for the multipath device dm-* for the /dev/sd* devices.
+func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSessionMap map[int]int, lunID int,
+	iSCSINodeName string,
+) error {
 	fields := LogFields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
@@ -932,45 +959,89 @@ func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSess
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForMultipathDeviceForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForMultipathDeviceForLUN")
 
-	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
-
-	devices, err := client.iscsiUtils.GetDevicesForLUN(paths)
-	if err != nil {
-		return err
-	}
-
-	_, err = client.waitForMultipathDeviceForDevices(ctx, devices)
-
-	return err
+	return client.waitUntilMultipathDevicePresent(ctx, hostSessionMap, lunID)
 }
 
-// waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
-// and waits until a multipath device is present for at least one of those.  It returns the name of the
-// multipath device, or an empty string if multipathd isn't running or there is only one path.
-func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devices []string) (string, error) {
-	fields := LogFields{"devices": devices}
+// waitUntilMultipathDevicePresent polls until a multipath dm-* appears for the LUN's SCSI path devices.
+// It inspects sysfs before scanning: ScanTargetLUN runs only when no block devices exist for the LUN yet.
+func (client *Client) waitUntilMultipathDevicePresent(ctx context.Context, hostSessionMap map[int]int, lunID int) error {
+	waitCtx, cancel := multipathWaitContext(ctx)
+	defer cancel()
 
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForMultipathDeviceForDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForMultipathDeviceForDevices")
+	tick := time.NewTicker(multipathDevicePollInterval)
+	defer tick.Stop()
 
-	multipathDevice := ""
-
-	for _, device := range devices {
-		multipathDevice = client.devices.FindMultipathDeviceForDevice(ctx, device)
-		if multipathDevice != "" {
-			break
+	for {
+		if err := waitCtx.Err(); err != nil {
+			return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, err)
+		}
+		paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+		devices, err := client.iscsiUtils.GetDevicesForLUN(paths)
+		if err != nil {
+			return err
+		}
+		if len(devices) == 0 {
+			addrs := client.iscsiDeviceAddressesForLUN(hostSessionMap, lunID)
+			if len(paths) == 0 && len(addrs) == 0 {
+				if len(hostSessionMap) == 0 {
+					return fmt.Errorf("multipath device not found when it is expected for LUN %d", lunID)
+				}
+			} else if len(addrs) > 0 {
+				if err := client.devices.ScanTargetLUN(waitCtx, addrs); err != nil {
+					Logc(ctx).WithField("scanError", err).Debug("Could not scan for new LUN while waiting for multipath.")
+				}
+			}
+			select {
+			case <-waitCtx.Done():
+				return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, waitCtx.Err())
+			case <-tick.C:
+			}
+			continue
+		}
+		for _, device := range devices {
+			if dm := client.devices.FindMultipathDeviceForDevice(waitCtx, device); dm != "" {
+				Logc(ctx).WithFields(LogFields{"multipathDevice": dm, "lunID": lunID}).Debug(
+					"Multipath device found for LUN.")
+				return nil
+			}
+		}
+		select {
+		case <-waitCtx.Done():
+			return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, waitCtx.Err())
+		case <-tick.C:
 		}
 	}
+}
 
-	if multipathDevice == "" {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-		return "", errors.New("multipath device not found when it is expected")
-
-	} else {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Info("Multipath device found.")
+func multipathWaitContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	if deadline, ok := ctx.Deadline(); ok {
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return context.WithTimeout(ctx, 0)
+		}
+		// Spend most (but not all) of the remaining request budget on the DM wait.
+		// This avoids consuming the entire deadline in the wait loop and preserves
+		// time for post-wait attach steps (serial/size/device readiness checks).
+		sliced := remaining * multipathDeviceWaitBudgetPercent / 100
+		// Enforce a minimum wait window so very short remaining deadlines don't
+		// degrade into immediate retry churn with no meaningful polling.
+		if sliced < multipathDeviceWaitMinTimeout {
+			sliced = multipathDeviceWaitMinTimeout
+		}
+		// Always reserve a small post-wait budget for follow-on operations.
+		maxWait := remaining - multipathDevicePostWaitBuffer
+		if maxWait <= 0 {
+			maxWait = remaining
+		}
+		// Ceiling wins: if the minimum floor exceeds the allowed max wait, clamp to maxWait.
+		if sliced > maxWait {
+			sliced = maxWait
+		}
+		return context.WithTimeout(ctx, sliced)
 	}
 
-	return multipathDevice, nil
+	// Defensive fallback for callers that do not supply a deadline.
+	return context.WithTimeout(ctx, multipathDeviceNoDeadlineTimeout)
 }
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
@@ -983,15 +1054,7 @@ func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap map[
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScan")
 
-	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
-	for hostNumber := range hostSessionMap {
-		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
-			Host:    strconv.Itoa(hostNumber),
-			Channel: models.ScanSCSIDeviceAddressZero,
-			Target:  models.ScanSCSIDeviceAddressZero,
-			LUN:     strconv.Itoa(lunID),
-		})
-	}
+	deviceAddresses := client.iscsiDeviceAddressesForLUN(hostSessionMap, lunID)
 
 	if err := client.devices.ScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")

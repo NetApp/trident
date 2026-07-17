@@ -18,7 +18,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	mock_devices "github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	mock_fcp "github.com/netapp/trident/mocks/mock_utils/mock_fcp"
+	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -152,12 +155,9 @@ func TestClient_AttachVolumeRetry_preCheckFailure(t *testing.T) {
 
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
-	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
-	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-		"config").Return([]byte(multipathConf), nil).AnyTimes()
-
-	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(context.TODO(), "").Return(false,
-		errors.New("some-error")).AnyTimes()
+	mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil).Times(1)
+	mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
+		"config").Return([]byte(multipathConfig("yes", false)), nil).Times(1)
 	publishInfo := models.VolumePublishInfo{}
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -172,11 +172,11 @@ func TestClient_AttachVolumeRetry_attachVolumeFailure(t *testing.T) {
 
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
-	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
-	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-		"config").Return([]byte("    find_multipaths: yes"), nil).AnyTimes()
+	mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
+	mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
+		"config").Return([]byte(multipathConfig("no", false)), nil).AnyTimes()
 
-	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(context.TODO(), "").Return(false,
+	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(gomock.Any(), "").Return(false,
 		errors.New("some-error")).AnyTimes()
 	publishInfo := models.VolumePublishInfo{}
 
@@ -196,25 +196,25 @@ func TestClient_AttachVolumeRetry(t *testing.T) {
 	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
-	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
-	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
+	mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
+	mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
 		"config").Return([]byte(multipathConfig("no", false)), nil).AnyTimes()
 
 	mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
 
-	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
-	mockDevices.EXPECT().ScanTargetLUN(context.TODO(), deviceAddresses)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
-	mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
+	mockDevices.EXPECT().ListAllDevices(gomock.Any()).AnyTimes()
+	mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), deviceAddresses)
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
+	mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
 		nil)
-	mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
-	mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.Ext4, nil)
+	mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
+	mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.Ext4, nil)
 
-	mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(true, nil)
+	mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(true, nil)
 
-	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(context.TODO(), "").Return(true,
+	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(gomock.Any(), "").Return(true,
 		nil).AnyTimes()
-	mockReconcileUtils.EXPECT().GetFCPHostSessionMapForTarget(context.TODO(),
+	mockReconcileUtils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
 		"").Return([]map[string]int{{"": 0}, {}})
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 		Times(3)
@@ -283,7 +283,7 @@ func TestClient_RescanDevices_errorGettingDiskSize(t *testing.T) {
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), errors.New("some error"))
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -303,7 +303,7 @@ func TestClient_RescanDevices_rescanDiskFailedAllLargeTrue(t *testing.T) {
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -324,7 +324,7 @@ func TestClient_RescanDevices_rescanDiskFailedAllLargeFalse(t *testing.T) {
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(2)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 	f := &aferoFileWrapper{
 		WriteStringCount: 0,
@@ -358,7 +358,7 @@ func TestClient_RescanDevices_rescanDiskFailedAllLargeFalseFailed(t *testing.T) 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), errors.New("ut-err")).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 	f := &aferoFileWrapper{
 		WriteStringCount: 0,
@@ -391,7 +391,7 @@ func TestClient_RescanDevices_MultipathNotNil(t *testing.T) {
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), errors.New("ut-err")).Times(1)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -417,7 +417,7 @@ func TestClient_RescanDevices_MultipathNotNilSmall(t *testing.T) {
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -443,7 +443,7 @@ func TestClient_RescanDevices_MultipathNotNilSmallFailed(t *testing.T) {
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -469,7 +469,7 @@ func TestClient_RescanDevices_MultipathNotNilSmallRetryFailed(t *testing.T) {
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), errors.New("ut-err")).Times(1)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -490,7 +490,7 @@ func TestClient_RescanDevices_resizeDiskFailed(t *testing.T) {
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), errors.New("ut-err")).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), errors.New("ut-err")).AnyTimes()
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").AnyTimes()
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").AnyTimes()
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
@@ -509,7 +509,7 @@ func TestClient_RescanDevices_resizeSuccess(t *testing.T) {
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil).Times(1)
 
@@ -531,14 +531,14 @@ func TestClient_RescanDevices_failureMultipathsize(t *testing.T) {
 		targetNodeName).Return([]map[string]int{{"": 0}, {}})
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil).Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil).Times(1)
 
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), errors.New("some error"))
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
 
 	_, err := fs.Create("/sys/block/sda/device/rescan")
@@ -567,7 +567,7 @@ func TestClient_RescanDevices_multipathsizeGreaterThanMin(t *testing.T) {
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 	mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
 
 	_, err := fs.Create("/sys/block/sda/device/rescan")
@@ -592,7 +592,7 @@ func TestClient_RescanDevices(t *testing.T) {
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(1)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
 	mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
 
@@ -607,10 +607,6 @@ func TestClient_AttachVolume(t *testing.T) {
 	vpdpg80Serial := "SYA5GZFJ8G1M905GVH7H"
 	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
-
-	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil)
-	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-		"config").Return([]byte(multipathConfig("no", false)), nil)
 
 	mockReconcileUtils.EXPECT().GetFCPHostSessionMapForTarget(context.TODO(), "").
 		Return([]map[string]int{{"": 0}, {}})
@@ -630,7 +626,7 @@ func TestClient_AttachVolume(t *testing.T) {
 
 	mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
 	mockDevices.EXPECT().ScanTargetLUN(context.TODO(), deviceAddresses)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
 	mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 		nil)
 	mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
@@ -671,28 +667,21 @@ func TestClient_AttachVolume(t *testing.T) {
 }
 
 func TestClient_AttachVolume_preCheckFailure(t *testing.T) {
-	publishInfo := models.VolumePublishInfo{}
-
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
 	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-		"config").Return([]byte("    find_multipaths: yes"), nil).AnyTimes()
-	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(context.TODO(), "").Return(false,
-		errors.New("some-error")).AnyTimes()
+		"config").Return([]byte(multipathConfig("yes", false)), nil).AnyTimes()
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
-	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
+	preCheckErr := fcpClient.PreChecks(context.TODO())
+	assert.NotNil(t, preCheckErr, "PreChecks returns nil error")
 }
 
 func TestClient_AttachVolume_preCheckFailureMultiPathFailure(t *testing.T) {
-	publishInfo := models.VolumePublishInfo{
-		FilesystemType: filesystem.Ext4,
-	}
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").
@@ -704,8 +693,8 @@ func TestClient_AttachVolume_preCheckFailureMultiPathFailure(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
-	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
+	preCheckErr := fcpClient.PreChecks(context.TODO())
+	assert.NotNil(t, preCheckErr, "PreChecks returns nil error")
 }
 
 func TestClient_AttachVolume_zoningCheckFailed(t *testing.T) {
@@ -714,12 +703,6 @@ func TestClient_AttachVolume_zoningCheckFailed(t *testing.T) {
 	}
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
-	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").
-		Return(nil, errors.New("some error"))
-	mockCommand.EXPECT().Execute(context.TODO(), "multipathd", "show", "daemon").
-		Return([]byte("pid 2509 idle"), nil)
-	mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-		"config").Return(nil, errors.New("some error"))
 	mockReconcileUtils.EXPECT().CheckZoningExistsWithTarget(context.TODO(), "").Return(false,
 		errors.New("some-error"))
 
@@ -1146,7 +1129,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 
 	mockDevices.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(nil)
 	mockDevices.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return(filesystem.Ext4, nil)
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1250,7 +1233,7 @@ func TestClient_getDeviceInfoForLUN_noMultiPath(t *testing.T) {
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("")
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1278,7 +1261,7 @@ func TestClient_getDeviceInfoForLUN_errMultipath(t *testing.T) {
 	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 
 	mockDevices.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(errors.New("some error"))
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 
 	err := fs.Mkdir(fmt.Sprintf("/sys/block/sda/holders/%s", multipathDeviceName), 777)
 	assert.NoError(t, err)
@@ -1310,7 +1293,7 @@ func TestClient_getDeviceInfoForLUN_errFS(t *testing.T) {
 
 	mockDevices.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(nil)
 	mockDevices.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return("", errors.New("some error"))
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 
 	err := fs.Mkdir(fmt.Sprintf("/sys/block/sda/holders/%s", multipathDeviceName), 777)
 	assert.NoError(t, err)
@@ -1582,94 +1565,125 @@ func TestClient_handleInvalidSerials_serialNotExists(t *testing.T) {
 }
 
 func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
-	lunID := 0
-	fcpNodeName := "fcp-node"
-	deviceName := "sda"
-	devicePath := "/dev/" + deviceName
-	multipathDeviceName := "dm-0"
-	holdersDirectory := "/sys/block/" + deviceName + "/holders/" + multipathDeviceName
+	type parameters struct {
+		hostSessionMap     []map[string]int
+		getReconcileUtils  func(controller *gomock.Controller) FcpReconcileUtils
+		getFileSystemUtils func() afero.Fs
+		assertError        assert.ErrorAssertionFunc
+		getDevices         func(controller *gomock.Controller) devices.Devices
+		useDeadlineCtx     bool
+	}
 
-	hostSessionMap := []map[string]int{{"a": 0}, {}}
+	const lunID = 0
+	const fcpNodeName = "fcp-node"
+	const deviceName = "sda"
+	const devicePath = "/dev/" + deviceName
+	const multipathDeviceName = "dm-0"
+	const holdersDirectory = "/sys/block/" + deviceName + "/holders/" + multipathDeviceName
 
-	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
+	defaultHostMap := []map[string]int{{"a": 0}, {}}
 
-	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
-	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
+	tests := map[string]parameters{
+		"no host session mappings present": {
+			hostSessionMap: []map[string]int{},
+			getReconcileUtils: func(controller *gomock.Controller) FcpReconcileUtils {
+				mockReconcileUtils := mock_fcp.NewMockFcpReconcileUtils(controller)
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(make([]string, 0)).Times(1)
+				mockReconcileUtils.EXPECT().GetDevicesForLUN(gomock.Any()).Return(make([]string, 0), nil).Times(1)
+				return mockReconcileUtils
+			},
+			getFileSystemUtils: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			assertError: assert.Error,
+		},
+		"error getting devices for LUN": {
+			hostSessionMap: defaultHostMap,
+			getReconcileUtils: func(controller *gomock.Controller) FcpReconcileUtils {
+				mockReconcileUtils := mock_fcp.NewMockFcpReconcileUtils(controller)
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
+				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return(nil, errors.New("some error"))
+				return mockReconcileUtils
+			},
+			getFileSystemUtils: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			assertError: assert.Error,
+		},
+		"error getting multipath device": {
+			hostSessionMap: defaultHostMap,
+			getReconcileUtils: func(controller *gomock.Controller) FcpReconcileUtils {
+				mockReconcileUtils := mock_fcp.NewMockFcpReconcileUtils(controller)
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath}).AnyTimes()
+				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil).AnyTimes()
+				return mockReconcileUtils
+			},
+			getFileSystemUtils: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			getDevices: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("").AnyTimes()
+				return mockDevices
+			},
+			useDeadlineCtx: true,
+			assertError: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+				return assert.Error(t, err, msgAndArgs...) && assert.ErrorIs(t, err, context.DeadlineExceeded, msgAndArgs...)
+			},
+		},
+		"happy path": {
+			hostSessionMap: defaultHostMap,
+			getReconcileUtils: func(controller *gomock.Controller) FcpReconcileUtils {
+				mockReconcileUtils := mock_fcp.NewMockFcpReconcileUtils(controller)
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
+				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
+				return mockReconcileUtils
+			},
+			getFileSystemUtils: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_, err := fs.Create(holdersDirectory)
+				assert.NoError(t, err)
+				return fs
+			},
+			getDevices: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return(multipathDeviceName)
+				return mockDevices
+			},
+			assertError: assert.NoError,
+		},
+	}
 
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockCommand, mockOsClient, _, mockFileSystem, mockMount, _, _, _ := NewDrivers()
 
-	_, err := fs.Create(holdersDirectory)
-	assert.NoError(t, err)
+			var deviceClient devices.Devices
+			if params.getDevices != nil {
+				deviceClient = params.getDevices(ctrl)
+			} else {
+				md := mock_devices.NewMockDevices(ctrl)
+				deviceClient = md
+			}
 
-	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
-		mockOsClient, mockDevices, mockFileSystem,
-		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
+			fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
+				mockOsClient, deviceClient, mockFileSystem,
+				mockMount, params.getReconcileUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
 
-	result := fcpClient.waitForMultipathDeviceForLUN(context.TODO(), hostSessionMap, lunID, fcpNodeName)
-	assert.NoError(t, result, "waitForMultipathDeviceForLUN returns error")
-}
+			ctx := context.Background()
+			if params.useDeadlineCtx {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, 100*time.Millisecond)
+				defer cancel()
+			}
 
-func TestClient_waitForMultipathDeviceForLUN_noHostMapping(t *testing.T) {
-	lunID := 0
-	fcpNodeName := "fcp-node"
-
-	hostSessionMap := []map[string]int{{"a": 0}, {}}
-
-	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
-
-	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(make([]string, 0))
-	mockReconcileUtils.EXPECT().GetDevicesForLUN(gomock.Any()).Return(make([]string, 0), nil)
-
-	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
-		mockOsClient, mockDevices, mockFileSystem,
-		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
-
-	result := fcpClient.waitForMultipathDeviceForLUN(context.TODO(), hostSessionMap, lunID, fcpNodeName)
-	assert.NotNil(t, result, "waitForMultipathDeviceForLUN returns error")
-}
-
-func TestClient_waitForMultipathDeviceForLUN_errorGetLUN(t *testing.T) {
-	lunID := 0
-	fcpNodeName := "fcp-node"
-	deviceName := "sda"
-	devicePath := "/dev/" + deviceName
-
-	hostSessionMap := []map[string]int{{"a": 0}, {}}
-
-	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
-
-	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
-	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return(nil, errors.New("some error"))
-
-	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
-		mockOsClient, mockDevices, mockFileSystem,
-		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
-
-	result := fcpClient.waitForMultipathDeviceForLUN(context.TODO(), hostSessionMap, lunID, fcpNodeName)
-	assert.NotNil(t, result, "waitForMultipathDeviceForLUN returns error")
-}
-
-func TestClient_waitForMultipathDeviceForLUN_errorGetMultiPath(t *testing.T) {
-	lunID := 0
-	fcpNodeName := "fcp-node"
-	deviceName := "sda"
-	devicePath := "/dev/" + deviceName
-
-	hostSessionMap := []map[string]int{{"a": 0}, {}}
-
-	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
-
-	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
-	mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
-
-	mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("")
-
-	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
-		mockOsClient, mockDevices, mockFileSystem,
-		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
-
-	result := fcpClient.waitForMultipathDeviceForLUN(context.TODO(), hostSessionMap, lunID, fcpNodeName)
-	assert.NotNil(t, result, "waitForMultipathDeviceForLUN returns error")
+			err := fcpClient.waitForMultipathDeviceForLUN(ctx, params.hostSessionMap, lunID, fcpNodeName)
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
+		})
+	}
 }
 
 func TestClient_verifyMultipathDeviceSerial(t *testing.T) {

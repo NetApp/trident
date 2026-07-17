@@ -135,32 +135,32 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				// PreChecks is called 2 times: once in AttachVolumeRetry, then once in AttachVolume (which succeeds on first try)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil, nil).Times(2)
-				mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).Times(2)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil).Times(2)
+				// PreChecks runs once at the start of AttachVolumeRetry, before any backoff retry.
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil).Times(1)
+				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
+					"config").Return([]byte(multipathConfig("no", false)), nil).Times(1)
 				// getSessionInfo is called multiple times: from portalsToLogin and from sessionExists in EnsureSessions
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "session").
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "session").
 					Return([]byte(iscsiadmSessionOutput), nil).AnyTimes()
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "node").
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node").
 					Return([]byte(iscsiadmNodeOutput), nil).Times(2)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "iscsiadm", iscsiadmLoginTimeout, true, "-m",
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "iscsiadm", iscsiadmLoginTimeout, true, "-m",
 					"discoverydb", "-t", "st", "-p", gomock.Any(), "-I", "default", "-D").
 					Return([]byte(iscsiadmDiscoveryDBSendTargetsOutput), nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "node", "-T",
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
 					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25", "-p", "127.0.0.1:3260", "-o", "update", "-n",
 					"node.session.scan", "-v", "manual").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "node", "-T",
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
 					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25", "-p", "127.0.0.1:3260", "-o", "update", "-n",
 					"node.session.timeo.replacement_timeout", "-v", "5").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "node", "-T",
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
 					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25", "-p", "127.0.0.1:3260", "--op=update", "--name",
 					"node.conn[0].timeo.login_timeout", "--value=10").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m", "node", "-T",
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
 					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25", "-p", "127.0.0.1:3260", "--op=update", "--name",
 					"node.session.initial_login_retry_max", "--value=1").Return(nil, nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "iscsiadm", iscsiadmLoginTimeout, true, "-m",
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "iscsiadm", iscsiadmLoginTimeout, true, "-m",
 					"node", "-T", "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25", "-p", "127.0.0.1:3260",
 					"--login").Return(nil, nil)
 				return mockCommand
@@ -172,16 +172,16 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			},
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(4)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(4)
+				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
+				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
+				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
 					nil)
-				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
+				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return(
 					"mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return("SYA5GZFJ8G1M905GVH7H", nil).AnyTimes()
+				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return("SYA5GZFJ8G1M905GVH7H", nil).AnyTimes()
 				return mockDevices
 			},
 			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
@@ -194,7 +194,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
+				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
 					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25").Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
@@ -225,7 +225,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, errors.New("some error")).AnyTimes()
 				return mockCommand
 			},
 			getOSClient: func(controller *gomock.Controller) OS {
@@ -258,12 +258,12 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte("    find_multipaths: yes"), nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil,
-					errors.New("some error")).Times(2)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil).Times(1)
+				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
+					"config").Return([]byte(multipathConfig("no", false)), nil).Times(1)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "session").
+					Return(nil, errors.New("session error")).AnyTimes()
 				return mockCommand
 			},
 			getOSClient: func(controller *gomock.Controller) OS {
@@ -338,6 +338,7 @@ func TestClient_AttachVolume(t *testing.T) {
 		assertError       assert.ErrorAssertionFunc
 		expectedMpathSize int64
 		expectedLunNumber int32 // if non-zero, asserts publishInfo.IscsiLunNumber after AttachVolume
+		testPreChecksOnly bool
 	}
 
 	const targetIQN = "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3"
@@ -397,6 +398,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
 			volumeAuthSecrets: make(map[string]string, 0),
+			testPreChecksOnly: true,
 			assertError:       assert.Error,
 		},
 		"pre check failure: multipathd not running": {
@@ -445,6 +447,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
 			volumeAuthSecrets: make(map[string]string, 0),
+			testPreChecksOnly: true,
 			assertError:       assert.Error,
 		},
 		"pre check failure: find_multipaths value set to yes": {
@@ -495,6 +498,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
 			volumeAuthSecrets: make(map[string]string, 0),
+			testPreChecksOnly: true,
 			assertError:       assert.Error,
 		},
 		"pre check failure: find_multipaths value set to smart": {
@@ -545,18 +549,17 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
 			volumeAuthSecrets: make(map[string]string, 0),
+			testPreChecksOnly: true,
 			assertError:       assert.Error,
 		},
 		"discovery: successful IQN discovery from portal": {
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				// Discovery command - uses Execute, not ExecuteWithTimeout
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm",
 					"-m", "discovery", "-t", "sendtargets", "-p", "127.0.0.1:3260").
 					Return([]byte("127.0.0.1:3260,1 "+targetIQN), nil)
-				// PreChecks - make it fail early to test just discovery
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, errors.New("iscsiadm check failed"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "session").Return(nil, errors.New("session query failed"))
 				return mockCommand
 			},
 			getOSClient: func(controller *gomock.Controller) OS {
@@ -594,13 +597,12 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
 			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error, // Will fail at PreChecks after discovery succeeds
+			assertError:       assert.Error, // Fails after discovery when querying sessions
 		},
 		"discovery: failed IQN discovery from all portals": {
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				// Discovery command - fails on both portals, uses Execute not ExecuteWithTimeout
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm",
 					"-m", "discovery", "-t", "sendtargets", "-p", "127.0.0.1:3260").
 					Return(nil, errors.New("discovery failed"))
@@ -651,13 +653,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").
-					Return(nil, errors.New("some error"))
-				mockCommand.EXPECT().Execute(gomock.Any(), "multipathd", "show", "daemon").
-					Return([]byte("pid 2509 idle"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return(nil, errors.New("some error"))
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "session").Return(nil, errors.New("some error"))
 				return mockCommand
 			},
@@ -702,13 +697,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").
-					Return(nil, errors.New("some error"))
-				mockCommand.EXPECT().Execute(gomock.Any(), "multipathd", "show", "daemon").
-					Return([]byte("pid 2509 idle"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return(nil, errors.New("some error"))
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "session").
 					Return([]byte(iscsiadmSessionOutputOneSession), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node").
@@ -773,10 +761,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -834,10 +818,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -898,10 +878,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "ls", "-al", "/dev").Return(nil, errors.New("some error"))
@@ -979,10 +955,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1049,10 +1021,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1120,10 +1088,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1201,10 +1165,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1277,10 +1237,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1356,10 +1312,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -1436,10 +1388,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				// Sessions already exist for targetIQN → portalsToLogin returns empty list, no new login needed.
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
@@ -1525,12 +1473,20 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			mpathSize, err := iscsiClient.AttachVolume(ctx, &params.publishInfo)
+			var err error
+			var mpathSize int64
+			if params.testPreChecksOnly {
+				err = iscsiClient.PreChecks(ctx)
+			} else {
+				mpathSize, err = iscsiClient.AttachVolume(ctx, &params.publishInfo)
+			}
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
 
-			assert.Equal(t, params.expectedMpathSize, mpathSize)
+			if !params.testPreChecksOnly {
+				assert.Equal(t, params.expectedMpathSize, mpathSize)
+			}
 			if params.expectedLunNumber != 0 {
 				assert.Equal(t, params.expectedLunNumber, params.publishInfo.IscsiLunNumber,
 					"publishInfo.IscsiLunNumber should be updated to the discovered LUN ID")
@@ -1978,7 +1934,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			},
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(controller)
-				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("")
+				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("")
 				return mockDeviceClient
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -2005,7 +1961,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(controller)
 				mockDeviceClient.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(errors.New("some error"))
-				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 				return mockDeviceClient
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -2031,7 +1987,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				mockDeviceClient := mock_devices.NewMockDevices(controller)
 				mockDeviceClient.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return("", errors.New("some error"))
-				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 				return mockDeviceClient
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -2058,7 +2014,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				mockDeviceClient := mock_devices.NewMockDevices(controller)
 				mockDeviceClient.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return(filesystem.Ext4, nil)
-				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+				mockDeviceClient.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 				return mockDeviceClient
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -2290,10 +2246,11 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			assertError: assert.Error,
 		},
 		"error getting multipath device": {
+			hostSessionMap: map[int]int{0: 0},
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
-				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
+				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath}).AnyTimes()
+				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil).AnyTimes()
 				return mockIscsiUtils
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -2301,10 +2258,13 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("")
+				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("").MinTimes(1)
 				return mockDevices
 			},
-			assertError: assert.Error,
+			assertError: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+				return assert.Error(t, err, msgAndArgs...) && assert.ErrorIs(t, err, context.DeadlineExceeded, msgAndArgs...)
+			},
 		},
 		"happy path": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -2321,7 +2281,7 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0")
 				return mockDevices
 			},
 			assertError: assert.NoError,
@@ -2338,7 +2298,14 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, params.getIscsiUtils(ctrl),
 				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
-			err := client.waitForMultipathDeviceForLUN(context.TODO(), params.hostSessionMap, lunID, iscsiNodeName)
+			ctx := context.Background()
+			if name == "error getting multipath device" {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, 100*time.Millisecond)
+				defer cancel()
+			}
+
+			err := client.waitForMultipathDeviceForLUN(ctx, params.hostSessionMap, lunID, iscsiNodeName)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}

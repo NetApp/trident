@@ -53,10 +53,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
 				return mockCommand
@@ -73,7 +69,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 					"mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(4)
 				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
+				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
 				return mockDevices

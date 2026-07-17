@@ -36,6 +36,18 @@ const (
 	DevMapperRoot             = "/dev/mapper/"
 	devicesRemovalMaxWaitTime = 5 * time.Second
 
+	// multipathDevicePollInterval bounds how often we rescan and re-check sysfs while waiting for a
+	// multipath dm device during attach.
+	multipathDevicePollInterval = 300 * time.Millisecond
+	// multipathDeviceWaitBudgetPercent reserves most of the caller's remaining time budget for waiting on DM readiness.
+	multipathDeviceWaitBudgetPercent = 80
+	// multipathDeviceWaitMinTimeout ensures each wait attempt has enough time to make meaningful progress.
+	multipathDeviceWaitMinTimeout = 5 * time.Second
+	// multipathDevicePostWaitBuffer keeps some caller budget for post-wait attach steps.
+	multipathDevicePostWaitBuffer = 5 * time.Second
+	// multipathDeviceNoDeadlineTimeout bounds wait attempts when callers do not set a context deadline.
+	multipathDeviceNoDeadlineTimeout = 15 * time.Second
+
 	// REDACTED is a copy of what is in utils package.
 	// we can reference that once we do not have any references into the utils package
 	REDACTED = "<REDACTED>"
@@ -45,6 +57,7 @@ var (
 	pidRegex                 = regexp.MustCompile(`^\d+$`)
 	pidRunningOrIdleRegex    = regexp.MustCompile(`pid \d+ (running|idle)`)
 	tagsWithIndentationRegex = regexp.MustCompile(`(?m)^[\t ]*find_multipaths[\t ]*["|']?(?P<tagName>[\w-_]+)["|']?[\t ]*$`)
+	fcpRportHostNumberRegex  = regexp.MustCompile(`rport-(\d+):`)
 	beforeFlushDevice        = fiji.Register("fcpBeforeFlushDevice", "devices")
 )
 
@@ -147,12 +160,15 @@ func (client *Client) AttachVolumeRetry(
 	var err error
 	var mpathSize int64
 
-	if err = client.PreChecks(ctx); err != nil {
-		return mpathSize, err
+	attachCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	if err = client.PreChecks(attachCtx); err != nil {
+		return mpathSize, backoff.Permanent(err)
 	}
 
 	checkAttachFCPVolume := func() error {
-		mpathSize, err = client.AttachVolume(ctx, publishInfo)
+		mpathSize, err = client.AttachVolume(attachCtx, publishInfo)
 		return err
 	}
 
@@ -169,7 +185,7 @@ func (client *Client) AttachVolumeRetry(
 	attachBackoff.RandomizationFactor = 0.1
 	attachBackoff.MaxElapsedTime = timeout
 
-	err = backoff.RetryNotify(checkAttachFCPVolume, attachBackoff, attachNotify)
+	err = backoff.RetryNotify(checkAttachFCPVolume, backoff.WithContext(attachBackoff, attachCtx), attachNotify)
 	return mpathSize, err
 }
 
@@ -355,10 +371,6 @@ func (client *Client) AttachVolume(
 		"targetWWNN": publishInfo.FCTargetWWNN,
 		"fstype":     publishInfo.FilesystemType,
 	}).Debug("Attaching FCP SCSI volume.")
-
-	if err = client.PreChecks(ctx); err != nil {
-		return mpathSize, err
-	}
 
 	// Check if zoning exists for the target
 	if isZoned, err := client.fcpUtils.CheckZoningExistsWithTarget(ctx, publishInfo.FCTargetWWNN); !isZoned {
@@ -614,10 +626,149 @@ func rescanOneLun(ctx context.Context, path string) error {
 	return nil
 }
 
+// fcpDeviceAddressesForLUN builds SCSI scan addresses for each host/target path in the FCP host session map.
+func (client *Client) fcpDeviceAddressesForLUN(ctx context.Context, hostSessionMap []map[string]int, lunID int) []models.ScsiDeviceAddress {
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
+
+	for _, hostPortMap := range hostSessionMap {
+		for host := range hostPortMap {
+			hostStr := fcpRportHostNumberRegex.FindStringSubmatch(host)
+			if len(hostStr) <= 1 {
+				Logc(ctx).WithField("host", host).Debug("Could not parse host number from host session map key.")
+				continue
+			}
+			hostNum, err := strconv.Atoi(hostStr[1])
+			if err != nil {
+				Logc(ctx).WithField("hostNumber", hostStr[1]).Debug("Could not parse host number")
+				continue
+			}
+
+			targetIDFile := fmt.Sprintf("/sys/class/fc_host/host%d/device/%s/fc_remote_ports/%s/scsi_target_id",
+				hostNum, host, host)
+			targetIDRaw, err := os.ReadFile(targetIDFile)
+			if err != nil {
+				Logc(ctx).WithField("targetIDFile", targetIDFile).Debug("Could not find target ID file while waiting.")
+				continue
+			}
+			targetIDStr := strings.TrimSpace(string(targetIDRaw))
+			targetID, err := strconv.Atoi(targetIDStr)
+			if err != nil {
+				Logc(ctx).WithField("targetID", targetIDStr).Debug("Could not parse target ID")
+				continue
+			}
+
+			deviceAddress := models.ScsiDeviceAddress{
+				Host:    strconv.Itoa(hostNum),
+				Channel: models.ScanAllSCSIDeviceAddress,
+				Target:  strconv.Itoa(targetID),
+				LUN:     strconv.Itoa(lunID),
+			}
+			if !collection.Contains(deviceAddresses, deviceAddress) {
+				deviceAddresses = append(deviceAddresses, deviceAddress)
+			}
+		}
+	}
+	return deviceAddresses
+}
+
+func fcpHostSessionMapEmpty(hostSessionMap []map[string]int) bool {
+	if len(hostSessionMap) == 0 {
+		return true
+	}
+	for _, hostPortMap := range hostSessionMap {
+		if len(hostPortMap) > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// waitUntilMultipathDevicePresent polls until a multipath dm-* appears for the LUN's SCSI path devices.
+// It inspects sysfs before scanning: ScanTargetLUN runs only when no block devices exist for the LUN yet.
+func (client *Client) waitUntilMultipathDevicePresent(ctx context.Context, hostSessionMap []map[string]int, lunID int) error {
+	waitCtx, cancel := multipathWaitContext(ctx)
+	defer cancel()
+
+	tick := time.NewTicker(multipathDevicePollInterval)
+	defer tick.Stop()
+
+	for {
+		if err := waitCtx.Err(); err != nil {
+			return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, err)
+		}
+		paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+		devices, err := client.fcpUtils.GetDevicesForLUN(paths)
+		if err != nil {
+			return err
+		}
+		if len(devices) == 0 {
+			addrs := client.fcpDeviceAddressesForLUN(waitCtx, hostSessionMap, lunID)
+			if len(paths) == 0 && len(addrs) == 0 {
+				if fcpHostSessionMapEmpty(hostSessionMap) {
+					return fmt.Errorf("multipath device not found when it is expected for LUN %d", lunID)
+				}
+			} else if len(addrs) > 0 {
+				if err := client.deviceClient.ScanTargetLUN(waitCtx, addrs); err != nil {
+					Logc(ctx).WithField("scanError", err).Debug("Could not scan for new LUN while waiting for multipath.")
+				}
+			}
+			select {
+			case <-waitCtx.Done():
+				return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, waitCtx.Err())
+			case <-tick.C:
+			}
+			continue
+		}
+		for _, device := range devices {
+			if dm := client.deviceClient.FindMultipathDeviceForDevice(waitCtx, device); dm != "" {
+				Logc(ctx).WithFields(LogFields{"multipathDevice": dm, "lunID": lunID}).Debug(
+					"Multipath device found for LUN.")
+				return nil
+			}
+		}
+		select {
+		case <-waitCtx.Done():
+			return fmt.Errorf("waiting for multipath device for LUN %d: %w", lunID, waitCtx.Err())
+		case <-tick.C:
+		}
+	}
+}
+
+func multipathWaitContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	if deadline, ok := ctx.Deadline(); ok {
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return context.WithTimeout(ctx, 0)
+		}
+		// Spend most (but not all) of the remaining request budget on the DM wait.
+		// This avoids consuming the entire deadline in the wait loop and preserves
+		// time for post-wait attach steps (serial/size/device readiness checks).
+		sliced := remaining * multipathDeviceWaitBudgetPercent / 100
+		// Enforce a minimum wait window so very short remaining deadlines don't
+		// degrade into immediate retry churn with no meaningful polling.
+		if sliced < multipathDeviceWaitMinTimeout {
+			sliced = multipathDeviceWaitMinTimeout
+		}
+		// Always reserve a small post-wait budget for follow-on operations.
+		maxWait := remaining - multipathDevicePostWaitBuffer
+		if maxWait <= 0 {
+			maxWait = remaining
+		}
+		// Ceiling wins: if the minimum floor exceeds the allowed max wait, clamp to maxWait.
+		if sliced > maxWait {
+			sliced = maxWait
+		}
+		return context.WithTimeout(ctx, sliced)
+	}
+
+	// Defensive fallback for callers that do not supply a deadline.
+	return context.WithTimeout(ctx, multipathDeviceNoDeadlineTimeout)
+}
+
 // waitForMultipathDeviceForLUN
 // for the given LUN, this function waits for the associated multipath device to be present
-// first find the /dev/sd* devices assocaited with the LUN
-// Wait for the maultipath device dm-* for the /dev/sd* devices.
+// first find the /dev/sd* devices associated with the LUN
+// Wait for the multipath device dm-* for the /dev/sd* devices.
 func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSessionMap []map[string]int, lunID int,
 	fcpNodeName string,
 ) error {
@@ -628,45 +779,7 @@ func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSess
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.waitForMultipathDeviceForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.waitForMultipathDeviceForLUN")
 
-	paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
-
-	devices, err := client.fcpUtils.GetDevicesForLUN(paths)
-	if err != nil {
-		return err
-	}
-
-	_, err = client.waitForMultipathDeviceForDevices(ctx, devices)
-
-	return err
-}
-
-// waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
-// and waits until a multipath device is present for at least one of those.  It returns the name of the
-// multipath device, or an empty string if multipathd isn't running or there is only one path.
-func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devices []string) (string, error) {
-	fields := LogFields{"devices": devices}
-
-	Logc(ctx).WithFields(fields).Debug(">>>> fcp.waitForMultipathDeviceForDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.waitForMultipathDeviceForDevices")
-
-	multipathDevice := ""
-
-	for _, device := range devices {
-		multipathDevice = client.deviceClient.FindMultipathDeviceForDevice(ctx, device)
-		if multipathDevice != "" {
-			break
-		}
-	}
-
-	if multipathDevice == "" {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-		return "", errors.New("multipath device not found when it is expected")
-
-	} else {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
-	}
-
-	return multipathDevice, nil
+	return client.waitUntilMultipathDevicePresent(ctx, hostSessionMap, lunID)
 }
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
@@ -683,46 +796,7 @@ func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap []ma
 
 	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built FCP host/session map.")
 
-	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
-	var hostNum, targetID int
-	var err error
-
-	// Construct the host and target lists required for the scan.
-	for _, hostNumber := range hostSessionMap {
-		for host := range hostNumber {
-			re := regexp.MustCompile(`rport-(\d+):`)
-			hostStr := re.FindStringSubmatch(host)
-			if len(hostStr) > 1 {
-				if hostNum, err = strconv.Atoi(hostStr[1]); err != nil {
-					Logc(ctx).WithField("port", hostNum).Error("Could not parse port number")
-					continue
-				}
-			}
-
-			// Read the target IDs from the sysfs path.
-			targetIDFile := fmt.Sprintf("/sys/class/fc_host/host%d/device/%s/fc_remote_ports/%s/scsi_target_id",
-				hostNum, host, host)
-			if targetIDRaw, err := os.ReadFile(targetIDFile); err != nil {
-				Logc(ctx).WithField("targetIDFile", targetIDFile).Error("Could not find the target ID file")
-			} else {
-				targetIDStr := strings.TrimSpace(string(targetIDRaw))
-				if targetID, err = strconv.Atoi(targetIDStr); err != nil {
-					Logc(ctx).WithField("targetID", targetIDStr).Error("Could not parse target ID")
-					continue
-				}
-
-				deviceAddress := models.ScsiDeviceAddress{
-					Host:    strconv.Itoa(hostNum),
-					Channel: models.ScanAllSCSIDeviceAddress,
-					Target:  strconv.Itoa(targetID),
-					LUN:     strconv.Itoa(lunID),
-				}
-				if !collection.Contains(deviceAddresses, deviceAddress) {
-					deviceAddresses = append(deviceAddresses, deviceAddress)
-				}
-			}
-		}
-	}
+	deviceAddresses := client.fcpDeviceAddressesForLUN(ctx, hostSessionMap, lunID)
 
 	if err := client.deviceClient.ScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")

@@ -2971,6 +2971,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 
 	if err := p.iscsi.PreChecks(ctx); err != nil {
 		Logc(ctx).Errorf("Skipping iSCSI self-heal cycle; pre-checks failed: %v.", err)
+		return
 	}
 
 	// Reset current sessions
