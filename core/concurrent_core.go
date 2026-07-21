@@ -5,6 +5,8 @@ package core
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 	"golang.org/x/time/rate"
 
@@ -35,9 +38,16 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils/autogrow"
+	"github.com/netapp/trident/utils/devices"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/nvme"
 )
 
 type ConcurrentTridentOrchestrator struct {
@@ -63,6 +73,12 @@ type ConcurrentTridentOrchestrator struct {
 	stopNodeAccessLoop       chan bool
 	stopReconcileBackendLoop chan bool
 
+	iscsi iscsi.ISCSI
+	fs    filesystem.Filesystem
+	fcp   fcp.FCP
+	mount mount.Mount
+	osFs  afero.Fs
+
 	// bgTasks tracks detached goroutines (e.g. the asynchronous volume-publication
 	// sync started during bootstrap) so they can be cancelled and awaited rather
 	// than outliving the orchestrator.
@@ -74,13 +90,34 @@ var (
 )
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {
+	iscsiClient, err := iscsi.New()
+	if err != nil {
+		return nil, err
+	}
+
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
+	fcpClient, err := fcp.New()
+	if err != nil {
+		return nil, err
+	}
+
 	// Initialize global VP sync rate limiter if not already initialized
 	if vpSyncRateLimiter == nil {
 		vpSyncRateLimiter = rate.NewLimiter(vpUpdateRateLimit, vpUpdateBurst)
 	}
+
 	return &ConcurrentTridentOrchestrator{
 		frontends:                 make(map[string]frontend.Plugin),
 		storeClient:               client,
+		iscsi:                     iscsiClient,
+		fcp:                       fcpClient,
+		mount:                     mountClient,
+		fs:                        filesystem.New(mountClient),
+		osFs:                      afero.NewOsFs(),
 		bootstrapped:              false,
 		bootstrapError:            errors.NotReadyError(),
 		bootstrapCond:             sync.NewCond(&sync.Mutex{}),
@@ -255,7 +292,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 	backendCount := 0
 
 	for _, storageBackend := range persistentBackendList {
-		serializedConfig, marshalErr := storageBackend.MarshalConfig()
+		configJSON, marshalErr := storageBackend.MarshalConfig()
 		if marshalErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"backend":     storageBackend.Name,
@@ -264,8 +301,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 			return marshalErr
 		}
 
-		backend, backendErr := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, storageBackend.ConfigRef,
-			storageBackend.BackendUUID)
+		backend, backendErr := o.addBackend(ctx, configJSON, storageBackend.BackendUUID, storageBackend.ConfigRef)
 		if backendErr != nil {
 			Logc(ctx).WithError(backendErr).WithFields(LogFields{
 				"handler":            "Bootstrap",
@@ -2759,8 +2795,140 @@ func (o *ConcurrentTridentOrchestrator) UpdateVolumeAutogrowStatus(
 // which the volume will be attached.
 func (o *ConcurrentTridentOrchestrator) AttachVolume(
 	ctx context.Context, volumeName, mountpoint string, publishInfo *models.VolumePublishInfo,
-) error {
-	return fmt.Errorf("concurrent core is not supported for Docker")
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_attach", &err)()
+
+	// Grab a volume write lock
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume := results[0].Volume.Read
+	if volume == nil {
+		return errors.NotFoundError("volume %s not found", volumeName)
+	}
+	if volume.State.IsDeleting() {
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+	}
+
+	hostMountpoint := mountpoint
+	isDockerPluginModeSet := isDockerPluginMode()
+	if isDockerPluginModeSet {
+		hostMountpoint = filepath.Join("/host", mountpoint)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":                volumeName,
+		"mountpoint":            mountpoint,
+		"hostMountpoint":        hostMountpoint,
+		"isDockerPluginModeSet": isDockerPluginModeSet,
+	}).Debug("Mounting volume.")
+
+	// Ensure mount point exists and is a directory
+	fileInfo, err := lstatFs(o.osFs, hostMountpoint)
+	if os.IsNotExist(err) {
+		// Create the mount point if it doesn't exist
+		if err := o.osFs.MkdirAll(hostMountpoint, 0o755); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	} else if !fileInfo.IsDir() {
+		return fmt.Errorf("%v already exists and is not a directory", hostMountpoint)
+	}
+
+	// Check if volume is already mounted
+	dfOutput, dfOutputErr := o.fs.GetDFOutput(ctx)
+	if dfOutputErr != nil {
+		err = fmt.Errorf("error checking if %v is already mounted: %v", mountpoint, dfOutputErr)
+		return err
+	}
+	for _, e := range dfOutput {
+		if e.Target == mountpoint {
+			Logc(ctx).Debugf("%v is already mounted", mountpoint)
+			return nil
+		}
+	}
+
+	if publishInfo.FilesystemType == "nfs" {
+		return o.mount.AttachNFSVolume(ctx, volumeName, mountpoint, publishInfo)
+	} else {
+		var err error
+		switch publishInfo.SANType {
+		case sa.NVMe:
+			nvmeHandler := nvme.NewNVMeHandler()
+			err = nvmeHandler.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
+			if err != nil {
+				return err
+			}
+
+			// Cryptsetup format if necessary and map to host
+			var luksFormatted bool
+			var safeToFsFormat bool
+			luksFormatted, safeToFsFormat, err = nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
+				ctx, volumeName, publishInfo, map[string]string{},
+			)
+			if err != nil {
+				return err
+			}
+
+			// Format and mount if necessary
+			if err = nvmeHandler.EnsureVolumeFormattedAndMounted(
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted, safeToFsFormat,
+			); err != nil {
+				return err
+			}
+
+		case sa.ISCSI:
+			_, err = o.iscsi.AttachVolumeRetry(ctx, publishInfo, AttachISCSIVolumeTimeoutLong)
+			if err != nil {
+				return err
+			}
+
+			// Cryptsetup format if necessary and map to host
+			command := exec.NewCommand()
+			var luksFormatted bool
+			var safeToFsFormat bool
+			luksFormatted, safeToFsFormat, err = luks.EnsureCryptsetupFormattedAndMappedOnHost(
+				ctx, volumeName, publishInfo, map[string]string{}, command, devices.New(),
+			)
+			if err != nil {
+				return err
+			}
+
+			// Format and mount if necessary
+			if err = o.iscsi.EnsureVolumeFormattedAndMounted(
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted, safeToFsFormat,
+			); err != nil {
+				return err
+			}
+
+		default:
+			return errors.UnsupportedError("unsupported SAN type %s for AttachVolume", publishInfo.SANType)
+		}
+
+		return err
+	}
+}
+
+// lstatFs calls LstatIfPossible on filesystems that implement afero.Lstater
+// (e.g. afero.OsFs, which delegates to os.Lstat), and falls back to Stat for
+// those that do not.  This preserves symlink-aware semantics on the real
+// filesystem while remaining fully testable via afero.MemMapFs.
+func lstatFs(fsys afero.Fs, name string) (os.FileInfo, error) {
+	if lstater, ok := fsys.(afero.Lstater); ok {
+		fi, _, err := lstater.LstatIfPossible(name)
+		return fi, err
+	}
+	return fsys.Stat(name)
 }
 
 func (o *ConcurrentTridentOrchestrator) CloneVolume(
@@ -3135,8 +3303,63 @@ func (o *ConcurrentTridentOrchestrator) cloneVolumeRetry(
 // use the storage controller API.  It may be assumed that this method always runs on the host to
 // which the volume will be attached.  It ensures the volume is already mounted, and it attempts to
 // delete the mount point.
-func (o *ConcurrentTridentOrchestrator) DetachVolume(ctx context.Context, volumeName, mountpoint string) error {
-	return fmt.Errorf("concurrent core is not supported for Docker")
+func (o *ConcurrentTridentOrchestrator) DetachVolume(ctx context.Context, volumeName, mountpoint string) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_detach", &err)()
+
+	// Grab a volume write lock
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	volume := results[0].Volume.Read
+	if volume == nil {
+		return errors.NotFoundError("volume %s not found", volumeName)
+	}
+	if volume.State.IsDeleting() {
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+	}
+
+	hostMountpoint := mountpoint
+	isDockerPluginModeSet := isDockerPluginMode()
+	if isDockerPluginModeSet {
+		hostMountpoint = filepath.Join("/host", mountpoint)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":                volumeName,
+		"mountpoint":            mountpoint,
+		"hostMountpoint":        hostMountpoint,
+		"isDockerPluginModeSet": isDockerPluginModeSet,
+	}).Debug("Unmounting volume.")
+
+	// Check if the mount point exists, so we know that it's attached and must be cleaned up
+	_, err = o.osFs.Stat(hostMountpoint) // trident is not chrooted, therefore we must use the /host if in plugin mode
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Not attached, so nothing to do
+			return nil
+		}
+		// Any other error is likely transient or requires manual intervention to prevent a Docker cleanup failure.
+		return err
+	}
+
+	// Unmount the volume
+	if err := o.mount.Umount(ctx, mountpoint); err != nil {
+		// utils.Unmount is chrooted, therefore it does NOT need the /host
+		return err
+	}
+
+	// Best effort removal of the mount point
+	_ = o.osFs.Remove(hostMountpoint) // trident is not chrooted, therefore we must use the /host if in plugin mode
+	return nil
 }
 
 // DeleteVolume removes a volume from storage, persistence, and cache.
@@ -4528,8 +4751,158 @@ func (o *ConcurrentTridentOrchestrator) ResizeVolume(ctx context.Context, volume
 	return o.resizeVolume(ctx, volume, newSize)
 }
 
-func (o *ConcurrentTridentOrchestrator) ReloadVolumes(ctx context.Context) error {
-	return fmt.Errorf("concurrent core is not supported for Docker")
+// ReloadVolumes replaces all cached volumes with values from the persistent store.  Used only by Docker.
+func (o *ConcurrentTridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	if config.CurrentDriverContext != config.ContextDocker {
+		return errors.UnsupportedError("ReloadVolumes is only supported with Docker")
+	}
+
+	defer recordTiming("volume_reload", &err)()
+
+	// Make a temporary copy of backends & volumes in case anything goes wrong.  Ideally we would
+	// grab the root lock here so nothing changes while we are making these backup copies, but nested
+	// locks do not currently support being called while the root lock is held.  For now, this function
+	// is only used by Docker which imposes single threadedness in the frontend, so this isn't a concern.
+	_, results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ListBackends()))
+	unlocker()
+	if dbErr != nil {
+		return dbErr
+	}
+	tempBackends := results[0].Backends
+	tempVolumes := make(map[string]*sync.Map, len(tempBackends))
+
+	// Recovery function in case of error
+	defer func() {
+		cleanupErr := o.reloadVolumesCleanup(ctx, err, tempBackends, tempVolumes)
+
+		if cleanupErr != nil {
+			Logc(ctx).WithError(cleanupErr).Error("Volume reload cleanup failed.")
+		}
+
+		err = multierr.Combine(err, cleanupErr)
+	}()
+
+	// Remove all volumes from core & backend caches
+	for _, tempBackend := range tempBackends {
+		lockCtx, backendResults, backendUnlocker, dbErr := db.Lock(ctx,
+			db.Query(db.UpsertBackend(tempBackend.BackendUUID(), "", "")),
+			db.Query(db.ListVolumesForBackend(tempBackend.BackendUUID())))
+		if dbErr != nil {
+			backendUnlocker()
+			Logc(ctx).WithError(dbErr).Errorf("Skipping backend %v.", tempBackend.Name())
+			continue
+		}
+
+		backend := backendResults[0].Backend.Read
+		backendUpserter := backendResults[0].Backend.Upsert
+		volumes := backendResults[1].Volumes
+
+		if backend == nil {
+			backendUnlocker()
+			Logc(ctx).Errorf("Backend %v was not found.", tempBackend.Name())
+			continue
+		}
+
+		tempVolumes[backend.Name()] = backend.Volumes()
+
+		// While holding backend write lock, acquire write locks for all of its volumes.
+		if len(volumes) > 0 {
+			lockQuery := make([][]db.Subquery, 0, len(volumes))
+			for _, volume := range volumes {
+				lockQuery = append(lockQuery, db.Query(db.DeleteVolume(volume.Config.Name)))
+			}
+			_, volumeResults, volumeUnlocker, volumeErr := db.NestedLock(lockCtx, lockQuery...)
+			if volumeErr != nil {
+				backendUnlocker()
+				Logc(ctx).WithError(volumeErr).Errorf("Failed to lock backend %v volumes.", backend.Name())
+				continue
+			} else {
+				for _, volumeResult := range volumeResults {
+					volume := volumeResult.Volume.Read
+					volumeDeleter := volumeResult.Volume.Delete
+					if volume == nil || volumeDeleter == nil {
+						continue
+					}
+					volumeDeleter()
+				}
+			}
+			volumeUnlocker()
+		}
+
+		// Clear backend cache
+		backend.ClearVolumes()
+
+		backendUpserter(backend)
+		backendUnlocker()
+	}
+
+	// Re-run the volume bootstrapping code
+	return o.bootstrapVolumes(ctx)
+}
+
+// reloadVolumesCleanup handles any errors in ReloadVolumes by restoring the saved backend and volume info.
+func (o *ConcurrentTridentOrchestrator) reloadVolumesCleanup(
+	ctx context.Context, err error, backends []storage.Backend, volumes map[string]*sync.Map,
+) error {
+	var cleanupErr error
+
+	// Skip cleanup if ReloadVolumes() succeeded
+	if err == nil {
+		Logc(ctx).Debug("Volumes reloaded.")
+		return nil
+	}
+
+	Logc(ctx).WithError(err).Error("Volume reload failed, restoring original volume list.")
+
+	for _, b := range backends {
+
+		_, results, unlocker, dbErr := db.Lock(ctx, db.Query(db.UpsertBackend(b.BackendUUID(), b.Name(), "")))
+		if dbErr != nil {
+			unlocker()
+			cleanupErr = multierr.Append(cleanupErr, dbErr)
+			continue
+		}
+
+		backend := results[0].Backend.Read
+		upserter := results[0].Backend.Upsert
+
+		if backend == nil {
+			unlocker()
+			continue
+		}
+
+		// Restore the volumes cached on a backend
+		if savedVolumes, ok := volumes[backend.Name()]; ok {
+			backend.SetVolumes(savedVolumes)
+		}
+
+		// Update the backend in the cache
+		upserter(backend)
+		unlocker()
+
+		// Restore the volumes to the cache
+		backend.Volumes().Range(func(key, value any) bool {
+			volume := value.(*storage.Volume)
+
+			_, results, unlocker, dbErr = db.Lock(ctx, db.Query(db.UpsertVolume(volume.Config.Name, "")))
+			if dbErr != nil {
+				cleanupErr = multierr.Append(cleanupErr, dbErr)
+			} else {
+				results[0].Volume.Upsert(volume)
+			}
+			unlocker()
+
+			return true
+		})
+	}
+
+	return cleanupErr
 }
 
 func (o *ConcurrentTridentOrchestrator) ReconcileVolumeMove(ctx context.Context, volumeName string, volumeMoveInfo *models.VolumeMoveInfo) (err error) {

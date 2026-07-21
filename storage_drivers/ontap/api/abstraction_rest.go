@@ -816,24 +816,22 @@ func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume st
 	if err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots; %v", err)
 	}
-	if snapListResponse == nil {
-		return nil, fmt.Errorf("error enumerating snapshots")
-	}
-	if snapListResponse.Payload == nil {
+	if snapListResponse == nil || snapListResponse.Payload == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
 	}
 
 	snapshots := Snapshots{}
 	for _, snap := range snapListResponse.Payload.SnapshotResponseInlineRecords {
-		if snap.CreateTime != nil && snap.Name != nil {
-			snapshots = append(snapshots, Snapshot{
-				CreateTime: snap.CreateTime.String(),
-				Name:       *snap.Name,
-			})
+		if snap.CreateTime == nil || snap.Name == nil {
+			continue
 		}
+		snapshots = append(snapshots, Snapshot{
+			CreateTime: snap.CreateTime.String(),
+			Name:       *snap.Name,
+		})
 	}
 
-	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
+	Logc(ctx).Debugf("Returned %v snapshots.", len(snapshots))
 
 	return snapshots, nil
 }
@@ -1820,24 +1818,22 @@ func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 	if err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots; %v", err)
 	}
-	if snapListResponse == nil {
+	if snapListResponse == nil || snapListResponse.Payload == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
 	}
-	snapshots := Snapshots{}
 
-	if snapListResponse.Payload != nil {
-		for _, snap := range snapListResponse.Payload.SnapshotResponseInlineRecords {
-			if snap.CreateTime == nil || snap.Name == nil {
-				continue
-			}
-			snapshots = append(snapshots, Snapshot{
-				CreateTime: snap.CreateTime.String(),
-				Name:       *snap.Name,
-			})
+	snapshots := Snapshots{}
+	for _, snap := range snapListResponse.Payload.SnapshotResponseInlineRecords {
+		if snap.CreateTime == nil || snap.Name == nil {
+			continue
 		}
+		snapshots = append(snapshots, Snapshot{
+			CreateTime: snap.CreateTime.String(),
+			Name:       *snap.Name,
+		})
 	}
 
-	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
+	Logc(ctx).Debugf("Returned %v snapshots.", len(snapshots))
 
 	return snapshots, nil
 }
@@ -3990,24 +3986,22 @@ func (d OntapAPIREST) StorageUnitSnapshotList(
 	if err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots; %w", err)
 	}
-	if snapListResponse == nil {
+	if snapListResponse == nil || snapListResponse.Payload == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
 	}
-	snapshots := Snapshots{}
 
-	if snapListResponse.Payload != nil {
-		for _, snap := range snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords {
-			if snap.CreateTime == nil || snap.Name == nil {
-				continue
-			}
-			snapshots = append(snapshots, Snapshot{
-				CreateTime: snap.CreateTime.String(),
-				Name:       *snap.Name,
-			})
+	snapshots := Snapshots{}
+	for _, snap := range snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords {
+		if snap.CreateTime == nil || snap.Name == nil {
+			continue
 		}
+		snapshots = append(snapshots, Snapshot{
+			CreateTime: snap.CreateTime.String(),
+			Name:       *snap.Name,
+		})
 	}
 
-	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
+	Logc(ctx).Debugf("Returned %v snapshots.", len(snapshots))
 
 	return &snapshots, nil
 }

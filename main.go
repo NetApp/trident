@@ -381,7 +381,7 @@ func main() {
 	processCmdLineArgs(ctx)
 
 	var orchestrator core.Orchestrator
-	if *enableConcurrency {
+	if *enableConcurrency || enableDocker {
 		Log().WithField("drivers", strings.Join(config.ConcurrencyGADrivers, ", ")).
 			Info("Concurrency is enabled. Controller scalability is generally available for the following drivers.")
 		Log().WithField("drivers", strings.Join(config.ConcurrencyTechPreviewDrivers, ", ")).

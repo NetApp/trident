@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -91,6 +92,7 @@ func TestPlugin_GetName(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		driverName:   "test-driver",
 		driverPort:   "8000",
 		volumePath:   "/var/lib/docker-volumes/test",
@@ -140,6 +142,7 @@ func TestPlugin_Version(t *testing.T) {
 			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 				version:      tt.version,
 			}
 
@@ -156,6 +159,7 @@ func TestPlugin_mountpoint(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		volumePath:   "/var/lib/docker-volumes/netapp",
 	}
 
@@ -198,6 +202,7 @@ func TestPlugin_hostMountpoint(t *testing.T) {
 			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 			plugin := &Plugin{
 				orchestrator:       mockOrchestrator,
+				mutex:              &sync.Mutex{},
 				isDockerPluginMode: tt.isDockerPluginMode,
 				hostVolumePath:     tt.hostVolumePath,
 				volumePath:         tt.volumePath,
@@ -216,6 +221,7 @@ func TestPlugin_Deactivate(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		driverName:   "test-driver",
 	}
 
@@ -230,6 +236,7 @@ func TestPlugin_Capabilities(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		driverName:   "test-driver",
 	}
 
@@ -246,6 +253,7 @@ func TestPlugin_dockerError(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 	}
 
 	tests := []struct {
@@ -297,6 +305,7 @@ func TestPlugin_getPath(t *testing.T) {
 
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		volumePath:   tempDir,
 	}
 
@@ -399,6 +408,7 @@ func TestPlugin_reloadVolumes(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 			}
 
 			err := plugin.reloadVolumes(ctx)
@@ -527,6 +537,7 @@ func TestPlugin_Remove(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 			}
 
 			request := &volume.RemoveRequest{
@@ -600,6 +611,7 @@ func TestPlugin_Path(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 				volumePath:   tempDir,
 			}
 
@@ -689,6 +701,7 @@ func TestPlugin_List(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 			}
 
 			resp, err := plugin.List()
@@ -785,6 +798,7 @@ func TestPlugin_Get(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 				volumePath:   tempDir,
 			}
 
@@ -816,6 +830,8 @@ func TestPlugin_Get(t *testing.T) {
 }
 
 func TestPlugin_Mount(t *testing.T) {
+	node := &models.Node{Name: "localhost"}
+
 	// Create a temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "docker_mount_test")
 	assert.NoError(t, err)
@@ -838,6 +854,8 @@ func TestPlugin_Mount(t *testing.T) {
 					},
 				}
 				mockOrchestrator.EXPECT().GetVolume(gomock.Any(), "test-volume").Return(vol, nil)
+				mockOrchestrator.EXPECT().GetNode(gomock.Any(), "localhost").Return(nil, errors.NotFoundError("not found"))
+				mockOrchestrator.EXPECT().AddNode(gomock.Any(), node, gomock.Any()).Return(nil)
 				mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), "test-volume", gomock.Any()).Return(nil)
 				mockOrchestrator.EXPECT().AttachVolume(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -862,6 +880,7 @@ func TestPlugin_Mount(t *testing.T) {
 					},
 				}
 				mockOrchestrator.EXPECT().GetVolume(gomock.Any(), "test-volume").Return(vol, nil)
+				mockOrchestrator.EXPECT().GetNode(gomock.Any(), "localhost").Return(node.ConstructExternal(), nil)
 				mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), "test-volume", gomock.Any()).Return(errors.New("publish failed"))
 			},
 			expectError: true,
@@ -878,6 +897,7 @@ func TestPlugin_Mount(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 				volumePath:   tempDir,
 			}
 
@@ -900,6 +920,8 @@ func TestPlugin_Mount(t *testing.T) {
 }
 
 func TestPlugin_Unmount(t *testing.T) {
+	node := &models.Node{Name: "localhost"}
+
 	tests := []struct {
 		name        string
 		volumeName  string
@@ -917,6 +939,8 @@ func TestPlugin_Unmount(t *testing.T) {
 					},
 				}
 				mockOrchestrator.EXPECT().GetVolume(gomock.Any(), "test-volume").Return(vol, nil)
+				mockOrchestrator.EXPECT().GetNode(gomock.Any(), "localhost").Return(nil, errors.NotFoundError("not found"))
+				mockOrchestrator.EXPECT().AddNode(gomock.Any(), node, gomock.Any()).Return(nil)
 				mockOrchestrator.EXPECT().DetachVolume(gomock.Any(), "test-volume", gomock.Any()).Return(nil)
 			},
 			expectError: false,
@@ -940,6 +964,7 @@ func TestPlugin_Unmount(t *testing.T) {
 					},
 				}
 				mockOrchestrator.EXPECT().GetVolume(gomock.Any(), "test-volume").Return(vol, nil)
+				mockOrchestrator.EXPECT().GetNode(gomock.Any(), "localhost").Return(node.ConstructExternal(), nil)
 				mockOrchestrator.EXPECT().DetachVolume(gomock.Any(), "test-volume", gomock.Any()).Return(errors.New("detach failed"))
 			},
 			expectError: true,
@@ -956,6 +981,7 @@ func TestPlugin_Unmount(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 			}
 
 			request := &volume.UnmountRequest{
@@ -981,6 +1007,7 @@ func TestPlugin_initDockerVersion(t *testing.T) {
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 	}
 
 	// Use a channel to avoid hanging if docker daemon is unresponsive
@@ -1018,6 +1045,7 @@ func TestPlugin_getPath_EdgeCases(t *testing.T) {
 
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 		volumePath:   tempDir,
 	}
 
@@ -1077,6 +1105,7 @@ func TestPlugin_Create_PartialCoverage(t *testing.T) {
 
 	plugin := &Plugin{
 		orchestrator: mockOrchestrator,
+		mutex:        &sync.Mutex{},
 	}
 
 	request := &volume.CreateRequest{
@@ -1187,6 +1216,7 @@ func TestPlugin_Create(t *testing.T) {
 
 			plugin := &Plugin{
 				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
 			}
 
 			request := &volume.CreateRequest{
@@ -1197,6 +1227,82 @@ func TestPlugin_Create(t *testing.T) {
 			err := plugin.Create(request)
 
 			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPlugin_addLocalhostNode(t *testing.T) {
+	ctx := context.Background()
+
+	localhostNode := &models.Node{Name: "localhost"}
+
+	tests := []struct {
+		name      string
+		setupMock func(*mock_core.MockOrchestrator)
+		wantErr   bool
+	}{
+		{
+			// GetNode succeeds → node already cached → return nil, no AddNode call.
+			name: "node already exists",
+			setupMock: func(m *mock_core.MockOrchestrator) {
+				m.EXPECT().GetNode(gomock.Any(), "localhost").
+					Return(localhostNode.ConstructExternal(), nil)
+			},
+			wantErr: false,
+		},
+		{
+			// GetNode → NotFoundError → AddNode succeeds → return nil.
+			name: "node not found, AddNode succeeds",
+			setupMock: func(m *mock_core.MockOrchestrator) {
+				m.EXPECT().GetNode(gomock.Any(), "localhost").
+					Return(nil, errors.NotFoundError("not found"))
+				m.EXPECT().AddNode(gomock.Any(), localhostNode, gomock.Any()).
+					Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			// GetNode → NotFoundError → AddNode fails → propagate error.
+			name: "node not found, AddNode fails",
+			setupMock: func(m *mock_core.MockOrchestrator) {
+				m.EXPECT().GetNode(gomock.Any(), "localhost").
+					Return(nil, errors.NotFoundError("not found"))
+				m.EXPECT().AddNode(gomock.Any(), localhostNode, gomock.Any()).
+					Return(errors.New("add node failed"))
+			},
+			wantErr: true,
+		},
+		{
+			// GetNode returns an unexpected (non-NotFound) error → propagate it.
+			name: "GetNode returns unexpected error",
+			setupMock: func(m *mock_core.MockOrchestrator) {
+				m.EXPECT().GetNode(gomock.Any(), "localhost").
+					Return(nil, errors.New("unexpected backend error"))
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+			tt.setupMock(mockOrchestrator)
+
+			plugin := &Plugin{
+				orchestrator: mockOrchestrator,
+				mutex:        &sync.Mutex{},
+			}
+
+			err := plugin.addLocalhostNode(ctx)
+
+			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)

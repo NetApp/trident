@@ -286,6 +286,13 @@ func (b *StorageBackend) Volumes() *sync.Map {
 	return b.volumes
 }
 
+func (b *StorageBackend) SetVolumes(volumes *sync.Map) {
+	if volumes == nil {
+		volumes = new(sync.Map)
+	}
+	b.volumes = volumes
+}
+
 func (b *StorageBackend) ClearVolumes() {
 	b.volumes = new(sync.Map)
 }

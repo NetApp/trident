@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/brunoga/deep"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -24,6 +27,9 @@ import (
 	"github.com/netapp/trident/logging"
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
+	mock_filesystem "github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
+	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	mock_mount "github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
@@ -914,6 +920,7 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			o := getConcurrentOrchestrator()
 			o.storeClient = mockStoreClient
+			o.bootstrapped = false
 
 			if tt.setupMocks != nil {
 				tt.setupMocks(mockCtrl, mockStoreClient, o)
@@ -6191,6 +6198,514 @@ func TestUpdateVolumeAutogrowStatusConcurrentCore(t *testing.T) {
 
 			if tt.verifyError != nil {
 				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// makeVolExternal is a compact builder for *storage.VolumeExternal used by the
+// reload-volume tests.
+func makeVolExternal(name, backendUUID string, state storage.VolumeState) *storage.VolumeExternal {
+	return &storage.VolumeExternal{
+		Config:      &storage.VolumeConfig{Name: name, InternalName: name},
+		BackendUUID: backendUUID,
+		State:       state,
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestReloadVolumesConcurrentCore
+// ---------------------------------------------------------------------------
+
+func TestReloadVolumesConcurrentCore(t *testing.T) {
+	const (
+		backendName = "testReloadBackend"
+		backendUUID = "backend-reload-uuid"
+		vol1Name    = "reloadVol1"
+		vol2Name    = "reloadVol2"
+	)
+
+	tests := []struct {
+		name         string
+		driverCtx    config.DriverContext
+		bootstrapErr error
+		setupMocks   func(
+			t *testing.T,
+			mockCtrl *gomock.Controller,
+			mockStore *mockpersistentstore.MockStoreClient,
+			o *ConcurrentTridentOrchestrator,
+		)
+		wantErrFunc  func(t *testing.T, err error)
+		verifyResult func(t *testing.T)
+	}{
+		// ----------------------------------------------------------------
+		// Guard-rails
+		// ----------------------------------------------------------------
+		{
+			name:         "BootstrapError_ReturnsBootstrapErr",
+			driverCtx:    config.ContextDocker,
+			bootstrapErr: errors.New("bootstrap failed"),
+			setupMocks: func(t *testing.T, _ *gomock.Controller, _ *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.EqualError(t, err, "bootstrap failed")
+			},
+		},
+		{
+			name:      "CSIContext_ReturnsUnsupportedError",
+			driverCtx: config.ContextCSI,
+			setupMocks: func(t *testing.T, _ *gomock.Controller, _ *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.True(t, errors.IsUnsupportedError(err), "expected UnsupportedError, got: %v", err)
+			},
+		},
+		{
+			name:      "EmptyDriverContext_ReturnsUnsupportedError",
+			driverCtx: "",
+			setupMocks: func(t *testing.T, _ *gomock.Controller, _ *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.True(t, errors.IsUnsupportedError(err))
+			},
+		},
+		// ----------------------------------------------------------------
+		// Happy path: no backends in cache, empty persistent store
+		// ----------------------------------------------------------------
+		{
+			name:      "NoBackends_EmptyPersistentStore_Success",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, _ *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				assert.Nil(t, getVolumeByNameFromCache(t, vol1Name))
+			},
+		},
+		// ----------------------------------------------------------------
+		// Happy path: one backend, one volume reloaded
+		// ----------------------------------------------------------------
+		{
+			name:      "OneBackendOneVolume_Success",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				backendVolumes := &sync.Map{}
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().Volumes().Return(backendVolumes).AnyTimes()
+				mockBackend.EXPECT().ClearVolumes().Times(1)
+				mockBackend.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				mockBackend.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				addBackendsToCache(t, mockBackend)
+
+				persistedVols := []*storage.VolumeExternal{
+					makeVolExternal(vol1Name, backendUUID, storage.VolumeStateOnline),
+				}
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return(persistedVols, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				vol := getVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, vol)
+				assert.Equal(t, storage.VolumeStateOnline, vol.State)
+			},
+		},
+		// ----------------------------------------------------------------
+		// Happy path: two backends, two volumes
+		// ----------------------------------------------------------------
+		{
+			name:      "TwoBackendsTwoVolumes_Success",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				const (
+					b2Name = "testReloadBackend2"
+					b2UUID = "backend-reload-uuid2"
+				)
+
+				bv1 := &sync.Map{}
+				b1 := getMockBackend(mockCtrl, backendName, backendUUID)
+				b1.EXPECT().Volumes().Return(bv1).AnyTimes()
+				b1.EXPECT().ClearVolumes().Times(1)
+				b1.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				b1.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+
+				bv2 := &sync.Map{}
+				b2 := getMockBackend(mockCtrl, b2Name, b2UUID)
+				b2.EXPECT().Volumes().Return(bv2).AnyTimes()
+				b2.EXPECT().ClearVolumes().Times(1)
+				b2.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				b2.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+
+				addBackendsToCache(t, b1, b2)
+
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return([]*storage.VolumeExternal{
+					makeVolExternal(vol1Name, backendUUID, storage.VolumeStateOnline),
+					makeVolExternal(vol2Name, b2UUID, storage.VolumeStateOnline),
+				}, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				assert.NotNil(t, getVolumeByNameFromCache(t, vol1Name))
+				assert.NotNil(t, getVolumeByNameFromCache(t, vol2Name))
+			},
+		},
+		// ----------------------------------------------------------------
+		// Happy path: stale cached volume is deleted then replaced by store
+		// ----------------------------------------------------------------
+		{
+			name:      "ExistingCachedVolume_ReplacedByPersistentStore",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				existingVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: vol1Name, InternalName: vol1Name},
+					BackendUUID: backendUUID,
+					State:       storage.VolumeStateDeleting, // stale state
+				}
+				backendVolumes := &sync.Map{}
+				backendVolumes.Store(vol1Name, existingVol)
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().Volumes().Return(backendVolumes).AnyTimes()
+				mockBackend.EXPECT().ClearVolumes().Times(1)
+				mockBackend.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				mockBackend.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, existingVol)
+
+				// Store returns the volume with a fresh state.
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return([]*storage.VolumeExternal{
+					makeVolExternal(vol1Name, backendUUID, storage.VolumeStateOnline),
+				}, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				vol := getVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, vol)
+				// Reloaded state must reflect what the store returned.
+				assert.Equal(t, storage.VolumeStateOnline, vol.State)
+			},
+		},
+		// ----------------------------------------------------------------
+		// Failure: GetVolumes fails → defer cleanup restores volumes
+		// ----------------------------------------------------------------
+		{
+			name:      "GetVolumesFails_CleanupRestoresCachedVolumes",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				existingVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: vol1Name, InternalName: vol1Name},
+					BackendUUID: backendUUID,
+					State:       storage.VolumeStateOnline,
+				}
+				backendVolumes := &sync.Map{}
+				backendVolumes.Store(vol1Name, existingVol)
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().Volumes().Return(backendVolumes).AnyTimes()
+				mockBackend.EXPECT().ClearVolumes().Times(1)
+				// SetVolumes is called by reloadVolumesCleanup to restore.
+				mockBackend.EXPECT().SetVolumes(gomock.Any()).Times(1)
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, existingVol)
+
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return(nil, errors.New("store unavailable")).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				// After cleanup the original volume must be back in the DB cache.
+				vol := getVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, vol, "cleanup must restore the original volume to the cache")
+				assert.Equal(t, storage.VolumeStateOnline, vol.State)
+			},
+		},
+		// ----------------------------------------------------------------
+		// Reloaded volume has no backend → marked MissingBackend
+		// ----------------------------------------------------------------
+		{
+			name:      "VolumeWithMissingBackend_MarkedMissingBackend",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, _ *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				// No backend in cache: bootstrapVolumes should set state to MissingBackend.
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return([]*storage.VolumeExternal{
+					makeVolExternal(vol1Name, backendUUID, storage.VolumeStateOnline),
+				}, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				vol := getVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, vol)
+				assert.Equal(t, storage.VolumeStateMissingBackend, vol.State)
+			},
+		},
+		// ----------------------------------------------------------------
+		// Subordinate volume is routed to the subordinate cache
+		// ----------------------------------------------------------------
+		{
+			name:      "SubordinateVolume_ReloadedToSubordinateCache",
+			driverCtx: config.ContextDocker,
+			setupMocks: func(t *testing.T, _ *gomock.Controller, mockStore *mockpersistentstore.MockStoreClient, _ *ConcurrentTridentOrchestrator) {
+				subVol := makeVolExternal(vol1Name, backendUUID, storage.VolumeStateSubordinate)
+				subVol.Config.ShareSourceVolume = "sourceVol"
+				mockStore.EXPECT().GetVolumes(gomock.Any()).Return([]*storage.VolumeExternal{subVol}, nil).Times(1)
+			},
+			wantErrFunc: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				// Must appear in the subordinate cache.
+				sub := getSubordinateVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, sub)
+				assert.Equal(t, storage.VolumeStateSubordinate, sub.State)
+				// Must NOT appear in the regular volume cache.
+				assert.Nil(t, getVolumeByNameFromCache(t, vol1Name))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStore
+			o.bootstrapError = tt.bootstrapErr
+
+			config.CurrentDriverContext = tt.driverCtx
+			t.Cleanup(func() { config.CurrentDriverContext = "" })
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(t, mockCtrl, mockStore, o)
+			}
+
+			err := o.ReloadVolumes(testCtx)
+
+			if tt.wantErrFunc != nil {
+				tt.wantErrFunc(t, err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(t)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestReloadVolumesCleanupConcurrentCore
+//
+// Exercises reloadVolumesCleanup() directly to cover branches that are
+// difficult to force through ReloadVolumes (err==nil fast-path, backend not
+// in cache, multiple backends, backend with no volumes).
+// ---------------------------------------------------------------------------
+
+func TestReloadVolumesCleanupConcurrentCore(t *testing.T) {
+	const (
+		backendName = "cleanupBackend"
+		backendUUID = "cleanup-backend-uuid"
+		vol1Name    = "cleanupVol1"
+		vol2Name    = "cleanupVol2"
+	)
+
+	tests := []struct {
+		name       string
+		inputErr   error
+		setupMocks func(
+			t *testing.T,
+			mockCtrl *gomock.Controller,
+			o *ConcurrentTridentOrchestrator,
+		) (backends []storage.Backend, volumes map[string]*sync.Map)
+		wantCleanupErr func(t *testing.T, err error)
+		verifyResult   func(t *testing.T)
+	}{
+		// ----------------------------------------------------------------
+		// err == nil → no-op, returns nil immediately
+		// ----------------------------------------------------------------
+		{
+			name:     "NoError_SkipsCleanup_ReturnsNil",
+			inputErr: nil,
+			setupMocks: func(t *testing.T, _ *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				return nil, nil
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		// ----------------------------------------------------------------
+		// err != nil, empty backend slice → returns nil cleanupErr
+		// ----------------------------------------------------------------
+		{
+			name:     "Error_NoBackends_ReturnsNil",
+			inputErr: errors.New("reload failed"),
+			setupMocks: func(t *testing.T, _ *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				return []storage.Backend{}, map[string]*sync.Map{}
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		// ----------------------------------------------------------------
+		// err != nil, one backend with one volume → backend and volume restored
+		// ----------------------------------------------------------------
+		{
+			name:     "Error_OneBackendOneVolume_Restored",
+			inputErr: errors.New("reload failed"),
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: vol1Name, InternalName: vol1Name},
+					BackendUUID: backendUUID,
+					State:       storage.VolumeStateOnline,
+				}
+				savedVols := &sync.Map{}
+				savedVols.Store(vol1Name, vol)
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().SetVolumes(savedVols).Times(1)
+				mockBackend.EXPECT().Volumes().Return(savedVols).Times(1)
+				addBackendsToCache(t, mockBackend)
+
+				return []storage.Backend{mockBackend}, map[string]*sync.Map{backendName: savedVols}
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				vol := getVolumeByNameFromCache(t, vol1Name)
+				require.NotNil(t, vol, "volume should be restored to cache after cleanup")
+				assert.Equal(t, storage.VolumeStateOnline, vol.State)
+			},
+		},
+		// ----------------------------------------------------------------
+		// err != nil, two backends, two volumes → both restored
+		// ----------------------------------------------------------------
+		{
+			name:     "Error_TwoBackendsTwoVolumes_BothRestored",
+			inputErr: errors.New("reload failed"),
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				const (
+					b2Name = "cleanupBackend2"
+					b2UUID = "cleanup-backend-uuid2"
+				)
+
+				vol1 := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: vol1Name, InternalName: vol1Name},
+					BackendUUID: backendUUID,
+					State:       storage.VolumeStateOnline,
+				}
+				vol2 := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: vol2Name, InternalName: vol2Name},
+					BackendUUID: b2UUID,
+					State:       storage.VolumeStateOnline,
+				}
+				vols1 := &sync.Map{}
+				vols1.Store(vol1Name, vol1)
+				vols2 := &sync.Map{}
+				vols2.Store(vol2Name, vol2)
+
+				b1 := getMockBackend(mockCtrl, backendName, backendUUID)
+				b1.EXPECT().SetVolumes(vols1).Times(1)
+				b1.EXPECT().Volumes().Return(vols1).Times(1)
+
+				b2 := getMockBackend(mockCtrl, b2Name, b2UUID)
+				b2.EXPECT().SetVolumes(vols2).Times(1)
+				b2.EXPECT().Volumes().Return(vols2).Times(1)
+
+				addBackendsToCache(t, b1, b2)
+
+				return []storage.Backend{b1, b2}, map[string]*sync.Map{
+					backendName: vols1,
+					b2Name:      vols2,
+				}
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				require.NotNil(t, getVolumeByNameFromCache(t, vol1Name))
+				require.NotNil(t, getVolumeByNameFromCache(t, vol2Name))
+			},
+		},
+		// ----------------------------------------------------------------
+		// err != nil, backend not found in cache → skipped gracefully
+		// ----------------------------------------------------------------
+		{
+			name:     "Error_BackendNotInCache_SkippedGracefully",
+			inputErr: errors.New("reload failed"),
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				// Backend is NOT added to the db cache, so cleanup reads nil and skips.
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				return []storage.Backend{mockBackend}, map[string]*sync.Map{backendName: &sync.Map{}}
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				assert.Nil(t, getVolumeByNameFromCache(t, vol1Name))
+			},
+		},
+		// ----------------------------------------------------------------
+		// err != nil, backend with no volumes → restored without volume upsert
+		// ----------------------------------------------------------------
+		{
+			name:     "Error_BackendHasNoVolumes_RestoredCleanly",
+			inputErr: errors.New("reload failed"),
+			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, _ *ConcurrentTridentOrchestrator) ([]storage.Backend, map[string]*sync.Map) {
+				emptyVols := &sync.Map{}
+
+				mockBackend := getMockBackend(mockCtrl, backendName, backendUUID)
+				mockBackend.EXPECT().SetVolumes(emptyVols).Times(1)
+				mockBackend.EXPECT().Volumes().Return(emptyVols).Times(1)
+				addBackendsToCache(t, mockBackend)
+
+				return []storage.Backend{mockBackend}, map[string]*sync.Map{backendName: emptyVols}
+			},
+			wantCleanupErr: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(t *testing.T) {
+				// Nothing to restore — cache should be empty.
+				assert.Nil(t, getVolumeByNameFromCache(t, vol1Name))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			o := getConcurrentOrchestrator()
+
+			backends, volumes := tt.setupMocks(t, mockCtrl, o)
+
+			cleanupErr := o.reloadVolumesCleanup(testCtx, tt.inputErr, backends, volumes)
+
+			if tt.wantCleanupErr != nil {
+				tt.wantCleanupErr(t, cleanupErr)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(t)
 			}
 
 			persistenceCleanup(t, o)
@@ -23562,6 +24077,647 @@ func TestBootstrapVolumeMovesConcurrentCore(t *testing.T) {
 				tt.verify(t, err)
 			}
 
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// ── AttachVolume tests ────────────────────────────────────────────────────────
+//
+// AttachVolume calls os.Lstat and os.MkdirAll through the orchestrator's osFs
+// field (afero.Fs), so all filesystem interactions are routed through an
+// in-memory afero.MemMapFs in tests.  The mock clients for filesystem.Filesystem,
+// mount.Mount, and iscsi.ISCSI handle the remaining interfaces.
+//
+// NVMe paths are intentionally excluded: nvme.NewNVMeHandler() is constructed
+// inline and cannot be replaced with a mock without refactoring the production
+// code.
+// statErrFs wraps an afero.Fs and returns a canned error from Stat /
+// LstatIfPossible for one specific path.  It exercises the `else if err != nil`
+// branch in AttachVolume (a lstatFs error that is not os.ErrNotExist).
+type statErrFs struct {
+	afero.Fs
+	target string
+	err    error
+}
+
+func (s *statErrFs) Stat(name string) (os.FileInfo, error) {
+	if name == s.target {
+		return nil, s.err
+	}
+	return s.Fs.Stat(name)
+}
+func (s *statErrFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
+	if name == s.target {
+		return nil, false, s.err
+	}
+	if lstater, ok := s.Fs.(afero.Lstater); ok {
+		return lstater.LstatIfPossible(name)
+	}
+	fi, err := s.Fs.Stat(name)
+	return fi, false, err
+}
+
+// newAttachVolumeFixture creates an orchestrator whose osFs, filesystem,
+// mount, and iSCSI fields are all replaced with test doubles.  It returns the
+// orchestrator, the in-memory afero filesystem, and the three mock clients.
+func newAttachVolumeFixture(
+	t *testing.T, ctrl *gomock.Controller,
+) (
+	o *ConcurrentTridentOrchestrator,
+	memFs afero.Fs,
+	mockFsClient *mock_filesystem.MockFilesystem,
+	mockMnt *mock_mount.MockMount,
+	mockISCSIClient *mock_iscsi.MockISCSI,
+) {
+	t.Helper()
+	o = getConcurrentOrchestrator()
+	memFs = afero.NewMemMapFs()
+	o.osFs = memFs
+	mockFsClient = mock_filesystem.NewMockFilesystem(ctrl)
+	o.fs = mockFsClient
+	mockMnt = mock_mount.NewMockMount(ctrl)
+	o.mount = mockMnt
+	mockISCSIClient = mock_iscsi.NewMockISCSI(ctrl)
+	o.iscsi = mockISCSIClient
+	return
+}
+
+// addOnlineVolumeForAttach inserts a minimal online volume into the cache.
+func addOnlineVolumeForAttach(t *testing.T, name, backendUUID string) *storage.Volume {
+	t.Helper()
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: name, InternalName: name},
+		BackendUUID: backendUUID,
+		State:       storage.VolumeStateOnline,
+	}
+	addVolumesToCache(t, vol)
+	return vol
+}
+
+func TestConcurrentTridentOrchestrator_AttachVolume(t *testing.T) {
+	const (
+		volName     = "attach-test-vol"
+		backendUUID = "attach-test-backend"
+		// dummyMountpoint is used for tests that return before reaching
+		// lstatFs, so no real or in-memory path is required.
+		dummyMountpoint = "/mnt/dummy"
+		// mountpoint is the path used by tests that proceed past the state
+		// checks and into the filesystem / SAN dispatch logic.
+		mountpoint = "/mnt/attach-vol"
+	)
+
+	// ── 1. Pre-flight guard tests ─────────────────────────────────────────
+	// These return before lstatFs is ever called, so no osFs state is needed.
+	t.Run("bootstrap error is returned immediately", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		bootErr := fmt.Errorf("not bootstrapped")
+		o.bootstrapError = bootErr
+		err := o.AttachVolume(testCtx, volName, dummyMountpoint, &models.VolumePublishInfo{})
+		assert.ErrorIs(t, err, bootErr)
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("volume not found returns NotFoundError", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		// No volume in cache → nil volume → NotFoundError.
+		err := o.AttachVolume(testCtx, volName, dummyMountpoint, &models.VolumePublishInfo{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("volume in deleting state returns VolumeStateError", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		vol := &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+			BackendUUID: backendUUID,
+			State:       storage.VolumeStateDeleting,
+		}
+		addVolumesToCache(t, vol)
+		err := o.AttachVolume(testCtx, volName, dummyMountpoint, &models.VolumePublishInfo{})
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+		persistenceCleanup(t, o)
+	})
+
+	// ── 2. Mountpoint path-resolution tests ──────────────────────────────
+	// All tests below exercise lstatFs (and potentially MkdirAll) through the
+	// in-memory afero.MemMapFs.  No real filesystem path is touched.
+	t.Run("mountpoint is a file returns not-a-directory error", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		// Write a regular file at the mountpoint path in the in-memory fs.
+		require.NoError(t, afero.WriteFile(memFs, mountpoint, []byte("not-a-dir"), 0o644))
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not a directory")
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("lstatFs returns a non-NotExist error is propagated", func(t *testing.T) {
+		// statErrFs injects an arbitrary error for the target path so we can
+		// exercise the `else if err != nil` branch without touching the OS.
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		statErr := fmt.Errorf("permission denied")
+		o.osFs = &statErrFs{Fs: memFs, target: mountpoint, err: statErr}
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, statErr)
+		assert.False(t, errors.IsNotFoundError(err))
+		assert.False(t, errors.IsVolumeStateError(err))
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("non-existent mountpoint is created by MkdirAll before DF check", func(t *testing.T) {
+		// mountpoint does not exist in memFs: lstatFs returns os.ErrNotExist,
+		// MkdirAll is called, then execution reaches GetDFOutput.
+		// We verify MkdirAll ran by asserting the path exists in memFs afterwards.
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		// mountpoint deliberately absent from memFs.
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		// Unsupported SAN type fails
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{SANType: sa.FCP})
+		assert.Error(t, err)
+		fi, statErr := memFs.Stat(mountpoint)
+		require.NoError(t, statErr, "MkdirAll should have created the mountpoint in memFs")
+		assert.True(t, fi.IsDir(), "created path must be a directory")
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("docker plugin mode applies /host prefix to lstatFs path", func(t *testing.T) {
+		// Strategy: write a *file* (not a dir) at the original mountpoint in
+		// memFs.  Without docker mode, lstatFs(mountpoint) finds the file and
+		// returns "not a directory".  With docker mode, lstatFs is called on
+		// "/host"+mountpoint (which is absent in memFs) → MkdirAll → GetDFOutput.
+		// The test succeeds only if the /host prefix was applied.
+		t.Setenv(config.DockerPluginModeEnvVariable, "1")
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		// File at the bare mountpoint – would cause "not a directory" without /host.
+		require.NoError(t, afero.WriteFile(memFs, mountpoint, []byte("marker"), 0o644))
+		// /host-prefixed path is absent → MkdirAll creates it → GetDFOutput.
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockMnt.EXPECT().AttachNFSVolume(gomock.Any(), volName, mountpoint, gomock.Any()).
+			Return(nil)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{FilesystemType: "nfs"})
+		assert.NoError(t, err, "docker plugin mode must use /host-prefixed path for lstatFs")
+		persistenceCleanup(t, o)
+	})
+
+	// ── 3. DF-output gate tests ───────────────────────────────────────────
+	// For these tests the mountpoint is pre-created in memFs so lstatFs
+	// succeeds (directory exists, no creation needed).
+	t.Run("GetDFOutput error is propagated", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		dfErr := fmt.Errorf("df read failed")
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return(nil, dfErr)
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{})
+		require.Error(t, err)
+		// Error is wrapped with fmt.Errorf(..., %v), not %w, so check message.
+		assert.ErrorContains(t, err, dfErr.Error())
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("volume already mounted returns nil without calling SAN or NFS", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return(
+			[]models.DFInfo{{Target: mountpoint, Source: "dev"}}, nil)
+		// mount and iscsi mocks receive no calls (gomock enforces this).
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{})
+		assert.NoError(t, err)
+		persistenceCleanup(t, o)
+	})
+
+	// ── 4. NFS dispatch ───────────────────────────────────────────────────
+	t.Run("NFS: AttachNFSVolume failure is propagated", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		nfsErr := fmt.Errorf("nfs mount failed")
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockMnt.EXPECT().AttachNFSVolume(gomock.Any(), volName, mountpoint, gomock.Any()).
+			Return(nfsErr)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{FilesystemType: "nfs"})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, nfsErr)
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("NFS: AttachNFSVolume success returns nil", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockMnt.EXPECT().AttachNFSVolume(gomock.Any(), volName, mountpoint, gomock.Any()).
+			Return(nil)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{FilesystemType: "nfs"})
+		assert.NoError(t, err)
+		persistenceCleanup(t, o)
+	})
+
+	// ── 5. iSCSI dispatch ─────────────────────────────────────────────────
+	// With LUKSEncryption == "" the LUKS helper short-circuits to
+	// (false, false, nil) without performing any I/O.
+	t.Run("iSCSI: AttachVolumeRetry failure is propagated", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, mockISCSIClient := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		iscsiErr := fmt.Errorf("iscsi attach failed")
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockISCSIClient.EXPECT().
+			AttachVolumeRetry(gomock.Any(), gomock.Any(), AttachISCSIVolumeTimeoutLong).
+			Return(int64(0), iscsiErr)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{SANType: sa.ISCSI})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, iscsiErr)
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("iSCSI: EnsureVolumeFormattedAndMounted failure is propagated", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, mockISCSIClient := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mountErr := fmt.Errorf("format/mount failed")
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockISCSIClient.EXPECT().
+			AttachVolumeRetry(gomock.Any(), gomock.Any(), AttachISCSIVolumeTimeoutLong).
+			Return(int64(0), nil)
+		mockISCSIClient.EXPECT().
+			EnsureVolumeFormattedAndMounted(gomock.Any(), volName, mountpoint, gomock.Any(),
+				false, false).
+			Return(mountErr)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{SANType: sa.ISCSI, LUKSEncryption: ""})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, mountErr)
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("iSCSI: full success with no LUKS returns nil", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, mockISCSIClient := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		mockISCSIClient.EXPECT().
+			AttachVolumeRetry(gomock.Any(), gomock.Any(), AttachISCSIVolumeTimeoutLong).
+			Return(int64(0), nil)
+		mockISCSIClient.EXPECT().
+			EnsureVolumeFormattedAndMounted(gomock.Any(), volName, mountpoint, gomock.Any(),
+				false, false).
+			Return(nil)
+		err := o.AttachVolume(testCtx, volName, mountpoint,
+			&models.VolumePublishInfo{SANType: sa.ISCSI, LUKSEncryption: ""})
+		assert.NoError(t, err)
+		persistenceCleanup(t, o)
+	})
+
+	// ── 6. Unknown SAN type ───────────────────────────────────────────────
+	t.Run("unknown SAN type returns error", func(t *testing.T) {
+		// Neither NVMe nor iSCSI matches; err stays nil and is returned.
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, mockFsClient, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil)
+		err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{SANType: "fc"})
+		assert.Error(t, err)
+		persistenceCleanup(t, o)
+	})
+
+	// ── 7. Table-driven volume-state guard cases ──────────────────────────
+	type stateGuardCase struct {
+		name        string
+		volumeState storage.VolumeState
+		addVolume   bool
+		checkErr    func(*testing.T, error)
+	}
+	stateGuardCases := []stateGuardCase{
+		{
+			name:      "no volume in cache returns NotFoundError",
+			addVolume: false,
+			checkErr: func(t *testing.T, err error) {
+				require.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name:        "online volume passes the state guard",
+			addVolume:   true,
+			volumeState: storage.VolumeStateOnline,
+			checkErr: func(t *testing.T, err error) {
+				// State guard must not fire; any error comes from later stages.
+				if err != nil {
+					assert.False(t, errors.IsVolumeStateError(err))
+				}
+			},
+		},
+		{
+			name:        "upgrading volume is not treated as deleting",
+			addVolume:   true,
+			volumeState: storage.VolumeStateUpgrading,
+			checkErr: func(t *testing.T, err error) {
+				// VolumeStateUpgrading.IsDeleting() == false.
+				if err != nil {
+					assert.False(t, errors.IsVolumeStateError(err))
+				}
+			},
+		},
+	}
+
+	for _, tc := range stateGuardCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			db.Initialize()
+			ctrl := gomock.NewController(t)
+			o, memFs, mockFsClient, _, _ := newAttachVolumeFixture(t, ctrl)
+			if tc.addVolume {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+					BackendUUID: backendUUID,
+					State:       tc.volumeState,
+				}
+				addVolumesToCache(t, vol)
+			}
+			// Pre-create the mountpoint so lstatFs succeeds for cases that
+			// reach the filesystem operations.
+			require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+			// Allow GetDFOutput to be called zero or more times; cases that
+			// trigger the not-found guard never reach it.
+			mockFsClient.EXPECT().GetDFOutput(gomock.Any()).Return([]models.DFInfo{}, nil).AnyTimes()
+			err := o.AttachVolume(testCtx, volName, mountpoint, &models.VolumePublishInfo{})
+			tc.checkErr(t, err)
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// ── DetachVolume tests ────────────────────────────────────────────────────────
+//
+// DetachVolume uses o.osFs.Stat to check whether the mount point exists and
+// o.osFs.Remove to clean it up afterwards.  All filesystem interactions are
+// routed through an in-memory afero.MemMapFs; mount.Umount is handled by the
+// MockMount client.
+// removeErrFs wraps an afero.Fs and returns a canned error from Remove for
+// one specific path.  It lets us verify that DetachVolume treats Remove as
+// best-effort (the error is silently discarded) without touching the real OS.
+type removeErrFs struct {
+	afero.Fs
+	target string
+	err    error
+}
+
+func (r *removeErrFs) Remove(name string) error {
+	if name == r.target {
+		return r.err
+	}
+	return r.Fs.Remove(name)
+}
+
+func TestConcurrentTridentOrchestrator_DetachVolume(t *testing.T) {
+	const (
+		volName         = "detach-test-vol"
+		backendUUID     = "detach-test-backend"
+		dummyMountpoint = "/mnt/dummy"
+		mountpoint      = "/mnt/detach-vol"
+	)
+
+	// ── 1. Pre-flight guard tests ─────────────────────────────────────────
+	// These return before osFs.Stat is ever called.
+	t.Run("bootstrap error is returned immediately", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		bootErr := fmt.Errorf("not bootstrapped")
+		o.bootstrapError = bootErr
+		err := o.DetachVolume(testCtx, volName, dummyMountpoint)
+		assert.ErrorIs(t, err, bootErr)
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("volume not found returns NotFoundError", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		err := o.DetachVolume(testCtx, volName, dummyMountpoint)
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("volume in deleting state returns VolumeStateError", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		vol := &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+			BackendUUID: backendUUID,
+			State:       storage.VolumeStateDeleting,
+		}
+		addVolumesToCache(t, vol)
+		err := o.DetachVolume(testCtx, volName, dummyMountpoint)
+		require.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+		persistenceCleanup(t, o)
+	})
+
+	// ── 2. Stat-gate: mountpoint absent ──────────────────────────────────
+	// osFs.Stat returns an error (path does not exist in memFs) → volume is
+	// not attached → DetachVolume returns nil without calling Umount.
+	t.Run("mountpoint absent returns nil without calling Umount", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, _, _, _, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		// mountpoint deliberately absent from memFs.
+		// mount mock receives no calls (gomock enforces this).
+		err := o.DetachVolume(testCtx, volName, mountpoint)
+		assert.NoError(t, err)
+		persistenceCleanup(t, o)
+	})
+
+	// ── 3. Umount dispatch ────────────────────────────────────────────────
+	// For these tests the mountpoint is pre-created in memFs so osFs.Stat
+	// succeeds and execution reaches mount.Umount.
+	t.Run("Umount failure is propagated", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		umountErr := fmt.Errorf("umount failed")
+		mockMnt.EXPECT().Umount(gomock.Any(), mountpoint).Return(umountErr)
+		err := o.DetachVolume(testCtx, volName, mountpoint)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, umountErr)
+		// mountpoint must still be present (Remove is only called on success).
+		_, statErr := memFs.Stat(mountpoint)
+		assert.NoError(t, statErr, "mountpoint should not be removed after Umount failure")
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("Umount success removes the mountpoint directory and returns nil", func(t *testing.T) {
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		mockMnt.EXPECT().Umount(gomock.Any(), mountpoint).Return(nil)
+		err := o.DetachVolume(testCtx, volName, mountpoint)
+		assert.NoError(t, err)
+		// osFs.Remove must have been called: path is gone from memFs.
+		_, statErr := memFs.Stat(mountpoint)
+		assert.ErrorIs(t, statErr, os.ErrNotExist,
+			"mountpoint should be removed from memFs after successful detach")
+		persistenceCleanup(t, o)
+	})
+
+	t.Run("Remove failure is ignored (best-effort) and DetachVolume still returns nil", func(t *testing.T) {
+		// removeErrFs injects a Remove error for the mountpoint so we can
+		// confirm that the error is silently discarded (best-effort semantics).
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+		o.osFs = &removeErrFs{Fs: memFs, target: mountpoint, err: fmt.Errorf("remove failed")}
+		mockMnt.EXPECT().Umount(gomock.Any(), mountpoint).Return(nil)
+		err := o.DetachVolume(testCtx, volName, mountpoint)
+		assert.NoError(t, err, "Remove error must not be propagated")
+		persistenceCleanup(t, o)
+	})
+
+	// ── 4. Docker plugin mode ─────────────────────────────────────────────
+	// Strategy: create the mountpoint dir at the /host-prefixed path only.
+	// Without docker mode, osFs.Stat(mountpoint) would not find it → return
+	// nil without Umount.  With docker mode, Stat("/host"+mountpoint) finds
+	// it → Umount(mountpoint without /host prefix) → Remove("/host"+…).
+	// The test verifies the /host-prefixed path is both Stat-ed and Removed.
+	t.Run("docker plugin mode applies /host prefix to Stat and Remove", func(t *testing.T) {
+		t.Setenv(config.DockerPluginModeEnvVariable, "1")
+		db.Initialize()
+		ctrl := gomock.NewController(t)
+		o, memFs, _, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+		addOnlineVolumeForAttach(t, volName, backendUUID)
+		hostMountpoint := filepath.Join("/host", mountpoint)
+		// Only the /host-prefixed path exists in memFs.
+		require.NoError(t, memFs.MkdirAll(hostMountpoint, 0o755))
+		// Umount receives the original (non-/host) mountpoint: it is chrooted
+		// and does not need the prefix (mirrors the production comment).
+		mockMnt.EXPECT().Umount(gomock.Any(), mountpoint).Return(nil)
+		err := o.DetachVolume(testCtx, volName, mountpoint)
+		assert.NoError(t, err)
+		// /host-prefixed path must have been removed.
+		_, statErr := memFs.Stat(hostMountpoint)
+		assert.ErrorIs(t, statErr, os.ErrNotExist,
+			"/host-prefixed mountpoint should be removed by DetachVolume in docker plugin mode")
+		// Original path was never created, so it must still not exist.
+		_, statErr = memFs.Stat(mountpoint)
+		assert.ErrorIs(t, statErr, os.ErrNotExist,
+			"non-prefixed mountpoint should never have existed")
+		persistenceCleanup(t, o)
+	})
+
+	// ── 5. Table-driven volume-state guard cases ──────────────────────────
+	type stateGuardCase struct {
+		name        string
+		volumeState storage.VolumeState
+		addVolume   bool
+		checkErr    func(*testing.T, error)
+	}
+	stateGuardCases := []stateGuardCase{
+		{
+			name:      "no volume in cache returns NotFoundError",
+			addVolume: false,
+			checkErr: func(t *testing.T, err error) {
+				require.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name:        "online volume passes the state guard",
+			addVolume:   true,
+			volumeState: storage.VolumeStateOnline,
+			checkErr: func(t *testing.T, err error) {
+				if err != nil {
+					assert.False(t, errors.IsVolumeStateError(err))
+				}
+			},
+		},
+		{
+			name:        "upgrading volume is not treated as deleting",
+			addVolume:   true,
+			volumeState: storage.VolumeStateUpgrading,
+			checkErr: func(t *testing.T, err error) {
+				// VolumeStateUpgrading.IsDeleting() == false.
+				if err != nil {
+					assert.False(t, errors.IsVolumeStateError(err))
+				}
+			},
+		},
+	}
+
+	for _, tc := range stateGuardCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			db.Initialize()
+			ctrl := gomock.NewController(t)
+			o, memFs, _, mockMnt, _ := newAttachVolumeFixture(t, ctrl)
+			if tc.addVolume {
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+					BackendUUID: backendUUID,
+					State:       tc.volumeState,
+				}
+				addVolumesToCache(t, vol)
+			}
+			// Pre-create mountpoint so Stat succeeds for cases that reach the
+			// unmount logic; cases that hit the not-found guard never get here.
+			require.NoError(t, memFs.MkdirAll(mountpoint, 0o755))
+			// Allow Umount to be called zero or more times; state-guard cases
+			// never reach it.
+			mockMnt.EXPECT().Umount(gomock.Any(), mountpoint).Return(nil).AnyTimes()
+			err := o.DetachVolume(testCtx, volName, mountpoint)
+			tc.checkErr(t, err)
 			persistenceCleanup(t, o)
 		})
 	}

@@ -1048,6 +1048,18 @@ func (mr *MockBackendMockRecorder) SetUserState(State any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserState", reflect.TypeOf((*MockBackend)(nil).SetUserState), State)
 }
 
+// SetVolumes mocks base method.
+func (m *MockBackend) SetVolumes(arg0 *sync.Map) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetVolumes", arg0)
+}
+
+// SetVolumes indicates an expected call of SetVolumes.
+func (mr *MockBackendMockRecorder) SetVolumes(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVolumes", reflect.TypeOf((*MockBackend)(nil).SetVolumes), arg0)
+}
+
 // SmartCopy mocks base method.
 func (m *MockBackend) SmartCopy() any {
 	m.ctrl.T.Helper()
@@ -1144,18 +1156,6 @@ func (mr *MockBackendMockRecorder) UnpublishVolume(ctx, volConfig, publishInfo a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), ctx, volConfig, publishInfo)
 }
 
-// UpdateBackendState mocks base method.
-func (m *MockBackend) UpdateBackendState(ctx context.Context, stateReason string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateBackendState", ctx, stateReason)
-}
-
-// UpdateBackendState indicates an expected call of UpdateBackendState.
-func (mr *MockBackendMockRecorder) UpdateBackendState(ctx, stateReason any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockBackend)(nil).UpdateBackendState), ctx, stateReason)
-}
-
 // UnstageVolumeMove mocks base method.
 func (m *MockBackend) UnstageVolumeMove(ctx context.Context, volConfig *storage.VolumeConfig, volumeMoveInfo *models.VolumeMoveInfo) error {
 	m.ctrl.T.Helper()
@@ -1168,6 +1168,18 @@ func (m *MockBackend) UnstageVolumeMove(ctx context.Context, volConfig *storage.
 func (mr *MockBackendMockRecorder) UnstageVolumeMove(ctx, volConfig, volumeMoveInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnstageVolumeMove", reflect.TypeOf((*MockBackend)(nil).UnstageVolumeMove), ctx, volConfig, volumeMoveInfo)
+}
+
+// UpdateBackendState mocks base method.
+func (m *MockBackend) UpdateBackendState(ctx context.Context, stateReason string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "UpdateBackendState", ctx, stateReason)
+}
+
+// UpdateBackendState indicates an expected call of UpdateBackendState.
+func (mr *MockBackendMockRecorder) UpdateBackendState(ctx, stateReason any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockBackend)(nil).UpdateBackendState), ctx, stateReason)
 }
 
 // UpdateMirror mocks base method.

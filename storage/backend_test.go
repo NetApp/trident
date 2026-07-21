@@ -665,6 +665,51 @@ func TestStorageBackend_StoragePoolsAndVolumes(t *testing.T) {
 	assert.Equal(t, 0, count, "ClearVolumes() should clear all volumes")
 }
 
+func TestStorageBackend_SetVolumes(t *testing.T) {
+	// --- setup: a backend with one pre-existing volume ---
+	oldVolumes := new(sync.Map)
+	oldVolumes.Store("old-vol", &Volume{Config: &VolumeConfig{Name: "old-vol"}})
+
+	backend := &StorageBackend{
+		volumes:   oldVolumes,
+		stateLock: new(sync.RWMutex),
+	}
+
+	// Sanity-check: old volume is present before the call.
+	_, existsBefore := backend.Volumes().Load("old-vol")
+	assert.True(t, existsBefore, "old volume should exist before SetVolumes")
+
+	// --- case 1: replace with a new non-nil map ---
+	newVolumes := new(sync.Map)
+	newVolumes.Store("new-vol", &Volume{Config: &VolumeConfig{Name: "new-vol"}})
+
+	backend.SetVolumes(newVolumes)
+
+	// The getter must now return exactly the map we passed in.
+	assert.Equal(t, newVolumes, backend.Volumes(), "Volumes() should return the map passed to SetVolumes")
+
+	// The new volume must be reachable.
+	_, newExists := backend.Volumes().Load("new-vol")
+	assert.True(t, newExists, "new volume should be visible after SetVolumes")
+
+	// The old volume must no longer be reachable.
+	_, oldExists := backend.Volumes().Load("old-vol")
+	assert.False(t, oldExists, "old volume should not be visible after SetVolumes")
+
+	// --- case 2: nil input → backend receives a fresh empty map, not nil ---
+	assert.NotPanics(t, func() {
+		backend.SetVolumes(nil)
+	}, "SetVolumes(nil) should not panic")
+
+	result := backend.Volumes()
+	assert.NotNil(t, result, "SetVolumes(nil) should set an empty map, not nil")
+
+	// Confirm the map is truly empty.
+	count := 0
+	result.Range(func(_, _ any) bool { count++; return true })
+	assert.Equal(t, 0, count, "map set by SetVolumes(nil) should be empty")
+}
+
 func TestStorageBackend_ConfigRef(t *testing.T) {
 	backend := &StorageBackend{
 		configRef: "original-config-ref",

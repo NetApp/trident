@@ -215,7 +215,9 @@ func (p *Plugin) initDockerVersion() {
 		"clientOS":         version.Server.Os,
 	}).Debug("Docker version info.")
 
+	p.mutex.Lock()
 	p.version = &version
+	p.mutex.Unlock()
 
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformDocker)
@@ -268,6 +270,10 @@ func (p *Plugin) GetName() string {
 }
 
 func (p *Plugin) Version() string {
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	if p.version == nil {
 		return "unknown"
 	}
@@ -277,6 +283,9 @@ func (p *Plugin) Version() string {
 
 func (p *Plugin) Create(request *volume.CreateRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeCreate, LogLayerDockerFrontend)
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method":  "Create",
@@ -323,6 +332,9 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 func (p *Plugin) List() (*volume.ListResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeList, LogLayerDockerFrontend)
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "List",
 	}, "Docker frontend method is invoked.")
@@ -353,6 +365,9 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 
 func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGet, LogLayerDockerFrontend)
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Get",
@@ -407,6 +422,9 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeDelete, LogLayerDockerFrontend)
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Remove",
 		"name":   request.Name,
@@ -428,6 +446,9 @@ func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGetPath, LogLayerDockerFrontend)
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Path",
@@ -454,6 +475,9 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeMount, LogLayerDockerFrontend)
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Mount",
 		"name":   request.Name,
@@ -466,6 +490,10 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
+		return &volume.MountResponse{}, p.dockerError(ctx, err)
+	}
+
+	if err := p.addLocalhostNode(ctx); err != nil {
 		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
@@ -495,6 +523,9 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeUnmount, LogLayerDockerFrontend)
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Unmount",
 		"name":   request.Name,
@@ -507,6 +538,10 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
+		return p.dockerError(ctx, err)
+	}
+
+	if err := p.addLocalhostNode(ctx); err != nil {
 		return p.dockerError(ctx, err)
 	}
 
@@ -528,6 +563,9 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowControllerGetCapabilities,
 		LogLayerDockerFrontend)
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Capabilities",
@@ -584,6 +622,20 @@ func (p *Plugin) dockerError(ctx context.Context, err error) error {
 	} else {
 		return err
 	}
+}
+
+// addLocalhostNode adds a single node "localhost" to the core's node cache to enable any core functions
+// such as Publish and Attach that expect a node to exist.
+func (p *Plugin) addLocalhostNode(ctx context.Context) error {
+	if _, err := p.orchestrator.GetNode(ctx, "localhost"); err != nil {
+		if errors.IsNotFoundError(err) {
+			nodeEventCallback := func(eventType, reason, message string) {}
+			return p.orchestrator.AddNode(ctx, &models.Node{Name: "localhost"}, nodeEventCallback)
+		} else {
+			return err
+		}
+	}
+	return nil
 }
 
 // reloadVolumes instructs Trident core to refresh its cached volume info from its

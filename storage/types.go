@@ -35,6 +35,7 @@ type Backend interface {
 	StoragePools() *sync.Map
 	ClearStoragePools()
 	Volumes() *sync.Map
+	SetVolumes(*sync.Map)
 	ClearVolumes()
 	ConfigRef() string
 	SetConfigRef(ConfigRef string)

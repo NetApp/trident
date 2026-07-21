@@ -2001,7 +2001,10 @@ func TestFlexgroupSnapshotList(t *testing.T) {
 
 	snap1 := models.Snapshot{Name: new("snapvol1"), CreateTime: &createTime1}
 	snap2 := models.Snapshot{Name: new("snapvol2"), CreateTime: new(strfmt.NewDateTime())}
-	snapshotResponse := models.SnapshotResponse{SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2}}
+	snapshotResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2},
+		NumRecords:                    new(int64(2)),
+	}
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
 	// case 1: Flexgroup get info.
@@ -3202,7 +3205,10 @@ func TestVolumeSnapshotList(t *testing.T) {
 
 	snap1 := models.Snapshot{Name: new("snapvol1"), CreateTime: &createTime1}
 	snap2 := models.Snapshot{Name: new("snapvol2"), CreateTime: new(strfmt.NewDateTime())}
-	snapshotResponse := models.SnapshotResponse{SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2}}
+	snapshotResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2},
+		NumRecords:                    new(int64(2)),
+	}
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
 	// case 1: Get volume snapshot list
@@ -4303,8 +4309,7 @@ func TestIscsiInterfaceGet(t *testing.T) {
 
 	iscsiService := models.IscsiService{Enabled: new(true), Target: &models.IscsiServiceInlineTarget{Name: &targetName}}
 	iscsiServiceResponse := s_a_n.IscsiServiceCollectionGetOK{
-		Payload: &models.IscsiServiceResponse{IscsiServiceResponseInlineRecords: []*models.
-			IscsiService{&iscsiService}},
+		Payload: &models.IscsiServiceResponse{IscsiServiceResponseInlineRecords: []*models.IscsiService{&iscsiService}},
 	}
 
 	// case 1: Positive test, get the iscsi interface test.
@@ -5144,6 +5149,7 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 				if tt.mockSnapshots != nil {
 					snapResponse = &models.SnapshotResponse{
 						SnapshotResponseInlineRecords: tt.mockSnapshots,
+						NumRecords:                    new(int64(len(tt.mockSnapshots))),
 					}
 				}
 				rsi.EXPECT().SnapshotListByName(ctx, *tt.mockVolumeInfo.UUID, tt.snapshotName).Return(
