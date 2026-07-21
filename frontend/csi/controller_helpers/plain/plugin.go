@@ -4,6 +4,7 @@ package plain
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,7 +15,9 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -191,4 +194,49 @@ func (h *helper) SupportsFeature(_ context.Context, feature controllerhelpers.Fe
 
 func (h *helper) IsTopologyInUse(_ context.Context) bool {
 	return false
+}
+
+func (h *helper) RegisterNode(
+	ctx context.Context, node *models.Node, recordEvent tridentcontroller.NodeEventRecorder,
+) (*tridentcontroller.RegistrationInfo, error) {
+	topologyLabels, err := h.GetNodeTopologyLabels(ctx, node.Name)
+	if err != nil {
+		return nil, err
+	}
+	node.TopologyLabels = topologyLabels
+
+	nodeEventCallback := func(eventType, reason, message string) {
+		if recordEvent != nil {
+			recordEvent(eventType, reason, message)
+			return
+		}
+		h.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
+	}
+	if err = h.orchestrator.AddNode(ctx, node, nodeEventCallback); err != nil {
+		return nil, err
+	}
+
+	logLevel, err := h.orchestrator.GetLogLevel(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logWorkflows, err := h.orchestrator.GetSelectedLoggingWorkflows(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logLayers, err := h.orchestrator.GetSelectedLogLayers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tridentcontroller.RegistrationInfo{
+		TopologyLabels: topologyLabels,
+		LogLevel:       logLevel,
+		LogWorkflows:   logWorkflows,
+		LogLayers:      logLayers,
+	}, nil
+}
+
+func (h *helper) ReconcileTridentNode(_ context.Context, _ *netappv1.TridentNode) error {
+	return fmt.Errorf("trident node reconciliation is not supported in plain controller helper")
 }

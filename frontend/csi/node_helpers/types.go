@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -22,11 +23,13 @@ type NodeHelper interface {
 	UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error
 	VolumePublishManager
 	VolumeStatsManager
+	// TODO(node-core): ClientFactory is bootstrap plumbing for transport selection (CRD vs REST).
+	// Node core should construct tridentcontroller.Client once; NodeHelper should stay local-only.
+	tridentcontroller.ClientFactory
 }
 
-// VolumePublishManager is the common interface used by the "helper" objects used by
-// the CSI node. The node_helpers supply CO-specific details at certain
-// points of CSI workflows.
+// VolumePublishManager covers node-local volume tracking persistence via NodeHelper (see package doc).
+// Helpers supply CO-specific details at certain points of CSI workflows.
 type VolumePublishManager interface {
 	WriteTrackingInfo(context.Context, string, *models.VolumeTrackingInfo) error
 	ReadTrackingInfo(context.Context, string) (*models.VolumeTrackingInfo, error)

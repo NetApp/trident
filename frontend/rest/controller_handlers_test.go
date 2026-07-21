@@ -22,6 +22,7 @@ import (
 
 	"github.com/netapp/trident/acp"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockk8scontrollerhelper "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
@@ -2101,6 +2102,21 @@ func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	}
 }
 
+type fakeTridentControllerServer struct {
+	ack *tridentcontroller.RegistrationInfo
+	err error
+}
+
+func (f *fakeTridentControllerServer) Activate() error   { return nil }
+func (f *fakeTridentControllerServer) Deactivate() error { return nil }
+func (f *fakeTridentControllerServer) GetName() string   { return "fake" }
+func (f *fakeTridentControllerServer) Version() string   { return "fake" }
+func (f *fakeTridentControllerServer) RegisterNode(
+	_ context.Context, _ *models.Node, _ tridentcontroller.NodeEventRecorder,
+) (*tridentcontroller.RegistrationInfo, error) {
+	return f.ack, f.err
+}
+
 func TestAddNode(t *testing.T) {
 	tests := []struct {
 		name              string
@@ -2109,7 +2125,43 @@ func TestAddNode(t *testing.T) {
 		expectedStatus    int
 		expectErrorInBody bool
 		expectedNodeName  string
+		expectedTopology  map[string]string
+		expectedLogLevel  string
+		expectedLogFlows  string
+		expectedLogLayers string
 	}{
+		{
+			name: "SuccessfulAdd",
+			body: `{"name": "test-node"}`,
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().GetFrontend(gomock.Any(), "k8s_csi_helper").Return(nil, errors.New("k8s helper not found"))
+				m.EXPECT().GetFrontend(gomock.Any(), "plain_csi_helper").Return(&fakeTridentControllerServer{
+					ack: &tridentcontroller.RegistrationInfo{
+						TopologyLabels: map[string]string{"topology.kubernetes.io/region": "us-west"},
+						LogLevel:       "info",
+						LogWorkflows:   "csi",
+						LogLayers:      "all",
+					},
+				}, nil)
+			},
+			expectedStatus:    http.StatusCreated,
+			expectErrorInBody: false,
+			expectedNodeName:  "test-node",
+			expectedTopology:  map[string]string{"topology.kubernetes.io/region": "us-west"},
+			expectedLogLevel:  "info",
+			expectedLogFlows:  "csi",
+			expectedLogLayers: "all",
+		},
+		{
+			name: "RejectedWhenCRDTransportInUse",
+			body: `{"name": "test-node"}`,
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().GetFrontend(gomock.Any(), "k8s_csi_helper").Return(&fakeTridentControllerServer{}, nil)
+			},
+			expectedStatus:    http.StatusNotFound,
+			expectErrorInBody: true,
+			expectedNodeName:  "test-node",
+		},
 		{
 			name: "InvalidJSON",
 			body: `{invalid json}`,
@@ -2129,7 +2181,7 @@ func TestAddNode(t *testing.T) {
 			}`,
 			setupMock: func(m *mockcore.MockOrchestrator) {
 				m.EXPECT().GetFrontend(gomock.Any(), "k8s_csi_helper").Return(nil, errors.New("k8s helper not found"))
-				m.EXPECT().GetFrontend(gomock.Any(), "plain_csi_helper").Return(nil, errors.New("plain helper not found"))
+				m.EXPECT().GetFrontend(gomock.Any(), "plain_csi_helper").Return(nil, errors.New("plain helper not found")).Times(1)
 			},
 			expectedStatus:    http.StatusBadRequest,
 			expectErrorInBody: true,
@@ -2169,6 +2221,10 @@ func TestAddNode(t *testing.T) {
 			} else {
 				assert.Empty(t, response.Error)
 				assert.Equal(t, tt.expectedNodeName, response.Name)
+				assert.Equal(t, tt.expectedTopology, response.TopologyLabels)
+				assert.Equal(t, tt.expectedLogLevel, response.LogLevel)
+				assert.Equal(t, tt.expectedLogFlows, response.LogWorkflows)
+				assert.Equal(t, tt.expectedLogLayers, response.LogLayers)
 			}
 		})
 	}

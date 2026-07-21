@@ -242,6 +242,8 @@ rules:
       - tridentvolumepublications
       - tridentvolumereferences
       - tridentnodes
+      # Needed for controller UpdateStatus calls on TridentNode acknowledgements.
+      - tridentnodes/status
       - tridenttransactions
       - tridentsnapshots
       - tridentbackendconfigs

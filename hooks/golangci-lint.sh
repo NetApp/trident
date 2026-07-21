@@ -16,6 +16,9 @@ GO_PACKAGE_DIRS=$(
 
 PASS=true
 for DIR in $GO_PACKAGE_DIRS; do
+  if [ ! -d "$DIR" ]; then
+    continue
+  fi
   if ! golangci-lint run "./$DIR"; then
     PASS=false
   fi

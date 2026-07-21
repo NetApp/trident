@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -38,6 +39,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -87,6 +89,9 @@ type helper struct {
 	namespace         string
 	eventRecorder     record.EventRecorder
 	enableForceDetach bool
+
+	nodeRegistrationRejectedEvents     map[string]struct{}
+	nodeRegistrationRejectedEventsLock sync.Mutex
 
 	pvcIndexer            cache.Indexer
 	pvcController         cache.SharedIndexInformer
@@ -1471,6 +1476,28 @@ func (h *helper) getNodePublicationState(ctx context.Context, node *v1.Node) *mo
 		OrchestratorReady:  new(ready),
 		AdministratorReady: new(adminReady),
 	}
+}
+
+// tridentNodePublicationStateFlags merges controller-derived K8s Node readiness with the node-owned
+// spec.provisionerReady signal on TridentNode. spec.provisionerReady mirrors plain CSI's REST
+// UpdateNode(provisionerReady) path so force-detach cleanup reaches the orchestrator on CRD storage.
+func (h *helper) tridentNodePublicationStateFlags(
+	ctx context.Context, nodeName string, nodeCR *netappv1.TridentNode,
+) (*models.NodePublicationStateFlags, error) {
+	k8sNode, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	if err != nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return nil, errors.NotFoundError("node %s not found", nodeName)
+		}
+		return nil, err
+	}
+
+	flags := h.getNodePublicationState(ctx, k8sNode)
+	if nodeCR.Spec.ProvisionerReady != nil {
+		flags.ProvisionerReady = convert.ToPtr(*nodeCR.Spec.ProvisionerReady)
+	}
+	return flags, nil
 }
 
 func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {

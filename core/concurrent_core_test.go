@@ -579,6 +579,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
+				// VP sync happens asynchronously during bootstrap, so allow UpdateVolumePublication.
+				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 				// Bootstrap backfills the node-name label on existing publications,
@@ -680,6 +682,8 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumeMoves(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return(pubs, nil).AnyTimes()
+				// VP sync happens asynchronously during bootstrap, so allow UpdateVolumePublication.
+				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockStoreClient.EXPECT().GetNodes(gomock.Any()).Return(nodes, nil).AnyTimes()
 				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 				// Bootstrap backfills the node-name label on existing publications,

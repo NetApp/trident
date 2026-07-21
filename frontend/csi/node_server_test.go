@@ -23,6 +23,9 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sruntime "k8s.io/apimachinery/pkg/runtime"
+	k8stesting "k8s.io/client-go/testing"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/mocks/mock_utils/mock_fcp"
@@ -32,6 +35,7 @@ import (
 
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	"github.com/netapp/trident/internal/crypto"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
@@ -44,7 +48,10 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	tridentfake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/devices"
@@ -57,6 +64,69 @@ import (
 	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
+
+func newTVP(nodeName, volumeName string) *tridentv1.TridentVolumePublication {
+	return &tridentv1.TridentVolumePublication{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      models.GenerateVolumePublishName(volumeName, nodeName),
+			Namespace: "default",
+			Labels: map[string]string{
+				tridentconfig.TridentNodeNameLabel: nodeName,
+			},
+		},
+		NodeID:   nodeName,
+		VolumeID: volumeName,
+	}
+}
+
+func newNodeCR(nodeName string, publicationState models.NodePublicationState) *tridentv1.TridentNode {
+	return &tridentv1.TridentNode{
+		ObjectMeta: metav1.ObjectMeta{Name: nodeName, Namespace: "default"},
+		Status: tridentv1.TridentNodeStatus{
+			PublicationState: string(publicationState),
+		},
+	}
+}
+
+type fakeControllerClient struct {
+	registerNodeFn            func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error)
+	getDesiredPublicationsFn  func(context.Context, string) (map[string]*models.VolumePublicationExternal, error)
+	getNodeCleanupStatusFn    func(context.Context, string) (models.NodePublicationState, error)
+	markNodeCleanupCompleteFn func(context.Context, string) error
+}
+
+func (f *fakeControllerClient) RegisterNode(
+	ctx context.Context, node *models.Node, timeout time.Duration,
+) (*tridentcontroller.RegistrationInfo, error) {
+	return f.registerNodeFn(ctx, node, timeout)
+}
+
+func (f *fakeControllerClient) GetDesiredPublications(
+	ctx context.Context, nodeName string,
+) (map[string]*models.VolumePublicationExternal, error) {
+	return f.getDesiredPublicationsFn(ctx, nodeName)
+}
+
+func (f *fakeControllerClient) GetNodeCleanupStatus(
+	ctx context.Context, nodeName string,
+) (models.NodePublicationState, error) {
+	return f.getNodeCleanupStatusFn(ctx, nodeName)
+}
+
+func (f *fakeControllerClient) MarkNodeCleanupComplete(ctx context.Context, nodeName string) error {
+	return f.markNodeCleanupCompleteFn(ctx, nodeName)
+}
+
+type fakeChangeNotifierClient struct {
+	fakeControllerClient
+	startCleanupWatchFn func(ctx context.Context, nodeName string) (<-chan struct{}, func(), error)
+}
+
+func (f *fakeChangeNotifierClient) StartNodeCleanupWatch(
+	ctx context.Context, nodeName string,
+) (<-chan struct{}, func(), error) {
+	return f.startCleanupWatchFn(ctx, nodeName)
+}
 
 func TestNodeStageVolume(t *testing.T) {
 	type parameters struct {
@@ -1368,19 +1438,35 @@ func TestRefreshTimerPeriod(t *testing.T) {
 	}
 }
 
+func TestRefreshInformerFallbackPeriod(t *testing.T) {
+	ctx := context.Background()
+	nodeServer := &Plugin{
+		role:              CSINode,
+		enableForceDetach: true,
+	}
+
+	maxPeriod := nodePublicationInformerFallbackPeriod + nodePublicationInformerFallbackJitter
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			newPeriod := nodeServer.refreshInformerFallbackPeriod(ctx)
+			assert.GreaterOrEqual(t, newPeriod.Milliseconds(), nodePublicationInformerFallbackPeriod.Milliseconds())
+			assert.LessOrEqual(t, newPeriod.Milliseconds(), maxPeriod.Milliseconds())
+		})
+	}
+}
+
 func TestDiscoverDesiredPublicationState_GetsNoPublicationsWithoutError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"
-	var expectedPublications []*models.VolumePublicationExternal
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(expectedPublications, nil)
 	nodeServer := &Plugin{
 		nodeName:          nodeName,
 		role:              CSINode,
-		restClient:        mockClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				return map[string]*models.VolumePublicationExternal{}, nil
+			},
+		},
 	}
 
 	// desiredPublicationState is a mapping of volumes to volume publications.
@@ -1393,26 +1479,32 @@ func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing
 	ctx := context.Background()
 	nodeName := "bar"
 	expectedPublications := []*models.VolumePublicationExternal{
-		{
-			Name:       models.GenerateVolumePublishName("foo", nodeName),
-			NodeName:   nodeName,
-			VolumeName: "foo",
-		},
-		{
-			Name:       models.GenerateVolumePublishName("baz", nodeName),
-			NodeName:   nodeName,
-			VolumeName: "baz",
-		},
+		{Name: models.GenerateVolumePublishName("foo", nodeName), NodeName: nodeName, VolumeName: "foo"},
+		{Name: models.GenerateVolumePublishName("baz", nodeName), NodeName: nodeName, VolumeName: "baz"},
 	}
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(expectedPublications, nil)
+	fakeClient := tridentfake.NewSimpleClientset(newTVP(nodeName, "foo"), newTVP(nodeName, "baz"))
 	nodeServer := &Plugin{
 		nodeName:          nodeName,
 		role:              CSINode,
-		restClient:        mockClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				publications, err := fakeClient.TridentV1().TridentVolumePublications("default").List(ctx, metav1.ListOptions{})
+				if err != nil {
+					return nil, err
+				}
+				result := make(map[string]*models.VolumePublicationExternal, len(publications.Items))
+				for _, pubCR := range publications.Items {
+					pub, pubErr := pubCR.Persistent()
+					if pubErr != nil {
+						return nil, pubErr
+					}
+					pubExternal := pub.ConstructExternal()
+					result[pubExternal.VolumeName] = pubExternal
+				}
+				return result, nil
+			},
+		},
 	}
 
 	// desiredPublicationState is a mapping of volumes to volume publications.
@@ -1428,30 +1520,20 @@ func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing
 func TestDiscoverDesiredPublicationState_FailsToGetPublicationsWithError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"
-	expectedPublications := []*models.VolumePublicationExternal{
-		{
-			Name:       models.GenerateVolumePublishName("foo", nodeName),
-			NodeName:   nodeName,
-			VolumeName: "foo",
-		},
-		{
-			Name:       models.GenerateVolumePublishName("baz", nodeName),
-			NodeName:   nodeName,
-			VolumeName: "baz",
-		},
-	}
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(
-		expectedPublications,
-		errors.New("failed to list volume publications"),
-	)
+	fakeClient := tridentfake.NewSimpleClientset()
+	fakeClient.Fake.PrependReactor("list", "tridentvolumepublications", func(_ k8stesting.Action) (bool, k8sruntime.Object, error) {
+		return true, nil, errors.New("failed to list volume publications")
+	})
 	nodeServer := &Plugin{
 		nodeName:          nodeName,
 		role:              CSINode,
-		restClient:        mockClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				_, err := fakeClient.TridentV1().TridentVolumePublications("default").List(ctx, metav1.ListOptions{})
+				return nil, err
+			},
+		},
 	}
 
 	// desiredPublicationState is a mapping of volumes to volume publications.
@@ -1594,13 +1676,6 @@ func TestPerformNodeCleanup_ShouldNotDiscoverAnyStalePublications(t *testing.T) 
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*models.VolumePublicationExternal{
-		{
-			Name:       models.GenerateVolumePublishName(volume, nodeName),
-			NodeName:   nodeName,
-			VolumeName: volume,
-		},
-	}
 	actualPublicationState := map[string]*models.VolumeTrackingInfo{
 		volume: {
 			VolumePublishInfo: models.VolumePublishInfo{},
@@ -1614,17 +1689,21 @@ func TestPerformNodeCleanup_ShouldNotDiscoverAnyStalePublications(t *testing.T) 
 	}
 
 	mockCtrl := gomock.NewController(t)
-	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
-	mockRestClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(desiredPublicationState, nil)
 	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(actualPublicationState, nil)
 
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeName:          nodeName,
-		restClient:        mockRestClient,
 		nodeHelper:        mockNodeHelper,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				return map[string]*models.VolumePublicationExternal{
+					volume: {VolumeName: volume, NodeName: nodeName, Name: models.GenerateVolumePublishName(volume, nodeName)},
+				}, nil
+			},
+		},
 	}
 	err := nodeServer.performNodeCleanup(ctx)
 	assert.NoError(t, err, "expected no error")
@@ -1634,25 +1713,21 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverDesiredPublicationsFromControlle
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*models.VolumePublicationExternal{
-		{
-			Name:       models.GenerateVolumePublishName(volume, nodeName),
-			NodeName:   nodeName,
-			VolumeName: volume,
-		},
-	}
-
-	mockCtrl := gomock.NewController(t)
-	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockRestClient.EXPECT().ListVolumePublicationsForNode(
-		ctx, nodeName,
-	).Return(desiredPublicationState, errors.New("api error"))
+	fakeClient := tridentfake.NewSimpleClientset(newTVP(nodeName, volume))
+	fakeClient.Fake.PrependReactor("list", "tridentvolumepublications", func(_ k8stesting.Action) (bool, k8sruntime.Object, error) {
+		return true, nil, errors.New("api error")
+	})
 
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeName:          nodeName,
-		restClient:        mockRestClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				_, err := fakeClient.TridentV1().TridentVolumePublications("default").List(ctx, metav1.ListOptions{})
+				return nil, err
+			},
+		},
 	}
 	err := nodeServer.performNodeCleanup(ctx)
 	assert.Error(t, err, "expected an error")
@@ -1662,13 +1737,6 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *te
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*models.VolumePublicationExternal{
-		{
-			Name:       models.GenerateVolumePublishName(volume, nodeName),
-			NodeName:   nodeName,
-			VolumeName: volume,
-		},
-	}
 	actualPublicationState := map[string]*models.VolumeTrackingInfo{
 		volume: {
 			VolumePublishInfo: models.VolumePublishInfo{},
@@ -1682,17 +1750,21 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *te
 	}
 
 	mockCtrl := gomock.NewController(t)
-	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
-	mockRestClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(desiredPublicationState, nil)
 	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(actualPublicationState, errors.New("file I/O error"))
 
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeName:          nodeName,
-		restClient:        mockRestClient,
 		nodeHelper:        mockNodeHelper,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+				return map[string]*models.VolumePublicationExternal{
+					volume: {VolumeName: volume, NodeName: nodeName, Name: models.GenerateVolumePublishName(volume, nodeName)},
+				}, nil
+			},
+		},
 	}
 	err := nodeServer.performNodeCleanup(ctx)
 	assert.Error(t, err, "expected an error")
@@ -1718,18 +1790,13 @@ func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 	ctx := context.Background()
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
-	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: new(true),
-	}
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockClient.EXPECT().UpdateNode(ctx, nodeName, nodeStateFlags).Return(errors.New("update failed"))
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeName:          nodeName,
-		restClient:        mockClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			markNodeCleanupCompleteFn: func(context.Context, string) error { return errors.New("update failed") },
+		},
 	}
 
 	err := nodeServer.updateNodePublicationState(ctx, nodeState)
@@ -1740,18 +1807,13 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 	ctx := context.Background()
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
-	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: new(true),
-	}
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockClient.EXPECT().UpdateNode(ctx, nodeName, nodeStateFlags).Return(nil)
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeName:          nodeName,
-		restClient:        mockClient,
 		enableForceDetach: true,
+		controllerClient: &fakeControllerClient{
+			markNodeCleanupCompleteFn: func(context.Context, string) error { return nil },
+		},
 	}
 
 	err := nodeServer.updateNodePublicationState(ctx, nodeState)
@@ -1964,9 +2026,8 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "fakeNode"
 
-	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	// Create mocks and fake Trident client for node registration.
 	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 
@@ -1976,28 +2037,20 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 		nodeName:     nodeName,
 		role:         CSINode,
 		hostInfo:     &models.HostSystem{},
-		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
 		osutils:      osutils.New(),
 		iscsi:        iscsiClient,
-		nodeReadyCh:  make(chan struct{}),
-	}
-
-	// Create a fake node response to be returned by controller
-	fakeNodeResponse := controllerAPI.CreateNodeResponse{
-		TopologyLabels: map[string]string{},
-		LogLevel:       "debug",
-		LogWorkflows:   "frontend",
-		LogLayers:      "node=add",
+		controllerClient: &fakeControllerClient{
+			registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+				return &tridentcontroller.RegistrationInfo{TopologyLabels: map[string]string{}}, nil
+			},
+		},
+		nodeReadyCh: make(chan struct{}),
 	}
 
 	// Set expects
-	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
 	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
-	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
 
 	// register node with controller
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
@@ -2006,13 +2059,52 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
 }
 
+func TestNodeRegisterWithController_AppliesLoggingFromRegistration(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "fakeNode"
+
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
+	iscsiClient, _ := iscsi.New()
+
+	nodeServer := &Plugin{
+		nodeName:     nodeName,
+		role:         CSINode,
+		hostInfo:     &models.HostSystem{},
+		nvmeHandler:  mockNVMeHandler,
+		orchestrator: mockOrchestrator,
+		osutils:      osutils.New(),
+		iscsi:        iscsiClient,
+		controllerClient: &fakeControllerClient{
+			registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+				return &tridentcontroller.RegistrationInfo{
+					TopologyLabels: map[string]string{},
+					LogLevel:       "debug",
+					LogWorkflows:   "all",
+					LogLayers:      "csi",
+				}, nil
+			},
+		},
+		nodeReadyCh: make(chan struct{}),
+	}
+
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), "debug").Return(nil)
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), "all").Return(nil)
+	mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), "csi").Return(nil)
+
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
+}
+
 func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "fakeNode"
 
-	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	// Create mocks and fake Trident client for node registration.
 	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	iscsiClient, _ := iscsi.New()
@@ -2022,12 +2114,16 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 		nodeName:     nodeName,
 		role:         CSINode,
 		hostInfo:     &models.HostSystem{},
-		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
 		osutils:      osutils.New(),
 		iscsi:        iscsiClient,
-		nodeReadyCh:  make(chan struct{}),
+		controllerClient: &fakeControllerClient{
+			registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+				return &tridentcontroller.RegistrationInfo{}, nil
+			},
+		},
+		nodeReadyCh: make(chan struct{}),
 	}
 
 	// Create set of cases with varying topology labels
@@ -2068,20 +2164,12 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 
 	for test, data := range tt {
 		t.Run(test, func(t *testing.T) {
-			// Create a fake node response to be returned by controller
-			fakeNodeResponse := controllerAPI.CreateNodeResponse{
-				TopologyLabels: data.topologyLabels,
-				LogLevel:       "debug",
-				LogWorkflows:   "frontend",
-				LogLayers:      "node=add",
+			nodeServer.controllerClient = &fakeControllerClient{
+				registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+					return &tridentcontroller.RegistrationInfo{TopologyLabels: data.topologyLabels}, nil
+				},
 			}
-
-			// Set expects
-			mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
 			mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-			mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
-			mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
-			mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
 
 			// register node with controller
 			nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
@@ -2097,9 +2185,8 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "fakeNode"
 
-	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	// Create mocks and fake Trident client for node registration.
 	mockCtrl := gomock.NewController(t)
-	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	iscsiClient, _ := iscsi.New()
@@ -2109,61 +2196,24 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 		nodeName:     nodeName,
 		role:         CSINode,
 		hostInfo:     &models.HostSystem{},
-		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
 		iscsi:        iscsiClient,
 		osutils:      osutils.New(),
-		nodeReadyCh:  make(chan struct{}),
-	}
-
-	// Create a fake node response to be returned by controller
-	fakeNodeResponse := controllerAPI.CreateNodeResponse{
-		LogLevel:     "debug",
-		LogWorkflows: "frontend",
-		LogLayers:    "node=add",
+		controllerClient: &fakeControllerClient{
+			registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+				return nil, errors.New("failed to create node")
+			},
+		},
+		nodeReadyCh: make(chan struct{}),
 	}
 
 	// Case: Error creating node by trident controller
 	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, errors.New("failed to create node"))
 
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
-	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
-
-	// Case: Error setting log level
-	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
-	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
-	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(errors.New("failed to set log level"))
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
-
-	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
-
-	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
-
-	// Case: Error setting log layer
-	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
-	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(errors.New("failed to set log layers"))
-	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
-
-	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
-
-	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
-
-	// Case: Error setting log workflow
-	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
-	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
-	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
-	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(errors.New("failed to set log workflows"))
-
-	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
-
-	assert.True(t, nodeServer.IsReady(), "expected node to be registered, but it is not")
+	assert.False(t, nodeServer.IsReady(), "node must stay gated when registration fails")
 }
 
 func TestNodeUnstageISCSIVolume(t *testing.T) {
@@ -5826,7 +5876,8 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		csiNodeRequestTimeout = testNodeMultithreadedBarrierTimeout
-		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
+		ctx, cancel := context.WithTimeout(ctx, testNodeMultithreadedBarrierTimeout)
+
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -10463,19 +10514,25 @@ func TestRefreshTimerPeriod1(t *testing.T) {
 
 			switch tc.testType {
 			case "constants":
-				// Test that constants are reasonable
+				// Timer-only degraded path constants
 				assert.Positive(t, defaultNodeReconciliationPeriod,
 					"defaultNodeReconciliationPeriod should be positive")
 				assert.Positive(t, maximumNodeReconciliationJitter,
 					"maximumNodeReconciliationJitter should be positive")
-
-				// Verify jitter is smaller than base period (good practice)
 				assert.Less(t, maximumNodeReconciliationJitter, defaultNodeReconciliationPeriod,
-					"Jitter should be smaller than base period for predictable behavior")
-
-				// Verify minimum duration is reasonable (at least 1 second)
+					"Timer-only jitter should be smaller than base period for predictable behavior")
 				assert.GreaterOrEqual(t, defaultNodeReconciliationPeriod, time.Second,
-					"Base reconciliation period should be at least 1 second")
+					"Timer-only base reconciliation period should be at least 1 second")
+
+				// Informer fallback path constants
+				assert.Positive(t, nodePublicationInformerFallbackPeriod,
+					"nodePublicationInformerFallbackPeriod should be positive")
+				assert.Positive(t, nodePublicationInformerFallbackJitter,
+					"nodePublicationInformerFallbackJitter should be positive")
+				assert.Less(t, nodePublicationInformerFallbackJitter, nodePublicationInformerFallbackPeriod,
+					"Informer fallback jitter should be smaller than base period for predictable behavior")
+				assert.Greater(t, nodePublicationInformerFallbackPeriod, defaultNodeReconciliationPeriod,
+					"Informer fallback period should exceed timer-only degraded path period")
 
 			case "multiple_calls":
 				// Test multiple calls and optionally check for variation
@@ -10634,6 +10691,7 @@ func TestStopReconcilingNodePublications(t *testing.T) {
 		setupPlugin         func() *Plugin
 		shouldVerifyTimer   bool
 		shouldVerifyChannel bool
+		callStopTwice       bool
 	}{
 		{
 			name: "Success - Stop with active timer and channel",
@@ -10702,6 +10760,19 @@ func TestStopReconcilingNodePublications(t *testing.T) {
 			shouldVerifyTimer:   true,
 			shouldVerifyChannel: true,
 		},
+		{
+			name: "Success - Double stop is idempotent",
+			setupPlugin: func() *Plugin {
+				return &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    time.NewTimer(time.Hour),
+					stopNodePublicationLoop: make(chan bool),
+				}
+			},
+			shouldVerifyTimer:   true,
+			shouldVerifyChannel: true,
+			callStopTwice:       true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -10715,6 +10786,9 @@ func TestStopReconcilingNodePublications(t *testing.T) {
 
 			// Call the function under test
 			plugin.stopReconcilingNodePublications(ctx)
+			if tc.callStopTwice {
+				plugin.stopReconcilingNodePublications(ctx)
+			}
 
 			if tc.shouldVerifyTimer && initialTimer != nil {
 				// Timer should still exist but be stopped
@@ -10734,24 +10808,214 @@ func TestStopReconcilingNodePublications(t *testing.T) {
 	}
 }
 
+func TestStopReconcilingNodePublications_timerDrainNonBlocking(t *testing.T) {
+	t.Parallel()
+
+	// Fire the timer and drain its tick, simulating the timer loop goroutine having
+	// already consumed the value from nodePublicationTimer.C.
+	timer := time.NewTimer(1 * time.Nanosecond)
+	defer timer.Stop()
+	<-timer.C
+
+	plugin := &Plugin{
+		command:                 execCmd.NewCommand(),
+		nodePublicationTimer:    timer,
+		stopNodePublicationLoop: make(chan bool),
+	}
+
+	done := make(chan struct{})
+	go func() {
+		plugin.stopReconcilingNodePublications(context.Background())
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("stopReconcilingNodePublications hung draining an already-consumed timer tick")
+	}
+}
+
+func TestReconcileAndScheduleNodePublicationRetry_timerResetNoSpuriousFire(t *testing.T) {
+	t.Parallel()
+
+	timer := time.NewTimer(1 * time.Nanosecond)
+	<-timer.C
+
+	plugin := &Plugin{
+		command:              execCmd.NewCommand(),
+		nodeName:             "node-test",
+		nodePublicationTimer: timer,
+		controllerClient: &fakeControllerClient{
+			getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+				return models.NodeClean, nil
+			},
+		},
+	}
+
+	longPeriod := func(context.Context) time.Duration { return time.Hour }
+	plugin.reconcileAndScheduleNodePublicationRetry(context.Background(), longPeriod)
+
+	select {
+	case <-timer.C:
+		t.Fatal("reconcileAndScheduleNodePublicationRetry should not cause an immediate timer tick after reset")
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestReconcileAndScheduleNodePublicationRetry_drainsPendingTickBeforeReset(t *testing.T) {
+	t.Parallel()
+
+	timer := time.NewTimer(1 * time.Nanosecond)
+	// Leave the fired tick unread to simulate a race where Reset would otherwise deliver immediately.
+
+	plugin := &Plugin{
+		command:              execCmd.NewCommand(),
+		nodeName:             "node-test",
+		nodePublicationTimer: timer,
+		controllerClient: &fakeControllerClient{
+			getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+				return models.NodeClean, nil
+			},
+		},
+	}
+
+	longPeriod := func(context.Context) time.Duration { return time.Hour }
+	plugin.reconcileAndScheduleNodePublicationRetry(context.Background(), longPeriod)
+
+	select {
+	case <-timer.C:
+		t.Fatal("pending timer tick should be drained before reset")
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestRunNodePublicationInformerLoop_reconcileOnEvent(t *testing.T) {
+	t.Parallel()
+
+	events := make(chan struct{}, 1)
+	var reconcileCount int
+	var reconcileMu sync.Mutex
+
+	plugin := &Plugin{
+		command:                 execCmd.NewCommand(),
+		nodeName:                "node-test",
+		stopNodePublicationLoop: make(chan bool),
+		nodePublicationTimer:    time.NewTimer(time.Hour),
+		controllerClient: &fakeChangeNotifierClient{
+			fakeControllerClient: fakeControllerClient{
+				getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+					reconcileMu.Lock()
+					reconcileCount++
+					reconcileMu.Unlock()
+					return models.NodeClean, nil
+				},
+			},
+			startCleanupWatchFn: func(context.Context, string) (<-chan struct{}, func(), error) {
+				return events, func() {}, nil
+			},
+		},
+	}
+
+	go plugin.runNodePublicationInformerLoop(events)
+	events <- struct{}{}
+
+	assert.Eventually(t, func() bool {
+		reconcileMu.Lock()
+		defer reconcileMu.Unlock()
+		return reconcileCount >= 1
+	}, time.Second, 10*time.Millisecond, "informer event should trigger reconciliation")
+
+	plugin.stopReconcilingNodePublications(context.Background())
+}
+
+func TestRunNodePublicationInformerLoop_periodicFallbackRetry(t *testing.T) {
+	t.Parallel()
+
+	events := make(chan struct{})
+	var reconcileCount int
+	var reconcileMu sync.Mutex
+
+	plugin := &Plugin{
+		command:                 execCmd.NewCommand(),
+		nodeName:                "node-test",
+		stopNodePublicationLoop: make(chan bool),
+		nodePublicationTimer:    time.NewTimer(10 * time.Millisecond),
+		controllerClient: &fakeChangeNotifierClient{
+			fakeControllerClient: fakeControllerClient{
+				getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+					reconcileMu.Lock()
+					reconcileCount++
+					reconcileMu.Unlock()
+					return "", errors.New("transient failure")
+				},
+			},
+			startCleanupWatchFn: func(context.Context, string) (<-chan struct{}, func(), error) {
+				return events, func() {}, nil
+			},
+		},
+	}
+
+	go plugin.runNodePublicationInformerLoop(events)
+
+	assert.Eventually(t, func() bool {
+		reconcileMu.Lock()
+		defer reconcileMu.Unlock()
+		return reconcileCount >= 1
+	}, time.Second, 10*time.Millisecond, "periodic fallback should retry reconciliation without informer events")
+
+	plugin.stopReconcilingNodePublications(context.Background())
+}
+
+func TestStartReconcilingNodePublications_informerPathAndStopWatch(t *testing.T) {
+	t.Parallel()
+
+	events := make(chan struct{})
+	var stopWatchCalled bool
+	var stopWatchMu sync.Mutex
+
+	plugin := &Plugin{
+		command:  execCmd.NewCommand(),
+		nodeName: "node-test",
+		controllerClient: &fakeChangeNotifierClient{
+			fakeControllerClient: fakeControllerClient{
+				getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+					return models.NodeClean, nil
+				},
+			},
+			startCleanupWatchFn: func(context.Context, string) (<-chan struct{}, func(), error) {
+				return events, func() {
+					stopWatchMu.Lock()
+					stopWatchCalled = true
+					stopWatchMu.Unlock()
+				}, nil
+			},
+		},
+	}
+
+	plugin.startReconcilingNodePublications(context.Background())
+	assert.NotNil(t, plugin.stopNodePublicationLoop, "stop channel should be initialized")
+	assert.NotNil(t, plugin.nodePublicationTimer, "informer path should start periodic fallback timer")
+	assert.NotNil(t, plugin.stopNodeCleanupWatch, "stop watch callback should be stored")
+
+	plugin.stopReconcilingNodePublications(context.Background())
+
+	stopWatchMu.Lock()
+	defer stopWatchMu.Unlock()
+	assert.True(t, stopWatchCalled, "stopReconcilingNodePublications should invoke stopWatch")
+}
+
 func TestReconcileNodePublicationState(t *testing.T) {
 	testCases := []struct {
 		name                string
 		setupNodeHelperMock func() nodehelpers.NodeHelper
-		setupRestClientMock func() controllerAPI.TridentController
+		setupTridentClient  func() *tridentfake.Clientset
 		expectedError       bool
 	}{
 		{
 			name: "Success - Node is already clean, no action needed",
-			setupRestClientMock: func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
-				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(&models.IscsiChapInfo{}, nil).AnyTimes()
-				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
-					PublicationState: models.NodeClean,
-				}, nil).AnyTimes()
-				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				return mockRestClient
+			setupTridentClient: func() *tridentfake.Clientset {
+				return tridentfake.NewSimpleClientset(newNodeCR("node-test", models.NodeClean))
 			},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
@@ -10761,12 +11025,13 @@ func TestReconcileNodePublicationState(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "Error - Failed to get node from controller",
-			setupRestClientMock: func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
-				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(nil, errors.New("controller unreachable")).AnyTimes()
-				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				return mockRestClient
+			name: "Error - Failed to get node from CRD",
+			setupTridentClient: func() *tridentfake.Clientset {
+				fakeClient := tridentfake.NewSimpleClientset()
+				fakeClient.Fake.PrependReactor("get", "tridentnodes", func(_ k8stesting.Action) (bool, k8sruntime.Object, error) {
+					return true, nil, errors.New("controller unreachable")
+				})
+				return fakeClient
 			},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
@@ -10777,13 +11042,12 @@ func TestReconcileNodePublicationState(t *testing.T) {
 		},
 		{
 			name: "Error - Node cleanup failed",
-			setupRestClientMock: func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
-				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
-					PublicationState: models.NodeDirty,
-				}, nil)
-				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, errors.New("")).AnyTimes()
-				return mockRestClient
+			setupTridentClient: func() *tridentfake.Clientset {
+				fakeClient := tridentfake.NewSimpleClientset(newNodeCR("node-test", models.NodeDirty))
+				fakeClient.Fake.PrependReactor("list", "tridentvolumepublications", func(_ k8stesting.Action) (bool, k8sruntime.Object, error) {
+					return true, nil, errors.New("")
+				})
+				return fakeClient
 			},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
@@ -10794,18 +11058,16 @@ func TestReconcileNodePublicationState(t *testing.T) {
 		},
 		{
 			name: "Error - Update node state failed",
-			setupRestClientMock: func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
-				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
-					PublicationState: models.NodeDirty,
-				}, nil).AnyTimes()
-				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				mockRestClient.EXPECT().UpdateNode(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
-				return mockRestClient
+			setupTridentClient: func() *tridentfake.Clientset {
+				fakeClient := tridentfake.NewSimpleClientset(newNodeCR("node-test", models.NodeCleanable))
+				fakeClient.Fake.PrependReactor("update", "tridentnodes", func(_ k8stesting.Action) (bool, k8sruntime.Object, error) {
+					return true, nil, errors.New("")
+				})
+				return fakeClient
 			},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(map[string]*models.VolumeTrackingInfo{"test-vol": {}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
 				return mockNodeHelper
 			},
 			expectedError: true,
@@ -10822,12 +11084,52 @@ func TestReconcileNodePublicationState(t *testing.T) {
 				role:                 CSINode,
 				limiterSharedMap:     make(map[string]limiter.Limiter),
 				nodePublicationTimer: time.NewTimer(time.Hour),
+				nodeName:             "node-test",
 			}
 
 			plugin.InitializeNodeLimiter(ctx)
 
-			if tc.setupRestClientMock != nil {
-				plugin.restClient = tc.setupRestClientMock()
+			if tc.setupTridentClient != nil {
+				fakeClient := tc.setupTridentClient()
+				plugin.controllerClient = &fakeControllerClient{
+					getNodeCleanupStatusFn: func(context.Context, string) (models.NodePublicationState, error) {
+						nodeCR, err := fakeClient.TridentV1().TridentNodes("default").Get(ctx, "node-test", metav1.GetOptions{})
+						if err != nil {
+							return "", err
+						}
+						state := models.NodePublicationState(nodeCR.Status.PublicationState)
+						if state == "" {
+							state = models.NodePublicationState(nodeCR.PublicationState)
+						}
+						return state, nil
+					},
+					getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+						publications, err := fakeClient.TridentV1().TridentVolumePublications("default").List(ctx, metav1.ListOptions{})
+						if err != nil {
+							return nil, err
+						}
+						result := make(map[string]*models.VolumePublicationExternal, len(publications.Items))
+						for _, pubCR := range publications.Items {
+							pub, pubErr := pubCR.Persistent()
+							if pubErr != nil {
+								return nil, pubErr
+							}
+							pubExternal := pub.ConstructExternal()
+							result[pubExternal.VolumeName] = pubExternal
+						}
+						return result, nil
+					},
+					markNodeCleanupCompleteFn: func(context.Context, string) error {
+						nodeCR, err := fakeClient.TridentV1().TridentNodes("default").Get(ctx, "node-test", metav1.GetOptions{})
+						if err != nil {
+							return err
+						}
+						nodeUpdate := nodeCR.DeepCopy()
+						nodeUpdate.Spec.ProvisionerReady = convert.ToPtr(true)
+						_, err = fakeClient.TridentV1().TridentNodes("default").Update(ctx, nodeUpdate, metav1.UpdateOptions{})
+						return err
+					},
+				}
 			}
 			if tc.setupNodeHelperMock != nil {
 				plugin.nodeHelper = tc.setupNodeHelperMock()

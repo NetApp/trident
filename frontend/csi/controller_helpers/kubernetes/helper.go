@@ -15,17 +15,20 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -791,7 +794,7 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 
 	if node, err := h.GetNode(ctx, name); err != nil {
 		Logc(ctx).WithError(err).Debug("Failed to find Node for event.")
-	} else {
+	} else if h.eventRecorder != nil {
 		h.eventRecorder.Event(node, mapEventType(eventType), reason, message)
 	}
 }
@@ -1084,4 +1087,201 @@ func IsCohesityEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
 	// Check for the well-known Cohesity task ID label on the PVC.
 	value, exists := pvc.Labels[LabelCohesityTaskIDKey]
 	return exists && value != ""
+}
+
+const tridentNodeRegistrationRejectedReason = "TridentNodeRegistrationRejected"
+
+func tridentNodeRegistrationRejectedEventTargets(tridentNodeName, specNodeName string) []string {
+	targets := []string{tridentNodeName}
+	if specNodeName != "" && netappv1.NameFix(specNodeName) != netappv1.NameFix(tridentNodeName) {
+		targets = append(targets, specNodeName)
+	}
+	return targets
+}
+
+func tridentNodeRegistrationRejectedEventKey(tridentNodeName, specNodeName, detail string) string {
+	return strings.Join([]string{tridentNodeName, specNodeName, detail}, "\x00")
+}
+
+// recordTridentNodeRegistrationRejected emits deduplicated Warning events on affected Node objects
+// when controller-side reconcile rejects a TridentNode registration attempt.
+func (h *helper) recordTridentNodeRegistrationRejected(
+	ctx context.Context, tridentNodeName, specNodeName, detail string,
+) {
+	if h == nil || h.eventRecorder == nil || detail == "" {
+		return
+	}
+
+	// Dedup map is intentionally unbounded: keys are (tridentNode, specNode, detail) and
+	// cardinality is tiny in normal operation. Bound/TTL can be added if abuse is observed.
+	key := tridentNodeRegistrationRejectedEventKey(tridentNodeName, specNodeName, detail)
+	h.nodeRegistrationRejectedEventsLock.Lock()
+	if h.nodeRegistrationRejectedEvents == nil {
+		h.nodeRegistrationRejectedEvents = make(map[string]struct{})
+	}
+	if _, seen := h.nodeRegistrationRejectedEvents[key]; seen {
+		h.nodeRegistrationRejectedEventsLock.Unlock()
+		return
+	}
+	h.nodeRegistrationRejectedEvents[key] = struct{}{}
+	h.nodeRegistrationRejectedEventsLock.Unlock()
+
+	message := fmt.Sprintf("TridentNode registration rejected: %s", detail)
+	for _, nodeName := range tridentNodeRegistrationRejectedEventTargets(tridentNodeName, specNodeName) {
+		h.RecordNodeEvent(ctx, nodeName, controllerhelpers.EventTypeWarning, tridentNodeRegistrationRejectedReason, message)
+	}
+}
+
+func (h *helper) RegisterNode(
+	ctx context.Context, node *models.Node, recordEvent tridentcontroller.NodeEventRecorder,
+) (*tridentcontroller.RegistrationInfo, error) {
+	topologyLabels, err := h.GetNodeTopologyLabels(ctx, node.Name)
+	if err != nil {
+		return nil, err
+	}
+	node.TopologyLabels = topologyLabels
+
+	nodeEventCallback := func(eventType, reason, message string) {
+		if recordEvent != nil {
+			recordEvent(eventType, reason, message)
+			return
+		}
+		h.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
+	}
+	if err = h.orchestrator.AddNode(ctx, node, nodeEventCallback); err != nil {
+		return nil, err
+	}
+
+	logLevel, err := h.orchestrator.GetLogLevel(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logWorkflows, err := h.orchestrator.GetSelectedLoggingWorkflows(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logLayers, err := h.orchestrator.GetSelectedLogLayers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tridentcontroller.RegistrationInfo{
+		TopologyLabels: topologyLabels,
+		LogLevel:       logLevel,
+		LogWorkflows:   logWorkflows,
+		LogLayers:      logLayers,
+	}, nil
+}
+
+func (h *helper) ReconcileTridentNode(ctx context.Context, nodeCR *netappv1.TridentNode) error {
+	// Defense-in-depth: reject TridentNode objects whose spec.nodeName does not match metadata.name.
+	if nodeCR.Spec.NodeName != "" && netappv1.NameFix(nodeCR.Spec.NodeName) != nodeCR.Name {
+		detail := fmt.Sprintf(
+			"spec.nodeName %q does not match TridentNode metadata.name %q", nodeCR.Spec.NodeName, nodeCR.Name,
+		)
+		return h.rejectTridentNodeRegistration(ctx, nodeCR, detail)
+	}
+
+	node, err := nodeCR.Persistent()
+	if err != nil {
+		return err
+	}
+
+	ack, err := h.RegisterNode(ctx, node, func(eventType, reason, message string) {
+		h.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
+	})
+	if err != nil {
+		return err
+	}
+
+	if h.enableForceDetach {
+		flags, flagErr := h.tridentNodePublicationStateFlags(ctx, node.Name, nodeCR)
+		if flagErr != nil {
+			return flagErr
+		}
+		if err = h.orchestrator.UpdateNode(ctx, node.Name, flags); err != nil {
+			return err
+		}
+		nodeExt, getErr := h.orchestrator.GetNode(ctx, node.Name)
+		if getErr != nil {
+			return getErr
+		}
+		node.PublicationState = nodeExt.PublicationState
+		if nodeExt.Deleted != nil {
+			node.Deleted = *nodeExt.Deleted
+		}
+	}
+
+	clearProvisionerReady := node.PublicationState == models.NodeClean && nodeCR.Spec.ProvisionerReady != nil
+	if nodeCR.Deleted != node.Deleted ||
+		nodeCR.PublicationState != string(node.PublicationState) ||
+		clearProvisionerReady {
+		// updateTridentNodeWithRetry re-fetches before each attempt; the closure mutates a
+		// fresh DeepCopy so we patch only these fields without overwriting concurrent changes.
+		if err = h.updateTridentNodeWithRetry(ctx, nodeCR.Namespace, nodeCR.Name, func(nodeUpdate *netappv1.TridentNode) {
+			nodeUpdate.Deleted = node.Deleted
+			nodeUpdate.PublicationState = string(node.PublicationState)
+			if clearProvisionerReady {
+				nodeUpdate.Spec.ProvisionerReady = nil
+			}
+		}); err != nil {
+			return err
+		}
+	}
+
+	return h.updateTridentNodeStatusWithRetry(ctx, nodeCR.Namespace, nodeCR.Name, func(status *netappv1.TridentNodeStatus, generation int64) {
+		status.Registered = true
+		status.ObservedGeneration = generation
+		status.TopologyLabels = ack.TopologyLabels
+		status.PublicationState = string(node.PublicationState)
+		status.Deleted = node.Deleted
+		status.LogLevel = ack.LogLevel
+		status.LogWorkflows = ack.LogWorkflows
+		status.LogLayers = ack.LogLayers
+		now := metav1.Now()
+		status.LastRegistrationTime = &now
+	})
+}
+
+// updateTridentNodeWithRetry applies a TridentNode spec/root update, re-reading on conflict.
+func (h *helper) updateTridentNodeWithRetry(
+	ctx context.Context, namespace, name string, apply func(update *netappv1.TridentNode),
+) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		fresh, err := h.tridentClient.TridentV1().TridentNodes(namespace).Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		update := fresh.DeepCopy()
+		apply(update)
+		_, err = h.tridentClient.TridentV1().TridentNodes(namespace).Update(ctx, update, metav1.UpdateOptions{})
+		return err
+	})
+}
+
+// updateTridentNodeStatusWithRetry writes TridentNode status, re-reading the object on conflict.
+// RetryOnConflict only retries apierrors.IsConflict; the closure must return unwrapped API errors.
+func (h *helper) updateTridentNodeStatusWithRetry(
+	ctx context.Context, namespace, name string, apply func(status *netappv1.TridentNodeStatus, generation int64),
+) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		fresh, err := h.tridentClient.TridentV1().TridentNodes(namespace).Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		statusUpdate := fresh.DeepCopy()
+		apply(&statusUpdate.Status, fresh.GetGeneration())
+		_, err = h.tridentClient.TridentV1().TridentNodes(namespace).UpdateStatus(ctx, statusUpdate, metav1.UpdateOptions{})
+		return err
+	})
+}
+
+// rejectTridentNodeRegistration sets status.registered=false so the node plugin's
+// registration ack wait cannot succeed for a TridentNode with invalid identity.
+func (h *helper) rejectTridentNodeRegistration(ctx context.Context, nodeCR *netappv1.TridentNode, detail string) error {
+	h.recordTridentNodeRegistrationRejected(ctx, nodeCR.Name, nodeCR.Spec.NodeName, detail)
+	return h.updateTridentNodeStatusWithRetry(ctx, nodeCR.Namespace, nodeCR.Name, func(status *netappv1.TridentNodeStatus, generation int64) {
+		status.Registered = false
+		status.ObservedGeneration = generation
+	})
 }

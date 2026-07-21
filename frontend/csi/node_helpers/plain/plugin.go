@@ -10,7 +10,10 @@ import (
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
+	tridentcontrollerrest "github.com/netapp/trident/frontend/csi/tridentcontroller/rest"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/models"
 )
@@ -107,4 +110,9 @@ func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publish
 		return fmt.Errorf("failed to update the tracking file; %w", err)
 	}
 	return nil
+}
+
+// NewControllerClient returns a REST-backed tridentcontroller.Client for this helper.
+func (h *helper) NewControllerClient(restClient controllerAPI.TridentController) (tridentcontroller.Client, error) {
+	return tridentcontrollerrest.NewClient(restClient), nil
 }

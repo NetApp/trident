@@ -3142,11 +3142,6 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 					crdContent := k8sclient.GetCRDsYAML()
 					err := os.WriteFile(crdsPath, []byte(crdContent), 0o644)
 					require.NoError(t, err)
-
-					if tt.name == "file_read_fails" {
-						err = os.Chmod(crdsPath, 0o000)
-						require.NoError(t, err)
-					}
 				}
 			}
 

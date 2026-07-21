@@ -23,6 +23,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
@@ -438,6 +439,17 @@ func TestPlugin_Activate(t *testing.T) {
 				Return(false).AnyTimes()
 			// }
 
+			setupControllerClient := func() *fakeControllerClient {
+				return &fakeControllerClient{
+					registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+						return &tridentcontroller.RegistrationInfo{}, nil
+					},
+					getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+						return map[string]*models.VolumePublicationExternal{}, nil
+					},
+				}
+			}
+
 			setupRestClientMock := func() controllerAPI.TridentController {
 				mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
 				mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, nil).AnyTimes()
@@ -460,6 +472,7 @@ func TestPlugin_Activate(t *testing.T) {
 				nodeHelper:               mockNodeHelper,
 				role:                     tc.role,
 				restClient:               setupRestClientMock(),
+				controllerClient:         setupControllerClient(),
 				nodeName:                 "test-node",
 				endpoint:                 "unix://" + socketPath,
 				enableForceDetach:        tc.enableForceDetach,
@@ -504,22 +517,23 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 	mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
 
-	// Record when CreateNode is invoked so the test can prove the socket exists
+	// Record when RegisterNode is invoked so the test can prove the socket exists
 	// before the slow controller registration completes. This validates TRID-19339's fix:
 	// gRPC socket must be available before node-driver-registrar's ~30s timeout deadline.
 	registerStarted := make(chan struct{}, 1)
-	mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
-	mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(_ context.Context, _ *models.Node) (controllerAPI.CreateNodeResponse, error) {
+	controllerClientStub := &fakeControllerClient{
+		registerNodeFn: func(_ context.Context, _ *models.Node, _ time.Duration) (*tridentcontroller.RegistrationInfo, error) {
 			select {
 			case registerStarted <- struct{}{}:
 			default:
 			}
 			time.Sleep(2 * time.Second)
-			return controllerAPI.CreateNodeResponse{}, nil
+			return &tridentcontroller.RegistrationInfo{}, nil
 		},
-	).AnyTimes()
-	mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+		getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+			return map[string]*models.VolumePublicationExternal{}, nil
+		},
+	}
 
 	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
 	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
@@ -539,7 +553,7 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 		orchestrator:             mockOrchestrator,
 		nodeHelper:               mockNodeHelper,
 		role:                     CSINode,
-		restClient:               mockRestClient,
+		controllerClient:         controllerClientStub,
 		nodeName:                 "test-node",
 		endpoint:                 "unix://" + socketPath,
 		activatedChan:            make(chan struct{}, 1),
@@ -565,7 +579,7 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 	// Wait until registration is in flight before checking for the socket. This
 	// makes the test prove ordering rather than just eventual startup. Use a generous
 	// timeout because node registration performs real host probing via osutils before
-	// the first CreateNode call, which can vary in CI environments.
+	// the first RegisterNode call, which can vary in CI environments.
 	select {
 	case <-registerStarted:
 	case <-time.After(5 * time.Second):
@@ -573,7 +587,7 @@ func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
 	}
 
 	// The node-driver-registrar sidecar has a hard ~30s connection deadline.
-	// With a 2-second sleep in CreateNode, the socket must appear within 1 second to
+	// With a 2-second sleep in RegisterNode, the socket must appear within 1 second to
 	// prove that Activate() prioritizes gRPC listener startup over controller registration.
 	assert.Eventually(t, func() bool {
 		_, statErr := os.Stat(socketPath)
@@ -618,15 +632,16 @@ func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
 
 	// Simulate a busy cluster: registration takes 5 seconds (customer saw 38-70s).
 	registrationDone := make(chan struct{})
-	mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
-	mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(_ context.Context, _ *models.Node) (controllerAPI.CreateNodeResponse, error) {
+	controllerClientStub := &fakeControllerClient{
+		registerNodeFn: func(_ context.Context, _ *models.Node, _ time.Duration) (*tridentcontroller.RegistrationInfo, error) {
 			time.Sleep(5 * time.Second) // Simulates slow controller registration on busy cluster
 			close(registrationDone)
-			return controllerAPI.CreateNodeResponse{}, nil
+			return &tridentcontroller.RegistrationInfo{}, nil
 		},
-	).AnyTimes()
-	mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+		getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
+			return map[string]*models.VolumePublicationExternal{}, nil
+		},
+	}
 
 	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
 	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
@@ -644,7 +659,7 @@ func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
 		orchestrator:             mockOrchestrator,
 		nodeHelper:               mockNodeHelper,
 		role:                     CSINode,
-		restClient:               mockRestClient,
+		controllerClient:         controllerClientStub,
 		nodeName:                 "customer-node",
 		endpoint:                 "unix://" + socketPath,
 		activatedChan:            make(chan struct{}, 1),
@@ -728,7 +743,7 @@ func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
 		t.Fatal("Registration did not complete within expected time")
 	}
 
-	// Give a small window for markNodeReady() to execute after CreateNode returns
+	// Give a small window for markNodeReady() to execute after RegisterNode returns
 	time.Sleep(100 * time.Millisecond)
 
 	assert.True(t, plugin.IsReady(), "Plugin must be ready after registration completes")

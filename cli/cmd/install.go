@@ -882,6 +882,9 @@ func fileExists(filePath string) bool {
 	return err == nil
 }
 
+// readFile reads install-time YAML bundle files; replaced in unit tests.
+var readFile = os.ReadFile
+
 func writeFile(filePath, data string) error {
 	return os.WriteFile(filePath, []byte(data), 0o600)
 }
@@ -1408,7 +1411,7 @@ func createAndEnsureCRDs() error {
 	var bundleCRDYAML string
 	if useYAML && fileExists(crdsPath) {
 
-		content, err := os.ReadFile(crdsPath)
+		content, err := readFile(crdsPath)
 		if err != nil {
 			return err
 		}

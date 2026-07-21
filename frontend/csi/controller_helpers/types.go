@@ -8,6 +8,8 @@ import (
 	"context"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/models"
 )
@@ -83,3 +85,12 @@ type ControllerHelper interface {
 	// IsTopologyInUse checks if any node in the cluster has topology labels
 	IsTopologyInUse(ctx context.Context) bool
 }
+
+// TridentNodeReconciler is the Kubernetes CRD transport adapter for TridentNode reconciliation.
+// It parses TridentNode CRs, delegates registration to tridentcontroller.Server, and writes ack/status.
+type TridentNodeReconciler interface {
+	ReconcileTridentNode(ctx context.Context, nodeCR *netappv1.TridentNode) error
+}
+
+// TridentControllerServer is the transport-agnostic controller-side node registration API.
+type TridentControllerServer = tridentcontroller.Server

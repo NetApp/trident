@@ -437,7 +437,11 @@ type TridentNode struct {
 	metav1.TypeMeta `json:",inline"`
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Name is the name of the node
+	// Spec is the node-owned desired state for Trident node registration.
+	Spec TridentNodeSpec `json:"spec,omitempty"`
+	// Status is the controller-owned observed state for Trident node registration.
+	Status TridentNodeStatus `json:"status,omitempty"`
+	// NodeName mirrors Spec.NodeName for legacy dual-read compatibility.
 	NodeName string `json:"name"`
 	// IQN is the iqn of the node
 	IQN string `json:"iqn,omitempty"`
@@ -461,6 +465,47 @@ type TridentNode struct {
 	LogWorkflows string `json:"logWorkflows"`
 	// LogLayers indicates the selected log layers which are currently set for the node
 	LogLayers string `json:"logLayers"`
+}
+
+type TridentNodeSpec struct {
+	// NodeName is the name of the node.
+	NodeName string `json:"nodeName,omitempty"`
+	// IQN is the iqn of the node.
+	IQN string `json:"iqn,omitempty"`
+	// NQN is the nqn of the node.
+	NQN string `json:"nqn,omitempty"`
+	// IPs is a list of IP addresses for the TridentNode.
+	IPs []string `json:"ips,omitempty"`
+	// HostWWPNMap is the map of host WWPNs.
+	HostWWPNMap map[string][]string `json:"hostWWPNMap,omitempty"`
+	// NodePrep is the current status of node preparation for this node.
+	NodePrep runtime.RawExtension `json:"nodePrep,omitempty"`
+	// HostInfo contains information about the node's host machine.
+	HostInfo runtime.RawExtension `json:"hostInfo,omitempty"`
+	// ProvisionerReady is an optional transient signal used for publication-state cleanup flows.
+	// It is written by the node pod and cleared after the controller marks the node clean.
+	ProvisionerReady *bool `json:"provisionerReady,omitempty"`
+}
+
+type TridentNodeStatus struct {
+	// Registered indicates whether the controller has acknowledged this node.
+	Registered bool `json:"registered,omitempty"`
+	// ObservedGeneration tracks the latest generation reconciled by the controller.
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// TopologyLabels are the node topology labels discovered by the controller.
+	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
+	// PublicationState indicates whether the node is safe for volume publications.
+	PublicationState string `json:"publicationState,omitempty"`
+	// Deleted indicates that Trident received an event that the node has been removed.
+	Deleted bool `json:"deleted,omitempty"`
+	// LastRegistrationTime is the last time this node registration was acknowledged.
+	LastRegistrationTime *metav1.Time `json:"lastRegistrationTime,omitempty"`
+	// LogLevel is the controller-selected log level for node-side logging alignment.
+	LogLevel string `json:"logLevel,omitempty"`
+	// LogWorkflows is the controller-selected workflow logging configuration.
+	LogWorkflows string `json:"logWorkflows,omitempty"`
+	// LogLayers is the controller-selected layer logging configuration.
+	LogLayers string `json:"logLayers,omitempty"`
 }
 
 // TridentNodeList is a list of TridentNode objects.

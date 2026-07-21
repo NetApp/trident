@@ -164,8 +164,19 @@ func TestCloseLUKSDevice_DeviceIsBusy(t *testing.T) {
 }
 
 func TestEnsureLUKSDeviceClosed_DeviceDoesNotExist(t *testing.T) {
-	deviceClient := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), NewDiskSizeGetter())
-	err := deviceClient.EnsureLUKSDeviceClosed(context.Background(), "/dev/mapper/luks-test-dev")
+	ctx := context.Background()
+	devicePath := "/dev/mapper/luks-test-dev"
+	osFs := afero.NewMemMapFs()
+
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	mockCryptsetupLuksClose(mockCommand).Return(
+		[]byte(""),
+		mockexec.NewMockExitError(luksCloseDeviceAlreadyClosedExitCode, "device not found"),
+	)
+
+	deviceClient := NewDetailed(mockCommand, osFs, NewDiskSizeGetter())
+	err := deviceClient.EnsureLUKSDeviceClosed(ctx, devicePath)
 	assert.NoError(t, err)
 }
 
@@ -482,7 +493,7 @@ func TestClient_verifyMultipathDeviceSize(t *testing.T) {
 		t.Run(
 			name, func(t *testing.T) {
 				ctrl := gomock.NewController(t)
-				client := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), params.getMockDiskSizeGetter(ctrl))
+				client := NewDetailed(mockexec.NewMockCommand(ctrl), afero.NewMemMapFs(), params.getMockDiskSizeGetter(ctrl))
 				deviceSize, valid, err := client.VerifyMultipathDeviceSize(
 					context.TODO(), multipathDeviceName, deviceName,
 				)

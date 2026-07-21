@@ -22,6 +22,7 @@ import (
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
@@ -62,6 +63,9 @@ type Plugin struct {
 	restClient       controllerAPI.TridentController
 	controllerHelper controllerhelpers.ControllerHelper
 	nodeHelper       nodehelpers.NodeHelper
+	// TODO(node-core): Consolidate node_helpers.NodeHelper and tridentcontroller.Client wiring
+	// behind a single node core instead of separate Plugin fields.
+	controllerClient tridentcontroller.Client
 
 	aesKey []byte
 
@@ -88,7 +92,9 @@ type Plugin struct {
 	iSCSISelfHealingWaitTime time.Duration
 
 	stopNodePublicationLoop chan bool
+	stopNodePublicationOnce sync.Once
 	nodePublicationTimer    *time.Timer
+	stopNodeCleanupWatch    func()
 
 	nvmeHandler nvme.NVMeInterface
 
@@ -107,6 +113,17 @@ type Plugin struct {
 	csi.UnimplementedNodeServer
 	csi.UnimplementedControllerServer
 	csi.UnimplementedGroupControllerServer
+}
+
+func wireControllerClient(
+	p *Plugin, helper nodehelpers.NodeHelper, restClient controllerAPI.TridentController,
+) error {
+	client, err := tridentcontroller.WireClient(helper, restClient)
+	if err != nil {
+		return err
+	}
+	p.controllerClient = client
+	return nil
 }
 
 func NewControllerPlugin(
@@ -267,6 +284,9 @@ func NewNodePlugin(
 	if err != nil {
 		return nil, err
 	}
+	if err = wireControllerClient(p, helper, p.restClient); err != nil {
+		return nil, err
+	}
 
 	p.aesKey, err = ReadAESKey(ctx, aesKeyFile)
 	if err != nil {
@@ -357,6 +377,9 @@ func NewAllInOnePlugin(
 	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
 	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
+		return nil, err
+	}
+	if err = wireControllerClient(p, nodeHelper, p.restClient); err != nil {
 		return nil, err
 	}
 

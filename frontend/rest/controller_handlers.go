@@ -16,7 +16,6 @@ import (
 
 	"github.com/netapp/trident/acp"
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/common"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
@@ -38,6 +37,8 @@ func httpStatusCodeForAdd(err error) int {
 		return http.StatusServiceUnavailable
 	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
+	} else if errors.IsUnsupportedError(err) {
+		return http.StatusForbidden
 	} else {
 		return http.StatusBadRequest
 	}
@@ -957,8 +958,6 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 		LogWorkflows:   "",
 	}
 
-	const auditMsg = "AddNode endpoint called."
-
 	UpdateGeneric(w, r, response,
 		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
 			updateResponse, ok := response.(*AddNodeResponse)
@@ -973,47 +972,41 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 
-			var csiFrontend frontend.Plugin
 			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowNodeCreate, LogLayerRESTFrontend)
 
-			csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
-			if err != nil {
-				csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.PlainCSIHelper)
+			// Kubernetes nodes register via TridentNode CRD reconciliation, not REST AddNode.
+			// Return a generic 404 (not a descriptive error) when the K8s frontend is active —
+			// avoids advertising that REST AddNode exists but is disabled in CRD registration mode.
+			if _, err = orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper); err == nil {
+				err = errors.NotFoundError("not found")
+				updateResponse.setError(err)
+				return http.StatusNotFound
 			}
+
+			csiFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.PlainCSIHelper)
 			if err != nil {
 				err = fmt.Errorf("could not get CSI helper frontend")
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 
-			helper, ok := csiFrontend.(controllerhelpers.ControllerHelper)
+			server, ok := csiFrontend.(controllerhelpers.TridentControllerServer)
 			if !ok {
-				err = fmt.Errorf("could not get CSI hybrid frontend")
+				err = fmt.Errorf("CSI helper frontend does not implement TridentControllerServer")
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			topologyLabels, err := helper.GetNodeTopologyLabels(ctx, node.Name)
-			if err != nil {
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-			node.TopologyLabels = topologyLabels
-			updateResponse.setTopologyLabels(topologyLabels)
-			Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
-				topologyLabels)
 
-			nodeEventCallback := func(eventType, reason, message string) {
-				helper.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
-			}
-
-			err = orchestrator.AddNode(ctx, node, nodeEventCallback)
+			ack, err := server.RegisterNode(ctx, node, nil)
 			if err != nil {
 				response.setError(err)
+			} else {
+				updateResponse.setTopologyLabels(ack.TopologyLabels)
+				updateResponse.LogLevel = ack.LogLevel
+				updateResponse.LogWorkflows = ack.LogWorkflows
+				updateResponse.LogLayers = ack.LogLayers
 			}
 			updateResponse.Name = node.Name
-			updateResponse.LogLevel = node.LogLevel
-			updateResponse.LogWorkflows = node.LogWorkflows
-			updateResponse.LogLayers = node.LogLayers
 			return httpStatusCodeForAdd(err)
 		},
 	)

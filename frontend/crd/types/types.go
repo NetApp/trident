@@ -19,6 +19,7 @@ const (
 	ObjectTypeStorageClass                   ObjectType = "StorageClass"
 	ObjectTypeTridentVolumePublication       ObjectType = "TridentVolumePublication"
 	ObjectTypeTridentBackend                 ObjectType = "TridentBackend"
+	ObjectTypeTridentNode                    ObjectType = "TridentNode"
 	ObjectTypeTridentAutogrowPolicy          ObjectType = "TridentAutogrowPolicy"
 	ObjectTypeTridentBackendConfig           ObjectType = "TridentBackendConfig"
 	ObjectTypeSecret                         ObjectType = "secret"

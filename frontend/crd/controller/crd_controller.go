@@ -59,6 +59,7 @@ const (
 	ObjectTypeTridentActionMirrorUpdate      = crdtypes.ObjectTypeTridentActionMirrorUpdate
 	ObjectTypeTridentSnapshotInfo            = crdtypes.ObjectTypeTridentSnapshotInfo
 	ObjectTypeTridentActionSnapshotRestore   = crdtypes.ObjectTypeTridentActionSnapshotRestore
+	ObjectTypeTridentNode                    = crdtypes.ObjectTypeTridentNode
 	ObjectTypeTridentNodeRemediation         = crdtypes.ObjectTypeTridentNodeRemediation
 	ObjectTypeTridentAutogrowPolicy          = crdtypes.ObjectTypeTridentAutogrowPolicy
 	ObjectTypeTridentAutogrowRequestInternal = crdtypes.ObjectTypeTridentAutogrowRequestInternal
@@ -390,6 +391,13 @@ func newTridentCrdControllerImpl(
 	})
 
 	_, _ = nodeRemediationInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = nodeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		// TridentNode now participates in normal controller reconciliation (spec -> status ack).
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
@@ -749,6 +757,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentSnapshotInfo
 		case ObjectTypeTridentActionSnapshotRestore:
 			handleFunction = c.handleActionSnapshotRestore
+		case ObjectTypeTridentNode:
+			handleFunction = c.handleTridentNode
 		case ObjectTypeTridentNodeRemediation:
 			handleFunction = c.handleTridentNodeRemediation
 		case ObjectTypeTridentAutogrowPolicy:

@@ -184,18 +184,40 @@ rules:
     resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
-"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
-"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
-"tridentnoderemediations", "tridentnoderemediations/status",
-"tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
-"tridentgroupsnapshots", "tridentgroupsnapshots/status",
-"tridentautogrowpolicies", "tridentautogrowpolicies/status",
-"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status",
-"tridentvolumemoves", "tridentvolumemoves/status"]
+    resources: [
+      "tridentactionmirrorupdates",
+      "tridentactionmirrorupdates/status",
+      "tridentactionsnapshotrestores",
+      "tridentactionsnapshotrestores/status",
+      "tridentautogrowpolicies",
+      "tridentautogrowpolicies/status",
+      "tridentautogrowrequestinternals",
+      "tridentautogrowrequestinternals/status",
+      "tridentbackends",
+      "tridentbackendconfigs",
+      "tridentbackendconfigs/status",
+      "tridentgroupsnapshots",
+      "tridentgroupsnapshots/status",
+      "tridentmirrorrelationships",
+      "tridentmirrorrelationships/status",
+      "tridentnodes",
+      "tridentnodes/status",
+      "tridentnoderemediations",
+      "tridentnoderemediations/status",
+      "tridentnoderemediationtemplates",
+      "tridentnoderemediationtemplates/status",
+      "tridentsnapshotinfos",
+      "tridentsnapshotinfos/status",
+      "tridentsnapshots",
+      "tridentstorageclasses",
+      "tridenttransactions",
+      "tridentversions",
+      "tridentvolumemoves",
+      "tridentvolumemoves/status",
+      "tridentvolumepublications",
+      "tridentvolumereferences",
+      "tridentvolumes"
+    ]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -223,7 +245,7 @@ rules:
     resources: ["tridentvolumepublications", "tridentbackends", "tridentautogrowpolicies"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentautogrowrequestinternals"]
+    resources: ["tridentautogrowrequestinternals", "tridentnodes"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentvolumemoves", "tridentvolumemoves/status"]
@@ -2307,6 +2329,7 @@ spec:
                       replicationSchedule:
                         type: string
       subresources:
+        # Controller writes status while node pod writes spec.
         status: {}
       additionalPrinterColumns:
       - description: The desired mirror state
@@ -2904,10 +2927,46 @@ spec:
     - name: v1
       served: true
       storage: true
+      subresources:
+        status: {}
       schema:
-          openAPIV3Schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              # Keep spec permissive in N+1 so newer node fields don't require immediate CRD churn.
               type: object
               x-kubernetes-preserve-unknown-fields: true
+            status:
+              # Keep status permissive in N+1 for controller-owned field evolution.
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: Registered
+        type: boolean
+        description: Controller acknowledged registration
+        jsonPath: .status.registered
+      - name: IPs
+        type: string
+        description: Node IP addresses
+        priority: 1
+        jsonPath: .spec.ips
+      - name: Generation
+        type: integer
+        description: Desired generation
+        priority: 1
+        jsonPath: .metadata.generation
+      - name: ObservedGeneration
+        type: integer
+        description: Reconciled generation
+        priority: 1
+        jsonPath: .status.observedGeneration
+      - name: LastRegistered
+        type: date
+        description: Last controller registration acknowledgement
+        priority: 1
+        jsonPath: .status.lastRegistrationTime
   scope: Namespaced
   names:
     plural: tridentnodes
@@ -3556,10 +3615,8 @@ spec:
 func constructNodeSelector(nodeLabels map[string]string) string {
 	var nodeSelector string
 
-	if nodeLabels != nil {
-		for key, value := range nodeLabels {
-			nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - '%s'\n", key, value)
-		}
+	for key, value := range nodeLabels {
+		nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - '%s'\n", key, value)
 	}
 	return nodeSelector
 }
@@ -3567,7 +3624,7 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 func constructTolerations(tolerations []map[string]string) string {
 	var tolerationsString string
 
-	if tolerations != nil && len(tolerations) > 0 {
+	if len(tolerations) > 0 {
 		tolerationsString += "tolerations:\n"
 		for _, t := range tolerations {
 			toleration := ""
@@ -3591,7 +3648,7 @@ func constructTolerations(tolerations []map[string]string) string {
 				tolerationsString += toleration
 			}
 		}
-	} else if len(tolerations) == 0 {
+	} else {
 		tolerationsString = "tolerations: []\n"
 	}
 

@@ -28,6 +28,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -48,22 +49,25 @@ import (
 )
 
 const (
-	tridentDeviceInfoPath            = "/var/lib/trident/tracking"
-	nodeLockID                       = "csi_node_server"
-	AttachISCSIVolumeTimeoutShort    = 20 * time.Second
-	GraftISCSIAttachmentTimeoutShort = 20 * time.Second
-	PruneISCSIAttachmentTimeoutShort = 15 * time.Second
-	ResizeISCSIVolumeTimeout         = 20 * time.Second
-	AttachFCPVolumeTimeoutShort      = 20 * time.Second
-	iSCSINodeUnstageMaxDuration      = 15 * time.Second
-	iSCSILoginTimeout                = 10 * time.Second
-	iSCSISelfHealingLockContext      = "ISCSISelfHealingThread"
-	iSCSISelfHealingTimeout          = 60 * time.Second
-	fcpNodeUnstageMaxDuration        = 15 * time.Second
-	nvmeSelfHealingLockContext       = "NVMeSelfHealingThread"
-	defaultNodeReconciliationPeriod  = 1 * time.Minute
-	maximumNodeReconciliationJitter  = 5000 * time.Millisecond
-	nvmeMaxFlushWaitDuration         = 6 * time.Minute
+	tridentDeviceInfoPath                 = "/var/lib/trident/tracking"
+	nodeLockID                            = "csi_node_server"
+	AttachISCSIVolumeTimeoutShort         = 20 * time.Second
+	GraftISCSIAttachmentTimeoutShort      = 20 * time.Second
+	PruneISCSIAttachmentTimeoutShort      = 15 * time.Second
+	ResizeISCSIVolumeTimeout              = 20 * time.Second
+	AttachFCPVolumeTimeoutShort           = 20 * time.Second
+	iSCSINodeUnstageMaxDuration           = 15 * time.Second
+	iSCSILoginTimeout                     = 10 * time.Second
+	iSCSISelfHealingLockContext           = "ISCSISelfHealingThread"
+	iSCSISelfHealingTimeout               = 60 * time.Second
+	fcpNodeUnstageMaxDuration             = 15 * time.Second
+	nvmeSelfHealingLockContext            = "NVMeSelfHealingThread"
+	defaultNodeReconciliationPeriod       = 1 * time.Minute // timer-only degraded path when informer watch is unavailable
+	maximumNodeReconciliationJitter       = 5 * time.Second // jitter for defaultNodeReconciliationPeriod timer path
+	nodePublicationInformerFallbackPeriod = 5 * time.Minute // periodic safety-net when informer watch is active
+	// ~10% of informer fallback period; spreads retries without delaying the safety net excessively.
+	nodePublicationInformerFallbackJitter = 30 * time.Second
+	nvmeMaxFlushWaitDuration              = 6 * time.Minute
 
 	snswAlreadyPublishedElsewhereMsg = "volume uses SINGLE_NODE_SINGLE_WRITER access mode and is already mounted at a different target path"
 
@@ -998,56 +1002,65 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 	return node
 }
 
+// nodeRegisterWithController registers this node with the Trident controller, retrying with
+// exponential backoff until success or timeout elapses. Production passes timeout=0 (retry until
+// success); the node stays gated via nodeRegistrationInterceptor until markNodeReady runs.
 func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Duration) {
 	// Assemble the node details that we will register with the controller.
 	node := p.nodeGetInfo(ctx)
 
-	// The controller may not be fully initialized by the time the node is ready to register,
-	// so retry until it is responding on the back channel and we have registered the node.
 	registerNode := func() error {
-		nodeDetails, err := p.restClient.CreateNode(ctx, node)
-		if err == nil {
-			topologyLabelsLock.Lock()
-			topologyLabels = maps.Clone(nodeDetails.TopologyLabels)
-			if topologyLabels == nil {
-				topologyLabels = map[string]string{} // same initialized sentinel as getTopologyLabels
-			}
-			node.TopologyLabels = nodeDetails.TopologyLabels
-			labels := maps.Clone(topologyLabels)
-			topologyLabelsLock.Unlock()
+		if p.controllerClient == nil {
+			return fmt.Errorf("trident node client is not configured")
+		}
+		observedNode, registerErr := p.controllerClient.RegisterNode(ctx, node, timeout)
+		if registerErr != nil {
+			return registerErr
+		}
 
-			// Assume topology to be in use only if there exists a topology label with key "topology.kubernetes.io/region" on the node.
-			if len(labels) > 0 {
-				val, ok := labels[K8sTopologyRegionLabel]
-				fields := LogFields{"topologyLabelKey": K8sTopologyRegionLabel, "value": val}
-				if ok && val != "" {
-					Logc(ctx).WithFields(fields).Infof("%s label found on node. Assuming topology to be in use.", K8sTopologyRegionLabel)
-					p.topologyInUse.Store(true)
-				} else {
-					Logc(ctx).WithFields(fields).Infof("%s label not found on node. Assuming topology not in use.", K8sTopologyRegionLabel)
-					p.topologyInUse.Store(false)
-				}
-			}
+		topologyLabelsLock.Lock()
+		topologyLabels = maps.Clone(observedNode.TopologyLabels)
+		if topologyLabels == nil {
+			topologyLabels = map[string]string{} // same initialized sentinel as getTopologyLabels
+		}
+		node.TopologyLabels = observedNode.TopologyLabels
+		labels := maps.Clone(topologyLabels)
+		topologyLabelsLock.Unlock()
 
-			// Setting log level, log workflows and log layers on the node same as to what is set on the controller.
-			if err = p.orchestrator.SetLogLevel(ctx, nodeDetails.LogLevel); err != nil {
-				Logc(ctx).WithError(err).Error("Unable to set log level.")
-			}
-			if err = p.orchestrator.SetLoggingWorkflows(ctx, nodeDetails.LogWorkflows); err != nil {
-				Logc(ctx).WithError(err).Error("Unable to set logging workflows.")
-			}
-			if err = p.orchestrator.SetLogLayers(ctx, nodeDetails.LogLayers); err != nil {
-				Logc(ctx).WithError(err).Error("Unable to set logging layers.")
+		// Assume topology to be in use only if there exists a topology label with key "topology.kubernetes.io/region" on the node.
+		if len(labels) > 0 {
+			val, ok := labels[K8sTopologyRegionLabel]
+			fields := LogFields{"topologyLabelKey": K8sTopologyRegionLabel, "value": val}
+			if ok && val != "" {
+				Logc(ctx).WithFields(fields).Infof("%s label found on node. Assuming topology to be in use.", K8sTopologyRegionLabel)
+				p.topologyInUse.Store(true)
+			} else {
+				Logc(ctx).WithFields(fields).Infof("%s label not found on node. Assuming topology not in use.", K8sTopologyRegionLabel)
+				p.topologyInUse.Store(false)
 			}
 		}
-		return err
+		if observedNode.LogLevel != "" {
+			if setErr := p.orchestrator.SetLogLevel(ctx, observedNode.LogLevel); setErr != nil {
+				// Best-effort: registration succeeds even if local logging cannot be aligned yet.
+				Logc(ctx).WithError(setErr).Error("Unable to set log level from controller node registration.")
+			}
+		}
+		if observedNode.LogWorkflows != "" {
+			if setErr := p.orchestrator.SetLoggingWorkflows(ctx, observedNode.LogWorkflows); setErr != nil {
+				Logc(ctx).WithError(setErr).Error("Unable to set logging workflows from controller node registration.")
+			}
+		}
+		if observedNode.LogLayers != "" {
+			if setErr := p.orchestrator.SetLogLayers(ctx, observedNode.LogLayers); setErr != nil {
+				Logc(ctx).WithError(setErr).Error("Unable to set logging layers from controller node registration.")
+			}
+		}
+		return nil
 	}
 
 	registerNodeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(LogFields{
-			"increment": duration,
-			"error":     err,
-		}).Warn("Could not update Trident controller with node registration, will retry.")
+		fields := registrationFailureLogFields(ctx, node.Name, wrapNodeRegistrationFailure(err), duration)
+		Logc(ctx).WithFields(fields).Warn("Could not update Trident controller with node registration, will retry.")
 	}
 
 	registerNodeBackoff := backoff.NewExponentialBackOff()
@@ -1057,16 +1070,16 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	registerNodeBackoff.RandomizationFactor = 0.1
 	registerNodeBackoff.MaxElapsedTime = timeout
 
-	// Retry using an exponential backoff that never ends until it succeeds.
+	// Retry with exponential backoff until success or MaxElapsedTime (timeout) elapses.
 	err := backoff.RetryNotify(registerNode, registerNodeBackoff, registerNodeNotify)
 	if err != nil {
-		Logc(ctx).WithError(err).Error("Unable to update Trident controller with node registration.")
+		fields := registrationFailureLogFields(ctx, node.Name, wrapNodeRegistrationFailure(err), 0)
+		Logc(ctx).WithFields(fields).Error("Unable to update Trident controller with node registration.")
 	} else {
 		Logc(ctx).WithField("node", p.nodeName).Info("Updated Trident controller with node registration.")
 		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", getTopologyLabelsCopy())
+		p.markNodeReady()
 	}
-
-	p.markNodeReady()
 }
 
 func (p *Plugin) nodeStageNFSVolume(
@@ -2514,7 +2527,7 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	return volumeId, stagingTargetPath, nil
 }
 
-// refreshTimerPeriod resets the time period between node cleanup executions.
+// refreshTimerPeriod resets the timer-only reconciliation period (degraded path).
 // It introduces randomness (jitter) between reconciliation periods to avoid a thundering herd on the controller API.
 func (p *Plugin) refreshTimerPeriod(ctx context.Context) time.Duration {
 	Logc(ctx).Debug("Refreshing node publication reconcile timer")
@@ -2526,72 +2539,128 @@ func (p *Plugin) refreshTimerPeriod(ctx context.Context) time.Duration {
 	return defaultNodeReconciliationPeriod + jitter
 }
 
-// startReconcilingNodePublications starts an infinite background task to
-// periodically reconcileNodePublicationState.
+// refreshInformerFallbackPeriod resets the periodic safety-net timer while the informer watch is active.
+func (p *Plugin) refreshInformerFallbackPeriod(ctx context.Context) time.Duration {
+	Logc(ctx).Debug("Refreshing node publication informer fallback timer")
+
+	jitter := nodePublicationInformerFallbackJitter
+	if n, err := rand.Int(rand.Reader, big.NewInt(int64(nodePublicationInformerFallbackJitter))); err == nil {
+		jitter = time.Duration(n.Int64())
+	}
+	return nodePublicationInformerFallbackPeriod + jitter
+}
+
+// startReconcilingNodePublications prefers event-driven reconciliation to avoid
+// steady-state polling load; timer fallback is retained for degraded/runtime edge cases.
 func (p *Plugin) startReconcilingNodePublications(ctx context.Context) {
 	Logc(ctx).Info("Activating node publication reconciliation service.")
-	p.nodePublicationTimer = time.NewTimer(defaultNodeReconciliationPeriod)
+	p.stopNodePublicationLoop = make(chan bool)
 
-	go func() {
-		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeReconcilePubs, LogLayerCSIFrontend)
-
-		for {
-			select {
-			case <-p.stopNodePublicationLoop:
-				// Exit on shutdown signal
-				return
-
-			case <-p.nodePublicationTimer.C:
-				Logc(ctx).Debug("Reconciling node publication state.")
-				if err := p.reconcileNodePublicationState(ctx); err != nil {
-					Logc(ctx).WithError(err).Debug("Failed to reconcile node publication state.")
-					continue
-				}
-				Logc(ctx).Debug("Reconciled node publication state.")
-			}
+	notifier, notifierOK := p.controllerClient.(tridentcontroller.ChangeNotifier)
+	if notifierOK {
+		events, stopWatch, err := notifier.StartNodeCleanupWatch(ctx, p.nodeName)
+		if err == nil {
+			p.stopNodeCleanupWatch = stopWatch
+			// Periodic fallback retries transient reconcile failures when no further controller watch notifications arrive.
+			p.nodePublicationTimer = time.NewTimer(p.refreshInformerFallbackPeriod(ctx))
+			go p.runNodePublicationInformerLoop(events)
+			return
 		}
-	}()
+		Logc(ctx).WithError(err).Warn("Could not start informer-based node cleanup watch, falling back to timer.")
+	}
 
-	return
+	p.nodePublicationTimer = time.NewTimer(p.refreshTimerPeriod(ctx))
+	go p.runNodePublicationTimerLoop()
+}
+
+func (p *Plugin) runNodePublicationInformerLoop(events <-chan struct{}) {
+	watchCtx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeReconcilePubs, LogLayerCSIFrontend)
+	for {
+		select {
+		case <-p.stopNodePublicationLoop:
+			return
+		case <-events:
+			Logc(watchCtx).Debug("Reconciling node publication state from informer event.")
+			p.reconcileAndScheduleNodePublicationRetry(watchCtx, p.refreshInformerFallbackPeriod)
+		case <-p.nodePublicationTimer.C:
+			Logc(watchCtx).Debug("Reconciling node publication state from periodic fallback.")
+			p.reconcileAndScheduleNodePublicationRetry(watchCtx, p.refreshInformerFallbackPeriod)
+		}
+	}
+}
+
+func (p *Plugin) reconcileAndScheduleNodePublicationRetry(ctx context.Context, nextPeriod func(context.Context) time.Duration) {
+	if err := p.reconcileNodePublicationState(ctx); err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to reconcile node publication state.")
+	} else {
+		Logc(ctx).Debug("Reconciled node publication state.")
+	}
+	if p.nodePublicationTimer != nil {
+		drainNodePublicationTimer(p.nodePublicationTimer)
+		p.nodePublicationTimer.Reset(nextPeriod(ctx))
+	}
+}
+
+// drainNodePublicationTimer stops an active timer and non-blockingly drains a pending tick.
+func drainNodePublicationTimer(timer *time.Timer) {
+	if timer == nil {
+		return
+	}
+	if !timer.Stop() {
+		select {
+		case <-timer.C:
+		default:
+		}
+	}
+}
+
+func (p *Plugin) runNodePublicationTimerLoop() {
+	loopCtx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeReconcilePubs, LogLayerCSIFrontend)
+	for {
+		select {
+		case <-p.stopNodePublicationLoop:
+			return
+		case <-p.nodePublicationTimer.C:
+			Logc(loopCtx).Debug("Reconciling node publication state.")
+			p.reconcileAndScheduleNodePublicationRetry(loopCtx, p.refreshTimerPeriod)
+		}
+	}
 }
 
 // stopReconcilingNodePublications gracefully stops the node publication reconciliation background task.
 func (p *Plugin) stopReconcilingNodePublications(ctx context.Context) {
-	Logc(ctx).Info("Stopping the node publication reconciliation service.")
+	p.stopNodePublicationOnce.Do(func() {
+		Logc(ctx).Info("Stopping the node publication reconciliation service.")
 
-	// Gracefully stop the reconciliation timer.
-	if p.nodePublicationTimer != nil {
-		if !p.nodePublicationTimer.Stop() {
-			<-p.nodePublicationTimer.C
+		// Gracefully stop the reconciliation timer.
+		drainNodePublicationTimer(p.nodePublicationTimer)
+		if p.stopNodeCleanupWatch != nil {
+			p.stopNodeCleanupWatch()
 		}
-	}
 
-	// Gracefully stop the reconciliation loop.
-	if p.stopNodePublicationLoop != nil {
-		close(p.stopNodePublicationLoop)
-	}
+		// Close but do not nil the channel: reconcile loops select on p.stopNodePublicationLoop
+		// each iteration; a closed channel unblocks exit, nil would strand the goroutine.
+		if p.stopNodePublicationLoop != nil {
+			close(p.stopNodePublicationLoop)
+		}
+	})
 }
 
-// reconcileNodePublicationState cleans any stale published path for volumes on the node by rectifying the actual state
-// of publications (published paths on the node) against the desired state of publications from the CSI controller.
-// If all published paths are cleaned successfully and the node is cleanable, it updates the Trident node CR via
-// the CSI controller REST API.
-// If a node is not in a cleanable state, it will not mark the node as clean.
+// reconcileNodePublicationState converges node-local publication artifacts to controller intent,
+// then signals cleanup completion only when controller state permits.
 func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
-	defer func() {
-		// Reset the Timer only after the cleanup process is complete, regardless of if it fails or not.
-		p.nodePublicationTimer.Reset(p.refreshTimerPeriod(ctx))
-	}()
-
-	// For force detach purposes, always get the node and check if it needs to be updated.
-	node, err := p.restClient.GetNode(ctx, p.nodeName)
+	// For force-detach safety, read the node's publication cleanup state from the controller.
+	if p.controllerClient == nil {
+		return fmt.Errorf("trident node client is not configured")
+	}
+	nodeState, err := p.controllerClient.GetNodeCleanupStatus(ctx, p.nodeName)
 	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to get node state from the CSI controller server.")
+		Logc(ctx).WithError(err).Error("Failed to get node cleanup status from controller.")
 		return err
 	}
 
 	// For now, only cleanup the node iff the node is not clean.
-	if node.PublicationState == models.NodeClean {
+	if nodeState == models.NodeClean {
 		Logc(ctx).Debug("Node is clean, nothing to do.")
 		return nil
 	}
@@ -2601,7 +2670,7 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 		return err
 	}
 
-	return p.updateNodePublicationState(ctx, node.PublicationState)
+	return p.updateNodePublicationState(ctx, nodeState)
 }
 
 // performNodeCleanup will discover the difference between the volume tracking information stored on the node, and the
@@ -2634,24 +2703,17 @@ func (p *Plugin) performNodeCleanup(ctx context.Context) error {
 	return nil
 }
 
-// discoverDesiredPublicationState discovers the desired state of published volumes on the CSI controller and returns
-// a mapping of volumeID -> publications.
+// discoverDesiredPublicationState returns the controller's desired publication state for this node via
+// tridentcontroller.Client (CRD or REST transport). The result maps volumeID to publications.
 func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (
 	map[string]*models.VolumePublicationExternal, error,
 ) {
 	Logc(ctx).Debug("Discovering desired publication state.")
 
-	publications, err := p.restClient.ListVolumePublicationsForNode(ctx, p.nodeName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get desired publication state")
+	if p.controllerClient == nil {
+		return nil, fmt.Errorf("trident node client is not configured")
 	}
-
-	desiredPublicationState := make(map[string]*models.VolumePublicationExternal, len(publications))
-	for _, pub := range publications {
-		desiredPublicationState[pub.VolumeName] = pub
-	}
-
-	return desiredPublicationState, nil
+	return p.controllerClient.GetDesiredPublications(ctx, p.nodeName)
 }
 
 // discoverActualPublicationState discovers the actual state of published volumes on the node and returns
@@ -2694,8 +2756,8 @@ func (p *Plugin) discoverStalePublications(
 	return stalePublications
 }
 
-// cleanStalePublications cleans published paths on the host node for attached volumes with no matching publication
-// object in the CSI controller. It should never publish volumes to the node.
+// cleanStalePublications cleans published paths on the host node for attached volumes with no matching desired
+// publication from the controller. It should never publish volumes to the node.
 func (p *Plugin) cleanStalePublications(
 	ctx context.Context, stalePublications map[string]*models.VolumeTrackingInfo,
 ) error {
@@ -2756,15 +2818,14 @@ func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState model
 	}
 
 	Logc(ctx).Debug("Updating node publication state.")
-	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: new(true),
+	if p.controllerClient == nil {
+		return fmt.Errorf("trident node client is not configured")
 	}
-	if err := p.restClient.UpdateNode(ctx, p.nodeName, nodeStateFlags); err != nil {
-		Logc(ctx).WithError(err).Error("Failed to update node publication state.")
+	if err := p.controllerClient.MarkNodeCleanupComplete(ctx, p.nodeName); err != nil {
+		Logc(ctx).WithError(err).Error("Failed to mark node cleanup complete in controller.")
 		return err
 	}
-	Logc(ctx).Debug("Updated node publication state.")
-
+	Logc(ctx).Debug("Marked node cleanup complete in controller.")
 	return nil
 }
 

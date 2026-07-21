@@ -15,7 +15,10 @@ import (
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
+	tridentcontrollercrd "github.com/netapp/trident/frontend/csi/tridentcontroller/crd"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -41,7 +44,12 @@ type helper struct {
 	nodehelpers.VolumeStatsManager   // Embedded/extended interface
 }
 
-// NewHelper instantiates this helper when running outside a pod.
+// NewControllerClient returns a CRD-backed tridentcontroller.Client for this helper.
+func (h *helper) NewControllerClient(_ controllerAPI.TridentController) (tridentcontroller.Client, error) {
+	return tridentcontrollercrd.NewClient(h.kubeConfigPath), nil
+}
+
+// NewHelper instantiates the Kubernetes CSI node helper.
 func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 

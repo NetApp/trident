@@ -14,10 +14,11 @@ import (
 	os "os"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	tridentcontroller "github.com/netapp/trident/frontend/csi/tridentcontroller"
 	models "github.com/netapp/trident/utils/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockNodeHelper is a mock of NodeHelper interface.
@@ -171,6 +172,21 @@ func (m *MockNodeHelper) ListVolumeTrackingInfo(arg0 context.Context) (map[strin
 func (mr *MockNodeHelperMockRecorder) ListVolumeTrackingInfo(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumeTrackingInfo", reflect.TypeOf((*MockNodeHelper)(nil).ListVolumeTrackingInfo), arg0)
+}
+
+// NewControllerClient mocks base method.
+func (m *MockNodeHelper) NewControllerClient(restClient controllerAPI.TridentController) (tridentcontroller.Client, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewControllerClient", restClient)
+	ret0, _ := ret[0].(tridentcontroller.Client)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewControllerClient indicates an expected call of NewControllerClient.
+func (mr *MockNodeHelperMockRecorder) NewControllerClient(restClient any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewControllerClient", reflect.TypeOf((*MockNodeHelper)(nil).NewControllerClient), restClient)
 }
 
 // ReadTrackingInfo mocks base method.

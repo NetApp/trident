@@ -2677,7 +2677,17 @@ func getNodeAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefinition 
 	t.Helper()
 	schema := apiextensionsv1.CustomResourceValidation{
 		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-			Type:                   "object",
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type:                   "object",
+					XPreserveUnknownFields: new(true),
+				},
+				"status": {
+					Type:                   "object",
+					XPreserveUnknownFields: new(true),
+				},
+			},
 			XPreserveUnknownFields: new(true),
 		},
 	}
@@ -2706,6 +2716,45 @@ func getNodeAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefinition 
 					Served:  true,
 					Storage: true,
 					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Registered",
+							Type:        "boolean",
+							Description: "Controller acknowledged registration",
+							JSONPath:    ".status.registered",
+						},
+						{
+							Name:        "IPs",
+							Type:        "string",
+							Description: "Node IP addresses",
+							Priority:    int32(1),
+							JSONPath:    ".spec.ips",
+						},
+						{
+							Name:        "Generation",
+							Type:        "integer",
+							Description: "Desired generation",
+							Priority:    int32(1),
+							JSONPath:    ".metadata.generation",
+						},
+						{
+							Name:        "ObservedGeneration",
+							Type:        "integer",
+							Description: "Reconciled generation",
+							Priority:    int32(1),
+							JSONPath:    ".status.observedGeneration",
+						},
+						{
+							Name:        "LastRegistered",
+							Type:        "date",
+							Description: "Last controller registration acknowledgement",
+							Priority:    int32(1),
+							JSONPath:    ".status.lastRegistrationTime",
+						},
+					},
 				},
 			},
 		},
