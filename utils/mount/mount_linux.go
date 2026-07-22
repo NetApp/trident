@@ -197,7 +197,7 @@ func (client *LinuxClient) MountNFSPath(ctx context.Context, exportPath, mountpo
 	}
 
 	// Create the mount point dir if necessary
-	if _, err := client.command.Execute(ctx, "mkdir", "-p", mountpoint); err != nil {
+	if err := client.os.MkdirAll(mountpoint, 0o755); err != nil {
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
