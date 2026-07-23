@@ -58,9 +58,19 @@ If defined, overrides the default chart version
 
 `DOCKER_CLI`
 
-Default: `docker`
+Default: auto-detect when unset or empty (whitespace-only counts as empty) — `docker` when installed and
+`docker info` succeeds, else `podman` when `podman info` succeeds.
 
-Docker-compatible cli, such as nerdctl or docker, used to run containers and tag single-platform images.
+Docker-compatible cli used to run containers and tag single-platform images. Override when auto-detect is wrong, for
+example `DOCKER_CLI=podman make test-unit` or `DOCKER_CLI=nerdctl`.
+
+`GO_RUN_PLATFORM`
+
+Default: `linux/arm64` on arm64/aarch64 hosts, `linux/amd64` on x86_64/amd64 hosts, otherwise unset.
+
+Optional `--platform` passed to `$DOCKER_CLI run` for `$GO_SHELL` and `$HELM_CMD`. Set explicitly when a cached image
+arch does not match the host (for example `GO_RUN_PLATFORM=linux/amd64` on Apple Silicon to match CI under emulation).
+Set to empty to omit `--platform` and use the runtime default.
 
 `BUILD_CLI`
 
@@ -266,6 +276,14 @@ Sets up `golangci-lint` as pre-commit linting tool.
 
 Sets up `golangci-lint` as pre-push linting tool.
 
+`test` / `test-unit`
+
+Runs `go test ./...` using `$GO_SHELL` (container) by default. Set `GO_SHELL=` to run on the host. Override flags with `TEST_FLAGS` (e.g. `TEST_FLAGS=-v`). Git worktrees are supported: the Makefile bind-mounts `git` metadata at the same host paths used by `.git` / `gitdir:` files.
+
+`test-coverage`
+
+Runs a subset of packages with coverage reporting (excludes generated clients and mocks). Uses the local `go` command.
+
 ## Examples
 
 ### Build all dependencies for single-platform development
@@ -279,6 +297,24 @@ DOCKER_CLI=nerdctl BUILD_CLI=nerdctl make
 
 # using local go command
 GO_SHELL= make
+```
+
+### Run unit tests in a container
+
+```shell
+make test-unit
+
+# override auto-detected container cli (e.g. force podman when docker is also installed)
+DOCKER_CLI=podman make test-unit
+
+# match CI linux/amd64 under emulation on arm64 Mac
+GO_RUN_PLATFORM=linux/amd64 make test-unit
+
+# host go, no container
+GO_SHELL= make test-unit
+
+# verbose, single run
+make test-unit TEST_FLAGS='-v -count=1'
 ```
 
 ### Build all images and binaries for all supported platforms

@@ -37,19 +37,50 @@ GOLANGCI-LINT_VERSION ?= v2.12.2
 # GIT_HOOKS_DIR git hooks directory from rev-parse --git-path hooks
 GIT_HOOKS_DIR := $(shell git rev-parse --git-path hooks)
 
-# DOCKER_CLI the docker-compatible cli used to run and tag images
-DOCKER_CLI ?= docker
+# DOCKER_CLI the docker-compatible cli used to run and tag images. When unset or empty, auto-detects docker then podman.
+ifeq ($(strip $(DOCKER_CLI)),)
+DOCKER_CLI := $(shell \
+	if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then \
+		printf '%s' docker; \
+	elif command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then \
+		printf '%s' podman; \
+	else \
+		printf '%s' __none__; \
+	fi)
+ifeq ($(DOCKER_CLI),__none__)
+$(error No working container runtime found — install docker or podman, or set DOCKER_CLI to a compatible cli)
+endif
+endif
+
+# GO_RUN_PLATFORM optional --platform for GO_SHELL and HELM_CMD container runs. Defaults to the host's
+# linux/arch when uname reports arm64/aarch64 or x86_64/amd64 so podman/docker on Apple Silicon do not warn
+# about pulling an amd64-only cached image. Override with linux/amd64 to match CI or test under emulation.
+GO_RUN_PLATFORM ?= $(shell uname -m | sed -n \
+	-e 's/^aarch64$$/linux\/arm64/p' \
+	-e 's/^arm64$$/linux\/arm64/p' \
+	-e 's/^x86_64$$/linux\/amd64/p' \
+	-e 's/^amd64$$/linux\/amd64/p')
+
+# go_run_platform returns docker/podman --platform when GO_RUN_PLATFORM is set
+# usage: $(call go_run_platform)
+go_run_platform = $(if $(GO_RUN_PLATFORM),--platform $(GO_RUN_PLATFORM),)
 
 # BUILD_CLI the docker-compatible cli used to build images. If set to "docker buildx", the image build script will
 # ensure an image builder instance exists. Windows builds and the manifest targets require BUILD_CLI set to "docker buildx"
 BUILD_CLI ?= docker
 
+# go_run_volumes returns docker/podman -v args shared by GO_SHELL
+# usage: $(call go_run_volumes)
+go_run_volumes = -v $(TRIDENT_VOLUME):/go \
+	-v $(ROOT):$(BUILD_ROOT) \
+	$(GO_GIT_MOUNTS)
+
 # GO_SHELL sets the Go environment. By default uses DOCKER_CLI to create a container using GO_IMAGE. Set to empty string
 # to use local shell
 GO_SHELL ?= $(DOCKER_CLI) run \
+	$(call go_run_platform) \
 	-e XDG_CACHE_HOME=/go/cache \
-	-v $(TRIDENT_VOLUME):/go \
-	-v $(ROOT):$(BUILD_ROOT) \
+	$(call go_run_volumes) \
 	-w $(BUILD_ROOT) \
 	--rm \
 	$(GO_IMAGE) \
@@ -58,6 +89,7 @@ GO_SHELL ?= $(DOCKER_CLI) run \
 # HELM_CMD sets the helm command. By default uses DOCKER_CLI to create a container using HELM_IMAGE. Set to 'helm' to
 # use local helm command
 HELM_CMD ?= $(DOCKER_CLI) run \
+	$(call go_run_platform) \
 	-v $(ROOT):$(BUILD_ROOT) \
 	-w $(BUILD_ROOT) \
 	--rm \
@@ -125,6 +157,18 @@ K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
 # Calculated values
 BUILD_TIME = $(shell date)
 ROOT = $(shell pwd)
+
+# Mount git metadata so worktrees work inside containers (.git is a file pointing at host paths)
+GIT_DIR := $(shell git -C $(ROOT) rev-parse --git-dir 2>/dev/null)
+GIT_COMMON_DIR := $(shell git -C $(ROOT) rev-parse --git-common-dir 2>/dev/null)
+ifneq ($(GIT_DIR),$(GIT_COMMON_DIR))
+GO_GIT_MOUNTS := -v $(GIT_COMMON_DIR):$(GIT_COMMON_DIR):ro -v $(GIT_DIR):$(GIT_DIR):ro
+else ifneq ($(filter /%,$(GIT_DIR)),)
+GO_GIT_MOUNTS := -v $(GIT_DIR):$(GIT_DIR):ro
+endif
+
+# go_git_setup marks the repo safe for git commands run as a different user in containers
+go_git_setup = git config --global --add safe.directory $(BUILD_ROOT) >/dev/null 2>&1 || true;
 
 TRIDENT_VERSION := $(VERSION)
 ifeq ($(BUILD_TYPE),custom)
@@ -220,15 +264,12 @@ binaries_for_platform = $(call go_build,tridentctl,./cli,$1,$2)\
 # build_binaries_for_platforms returns a script to build all binaries for platforms. Attempts to add current directory
 # as a safe git directory, in case GO_SHELL uses a different user than the source repo.
 # usage: $(call build_binaries_for_platforms,$(platforms),$(go_shell),$(linker_flags))
-build_binaries_for_platforms = $(strip $(if $2,$2 'git config --global --add safe.directory $$(pwd) || true; )\
-	$(foreach platform,$(call remove_version,$1),$(call binaries_for_platform,$(platform),$3)&&) true$(if $2,'))
+build_binaries_for_platforms = $(strip $(if $2,$2 '$(go_git_setup) $(foreach platform,$(call remove_version,$1),$(call binaries_for_platform,$(platform),$3)&&) true',$(foreach platform,$(call remove_version,$1),$(call binaries_for_platform,$(platform),$3)&&) true))
 
 # build_operator_binaries_for_platforms returns a script to build all operator binaries for platforms.  Attempts to add
 # BUILD_ROOT as a safe git directory, in case GO_SHELL uses a different user than the source repo.
 # usage: $(call build_operator_binaries_for_platforms,$(platforms),$(go_shell),$(operator_linker_flags))
-build_operator_binaries_for_platforms = $(strip $(if $2,$2 'git config --global --add safe.directory $(BUILD_ROOT) || true; )\
-	$(foreach platform,$(call remove_version,$1),\
-		$(call go_build,trident-operator,./operator,$(platform),$3) &&) true$(if $2,'))
+build_operator_binaries_for_platforms = $(strip $(if $2,$2 '$(go_git_setup) $(foreach platform,$(call remove_version,$1),$(call go_build,trident-operator,./operator,$(platform),$3) &&) true',$(foreach platform,$(call remove_version,$1),$(call go_build,trident-operator,./operator,$(platform),$3) &&) true))
 
 # remove_version removes os_version from platforms
 # usage: $(call remove_version,$(platforms))
@@ -420,7 +461,7 @@ installer: binaries chart
 all: installer images manifest operator_images operator_manifest
 
 # Developer tools
-.PHONY: k8s_codegen k8s_codegen_operator mocks install-lint lint-precommit lint-prepush linker_flags operator_linker_flags clean
+.PHONY: k8s_codegen k8s_codegen_operator mocks install-lint lint-precommit lint-prepush linker_flags operator_linker_flags clean test test-unit
 
 image_digests.json: images
 	@$(call image_digests,$(call trident_image_platforms,$(PLATFORMS)),$(TRIDENT_TAG)) > image_digests.json
@@ -483,6 +524,23 @@ lint-prepush: $(GIT_HOOKS_DIR) install-lint
 	@cp hooks/golangci-lint.sh $(GIT_HOOKS_DIR)/pre-push
 
 EXCLUDE_PACKAGES := client/clientset client/informers client/listers storage/external_test astrads/api/v1alpha1 ontap/api/azgo ontap/api/rest fake github.com/netapp/trident/mocks/ github.com/netapp/trident/operator/controllers/provisioner github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1 github.com/netapp/trident/storage_drivers/astrads/api/v1beta1
+
+# TEST_FLAGS extra arguments passed to go test (e.g. -v, -count=1)
+TEST_FLAGS ?=
+
+# go_test_env sets environment variables for go test commands
+go_test_env = CGO_ENABLED=$(CGO_ENABLED)$(if $(GOPROXY), GOPROXY=$(GOPROXY))$(if $(GOFLAGS), GOFLAGS="$(GOFLAGS)")
+
+# run_go_test runs the full unit test suite (same as CI: go test ./...)
+run_go_test = $(call go_test_env) $(GO_CMD) test $(TEST_FLAGS) ./...
+
+# run_go_test_shell runs run_go_test in GO_SHELL when set, else locally
+run_go_test_shell = $(strip $(if $(GO_SHELL),$(GO_SHELL) '$(go_git_setup) $(call run_go_test)',$(call run_go_test)))
+
+test: test-unit
+
+test-unit:
+	@$(call run_go_test_shell)
 
 test-coverage:
 	@EXCLUDE_PATTERN=$$(echo $(EXCLUDE_PACKAGES) | sed 's/ /|/g'); \

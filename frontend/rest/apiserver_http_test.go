@@ -240,28 +240,17 @@ func TestAPIServerHTTP_Deactivate(t *testing.T) {
 }
 
 func TestAPIServerHTTP_ActivateDeactivateCycle(t *testing.T) {
-	// Setup
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-
-	server := NewHTTPServer(mockOrchestrator, "localhost", "0", 30*time.Second)
-
-	// Test multiple activate/deactivate cycles
 	for i := 0; i < 3; i++ {
 		t.Run(fmt.Sprintf("cycle_%d", i), func(t *testing.T) {
-			// Activate
-			err := server.Activate()
-			assert.NoError(t, err)
+			mockCtrl := gomock.NewController(t)
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
-			// Give server time to start
+			server := NewHTTPServer(mockOrchestrator, "localhost", "0", 30*time.Second)
+
+			require.NoError(t, server.Activate())
 			time.Sleep(50 * time.Millisecond)
 
-			// Deactivate
-			err = server.Deactivate()
-			assert.NoError(t, err)
-
-			// Give server time to stop
+			require.NoError(t, server.Deactivate())
 			time.Sleep(50 * time.Millisecond)
 		})
 	}

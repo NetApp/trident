@@ -3113,9 +3113,9 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			name:          "file_read_fails",
 			useYAML:       true,
 			fileExists:    true,
-			createFile:    false,
+			createFile:    true,
 			setupMocks:    func(mockClient *mockK8sClient.MockKubernetesClient) {},
-			expectedError: "directory",
+			expectedError: "permission denied",
 		},
 	}
 
@@ -3133,16 +3133,19 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 				tempDir := t.TempDir()
 				crdsPath = filepath.Join(tempDir, "crds.yaml")
 
-				if tt.fileExists && !tt.createFile && tt.name == "file_read_fails" {
-					// Point to a directory to force a deterministic read error across platforms (including root in containers).
-					crdsPath = tempDir
-				}
-
 				if tt.fileExists && tt.createFile {
 					crdContent := k8sclient.GetCRDsYAML()
 					err := os.WriteFile(crdsPath, []byte(crdContent), 0o644)
 					require.NoError(t, err)
 				}
+			}
+
+			if tt.name == "file_read_fails" {
+				originalRead := readFile
+				readFile = func(string) ([]byte, error) {
+					return nil, errors.New("permission denied")
+				}
+				t.Cleanup(func() { readFile = originalRead })
 			}
 
 			mockClient, _ := getMockK8sClient(t)

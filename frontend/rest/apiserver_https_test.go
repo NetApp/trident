@@ -413,87 +413,55 @@ func TestAPIServerHTTPS_Activate(t *testing.T) {
 
 func TestAPIServerHTTPS_Deactivate(t *testing.T) {
 	tests := []struct {
-		name           string
-		setupServer    func() *APIServerHTTPS
-		expectError    bool
-		errorAssertion func(t *testing.T, err error)
+		name        string
+		activate    bool
+		expectError bool
 	}{
 		{
-			name: "deactivate non-activated server",
-			setupServer: func() *APIServerHTTPS {
-				tempDir, err := os.MkdirTemp("", "trident_https_test")
-				require.NoError(t, err)
-				defer os.RemoveAll(tempDir)
-
-				_, serverCertFile, serverKeyFile, _, _ := createTestCertificates(t, tempDir)
-
-				mockCtrl := gomock.NewController(t)
-				mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-				server, err := NewHTTPSServer(
-					mockOrchestrator,
-					"localhost",
-					"0",
-					"",
-					serverCertFile,
-					serverKeyFile,
-					false,
-					http.DefaultServeMux,
-					30*time.Second,
-				)
-				require.NoError(t, err)
-				return server
-			},
+			name:        "deactivate non-activated server",
+			activate:    false,
 			expectError: false,
 		},
 		{
-			name: "deactivate activated server",
-			setupServer: func() *APIServerHTTPS {
-				tempDir, err := os.MkdirTemp("", "trident_https_test")
-				require.NoError(t, err)
-				defer os.RemoveAll(tempDir)
-
-				_, serverCertFile, serverKeyFile, _, _ := createTestCertificates(t, tempDir)
-
-				mockCtrl := gomock.NewController(t)
-				mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-				server, err := NewHTTPSServer(
-					mockOrchestrator,
-					"localhost",
-					"0",
-					"",
-					serverCertFile,
-					serverKeyFile,
-					false,
-					http.DefaultServeMux,
-					30*time.Second,
-				)
-				require.NoError(t, err)
-
-				// Activate the server
-				err = server.Activate()
-				require.NoError(t, err)
-
-				// Give server time to start
-				time.Sleep(100 * time.Millisecond)
-
-				return server
-			},
+			name:        "deactivate activated server",
+			activate:    true,
 			expectError: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server := tt.setupServer()
+			tempDir, err := os.MkdirTemp("", "trident_https_test")
+			require.NoError(t, err)
+			t.Cleanup(func() { _ = os.RemoveAll(tempDir) })
 
-			// Test deactivation
-			err := server.Deactivate()
+			_, serverCertFile, serverKeyFile, _, _ := createTestCertificates(t, tempDir)
+
+			mockCtrl := gomock.NewController(t)
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			server, err := NewHTTPSServer(
+				mockOrchestrator,
+				"localhost",
+				"0",
+				"",
+				serverCertFile,
+				serverKeyFile,
+				false,
+				http.DefaultServeMux,
+				30*time.Second,
+			)
+			require.NoError(t, err)
+
+			if tt.activate {
+				require.NoError(t, server.Activate())
+				time.Sleep(100 * time.Millisecond)
+			}
+
+			err = server.Deactivate()
 
 			if tt.expectError {
 				assert.Error(t, err)
-				if tt.errorAssertion != nil {
-					tt.errorAssertion(t, err)
-				}
 			} else {
 				assert.NoError(t, err)
 			}
@@ -617,45 +585,34 @@ func TestTLSAuthHandler_ServeHTTP(t *testing.T) {
 }
 
 func TestAPIServerHTTPS_ActivateDeactivateCycle(t *testing.T) {
-	// Setup
-	tempDir, err := os.MkdirTemp("", "trident_https_test")
-	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-
-	_, serverCertFile, serverKeyFile, _, _ := createTestCertificates(t, tempDir)
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-
-	server, err := NewHTTPSServer(
-		mockOrchestrator,
-		"localhost",
-		"0",
-		"",
-		serverCertFile,
-		serverKeyFile,
-		false,
-		http.DefaultServeMux,
-		30*time.Second,
-	)
-	require.NoError(t, err)
-
-	// Test multiple activate/deactivate cycles
 	for i := 0; i < 3; i++ {
 		t.Run(fmt.Sprintf("cycle_%d", i), func(t *testing.T) {
-			// Activate
-			err := server.Activate()
-			assert.NoError(t, err)
+			tempDir, err := os.MkdirTemp("", "trident_https_test")
+			require.NoError(t, err)
+			t.Cleanup(func() { _ = os.RemoveAll(tempDir) })
 
-			// Give server time to start
+			_, serverCertFile, serverKeyFile, _, _ := createTestCertificates(t, tempDir)
+
+			mockCtrl := gomock.NewController(t)
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			server, err := NewHTTPSServer(
+				mockOrchestrator,
+				"localhost",
+				"0",
+				"",
+				serverCertFile,
+				serverKeyFile,
+				false,
+				http.DefaultServeMux,
+				30*time.Second,
+			)
+			require.NoError(t, err)
+
+			require.NoError(t, server.Activate())
 			time.Sleep(50 * time.Millisecond)
 
-			// Deactivate
-			err = server.Deactivate()
-			assert.NoError(t, err)
-
-			// Give server time to stop
+			require.NoError(t, server.Deactivate())
 			time.Sleep(50 * time.Millisecond)
 		})
 	}
