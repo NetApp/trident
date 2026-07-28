@@ -501,8 +501,8 @@ func helperTestLUNWhenNotFound(t *testing.T, l LUNs, input LUNData) {
 	assert.False(t, l.CheckLUNExists(input.LUN), "LUN already exist")
 
 	volID, err := l.VolumeID(input.LUN)
-	assert.True(t, errors.IsNotFoundError(err), "Expecting volume ID not found error")
-	assert.Empty(t, volID, "volume ID should be empty")
+	assert.True(t, errors.IsNotFoundError(err), "Expecting volume GUID not found error")
+	assert.Empty(t, volID, "volume GUID should be empty")
 
 	assert.True(t, l.IsEmpty(), "LUN info should be empty")
 	assert.Equal(t, len(l.AllLUNs()), 0, "LUN info should return 0 LUNs")
@@ -513,8 +513,8 @@ func helperTestLUNWhenFound(t *testing.T, l LUNs, input LUNData) {
 	assert.True(t, l.CheckLUNExists(input.LUN), "LUN not found")
 
 	volID, err := l.VolumeID(input.LUN)
-	assert.Nil(t, err, "unable to get volume ID")
-	assert.Equal(t, volID, input.VolID, "volume ID mismatch error")
+	assert.Nil(t, err, "unable to get volume GUID")
+	assert.Equal(t, volID, input.VolID, "volume GUID mismatch error")
 
 	assert.False(t, l.IsEmpty(), "LUN info is empty")
 	assert.Equal(t, len(l.AllLUNs()), len(l.Info), "LUN info length mismatch")
@@ -1138,17 +1138,17 @@ func TestISCSISessions_VolumeIDForPortalAndLUN(t *testing.T) {
 		assert.Empty(t, id)
 	})
 
-	t.Run("with non-empty iSCSI sessions but no volume ID found for lun ID", func(t *testing.T) {
+	t.Run("with non-empty iSCSI sessions but no volume ID found for LUN ID", func(t *testing.T) {
 		iscsiSession, _, _, _, portal := helperISCSISessionsCreateInputs()
-		// lun ID "100" is not present in iscsiSession.
+		// LUN ID "100" is not present in iscsiSession.
 		id, err := iscsiSession.VolumeIDForPortalAndLUN(portal, 100)
 		assert.Error(t, err)
 		assert.Empty(t, id)
 	})
 
-	t.Run("with non-empty iSCSI sessions and volume ID found lun ID", func(t *testing.T) {
+	t.Run("with non-empty iSCSI sessions and volume ID found for LUN ID", func(t *testing.T) {
 		iscsiSession, _, _, luns, portal := helperISCSISessionsCreateInputs()
-		// lun ID "0" is present in iscsiSession.
+		// LUN ID "0" is present in iscsiSession.
 		id, err := iscsiSession.VolumeIDForPortalAndLUN(portal, 0)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, id)

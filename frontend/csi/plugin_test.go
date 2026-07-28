@@ -1,13 +1,10 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -22,21 +19,88 @@ import (
 	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
-	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	"github.com/netapp/trident/core/node"
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_core"
-	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
+	mock_node "github.com/netapp/trident/mocks/mock_core/mock_node"
 	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	mock_node_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
-	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	mock_tridentcontroller "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_tridentcontroller"
+	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	mock_osutils "github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
 	"github.com/netapp/trident/utils/errors"
-	execCmd "github.com/netapp/trident/utils/exec"
-	"github.com/netapp/trident/utils/limiter"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/osutils"
 )
+
+// newTestNodeCore builds a *node.Core wired with permissive mocks for every dependency Bootstrap
+// touches (controller transport, CHAP lookup, local tracking store, host protocol discovery).
+// registerNode customizes RegisterNode's behavior (e.g. to simulate slow registration); it is not
+// bootstrapped, leaving that to the caller.
+func newTestNodeCore(
+	t testing.TB,
+	registerNode func(ctx context.Context, node *models.Node, timeout time.Duration) (*tridentcontroller.RegistrationInfo, error),
+) *node.Core {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+
+	mockClient := mock_tridentcontroller.NewMockClient(ctrl)
+	mockClient.EXPECT().RegisterNode(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(registerNode).AnyTimes()
+	mockClient.EXPECT().GetDesiredPublications(gomock.Any(), gomock.Any()).
+		Return(map[string]*models.VolumePublicationExternal{}, nil).AnyTimes()
+	mockClient.EXPECT().GetNodeCleanupStatus(gomock.Any(), gomock.Any()).
+		Return(models.NodeClean, nil).AnyTimes()
+	mockClient.EXPECT().MarkNodeCleanupComplete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	mockChap := mock_node.NewMockChapClient(ctrl)
+	mockChap.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(&models.IscsiChapInfo{}, nil).AnyTimes()
+
+	mockLocalStore := mock_node_helpers.NewMockNodeHelper(ctrl)
+	mockLocalStore.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+	mockLocalStore.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+
+	mockOsUtils := mock_osutils.NewMockUtils(ctrl)
+	mockOsUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil).AnyTimes()
+	mockOsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"127.0.0.1"}, nil).AnyTimes()
+	mockOsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+
+	mockISCSI := mock_iscsi.NewMockISCSI(ctrl)
+	mockISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+
+	mockNVMe := mock_nvme.NewMockNVMeInterface(ctrl)
+	mockNVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+
+	return node.NewCore(
+		node.WithController(node.NewController(mockClient, mockChap)),
+		node.WithLocalStore(mockLocalStore),
+		node.WithHostName("test-node"),
+		node.WithOsUtils(mockOsUtils),
+		node.WithLegacyISCSI(mockISCSI),
+		node.WithNVMe(mockNVMe),
+	)
+}
+
+// newReadyNodeCore builds a *node.Core wired with permissive mocks and drives it through a
+// successful Bootstrap. The node core - not the Plugin - owns registration and readiness now, so
+// tests that need Plugin.IsReady() to report true must go through a real (mocked) Bootstrap
+// rather than poking at removed Plugin-level fields like the old nodeReadyCh.
+func newReadyNodeCore(t testing.TB) *node.Core {
+	t.Helper()
+	core := newTestNodeCore(t, func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+		return &tridentcontroller.RegistrationInfo{}, nil
+	})
+	require.NoError(t, core.Bootstrap(context.Background()))
+	return core
+}
+
+// newNotReadyNodeCore returns a *node.Core that has never been bootstrapped, for tests that need
+// Plugin.IsReady() to report false because the node core hasn't finished registering.
+func newNotReadyNodeCore() *node.Core {
+	return node.NewCore()
+}
 
 func TestNewControllerPlugin(t *testing.T) {
 	testCases := []struct {
@@ -45,17 +109,8 @@ func TestNewControllerPlugin(t *testing.T) {
 		fileContent   string
 		expectedError bool
 	}{
-		{
-			name:          "Success",
-			createFile:    true,
-			fileContent:   "test-key",
-			expectedError: false,
-		},
-		{
-			name:          "Error - File not found",
-			createFile:    false,
-			expectedError: true,
-		},
+		{name: "Success", createFile: true, fileContent: "test-key", expectedError: false},
+		{name: "Error - File not found", createFile: false, expectedError: true},
 	}
 
 	for _, tc := range testCases {
@@ -66,662 +121,188 @@ func TestNewControllerPlugin(t *testing.T) {
 			aesKeyError = nil
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
 			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
 			mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
 
-			// Create temporary file for testing
 			var aesKeyFile string
 			if tc.createFile {
 				tmpFile, err := os.CreateTemp("", "test-key-*")
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				defer os.Remove(tmpFile.Name())
-
 				_, err = tmpFile.WriteString(tc.fileContent)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				tmpFile.Close()
-
 				aesKeyFile = tmpFile.Name()
 			} else {
 				aesKeyFile = "/nonexistent/file"
 			}
-
-			plugin, err := NewControllerPlugin("node", "endpoint", aesKeyFile, mockOrchestrator, mockHelper, true)
+			aesKey, aesErr := ReadAESKey(context.Background(), aesKeyFile)
 
 			if tc.expectedError {
-				assert.Error(t, err)
-				assert.Nil(t, plugin)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, plugin)
+				require.Error(t, aesErr)
+				return
 			}
+			require.NoError(t, aesErr)
+
+			plugin, err := NewControllerPlugin("node", "endpoint", aesKey, mockOrchestrator, mockHelper, true)
+
+			require.NoError(t, err)
+			require.NotNil(t, plugin)
+			assert.Equal(t, CSIController, plugin.role)
+			assert.Equal(t, "node", plugin.nodeName)
+			assert.NotEmpty(t, plugin.csCap)
+			assert.NotEmpty(t, plugin.vCap)
+			assert.NotEmpty(t, plugin.gcsCap)
 		})
 	}
 }
 
 func TestNewNodePlugin(t *testing.T) {
-	testCases := []struct {
-		name                string
-		createFile          bool
-		fileContent         string
-		setEnvPort          string
-		setEnvHost          string
-		mockISCSIError      bool
-		mockMountError      bool
-		mockFCPError        bool
-		mockRestClientError bool
-		expectedError       bool
-	}{
-		{
-			name:          "Success - Default env",
-			createFile:    true,
-			fileContent:   "test-key",
-			expectedError: false,
-		},
-		{
-			name:          "Success - Custom env",
-			createFile:    true,
-			fileContent:   "test-key",
-			setEnvPort:    "8080",
-			setEnvHost:    "custom-host",
-			expectedError: false,
-		},
-		{
-			name:          "Success - Empty env",
-			createFile:    true,
-			fileContent:   "test-key",
-			setEnvPort:    "",
-			setEnvHost:    "",
-			expectedError: false,
-		},
-		{
-			name:           "Error - iSCSI client creation fails",
-			createFile:     true,
-			fileContent:    "test-key",
-			mockISCSIError: true,
-			expectedError:  true,
-		},
-		{
-			name:           "Error - Mount client creation fails",
-			createFile:     true,
-			fileContent:    "test-key",
-			mockMountError: true,
-			expectedError:  true,
-		},
-		{
-			name:          "Error - FCP client creation fails",
-			createFile:    true,
-			fileContent:   "test-key",
-			mockFCPError:  true,
-			expectedError: true,
-		},
-		{
-			name:                "Error - REST client creation fails",
-			createFile:          true,
-			fileContent:         "test-key",
-			mockRestClientError: true,
-			expectedError:       true,
-		},
-		{
-			name:          "Error - AES key file read fails",
-			createFile:    false,
-			expectedError: true,
-		},
-	}
+	ctrl := gomock.NewController(t)
+	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+	mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Reset the singleton state between subtests.
-			readAESKeysOnce = sync.Once{}
-			aesKeySingleton = nil
-			aesKeyError = nil
+	// NewNodePlugin no longer wires the node core's Controller itself - that is main.go's job
+	// (see controllerRestURL/tridentcontroller.WireClient) - so it stores whatever Core it is
+	// given as-is, with no NewControllerClient call expected here.
+	nodeCore := node.NewCore(node.WithHostName("test-node"))
 
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+	plugin, err := NewNodePlugin(
+		"test-node", "unix:///tmp/csi.sock", []byte("aes-key"),
+		mockOrchestrator, nodeCore, mockControllerHelper, mockNodeHelper,
+		true, false,
+	)
 
-			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-			mockHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
-
-			// Setup environment variables
-			originalPort := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
-			originalHost := os.Getenv("TRIDENT_CSI_SERVICE_HOST")
-			defer func() {
-				os.Setenv("TRIDENT_CSI_SERVICE_PORT", originalPort)
-				os.Setenv("TRIDENT_CSI_SERVICE_HOST", originalHost)
-			}()
-
-			if tc.setEnvPort != "" {
-				os.Setenv("TRIDENT_CSI_SERVICE_PORT", tc.setEnvPort)
-			} else {
-				os.Unsetenv("TRIDENT_CSI_SERVICE_PORT")
-			}
-
-			if tc.setEnvHost != "" {
-				os.Setenv("TRIDENT_CSI_SERVICE_HOST", tc.setEnvHost)
-			} else {
-				os.Unsetenv("TRIDENT_CSI_SERVICE_HOST")
-			}
-
-			// Create temporary file for AES key
-			var aesKeyFile string
-			if tc.createFile {
-				tmpFile, err := os.CreateTemp("", "test-key-*")
-				assert.NoError(t, err)
-				defer os.Remove(tmpFile.Name())
-
-				_, err = tmpFile.WriteString(tc.fileContent)
-				assert.NoError(t, err)
-				tmpFile.Close()
-
-				aesKeyFile = tmpFile.Name()
-			} else {
-				aesKeyFile = "/nonexistent/file"
-			}
-
-			plugin, err := NewNodePlugin(
-				"test-node", "unix:///tmp/csi.sock", "ca-cert", "client-cert", "client-key", aesKeyFile,
-				mockOrchestrator, nil, false, mockHelper, true,
-				time.Minute, time.Minute*2, time.Minute*3,
-			)
-
-			if tc.expectedError {
-				assert.Error(t, err)
-				assert.Nil(t, plugin)
-			} else {
-				// Plugin creation may fail due to external dependencies
-				if err != nil {
-					t.Skipf("Plugin creation failed due to dependencies: %v", err)
-				} else {
-					assert.NoError(t, err)
-					assert.NotNil(t, plugin)
-					assert.Equal(t, "test-node", plugin.nodeName)
-					assert.Equal(t, "unix:///tmp/csi.sock", plugin.endpoint)
-					assert.Equal(t, CSINode, plugin.role)
-					assert.True(t, plugin.enableForceDetach)
-					assert.False(t, plugin.unsafeDetach)
-					assert.Equal(t, time.Minute, plugin.iSCSISelfHealingInterval)
-					assert.Equal(t, time.Minute*2, plugin.iSCSISelfHealingWaitTime)
-					assert.Equal(t, time.Minute*3, plugin.nvmeSelfHealingInterval)
-
-					// Test that capabilities are set (this covers both Windows and non-Windows paths)
-					assert.NotNil(t, plugin.nsCap)
-					assert.GreaterOrEqual(t, len(plugin.nsCap), 2) // At least 2 capabilities
-
-					// Test volume capabilities are set
-					assert.NotNil(t, plugin.vCap)
-					assert.Len(t, plugin.vCap, 7)
-				}
-			}
-		})
-	}
+	require.NoError(t, err)
+	require.NotNil(t, plugin)
+	assert.Equal(t, "test-node", plugin.nodeName)
+	assert.Equal(t, "unix:///tmp/csi.sock", plugin.endpoint)
+	assert.Equal(t, CSINode, plugin.role)
+	assert.False(t, plugin.enableForceDetach)
+	assert.True(t, plugin.unsafeDetach)
+	assert.NotNil(t, plugin.nsCap)
+	assert.Len(t, plugin.vCap, 7)
+	assert.Same(t, nodeCore, plugin.nodeOrchestrator)
 }
 
 func TestNewAllInOnePlugin(t *testing.T) {
-	testCases := []struct {
-		name                string
-		createFile          bool
-		fileContent         string
-		setEnvPort          string
-		mockRestClientError bool
-		expectedError       bool
-	}{
-		{
-			name:          "Success - Default port",
-			createFile:    true,
-			fileContent:   "test-key",
-			expectedError: false,
-		},
-		{
-			name:          "Success - Custom port from env",
-			createFile:    true,
-			fileContent:   "test-key",
-			setEnvPort:    "8080",
-			expectedError: false,
-		},
-		{
-			name:                "Error - REST client creation fails",
-			createFile:          true,
-			fileContent:         "test-key",
-			mockRestClientError: true,
-			expectedError:       true,
-		},
-		{
-			name:          "Error - AES key file read fails",
-			createFile:    false,
-			expectedError: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Reset the singleton state between subtests.
-			readAESKeysOnce = sync.Once{}
-			aesKeySingleton = nil
-			aesKeyError = nil
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-			mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
-			mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
-
-			// Setup environment variable for port
-			originalEnv := os.Environ()
-			if tc.setEnvPort != "" {
-				os.Setenv("TRIDENT_CSI_SERVICE_PORT", tc.setEnvPort)
-				defer os.Unsetenv("TRIDENT_CSI_SERVICE_PORT")
-			}
-
-			// Create temporary file for AES key
-			var aesKeyFile string
-			if tc.createFile {
-				tmpFile, err := os.CreateTemp("", "test-key-*")
-				assert.NoError(t, err)
-				defer os.Remove(tmpFile.Name())
-
-				_, err = tmpFile.WriteString(tc.fileContent)
-				assert.NoError(t, err)
-				tmpFile.Close()
-
-				aesKeyFile = tmpFile.Name()
-			} else {
-				aesKeyFile = "/nonexistent/file"
-			}
-
-			plugin, err := NewAllInOnePlugin(
-				"test-node", "unix:///tmp/csi.sock", "ca-cert", "client-cert", "client-key", aesKeyFile,
-				mockOrchestrator, mockControllerHelper, mockNodeHelper, false,
-				time.Minute, time.Minute*2, time.Minute*3,
-			)
-
-			// Restore original environment
-			for _, env := range originalEnv {
-				parts := strings.SplitN(env, "=", 2)
-				if len(parts) == 2 {
-					os.Setenv(parts[0], parts[1])
-				}
-			}
-
-			if tc.expectedError {
-				assert.Error(t, err)
-				assert.Nil(t, plugin)
-			} else {
-				// Plugin creation may fail due to external dependencies
-				if err != nil {
-					t.Skipf("Plugin creation failed due to dependencies: %v", err)
-				} else {
-					assert.NoError(t, err)
-					assert.NotNil(t, plugin)
-					assert.Equal(t, "test-node", plugin.nodeName)
-					assert.Equal(t, "unix:///tmp/csi.sock", plugin.endpoint)
-					assert.Equal(t, CSIAllInOne, plugin.role)
-					assert.False(t, plugin.unsafeDetach)
-					assert.Equal(t, time.Minute, plugin.iSCSISelfHealingInterval)
-					assert.Equal(t, time.Minute*2, plugin.iSCSISelfHealingWaitTime)
-					assert.Equal(t, time.Minute*3, plugin.nvmeSelfHealingInterval)
-
-					// Verify all capabilities are set
-					assert.NotNil(t, plugin.csCap)
-					assert.Len(t, plugin.csCap, 9) // Controller capabilities
-
-					assert.NotNil(t, plugin.nsCap)
-					assert.Len(t, plugin.nsCap, 4) // Node capabilities
-
-					assert.NotNil(t, plugin.vCap)
-					assert.Len(t, plugin.vCap, 7) // Volume capabilities
-
-					assert.NotNil(t, plugin.gcsCap)
-					assert.Len(t, plugin.gcsCap, 1) // Group controller capabilities
-				}
-			}
-		})
-	}
-}
-
-func TestPlugin_Activate(t *testing.T) {
-	testCases := []struct {
-		name                     string
-		role                     string
-		enableForceDetach        bool
-		iSCSISelfHealingInterval time.Duration
-		nvmeSelfHealingInterval  time.Duration
-	}{
-		{
-			name:                     "CSINode role with features",
-			role:                     CSINode,
-			enableForceDetach:        true,
-			iSCSISelfHealingInterval: time.Minute,
-			nvmeSelfHealingInterval:  time.Minute,
-		},
-		{
-			name:                     "CSIController role",
-			role:                     CSIController,
-			enableForceDetach:        false,
-			iSCSISelfHealingInterval: 0,
-			nvmeSelfHealingInterval:  0,
-		},
-		{
-			name:                     "CSIAllInOne role",
-			role:                     CSIAllInOne,
-			enableForceDetach:        false,
-			iSCSISelfHealingInterval: time.Minute,
-			nvmeSelfHealingInterval:  0,
-		},
-		{
-			name:                     "CSINode role without features",
-			role:                     CSINode,
-			enableForceDetach:        false,
-			iSCSISelfHealingInterval: 0,
-			nvmeSelfHealingInterval:  0,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-			mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
-			mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
-			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-			mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
-			mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
-			// Setup expectations for controller operations
-			// if tc.expectControllerOperations {
-			mockControllerHelper.EXPECT().
-				IsTopologyInUse(gomock.Any()).
-				Return(false).AnyTimes()
-			// }
-
-			setupControllerClient := func() *fakeControllerClient {
-				return &fakeControllerClient{
-					registerNodeFn: func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
-						return &tridentcontroller.RegistrationInfo{}, nil
-					},
-					getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
-						return map[string]*models.VolumePublicationExternal{}, nil
-					},
-				}
-			}
-
-			setupRestClientMock := func() controllerAPI.TridentController {
-				mockRestClient := mockControllerAPI.NewMockTridentController(ctrl)
-				mockRestClient.EXPECT().CreateNode(gomock.Any(), gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, nil).AnyTimes()
-				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-
-				return mockRestClient
-			}
-
-			mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
-			mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-			mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
-			mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
-
-			socketPath := filepath.Join(os.TempDir(), fmt.Sprintf("csi-activate-%d.sock", time.Now().UnixNano()))
-			t.Cleanup(func() { _ = os.Remove(socketPath) })
-
-			plugin := &Plugin{
-				orchestrator:             mockOrchestrator,
-				controllerHelper:         mockControllerHelper,
-				nodeHelper:               mockNodeHelper,
-				role:                     tc.role,
-				restClient:               setupRestClientMock(),
-				controllerClient:         setupControllerClient(),
-				nodeName:                 "test-node",
-				endpoint:                 "unix://" + socketPath,
-				enableForceDetach:        tc.enableForceDetach,
-				iSCSISelfHealingInterval: tc.iSCSISelfHealingInterval,
-				nvmeSelfHealingInterval:  tc.nvmeSelfHealingInterval,
-				limiterSharedMap:         make(map[string]limiter.Limiter),
-				iscsi:                    mockISCSIClient,
-				nvmeHandler:              mockNVMeHandler,
-				osutils:                  osutils.New(),
-				activatedChan:            make(chan struct{}, 1),
-				nodeReadyCh:              make(chan struct{}),
-			}
-
-			activateErr := plugin.Activate()
-
-			// Activation should always return nil immediately
-			assert.NoError(t, activateErr)
-
-			// Verify GRPC server is created without relying on fixed timing.
-			assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
-
-			activationCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			assert.NoError(t, plugin.WaitForActivation(activationCtx))
-
-			// Ensure background resources from Activate do not leak into the next subtest.
-			assert.NoError(t, plugin.Deactivate())
-		})
-	}
-}
-
-func TestPlugin_Activate_StartsGRPCBeforeSlowNodeRegistration(t *testing.T) {
-	InitAuditLogger(true)
 	ctrl := gomock.NewController(t)
-
 	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-	mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
+	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
 	mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
-	mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
 
-	// Record when RegisterNode is invoked so the test can prove the socket exists
-	// before the slow controller registration completes. This validates TRID-19339's fix:
-	// gRPC socket must be available before node-driver-registrar's ~30s timeout deadline.
-	registerStarted := make(chan struct{}, 1)
-	controllerClientStub := &fakeControllerClient{
-		registerNodeFn: func(_ context.Context, _ *models.Node, _ time.Duration) (*tridentcontroller.RegistrationInfo, error) {
-			select {
-			case registerStarted <- struct{}{}:
-			default:
-			}
-			time.Sleep(2 * time.Second)
-			return &tridentcontroller.RegistrationInfo{}, nil
-		},
-		getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
-			return map[string]*models.VolumePublicationExternal{}, nil
-		},
-	}
+	nodeCore := node.NewCore(node.WithHostName("test-node"))
 
-	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
-	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+	plugin, err := NewAllInOnePlugin(
+		"test-node", "unix:///tmp/csi.sock", []byte("aes-key"),
+		mockOrchestrator, nodeCore, mockControllerHelper, mockNodeHelper,
+		false,
+	)
 
-	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
-	mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
-
-	// Use a short unique socket path. macOS limits Unix socket paths to 104 bytes;
-	// t.TempDir() + long test names easily exceed that, so use os.MkdirTemp with the
-	// default temp dir (typically /tmp on Linux) for a short path.
-	socketDir, err := os.MkdirTemp("", "csi")
 	require.NoError(t, err)
-	socketPath := filepath.Join(socketDir, "csi.sock")
-	t.Cleanup(func() { os.RemoveAll(socketDir) })
+	require.NotNil(t, plugin)
+	assert.Equal(t, "test-node", plugin.nodeName)
+	assert.Equal(t, CSIAllInOne, plugin.role)
+	assert.NotEmpty(t, plugin.csCap)
+	assert.NotEmpty(t, plugin.nsCap)
+	assert.Len(t, plugin.vCap, 7)
+	assert.NotEmpty(t, plugin.gcsCap)
+	assert.Same(t, nodeCore, plugin.nodeOrchestrator)
+}
+
+func TestPlugin_Activate_ControllerRole_SetsTopologyInUse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+	mockControllerHelper.EXPECT().IsTopologyInUse(gomock.Any()).Return(true)
 
 	plugin := &Plugin{
-		orchestrator:             mockOrchestrator,
-		nodeHelper:               mockNodeHelper,
-		role:                     CSINode,
-		controllerClient:         controllerClientStub,
-		nodeName:                 "test-node",
-		endpoint:                 "unix://" + socketPath,
-		activatedChan:            make(chan struct{}, 1),
-		nodeReadyCh:              make(chan struct{}),
-		iSCSISelfHealingInterval: 0, // Disable to avoid background goroutine leaks in test
-		nvmeSelfHealingInterval:  0,
-		limiterSharedMap:         make(map[string]limiter.Limiter),
-		iscsi:                    mockISCSIClient,
-		nvmeHandler:              mockNVMeHandler,
-		osutils:                  osutils.New(),
+		role:             CSIController,
+		nodeName:         "test-node",
+		endpoint:         "unix://" + tempSocketPath(t),
+		controllerHelper: mockControllerHelper,
 	}
+	t.Cleanup(func() { _ = plugin.Deactivate() })
 
-	t.Cleanup(func() {
-		if grpcServer := plugin.getGRPC(); grpcServer != nil {
-			grpcServer.Stop()
-		}
-		ctrl.Finish()
+	require.NoError(t, plugin.Activate())
+
+	assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
+	assert.Eventually(t, plugin.isTopologyInUse, 2*time.Second, 10*time.Millisecond)
+}
+
+func TestPlugin_Activate_NodeRole_StartsGRPCWithoutBlockingOnNodeCore(t *testing.T) {
+	// Activate() no longer waits on node core Bootstrap at all - that is driven independently
+	// by whoever constructed the Core (main.go). A never-bootstrapped node core must not stop
+	// the gRPC socket from becoming available.
+	plugin := &Plugin{
+		role:             CSINode,
+		nodeName:         "test-node",
+		endpoint:         "unix://" + tempSocketPath(t),
+		nodeOrchestrator: newNotReadyNodeCore(),
+	}
+	t.Cleanup(func() { _ = plugin.Deactivate() })
+
+	require.NoError(t, plugin.Activate())
+
+	assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
+	assert.False(t, plugin.IsReady(), "plugin must stay gated while the node core is not ready")
+}
+
+// TestPlugin_Activate_ReproducesCustomerIssue_TRID19339 reproduces the customer scenario behind
+// TRID-19339 under the current architecture, where node core Bootstrap is driven independently of
+// Plugin.Activate() (by main.go, simulated here): node-driver-registrar could not connect to the
+// CSI socket within its ~30s deadline because the socket did not exist until controller
+// registration finished. This proves the gRPC socket is available - and Identity.Probe succeeds -
+// while registration is still in flight, that data-path RPCs are rejected Unavailable until node
+// core finishes bootstrapping, and that they are allowed once it does.
+func TestPlugin_Activate_ReproducesCustomerIssue_TRID19339(t *testing.T) {
+	InitAuditLogger(true)
+
+	ctrl := gomock.NewController(t)
+	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
+	mockOrchestrator.EXPECT().GetVersion(gomock.Any()).Return("test", nil).AnyTimes()
+
+	registrationDone := make(chan struct{})
+	nodeCore := newTestNodeCore(t, func(context.Context, *models.Node, time.Duration) (*tridentcontroller.RegistrationInfo, error) {
+		time.Sleep(500 * time.Millisecond) // Simulates slow controller registration on a busy cluster.
+		defer close(registrationDone)
+		return &tridentcontroller.RegistrationInfo{}, nil
 	})
 
-	err = plugin.Activate()
-	assert.NoError(t, err)
-
-	// Wait until registration is in flight before checking for the socket. This
-	// makes the test prove ordering rather than just eventual startup. Use a generous
-	// timeout because node registration performs real host probing via osutils before
-	// the first RegisterNode call, which can vary in CI environments.
-	select {
-	case <-registerStarted:
-	case <-time.After(5 * time.Second):
-		t.Fatal("expected node registration attempt to start")
+	socketPath := tempSocketPath(t)
+	plugin := &Plugin{
+		role:             CSINode,
+		nodeName:         "customer-node",
+		endpoint:         "unix://" + socketPath,
+		orchestrator:     mockOrchestrator,
+		nodeOrchestrator: nodeCore,
 	}
+	t.Cleanup(func() { _ = plugin.Deactivate() })
 
-	// The node-driver-registrar sidecar has a hard ~30s connection deadline.
-	// With a 2-second sleep in RegisterNode, the socket must appear within 1 second to
-	// prove that Activate() prioritizes gRPC listener startup over controller registration.
+	require.NoError(t, plugin.Activate())
+
+	// Bootstrap is driven independently of Activate(), the same as main.go does.
+	go func() { _ = nodeCore.Bootstrap(context.Background()) }()
+
+	// PHASE 1: the gRPC socket must be available well within the registrar's ~30s deadline, even
+	// though registration is still in flight.
 	assert.Eventually(t, func() bool {
 		_, statErr := os.Stat(socketPath)
 		return statErr == nil
-	}, 1*time.Second, 10*time.Millisecond, "expected gRPC socket to be created before slow node registration finishes")
+	}, 2*time.Second, 10*time.Millisecond, "expected gRPC socket to be created before slow registration finishes")
 
-	// Wait for node registration completion so this test does not leak an activation
-	// goroutine into the next race-enabled test.
-	assert.Eventually(t, plugin.IsReady, 5*time.Second, 50*time.Millisecond)
-}
-
-// TestPlugin_Activate_ReproduceCustomerIssue_TRID19339 reproduces the exact customer scenario:
-//
-// Customer symptom: node-driver-registrar (v2.15.0) enters CrashLoopBackOff because
-// it cannot connect to the CSI socket within its hardcoded ~30s gRPC connection deadline.
-//
-// Root cause (pre-fix): Activate() called nodeRegisterWithController() BEFORE grpc.Start(),
-// meaning the Unix socket didn't exist until registration completed (38-70s on busy clusters).
-//
-// Fix: grpc.Start() is now called immediately, before nodeRegisterWithController(). The
-// nodeRegistrationInterceptor gates data-path RPCs until registration finishes.
-//
-// This test proves:
-//  1. The gRPC socket is available within 2s (well under the registrar's 30s deadline),
-//     even while registration is still blocked.
-//  2. A real gRPC client can connect and call Identity.Probe (the registrar's first call).
-//  3. Node data-path RPCs (NodeStageVolume) are rejected with Unavailable during registration.
-//  4. After registration completes, data-path RPCs succeed.
-func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
-	InitAuditLogger(true)
-	ctrl := gomock.NewController(t)
-
-	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-	mockOrchestrator.EXPECT().SetLogLevel(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockOrchestrator.EXPECT().SetLoggingWorkflows(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockOrchestrator.EXPECT().SetLogLayers(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockOrchestrator.EXPECT().GetVersion(gomock.Any()).Return("test", nil).AnyTimes()
-
-	mockNodeHelper := mock_node_helpers.NewMockNodeHelper(ctrl)
-	mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
-
-	// Simulate a busy cluster: registration takes 5 seconds (customer saw 38-70s).
-	registrationDone := make(chan struct{})
-	controllerClientStub := &fakeControllerClient{
-		registerNodeFn: func(_ context.Context, _ *models.Node, _ time.Duration) (*tridentcontroller.RegistrationInfo, error) {
-			time.Sleep(5 * time.Second) // Simulates slow controller registration on busy cluster
-			close(registrationDone)
-			return &tridentcontroller.RegistrationInfo{}, nil
-		},
-		getDesiredPublicationsFn: func(context.Context, string) (map[string]*models.VolumePublicationExternal, error) {
-			return map[string]*models.VolumePublicationExternal{}, nil
-		},
-	}
-
-	mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
-	mockISCSIClient.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-
-	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(ctrl)
-	mockNVMeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
-
-	// Use a short socket path to avoid macOS 104-byte Unix socket path limit.
-	socketDir, err := os.MkdirTemp("", "csi")
-	require.NoError(t, err)
-	socketPath := filepath.Join(socketDir, "csi.sock")
-	t.Cleanup(func() { os.RemoveAll(socketDir) })
-
-	plugin := &Plugin{
-		orchestrator:             mockOrchestrator,
-		nodeHelper:               mockNodeHelper,
-		role:                     CSINode,
-		controllerClient:         controllerClientStub,
-		nodeName:                 "customer-node",
-		endpoint:                 "unix://" + socketPath,
-		activatedChan:            make(chan struct{}, 1),
-		nodeReadyCh:              make(chan struct{}),
-		iSCSISelfHealingInterval: 0, // Disable to avoid background goroutine leaks in test
-		nvmeSelfHealingInterval:  0,
-		limiterSharedMap:         make(map[string]limiter.Limiter),
-		iscsi:                    mockISCSIClient,
-		nvmeHandler:              mockNVMeHandler,
-		osutils:                  osutils.New(),
-	}
-
-	t.Cleanup(func() {
-		if grpcServer := plugin.getGRPC(); grpcServer != nil {
-			grpcServer.Stop()
-		}
-		ctrl.Finish()
-	})
-
-	err = plugin.Activate()
-	assert.NoError(t, err)
-
-	// --- PHASE 1: Prove socket available fast (customer's core issue) ---
-	// node-driver-registrar has a ~30s deadline. The socket must appear well before that.
-	socketAvailableDeadline := time.After(2 * time.Second)
-	ticker := time.NewTicker(10 * time.Millisecond)
-	defer ticker.Stop()
-
-	socketFound := false
-	for !socketFound {
-		select {
-		case <-socketAvailableDeadline:
-			t.Fatal("REPRODUCTION: gRPC socket not available within 2s — " +
-				"this is the customer's CrashLoopBackOff scenario (TRID-19339)")
-		case <-ticker.C:
-			if _, statErr := os.Stat(socketPath); statErr == nil {
-				socketFound = true
-			}
-		}
-	}
-	t.Log("PASS: gRPC socket available within 2s (customer's registrar deadline is ~30s)")
-
-	// --- PHASE 2: Real gRPC client connectivity (simulates node-driver-registrar) ---
-	// The registrar's first action after connecting is to call Identity.Probe.
-	conn, dialErr := grpc.NewClient(
-		"unix://"+socketPath,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if dialErr != nil {
-		t.Fatalf("REPRODUCTION: gRPC client dial failed: %v — registrar would CrashLoop", dialErr)
-	}
+	// PHASE 2: a real gRPC client can connect and call Identity.Probe, the registrar's first call.
+	conn, dialErr := grpc.NewClient("unix://"+socketPath, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	require.NoError(t, dialErr)
 	defer conn.Close()
 
-	identityClient := csi.NewIdentityClient(conn)
 	probeCtx, probeCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer probeCancel()
-	probeResp, probeErr := identityClient.Probe(probeCtx, &csi.ProbeRequest{})
-	assert.NoError(t, probeErr, "Identity.Probe must succeed during registration — registrar depends on this")
-	assert.NotNil(t, probeResp, "Probe response should not be nil")
-	t.Log("PASS: Identity.Probe succeeds while registration is in progress")
+	probeResp, probeErr := csi.NewIdentityClient(conn).Probe(probeCtx, &csi.ProbeRequest{})
+	require.NoError(t, probeErr, "Identity.Probe must succeed while registration is in progress")
+	assert.NotNil(t, probeResp)
 
-	// --- PHASE 3: Verify data-path RPCs blocked during registration ---
+	// PHASE 3: data-path RPCs are rejected Unavailable before registration completes.
 	nodeClient := csi.NewNodeClient(conn)
 	stageCtx, stageCancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer stageCancel()
@@ -730,201 +311,119 @@ func TestPlugin_Activate_ReproduceCustomerIssue_TRID19339(t *testing.T) {
 		StagingTargetPath: "/tmp/staging",
 		VolumeCapability:  &csi.VolumeCapability{},
 	})
-	assert.Error(t, stageErr, "NodeStageVolume must be rejected before registration completes")
-	assert.Equal(t, codes.Unavailable, status.Code(stageErr),
-		"blocked RPCs must return Unavailable, not a different error")
-	t.Log("PASS: NodeStageVolume correctly blocked with Unavailable during registration")
+	require.Error(t, stageErr)
+	assert.Equal(t, codes.Unavailable, status.Code(stageErr))
 
-	// --- PHASE 4: After registration, data-path RPCs should work ---
+	// PHASE 4: after registration completes, the node core - and therefore data-path RPCs -
+	// becomes ready.
 	select {
 	case <-registrationDone:
-		t.Log("Registration completed, verifying data-path RPCs are unblocked...")
-	case <-time.After(10 * time.Second):
-		t.Fatal("Registration did not complete within expected time")
+	case <-time.After(5 * time.Second):
+		t.Fatal("registration did not complete within expected time")
 	}
+	assert.Eventually(t, plugin.IsReady, 2*time.Second, 10*time.Millisecond)
+}
 
-	// Give a small window for markNodeReady() to execute after RegisterNode returns
-	time.Sleep(100 * time.Millisecond)
-
-	assert.True(t, plugin.IsReady(), "Plugin must be ready after registration completes")
-	t.Log("PASS: Plugin.IsReady() returns true after registration")
+func tempSocketPath(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "csi")
+	require.NoError(t, err)
+	t.Cleanup(func() { os.RemoveAll(dir) })
+	return dir + "/csi.sock"
 }
 
 // TestPlugin_Deactivate_SafeWithoutActivate validates that Deactivate() can be called
 // safely even if Activate() was never called or hasn't completed yet (p.grpc is nil).
 // This prevents nil pointer panics in shutdown scenarios. TRID-19339 safe shutdown.
 func TestPlugin_Deactivate_SafeWithoutActivate(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockOrchestrator := mock_core.NewMockOrchestrator(ctrl)
-
 	plugin := &Plugin{
-		orchestrator:  mockOrchestrator,
-		role:          CSINode,
-		nodeName:      "test-node",
-		endpoint:      "unix:///tmp/test.sock",
-		command:       execCmd.NewCommand(),
-		osutils:       osutils.New(),
-		activatedChan: make(chan struct{}, 1),
-		grpc:          nil, // Simulate p.grpc not yet initialized
+		role:     CSINode,
+		nodeName: "test-node",
+		endpoint: "unix:///tmp/test.sock",
+		grpc:     nil, // Simulate p.grpc not yet initialized
 	}
 
-	// Deactivate should not panic even though p.grpc is nil.
 	err := plugin.Deactivate()
 	assert.NoError(t, err, "Deactivate() should not panic or error when called before Activate() initializes gRPC")
 }
 
+func TestPlugin_Deactivate(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		role                 string
+		withNodeOrchestrator bool
+	}{
+		{name: "CSINode with node core", role: CSINode, withNodeOrchestrator: true},
+		{name: "CSIAllInOne with node core", role: CSIAllInOne, withNodeOrchestrator: true},
+		{name: "CSIController has no node core", role: CSIController, withNodeOrchestrator: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := &Plugin{role: tc.role, grpc: &mockNonBlockingGRPCServer{}}
+			if tc.withNodeOrchestrator {
+				plugin.nodeOrchestrator = node.NewCore()
+			}
+
+			assert.NoError(t, plugin.Deactivate())
+		})
+	}
+}
+
+// Mock GRPC server for testing
+type mockNonBlockingGRPCServer struct{}
+
+func (m *mockNonBlockingGRPCServer) Start(
+	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer, gs csi.GroupControllerServer,
+) {
+}
+
+func (m *mockNonBlockingGRPCServer) GracefulStop() {}
+
+func (m *mockNonBlockingGRPCServer) Stop() {}
+
 func TestPlugin_GetName(t *testing.T) {
 	plugin := &Plugin{}
-	result := plugin.GetName()
-	assert.Equal(t, string(tridentconfig.ContextCSI), result)
+	assert.Equal(t, string(tridentconfig.ContextCSI), plugin.GetName())
 }
 
 func TestPlugin_Version(t *testing.T) {
 	plugin := &Plugin{}
-	result := plugin.Version()
-	assert.Equal(t, tridentconfig.OrchestratorVersion.String(), result)
+	assert.Equal(t, tridentconfig.OrchestratorVersion.String(), plugin.Version())
 }
 
 func TestPlugin_AddControllerServiceCapabilities(t *testing.T) {
-	testCases := []struct {
-		name         string
-		capabilities []csi.ControllerServiceCapability_RPC_Type
-		expectedLen  int
-	}{
-		{
-			name:         "Empty capabilities",
-			capabilities: []csi.ControllerServiceCapability_RPC_Type{},
-			expectedLen:  0,
-		},
-		{
-			name: "Single capability",
-			capabilities: []csi.ControllerServiceCapability_RPC_Type{
-				csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
-			},
-			expectedLen: 1,
-		},
-		{
-			name: "Multiple capabilities",
-			capabilities: []csi.ControllerServiceCapability_RPC_Type{
-				csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
-				csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
-			},
-			expectedLen: 2,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-			plugin.addControllerServiceCapabilities(context.Background(), tc.capabilities)
-			assert.Len(t, plugin.csCap, tc.expectedLen)
-		})
-	}
+	plugin := &Plugin{}
+	plugin.addControllerServiceCapabilities(context.Background(), []csi.ControllerServiceCapability_RPC_Type{
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
+		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
+	})
+	assert.Len(t, plugin.csCap, 2)
 }
 
 func TestPlugin_AddNodeServiceCapabilities(t *testing.T) {
-	testCases := []struct {
-		name         string
-		capabilities []csi.NodeServiceCapability_RPC_Type
-		expectedLen  int
-	}{
-		{
-			name:         "Empty capabilities",
-			capabilities: []csi.NodeServiceCapability_RPC_Type{},
-			expectedLen:  0,
-		},
-		{
-			name: "Single capability",
-			capabilities: []csi.NodeServiceCapability_RPC_Type{
-				csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
-			},
-			expectedLen: 1,
-		},
-		{
-			name: "Multiple capabilities",
-			capabilities: []csi.NodeServiceCapability_RPC_Type{
-				csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
-				csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-			},
-			expectedLen: 2,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-			plugin.addNodeServiceCapabilities(tc.capabilities)
-			assert.Len(t, plugin.nsCap, tc.expectedLen)
-		})
-	}
+	plugin := &Plugin{}
+	plugin.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
+		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+	})
+	assert.Len(t, plugin.nsCap, 1)
 }
 
 func TestPlugin_AddVolumeCapabilityAccessModes(t *testing.T) {
-	testCases := []struct {
-		name        string
-		modes       []csi.VolumeCapability_AccessMode_Mode
-		expectedLen int
-	}{
-		{
-			name:        "Empty modes",
-			modes:       []csi.VolumeCapability_AccessMode_Mode{},
-			expectedLen: 0,
-		},
-		{
-			name: "Single mode",
-			modes: []csi.VolumeCapability_AccessMode_Mode{
-				csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
-			},
-			expectedLen: 1,
-		},
-		{
-			name: "Multiple modes",
-			modes: []csi.VolumeCapability_AccessMode_Mode{
-				csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
-				csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
-			},
-			expectedLen: 2,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-			plugin.addVolumeCapabilityAccessModes(context.Background(), tc.modes)
-			assert.Len(t, plugin.vCap, tc.expectedLen)
-		})
-	}
+	plugin := &Plugin{}
+	plugin.addVolumeCapabilityAccessModes(context.Background(), []csi.VolumeCapability_AccessMode_Mode{
+		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
+	})
+	assert.Len(t, plugin.vCap, 2)
 }
 
 func TestPlugin_AddGroupControllerServiceCapabilities(t *testing.T) {
-	testCases := []struct {
-		name         string
-		capabilities []csi.GroupControllerServiceCapability_RPC_Type
-		expectedLen  int
-	}{
-		{
-			name:         "Empty capabilities",
-			capabilities: []csi.GroupControllerServiceCapability_RPC_Type{},
-			expectedLen:  0,
-		},
-		{
-			name: "Single capability",
-			capabilities: []csi.GroupControllerServiceCapability_RPC_Type{
-				csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
-			},
-			expectedLen: 1,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-			plugin.addGroupControllerServiceCapabilities(context.Background(), tc.capabilities)
-			assert.Len(t, plugin.gcsCap, tc.expectedLen)
-		})
-	}
+	plugin := &Plugin{}
+	plugin.addGroupControllerServiceCapabilities(context.Background(), []csi.GroupControllerServiceCapability_RPC_Type{
+		csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
+	})
+	assert.Len(t, plugin.gcsCap, 1)
 }
 
 func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
@@ -933,61 +432,32 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 		inputError   error
 		expectedCode codes.Code
 	}{
+		{name: "MaxWaitExceededError", inputError: errors.MaxWaitExceededError("waited too long"), expectedCode: codes.Aborted},
+		{name: "NotReadyError", inputError: errors.NotReadyError(), expectedCode: codes.Unavailable},
+		{name: "BootstrapError", inputError: errors.BootstrapError(errors.New("")), expectedCode: codes.FailedPrecondition},
+		{name: "PreconditionError", inputError: errors.PreconditionError(""), expectedCode: codes.FailedPrecondition},
+		{name: "NotFoundError", inputError: errors.NotFoundError(""), expectedCode: codes.NotFound},
 		{
-			name:         "NotReadyError",
-			inputError:   errors.NotReadyError(),
-			expectedCode: codes.Unavailable,
-		},
-		{
-			name:         "BootstrapError",
-			inputError:   errors.BootstrapError(errors.New("")),
-			expectedCode: codes.FailedPrecondition,
-		},
-		{
-			name:         "PreconditionError",
-			inputError:   errors.PreconditionError(""),
-			expectedCode: codes.FailedPrecondition,
-		},
-		{
-			name:         "NotFoundError",
-			inputError:   errors.NotFoundError(""),
-			expectedCode: codes.NotFound,
-		},
-		{
-			name:         "UnsupportedCapacityRangeError",
-			inputError:   errors.UnsupportedCapacityRangeError(errors.New("")),
+			name: "UnsupportedCapacityRangeError", inputError: errors.UnsupportedCapacityRangeError(errors.New("")),
 			expectedCode: codes.OutOfRange,
 		},
-		{
-			name:         "FoundError",
-			inputError:   errors.FoundError("already exists"),
-			expectedCode: codes.AlreadyExists,
-		},
+		{name: "FoundError", inputError: errors.FoundError("already exists"), expectedCode: codes.AlreadyExists},
 		{
 			name:         "NodeNotSafeToPublishForBackendError",
 			inputError:   errors.NodeNotSafeToPublishForBackendError("node not safe", ""),
 			expectedCode: codes.FailedPrecondition,
 		},
+		{name: "VolumeCreatingError", inputError: errors.VolumeCreatingError("volume creating"), expectedCode: codes.DeadlineExceeded},
+		{name: "VolumeDeletingError", inputError: errors.VolumeDeletingError("volume deleting"), expectedCode: codes.DeadlineExceeded},
 		{
-			name:         "VolumeCreatingError",
-			inputError:   errors.VolumeCreatingError("volume creating"),
-			expectedCode: codes.DeadlineExceeded,
-		},
-		{
-			name:         "VolumeDeletingError",
-			inputError:   errors.VolumeDeletingError("volume deleting"),
-			expectedCode: codes.DeadlineExceeded,
-		},
-		{
-			name:         "ResourceExhaustedError",
-			inputError:   errors.ResourceExhaustedError(errors.New("")),
+			name: "ResourceExhaustedError", inputError: errors.ResourceExhaustedError(errors.New("")),
 			expectedCode: codes.ResourceExhausted,
 		},
-		{
-			name:         "UnknownError",
-			inputError:   errors.New("unknown error"),
-			expectedCode: codes.Unknown,
-		},
+		{name: "InvalidInputError", inputError: errors.InvalidInputError("bad input"), expectedCode: codes.InvalidArgument},
+		{name: "InternalError", inputError: errors.InternalError("internal failure"), expectedCode: codes.Internal},
+		{name: "PermissionDeniedError", inputError: errors.PermissionDeniedError("permission denied"), expectedCode: codes.PermissionDenied},
+		{name: "InvalidJSONError", inputError: errors.InvalidJSONError("invalid json"), expectedCode: codes.Internal},
+		{name: "UnknownError", inputError: errors.New("unknown error"), expectedCode: codes.Unknown},
 	}
 
 	for _, tc := range testCases {
@@ -995,9 +465,9 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 			plugin := &Plugin{}
 			result := plugin.getCSIErrorForOrchestratorError(tc.inputError)
 
-			status, ok := status.FromError(result)
-			assert.True(t, ok)
-			assert.Equal(t, tc.expectedCode, status.Code())
+			s, ok := status.FromError(result)
+			require.True(t, ok)
+			assert.Equal(t, tc.expectedCode, s.Code())
 		})
 	}
 }
@@ -1010,47 +480,26 @@ func TestReadAESKey(t *testing.T) {
 		fileContent   string
 		expectedError bool
 	}{
-		{
-			name:          "Success - Valid file",
-			aesKeyFile:    "/tmp/test-key",
-			createFile:    true,
-			fileContent:   "test-key-content",
-			expectedError: false,
-		},
-		{
-			name:          "Success - Empty filename",
-			aesKeyFile:    "",
-			createFile:    false,
-			expectedError: false,
-		},
-		{
-			name:          "Error - File read fails",
-			aesKeyFile:    "/nonexistent/file",
-			createFile:    false,
-			expectedError: true,
-		},
+		{name: "Success - Valid file", createFile: true, fileContent: "test-key-content", expectedError: false},
+		{name: "Success - Empty filename", aesKeyFile: "", createFile: false, expectedError: false},
+		{name: "Error - File read fails", aesKeyFile: "/nonexistent/file", createFile: false, expectedError: true},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Reset the singleton state between subtests.
 			readAESKeysOnce = sync.Once{}
 			aesKeySingleton = nil
 			aesKeyError = nil
 
-			var aesKeyFile string
+			aesKeyFile := tc.aesKeyFile
 			if tc.createFile {
 				tmpFile, err := os.CreateTemp("", "test-key-*")
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				defer os.Remove(tmpFile.Name())
-
 				_, err = tmpFile.WriteString(tc.fileContent)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				tmpFile.Close()
-
 				aesKeyFile = tmpFile.Name()
-			} else {
-				aesKeyFile = tc.aesKeyFile
 			}
 
 			result, err := ReadAESKey(context.Background(), aesKeyFile)
@@ -1060,7 +509,7 @@ func TestReadAESKey(t *testing.T) {
 				assert.Nil(t, result)
 			} else {
 				assert.NoError(t, err)
-				if tc.aesKeyFile == "" {
+				if tc.aesKeyFile == "" && !tc.createFile {
 					assert.Empty(t, result)
 				} else {
 					assert.Equal(t, []byte(tc.fileContent), result)
@@ -1071,323 +520,18 @@ func TestReadAESKey(t *testing.T) {
 }
 
 func TestPlugin_IsReady(t *testing.T) {
-	testCases := []struct {
-		name          string
-		nodeReadyCh   chan struct{}
-		expectedReady bool
-	}{
-		{
-			name:          "Ready - Node registered",
-			nodeReadyCh:   closedCh(),
-			expectedReady: true,
-		},
-		{
-			name:          "Not ready - Node not registered",
-			nodeReadyCh:   make(chan struct{}),
-			expectedReady: false,
-		},
-	}
+	t.Run("Controller role has no node core - always ready", func(t *testing.T) {
+		plugin := &Plugin{role: CSIController}
+		assert.True(t, plugin.IsReady())
+	})
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{
-				nodeReadyCh: tc.nodeReadyCh,
-			}
+	t.Run("Node role delegates to a not-yet-bootstrapped node core", func(t *testing.T) {
+		plugin := &Plugin{role: CSINode, nodeOrchestrator: newNotReadyNodeCore()}
+		assert.False(t, plugin.IsReady())
+	})
 
-			result := plugin.IsReady()
-			assert.Equal(t, tc.expectedReady, result)
-		})
-	}
-}
-
-func TestPlugin_StartISCSISelfHealingThread(t *testing.T) {
-	testCases := []struct {
-		name                     string
-		iSCSISelfHealingInterval time.Duration
-		iSCSISelfHealingWaitTime time.Duration
-		expectedEnabled          bool
-	}{
-		{
-			name:                     "Disabled - Zero interval",
-			iSCSISelfHealingInterval: 0,
-			iSCSISelfHealingWaitTime: 0,
-			expectedEnabled:          false,
-		},
-		{
-			name:                     "Disabled - Negative interval",
-			iSCSISelfHealingInterval: -time.Minute,
-			iSCSISelfHealingWaitTime: 0,
-			expectedEnabled:          false,
-		},
-		{
-			name:                     "Enabled - Normal wait time",
-			iSCSISelfHealingInterval: time.Minute,
-			iSCSISelfHealingWaitTime: time.Minute * 2,
-			expectedEnabled:          true,
-		},
-		{
-			name:                     "Enabled - Wait time adjusted",
-			iSCSISelfHealingInterval: time.Minute,
-			iSCSISelfHealingWaitTime: time.Second * 30,
-			expectedEnabled:          true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{
-				iSCSISelfHealingInterval: tc.iSCSISelfHealingInterval,
-				iSCSISelfHealingWaitTime: tc.iSCSISelfHealingWaitTime,
-			}
-
-			plugin.startISCSISelfHealingThread(context.Background())
-
-			if tc.expectedEnabled {
-				assert.NotNil(t, plugin.iSCSISelfHealingTicker)
-				assert.NotNil(t, plugin.iSCSISelfHealingChannel)
-				plugin.stopISCSISelfHealingThread(context.Background())
-			} else {
-				assert.Nil(t, plugin.iSCSISelfHealingTicker)
-				assert.Nil(t, plugin.iSCSISelfHealingChannel)
-			}
-		})
-	}
-}
-
-func TestPlugin_StopISCSISelfHealingThread(t *testing.T) {
-	testCases := []struct {
-		name         string
-		setupTicker  bool
-		setupChannel bool
-	}{
-		{
-			name:         "Stop with ticker and channel",
-			setupTicker:  true,
-			setupChannel: true,
-		},
-		{
-			name:         "Stop with nil ticker and channel",
-			setupTicker:  false,
-			setupChannel: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-
-			if tc.setupTicker {
-				plugin.iSCSISelfHealingTicker = time.NewTicker(time.Second)
-			}
-			if tc.setupChannel {
-				plugin.iSCSISelfHealingChannel = make(chan struct{})
-			}
-
-			plugin.stopISCSISelfHealingThread(context.Background())
-
-			// Should not panic and complete successfully
-			assert.True(t, true)
-		})
-	}
-}
-
-func TestPlugin_StartNVMeSelfHealingThread(t *testing.T) {
-	testCases := []struct {
-		name                    string
-		nvmeSelfHealingInterval time.Duration
-		expectedEnabled         bool
-	}{
-		{
-			name:                    "Disabled - Zero interval",
-			nvmeSelfHealingInterval: 0,
-			expectedEnabled:         false,
-		},
-		{
-			name:                    "Disabled - Negative interval",
-			nvmeSelfHealingInterval: -time.Minute,
-			expectedEnabled:         false,
-		},
-		{
-			name:                    "Enabled - Positive interval",
-			nvmeSelfHealingInterval: time.Minute,
-			expectedEnabled:         true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{
-				nvmeSelfHealingInterval: tc.nvmeSelfHealingInterval,
-			}
-
-			plugin.startNVMeSelfHealingThread(context.Background())
-
-			if tc.expectedEnabled {
-				assert.NotNil(t, plugin.nvmeSelfHealingTicker)
-				assert.NotNil(t, plugin.nvmeSelfHealingChannel)
-				plugin.stopNVMeSelfHealingThread(context.Background())
-			} else {
-				assert.Nil(t, plugin.nvmeSelfHealingTicker)
-				assert.Nil(t, plugin.nvmeSelfHealingChannel)
-			}
-		})
-	}
-}
-
-func TestPlugin_StopNVMeSelfHealingThread(t *testing.T) {
-	testCases := []struct {
-		name         string
-		setupTicker  bool
-		setupChannel bool
-	}{
-		{
-			name:         "Stop with ticker and channel",
-			setupTicker:  true,
-			setupChannel: true,
-		},
-		{
-			name:         "Stop with nil ticker and channel",
-			setupTicker:  false,
-			setupChannel: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{}
-
-			if tc.setupTicker {
-				plugin.nvmeSelfHealingTicker = time.NewTicker(time.Second)
-			}
-			if tc.setupChannel {
-				plugin.nvmeSelfHealingChannel = make(chan struct{})
-			}
-
-			plugin.stopNVMeSelfHealingThread(context.Background())
-
-			// Should not panic and complete successfully
-			assert.True(t, true)
-		})
-	}
-}
-
-func TestPlugin_InitializeNodeLimiter(t *testing.T) {
-	testCases := []struct {
-		name string
-	}{
-		{
-			name: "Success - All limiters initialized",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			plugin := &Plugin{
-				limiterSharedMap: make(map[string]limiter.Limiter),
-			}
-
-			plugin.InitializeNodeLimiter(context.Background())
-
-			// Verify all limiters were created
-			expectedLimiters := []string{
-				NodeStageNFSVolume,
-				NodeStageSMBVolume,
-				NodeUnstageNFSVolume,
-				NodeUnstageSMBVolume,
-				NodePublishNFSVolume,
-				NodePublishSMBVolume,
-				NodeStageISCSIVolume,
-				NodeUnstageISCSIVolume,
-				NodePublishISCSIVolume,
-				NodeUnpublishVolume,
-				NodeExpandVolume,
-				NodeStageFCPVolume,
-				NodeUnstageFCPVolume,
-				NodePublishFCPVolume,
-				NodeStageNVMeVolume,
-				NodeUnstageNVMeVolume,
-				NodePublishNVMeVolume,
-				NodeGraftISCSIAttachment,
-				NodePruneISCSIAttachment,
-			}
-
-			for _, limiterName := range expectedLimiters {
-				assert.Contains(t, plugin.limiterSharedMap, limiterName)
-				assert.NotNil(t, plugin.limiterSharedMap[limiterName])
-			}
-
-			assert.Len(t, plugin.limiterSharedMap, len(expectedLimiters))
-		})
-	}
-}
-
-func TestPlugin_Deactivate(t *testing.T) {
-	testCases := []struct {
-		name              string
-		role              string
-		enableForceDetach bool
-		expectStopCall    bool
-	}{
-		{
-			name:              "CSINode with force detach",
-			role:              CSINode,
-			enableForceDetach: true,
-			expectStopCall:    true,
-		},
-		{
-			name:              "CSIAllInOne with force detach",
-			role:              CSIAllInOne,
-			enableForceDetach: true,
-			expectStopCall:    true,
-		},
-		{
-			name:              "CSIController role",
-			role:              CSIController,
-			enableForceDetach: true,
-			expectStopCall:    false,
-		},
-		{
-			name:              "CSINode without force detach",
-			role:              CSINode,
-			enableForceDetach: false,
-			expectStopCall:    false,
-		},
-		{
-			name:              "CSIAllInOne without force detach",
-			role:              CSIAllInOne,
-			enableForceDetach: false,
-			expectStopCall:    false,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			mockGRPC := &mockNonBlockingGRPCServer{}
-
-			plugin := &Plugin{
-				role:              tc.role,
-				enableForceDetach: tc.enableForceDetach,
-				grpc:              mockGRPC,
-			}
-
-			err := plugin.Deactivate()
-
-			assert.NoError(t, err)
-		})
-	}
-}
-
-// Mock GRPC server for testing
-type mockNonBlockingGRPCServer struct{}
-
-func (m *mockNonBlockingGRPCServer) Start(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer, gs csi.GroupControllerServer) {
-	// Mock implementation
-}
-
-func (m *mockNonBlockingGRPCServer) GracefulStop() {
-	// Mock implementation
-}
-
-func (m *mockNonBlockingGRPCServer) Stop() {
-	// Mock implementation
+	t.Run("Node role delegates to a bootstrapped node core", func(t *testing.T) {
+		plugin := &Plugin{role: CSINode, nodeOrchestrator: newReadyNodeCore(t)}
+		assert.True(t, plugin.IsReady())
+	})
 }

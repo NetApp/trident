@@ -261,9 +261,7 @@ func TestAddPublishedPath_FailsToWriteTrackingInfo(t *testing.T) {
 	volumeID := "1234567890"
 	pathToAdd := "path/to/remove"
 	volTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo:      models.VolumePublishInfo{},
-		VolumeTrackingInfoPath: "",
-		StagingTargetPath:      "",
+		VolumePublishInfo: models.VolumePublishInfo{},
 		PublishedPaths: map[string]struct{}{
 			pathToAdd: {},
 		},
@@ -349,9 +347,7 @@ func TestRemovePublishedPath_FailsToWriteTrackingInfo(t *testing.T) {
 	volumeID := "1234567890"
 	pathToRemove := "path/to/remove"
 	volTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo:      models.VolumePublishInfo{},
-		VolumeTrackingInfoPath: "",
-		StagingTargetPath:      "",
+		VolumePublishInfo: models.VolumePublishInfo{},
 		PublishedPaths: map[string]struct{}{
 			pathToRemove: {},
 		},
@@ -387,9 +383,7 @@ func TestRemovePublishedPath_Succeeds(t *testing.T) {
 	volumeID := "1234567890"
 	pathToRemove := "path/to/remove"
 	volTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo:      models.VolumePublishInfo{},
-		VolumeTrackingInfoPath: "",
-		StagingTargetPath:      "",
+		VolumePublishInfo: models.VolumePublishInfo{},
 		PublishedPaths: map[string]struct{}{
 			pathToRemove: {},
 		},

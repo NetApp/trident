@@ -102,7 +102,7 @@ func TestWriteTrackingInfo(t *testing.T) {
 	fName := volId + ".json"
 	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.FilesystemType = "ext4"
-	trackInfo.StagingTargetPath = "."
+	trackInfo.GlobalMount = "."
 	_, err := osFs.Create("tmp-" + fName)
 	assert.NoError(t, err, "expected a test file to be created")
 
@@ -134,7 +134,7 @@ func TestReadTrackingInfo(t *testing.T) {
 	fName := volId + ".json"
 	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.FilesystemType = "ext4"
-	trackInfo.StagingTargetPath = "."
+	trackInfo.GlobalMount = "."
 	fsType := "ext4"
 	emptyTrackInfo := &models.VolumeTrackingInfo{}
 
@@ -197,9 +197,10 @@ func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	volumeTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo: models.VolumePublishInfo{},
-		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
-			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		VolumePublishInfo: models.VolumePublishInfo{
+			GlobalMount: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		},
 		PublishedPaths: map[string]struct{}{
 			"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
 				volumeOne + "/mount": {},
@@ -244,9 +245,10 @@ func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing
 	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	volumeTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo: models.VolumePublishInfo{},
-		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
-			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		VolumePublishInfo: models.VolumePublishInfo{
+			GlobalMount: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		},
 		PublishedPaths: map[string]struct{}{
 			"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
 				volumeOne + "/mount": {},
@@ -295,6 +297,91 @@ func TestDeleteTrackingInfo(t *testing.T) {
 	assert.True(t, errors.IsInvalidJSONError(err), "expected the error we threw")
 }
 
+func TestStorageProtocolFromPublishInfo(t *testing.T) {
+	testCases := []struct {
+		name         string
+		buildInfo    func() *models.VolumePublishInfo
+		expectedProt models.StorageProtocol
+	}{
+		{
+			name: "NFS",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.NfsServerIP = "1.1.1.1"
+				return pi
+			},
+			expectedProt: models.NFS,
+		},
+		{
+			name: "SMB",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.SMBPath = "\\\\server\\share"
+				return pi
+			},
+			expectedProt: models.SMB,
+		},
+		{
+			name: "ISCSI",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.IscsiTargetIQN = "iqn.test"
+				return pi
+			},
+			expectedProt: models.ISCSI,
+		},
+		{
+			name: "NVMe",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.NVMeSubsystemNQN = "nqn.test"
+				return pi
+			},
+			expectedProt: models.NVMe,
+		},
+		{
+			name: "FCP",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.FCTargetWWNN = "wwnn.test"
+				return pi
+			},
+			expectedProt: models.FCP,
+		},
+		{
+			name:         "no signals set is undeterminable",
+			buildInfo:    func() *models.VolumePublishInfo { return &models.VolumePublishInfo{} },
+			expectedProt: "",
+		},
+		{
+			name: "ambiguous NFS and NVMe signals is undeterminable",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.NfsServerIP = "1.1.1.1"
+				pi.NVMeSubsystemNQN = "nqn.test"
+				return pi
+			},
+			expectedProt: "",
+		},
+		{
+			name: "ambiguous ISCSI and FCP signals is undeterminable",
+			buildInfo: func() *models.VolumePublishInfo {
+				pi := &models.VolumePublishInfo{}
+				pi.IscsiTargetIQN = "iqn.test"
+				pi.FCTargetWWNN = "wwnn.test"
+				return pi
+			},
+			expectedProt: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expectedProt, storageProtocolFromPublishInfo(tc.buildInfo()))
+		})
+	}
+}
+
 func TestUpgradeVolumeTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
@@ -309,7 +396,7 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 
 	stagePath := "/foo"
 	trackInfoAndPath := models.VolumeTrackingInfo{}
-	trackInfoAndPath.StagingTargetPath = stagePath
+	trackInfoAndPath.GlobalMount = stagePath
 	pubInfoNfsIp := models.VolumePublishInfo{}
 	pubInfoNfsIp.NfsServerIP = "1.1.1.1"
 	volName := "pvc-123"
@@ -382,7 +469,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) 
 	basePubInfo.FilesystemType = "somefs"
 
 	trackInfoAndPath := models.VolumeTrackingInfo{}
-	trackInfoAndPath.StagingTargetPath = stagePath
+	trackInfoAndPath.GlobalMount = stagePath
 
 	volName := "pvc-123"
 	fName := volName + ".json"
@@ -472,7 +559,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 	basePubInfo.FilesystemType = "somefs"
 
 	trackInfoAndPath := models.VolumeTrackingInfo{}
-	trackInfoAndPath.StagingTargetPath = stagePath
+	trackInfoAndPath.GlobalMount = stagePath
 	trackInfoAndPath.PublishedPaths = map[string]struct{}{
 		"path1": {},
 		"path2": {},
@@ -626,7 +713,7 @@ func TestValidateTrackingFile(t *testing.T) {
 	fName := volName + ".json"
 	fsType := "ext4"
 	trackInfo := &models.VolumeTrackingInfo{}
-	trackInfo.StagingTargetPath = stagePath
+	trackInfo.GlobalMount = stagePath
 	trackInfo.FilesystemType = fsType
 	trackInfo.IscsiTargetIQN = "iqn"
 	trackInfo.SANType = sa.ISCSI

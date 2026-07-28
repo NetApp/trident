@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -21,11 +21,14 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+
+	"github.com/netapp/trident/core/node"
+
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/autogrow"
 	crdtypes "github.com/netapp/trident/frontend/crd/types"
-	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -78,7 +81,8 @@ func Logx(ctx context.Context) LogEntry {
 
 // TridentNodeCrdController is the controller implementation for Trident's Node CRD resources handling
 type TridentNodeCrdController struct {
-	plugin   *csi.Plugin
+	orchestrator node.Orchestrator
+
 	nodeName string
 
 	// kubeClientset is a standard kubernetes clientset
@@ -136,7 +140,10 @@ type TridentNodeCrdController struct {
 
 // NewTridentNodeCrdController returns a new Trident Node CRD controller frontend
 func NewTridentNodeCrdController(
-	masterURL, kubeConfigPath, nodeName string, plugin *csi.Plugin, autogrowPeriod time.Duration,
+	masterURL, kubeConfigPath, nodeName string,
+	orchestrator node.Orchestrator,
+	nodeHelper nodehelpers.NodeHelper,
+	autogrowPeriod time.Duration,
 ) (*TridentNodeCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCRDControllerCreate, LogLayerCRDFrontend)
 
@@ -147,14 +154,20 @@ func NewTridentNodeCrdController(
 		return nil, err
 	}
 
-	return newTridentNodeCrdController(clients.Namespace, clients.KubeClient, clients.TridentClient,
-		nodeName, plugin, autogrowPeriod)
+	return newTridentNodeCrdController(
+		clients.Namespace, clients.KubeClient, clients.TridentClient, nodeName, orchestrator, nodeHelper, autogrowPeriod,
+	)
 }
 
 // newTridentNodeCrdController returns a new Trident Node CRD controller frontend instance
 func newTridentNodeCrdController(
-	tridentNamespace string, kubeClientset kubernetes.Interface,
-	crdClientset tridentv1clientset.Interface, nodeName string, plugin *csi.Plugin, autogrowPeriod time.Duration,
+	tridentNamespace string,
+	kubeClientset kubernetes.Interface,
+	crdClientset tridentv1clientset.Interface,
+	nodeName string,
+	orchestrator node.Orchestrator,
+	nodeHelper nodehelpers.NodeHelper,
+	autogrowPeriod time.Duration,
 ) (*TridentNodeCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
@@ -172,8 +185,8 @@ func newTridentNodeCrdController(
 	if crdClientset == nil {
 		return nil, errors.New("crdClientset cannot be nil")
 	}
-	if plugin == nil {
-		return nil, errors.New("plugin cannot be nil")
+	if orchestrator == nil {
+		return nil, errors.New("orchestrator cannot be nil")
 	}
 	if nodeName == "" {
 		return nil, errors.New("nodeName cannot be empty")
@@ -286,9 +299,8 @@ func newTridentNodeCrdController(
 	Logx(ctx).Debug("Creating Autogrow orchestrator")
 
 	// Extract NodeHelper from the CSI plugin
-	nodeHelper := plugin.GetNodeHelper()
 	if nodeHelper == nil {
-		return nil, errors.New("nodeHelper from plugin cannot be nil")
+		return nil, errors.New("nodeHelper cannot be nil")
 	}
 
 	// Create the Autogrow orchestrator with all dependencies
@@ -316,8 +328,8 @@ func newTridentNodeCrdController(
 	// ========================================
 
 	controller := &TridentNodeCrdController{
-		plugin:   plugin,
-		nodeName: nodeName,
+		orchestrator: orchestrator,
+		nodeName:     nodeName,
 
 		// Kubernetes clients
 		kubeClientset: kubeClientset,
@@ -409,11 +421,6 @@ func (c *TridentNodeCrdController) Activate() error {
 	Log().Debug(">>>> crd_controller.Activate()")
 	defer Log().Debug("<<<< crd_controller.Activate()")
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
-	// Block until the plugin is ready.
-	// This will only err if the plugin fails to activate.
-	if err := c.plugin.WaitForActivation(ctx); err != nil {
-		return err
-	}
 
 	Logx(ctx).WithFields(LogFields{
 		"nodeName": c.nodeName,

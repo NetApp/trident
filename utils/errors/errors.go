@@ -805,6 +805,86 @@ func IsInvalidInputError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// internalError
+// ///////////////////////////////////////////////////////////////////////////
+
+type internalError struct {
+	message string
+	inner   error
+}
+
+func (e *internalError) Error() string {
+	if e.inner != nil {
+		return fmt.Sprintf("%s: %v", e.message, e.inner)
+	}
+	return e.message
+}
+
+func (e *internalError) Unwrap() error { return e.inner }
+
+func InternalError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &internalError{message: message}
+	}
+	return &internalError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithInternalError(err error, message string, a ...any) error {
+	if len(a) == 0 {
+		return &internalError{message: message, inner: err}
+	}
+	return &internalError{message: fmt.Sprintf(message, a...), inner: err}
+}
+
+func IsInternalError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *internalError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// permissionDeniedError
+// ///////////////////////////////////////////////////////////////////////////
+
+type permissionDeniedError struct {
+	message string
+	inner   error
+}
+
+func (e *permissionDeniedError) Error() string {
+	if e.inner != nil {
+		return fmt.Sprintf("%s: %v", e.message, e.inner)
+	}
+	return e.message
+}
+
+func (e *permissionDeniedError) Unwrap() error { return e.inner }
+
+func PermissionDeniedError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &permissionDeniedError{message: message}
+	}
+	return &permissionDeniedError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithPermissionDeniedError(err error, message string, a ...any) error {
+	if len(a) == 0 {
+		return &permissionDeniedError{message: message, inner: err}
+	}
+	return &permissionDeniedError{message: fmt.Sprintf(message, a...), inner: err}
+}
+
+func IsPermissionDeniedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *permissionDeniedError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // mismatchedStorageClassError
 // ///////////////////////////////////////////////////////////////////////////
 

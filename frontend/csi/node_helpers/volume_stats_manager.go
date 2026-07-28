@@ -77,7 +77,7 @@ func (v *volumeStatsManager) IsRawBlockVolume(trackingInfo *models.VolumeTrackin
 	isRawBlock := trackingInfo.VolumePublishInfo.FilesystemType == filesystem.Raw
 
 	fields := LogFields{
-		"stagingTargetPath": trackingInfo.StagingTargetPath,
+		"stagingTargetPath": trackingInfo.GlobalMount,
 		"devicePath":        trackingInfo.VolumePublishInfo.DevicePath,
 		"sanType":           trackingInfo.VolumePublishInfo.SANType,
 		"filesystemType":    trackingInfo.VolumePublishInfo.FilesystemType,
@@ -334,7 +334,7 @@ func (v *volumeStatsManager) getVolumePathFromTrackingInfo(trackingInfo *models.
 	Logc(ctx).WithFields(LogFields{
 		"publishedPathsCount": len(trackingInfo.PublishedPaths),
 		"publishedPaths":      publishedPathsList,
-		"stagingTargetPath":   trackingInfo.StagingTargetPath,
+		"stagingTargetPath":   trackingInfo.GlobalMount,
 	}).Debug("Volume paths in tracking info.")
 
 	// Use published path if available, otherwise fall back to staging target path
@@ -344,6 +344,6 @@ func (v *volumeStatsManager) getVolumePathFromTrackingInfo(trackingInfo *models.
 	}
 
 	// Fallback to staging target path
-	Logc(ctx).WithField("stagingTargetPath", trackingInfo.StagingTargetPath).Debug("Using staging target path as volume path.")
-	return trackingInfo.StagingTargetPath
+	Logc(ctx).WithField("stagingTargetPath", trackingInfo.GlobalMount).Debug("Using staging target path as volume path.")
+	return trackingInfo.GlobalMount
 }

@@ -26,6 +26,7 @@ type VolumeAccessInfo struct {
 	NfsAccessInfo
 	SMBAccessInfo
 	FCPAccessInfo
+	SharedTarget       bool   `json:"sharedTarget,omitempty"`
 	MountOptions       string `json:"mountOptions,omitempty"`
 	FormatOptions      string `json:"formatOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
@@ -404,6 +405,8 @@ type NfsAccessInfo struct {
 type SMBAccessInfo struct {
 	SMBServer string `json:"smbServer,omitempty"`
 	SMBPath   string `json:"smbPath,omitempty"`
+	SMBADUser string `json:"-"`
+	SMBADPass string `json:"-"`
 }
 
 type NVMeAccessInfo struct {
@@ -418,6 +421,16 @@ type DFInfo struct {
 	Target string
 	Source string
 }
+
+type StorageProtocol string
+
+const (
+	ISCSI StorageProtocol = "iscsi"
+	NVMe  StorageProtocol = "nvme"
+	FCP   StorageProtocol = "fcp"
+	SMB   StorageProtocol = "smb"
+	NFS   StorageProtocol = "nfs"
+)
 
 type VolumePublishInfo struct {
 	Localhost         bool                `json:"localhost,omitempty"`
@@ -438,12 +451,16 @@ type VolumePublishInfo struct {
 	LUKSEncryption    string              `json:"LUKSEncryption,omitempty"`
 	SANType           string              `json:"SANType,omitempty"`
 	VolumeMode        string              `json:"volumeMode,omitempty"`
+	GlobalMount       string              `json:"stagingTargetPath"`
+	InternalID        string              `json:"internalID,omitempty"`
+	StorageProtocol   StorageProtocol     `json:"storageProtocol,omitempty"`
+	StorageClass      string              `json:"storageClass,omitempty"`
+	Secrets           map[string]string   `json:"-"` // Secrets must never be persisted.
 	// HostNVMeNamespaceUUIDs contains namespace UUIDs that remain published
 	// to the host where this volume is mounted. Used by NVMe drivers to
 	// determine if host should be removed from shared subsystems.
 	HostNVMeNamespaceUUIDs []string `json:"-"`
 	Pool                   string   `json:"pool,omitempty"`
-	StorageClass           string   `json:"storageClass,omitempty"`
 	VolumeAccessInfo
 }
 
@@ -451,15 +468,9 @@ func (v *VolumePublishInfo) DeepCopy() *VolumePublishInfo {
 	return deep.MustCopy(v)
 }
 
-type VolumeTrackingPublishInfo struct {
-	StagingTargetPath string `json:"stagingTargetPath"`
-}
-
 type VolumeTrackingInfo struct {
 	VolumePublishInfo
-	VolumeTrackingInfoPath string
-	StagingTargetPath      string              `json:"stagingTargetPath"`
-	PublishedPaths         map[string]struct{} `json:"publishedTargetPaths"`
+	PublishedPaths map[string]struct{} `json:"publishedTargetPaths"`
 }
 
 type VolumePublication struct {
@@ -1366,6 +1377,9 @@ type PruneAttachmentResponse struct {
 	Protocol         config.Protocol `json:"protocol"`
 }
 
+// AttachmentInfo describes the result of a GraftAttachment/PruneAttachment operation: the
+// (possibly healed) publish info for the volume, and the SCSI device discovered for the LUN,
+// if any.
 type AttachmentInfo struct {
 	*VolumePublishInfo `json:"volumePublishInfo"`
 	*ScsiDeviceInfo    `json:"scsiDeviceInfo,omitempty"`

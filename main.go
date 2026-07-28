@@ -19,23 +19,33 @@ import (
 	"github.com/netapp/trident/acp"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	nodecore "github.com/netapp/trident/core/node"
 	"github.com/netapp/trident/frontend"
 	controllercrd "github.com/netapp/trident/frontend/crd/controller"
 	nodecrd "github.com/netapp/trident/frontend/crd/node"
 	"github.com/netapp/trident/frontend/csi"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8sctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	plainctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/plain"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	k8snodehelper "github.com/netapp/trident/frontend/csi/node_helpers/kubernetes"
 	plainnodehelper "github.com/netapp/trident/frontend/csi/node_helpers/plain"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
+	execCmd "github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/iscsi"
+	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -108,7 +118,7 @@ var (
 	httpsClientKey  = flag.String("https_client_key", config.ClientKeyPath, "HTTPS client private key")
 	httpsClientCert = flag.String("https_client_cert", config.ClientCertPath, "HTTPS client certificate")
 
-	aesKey = flag.String("aes_key", config.AESKeyPath, "AES encryption key")
+	aesKeyPath = flag.String("aes_key", config.AESKeyPath, "AES encryption key")
 
 	// HTTP metrics interface
 	metricsAddress = flag.String("metrics_address", "", "Storage orchestrator metrics address")
@@ -295,6 +305,52 @@ func processDockerPluginArgs(ctx context.Context) error {
 	return nil
 }
 
+// newStorageProtocolClients constructs the on-host protocol utilities and drivers shared by the
+// CSI node/all-in-one frontend and the node Core orchestrator. It is only called for roles that
+// serve Node RPCs.
+func newStorageProtocolClients() (csi.StorageProtocolClients, error) {
+	iscsiClient, err := iscsi.New()
+	if err != nil {
+		return csi.StorageProtocolClients{}, err
+	}
+
+	mountClient, err := mount.New()
+	if err != nil {
+		return csi.StorageProtocolClients{}, err
+	}
+
+	fcpClient, err := fcp.New()
+	if err != nil {
+		return csi.StorageProtocolClients{}, err
+	}
+
+	return csi.StorageProtocolClients{
+		ISCSI:   iscsiClient,
+		Mount:   mountClient,
+		FS:      filesystem.New(mountClient),
+		FCP:     fcpClient,
+		NVMe:    nvme.NewNVMeHandler(),
+		Devices: devices.New(),
+		Command: execCmd.NewCommand(),
+		OsUtils: osutils.New(),
+	}, nil
+}
+
+// controllerRestURL builds the HTTPS URL the node core's REST/CHAP client uses to reach the
+// Trident controller, honoring the same service host/port env vars the controller's Kubernetes
+// Service injects into the node pod.
+func controllerRestURL() string {
+	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
+	if port == "" {
+		port = "34571"
+	}
+	hostname := os.Getenv("TRIDENT_CSI_SERVICE_HOST")
+	if hostname == "" {
+		hostname = config.ServerCertName
+	}
+	return "https://" + hostname + ":" + port
+}
+
 func main() {
 	var err error
 	var txnMonitor bool
@@ -312,6 +368,12 @@ func main() {
 	flag.Parse()
 	preBootstrapFrontends := make([]frontend.Plugin, 0)
 	postBootstrapFrontends := make([]frontend.Plugin, 0)
+
+	// Declared here, rather than inside the CSI setup block below, so that shutdown can call
+	// nodeCore.Deactivate() directly - mirroring how nodeCore.Bootstrap() is driven directly
+	// rather than through the frontend.Plugin Activate()/Deactivate() abstraction the CSI
+	// frontend itself uses.
+	var nodeCore nodecore.Orchestrator
 
 	if *httpRequestTimeout < 0 {
 		Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue.")
@@ -466,9 +528,11 @@ func main() {
 			Log().Fatal("CSI is enabled but csi_node_name was not specified.")
 		}
 
-		var hybridControllerFrontend, hybridNodeFrontend frontend.Plugin
+		var hybridControllerFrontend frontend.Plugin
+		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath, *enableForceDetach)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath,
+				*enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
 			}
@@ -508,28 +572,85 @@ func main() {
 			"version": config.OrchestratorVersion,
 		}).Info("Initializing CSI frontend.")
 
+		// Build the AES key and node orchestrator core.
+		aesKey, err := csi.ReadAESKey(ctx, *aesKeyPath)
+		if err != nil {
+			Log().Fatalf("Unable to read AES key. %v", err)
+		}
+
+		var hostProtocolClients csi.StorageProtocolClients
+		if *csiRole == csi.CSINode || *csiRole == csi.CSIAllInOne {
+			hostProtocolClients, err = newStorageProtocolClients()
+			if err != nil {
+				Log().Fatalf("Unable to initialize node protocol clients. %v", err)
+			}
+
+			// Wire the node core's Controller here, rather than inside the CSI frontend
+			// constructors: the node core owns registration and all other Trident controller
+			// interactions on its own, so it should receive an already-assembled Controller
+			// rather than have the frontend build one from pieces after the fact.
+			restClient, restErr := controllerAPI.CreateTLSRestClient(
+				controllerRestURL(), *httpsCACert, *httpsClientCert, *httpsClientKey,
+			)
+			if restErr != nil {
+				Log().Fatalf("Unable to create Trident controller REST client. %v", restErr)
+			}
+			controllerClient, wireErr := tridentcontroller.WireClient(nodeHelper, restClient)
+			if wireErr != nil {
+				Log().Fatalf("Unable to wire Trident controller client. %v", wireErr)
+			}
+
+			nodeCore = nodecore.NewCore(
+				nodecore.WithController(nodecore.NewController(controllerClient, restClient)),
+				nodecore.WithLocalStore(nodeHelper),
+				nodecore.WithHostName(*csiNodeName),
+				nodecore.WithUnsafeDetach(*csiUnsafeNodeDetach),
+				nodecore.WithEnableForceDetach(*enableForceDetach),
+				nodecore.WithISCSISelfHealingInterval(*iSCSISelfHealingInterval),
+				nodecore.WithISCSISelfHealingWaitTime(*iSCSISelfHealingWaitTime),
+				nodecore.WithNVMeSelfHealingInterval(*nvmeSelfHealingInterval),
+				nodecore.WithLegacyISCSI(hostProtocolClients.ISCSI),
+				nodecore.WithFCP(hostProtocolClients.FCP),
+				nodecore.WithNVMe(hostProtocolClients.NVMe),
+				nodecore.WithMount(hostProtocolClients.Mount),
+				nodecore.WithFilesystem(hostProtocolClients.FS),
+				nodecore.WithDevices(hostProtocolClients.Devices),
+				nodecore.WithCommand(hostProtocolClients.Command),
+				nodecore.WithOsUtils(hostProtocolClients.OsUtils),
+				nodecore.WithAESKey(aesKey),
+			)
+		}
+
 		var csiFrontend *csi.Plugin
 		var fijiFrontend frontend.Plugin
 		switch *csiRole {
 		case csi.CSIController:
 			txnMonitor = true
-			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator,
-				controllerHelper, *enableForceDetach)
+			csiFrontend, err = csi.NewControllerPlugin(
+				*csiNodeName, *csiEndpoint, aesKey, orchestrator,
+				controllerHelper, *enableForceDetach,
+			)
 
 			fijiFrontend = fiji.NewFrontend(":50001")
 		case csi.CSINode:
-			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, controllerHelper, *csiUnsafeNodeDetach, nodeHelper,
-				*enableForceDetach, *iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
+			csiFrontend, err = csi.NewNodePlugin(
+				*csiNodeName, *csiEndpoint, aesKey,
+				orchestrator, nodeCore,
+				controllerHelper, nodeHelper,
+				*csiUnsafeNodeDetach, *enableForceDetach,
+			)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 
 			fijiFrontend = fiji.NewFrontend(":50000")
 		case csi.CSIAllInOne:
 			txnMonitor = true
-			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, controllerHelper, nodeHelper, *csiUnsafeNodeDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
+			csiFrontend, err = csi.NewAllInOnePlugin(
+				*csiNodeName, *csiEndpoint, aesKey,
+				orchestrator, nodeCore,
+				controllerHelper, nodeHelper,
+				*csiUnsafeNodeDetach,
+			)
 
 			fijiFrontend = fiji.NewFrontend(":50000")
 		}
@@ -538,6 +659,21 @@ func main() {
 		}
 		orchestrator.AddFrontend(ctx, csiFrontend)
 		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
+
+		// Bootstrap node Core now that it has been constructed and wired with its Controller above.
+		// This must run unconditionally for any node-capable role, not just when a CRD frontend is
+		// enabled, since node volume operations (and the node CRD controller, when present) reject
+		// with a NotReadyError via Core.IsReady/checkReady until this completes.
+		if nodeCore != nil {
+			go func() {
+				bootstrapCtx := GenerateRequestContext(
+					nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend,
+				)
+				if err := nodeCore.Bootstrap(bootstrapCtx); err != nil {
+					Log().WithError(err).Error("Failed to bootstrap node orchestrator.")
+				}
+			}()
+		}
 
 		if *k8sAPIServer != "" || *k8sPod {
 			switch *csiRole {
@@ -554,16 +690,16 @@ func main() {
 				}
 
 			case csi.CSINode:
-				crdController, err := nodecrd.NewTridentNodeCrdController(*k8sAPIServer, *k8sConfigPath, *csiNodeName, csiFrontend, *autogrowPeriod)
+				crdController, err := nodecrd.NewTridentNodeCrdController(
+					*k8sAPIServer, *k8sConfigPath, *csiNodeName, nodeCore, nodeHelper, *autogrowPeriod,
+				)
 				if err != nil {
 					Log().Fatalf("Unable to start the Trident Node CRD controller frontend. %v", err)
 				}
 				orchestrator.AddFrontend(ctx, crdController)
 				postBootstrapFrontends = append(postBootstrapFrontends, crdController)
-
 			case csi.CSIAllInOne:
 				// TODO (@pshashan): Instantiate both controller and node crdController for CSIAllInOne
-
 			}
 		}
 
@@ -651,6 +787,14 @@ func main() {
 	for _, f := range postBootstrapFrontends {
 		if err := f.Deactivate(); err != nil {
 			Log().Error(err)
+		}
+	}
+	// Stop node core's background self-healing/publication-reconciliation loops the same way
+	// Bootstrap started them: driven directly by whoever constructed the Core, not by the CSI
+	// frontend reaching into it.
+	if nodeCore != nil {
+		if err := nodeCore.Deactivate(); err != nil {
+			Log().WithError(err).Error("Failed to deactivate node orchestrator.")
 		}
 	}
 	orchestrator.Stop()

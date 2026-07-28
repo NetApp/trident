@@ -382,7 +382,8 @@ var (
 	// BuildImage is the Trident image that was built
 	BuildImage = "docker.io/netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
 
-	OrchestratorVersion = versionutils.MustParseDate(version())
+	OrchestratorVersion     = versionutils.MustParseDate(version())
+	NodeOrchestratorVersion = versionutils.MustParseDate(version())
 
 	/* API Server and persistent store variables */
 	BaseURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion

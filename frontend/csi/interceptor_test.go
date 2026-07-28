@@ -30,13 +30,6 @@ func serverInfo(server interface{}, fullMethod string) *grpc.UnaryServerInfo {
 	return &grpc.UnaryServerInfo{Server: server, FullMethod: fullMethod}
 }
 
-// closedCh returns a pre-closed channel (plugin is ready).
-func closedCh() chan struct{} {
-	ch := make(chan struct{})
-	close(ch)
-	return ch
-}
-
 func TestOperationRegistry_ContainsAllControllerMethods(t *testing.T) {
 	controllerMethods := []string{
 		csi.Controller_CreateVolume_FullMethodName,
@@ -287,7 +280,7 @@ func TestTimeoutInterceptor_PreservesExistingDeadline(t *testing.T) {
 }
 
 func TestNodeRegistrationInterceptor_NodeDataPathBlockedUntilReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -304,7 +297,7 @@ func TestNodeRegistrationInterceptor_NodeDataPathBlockedUntilReady(t *testing.T)
 }
 
 func TestNodeRegistrationInterceptor_NodeInfoAllowedBeforeReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -320,7 +313,7 @@ func TestNodeRegistrationInterceptor_NodeInfoAllowedBeforeReady(t *testing.T) {
 }
 
 func TestNodeRegistrationInterceptor_NodeCapabilitiesAllowedBeforeReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -344,7 +337,7 @@ func TestNodeRegistrationInterceptor_IdentityMethodsAllowedBeforeReady(t *testin
 
 	for _, method := range identityMethods {
 		t.Run(method, func(t *testing.T) {
-			plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+			plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 			called := false
 			handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 				called = true
@@ -362,7 +355,7 @@ func TestNodeRegistrationInterceptor_IdentityMethodsAllowedBeforeReady(t *testin
 }
 
 func TestNodeRegistrationInterceptor_AllInOneControllerMethodAllowedBeforeReady(t *testing.T) {
-	plugin := &Plugin{role: CSIAllInOne, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSIAllInOne, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -378,7 +371,7 @@ func TestNodeRegistrationInterceptor_AllInOneControllerMethodAllowedBeforeReady(
 }
 
 func TestNodeRegistrationInterceptor_NodeUnstageBlockedUntilReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -395,7 +388,7 @@ func TestNodeRegistrationInterceptor_NodeUnstageBlockedUntilReady(t *testing.T) 
 }
 
 func TestNodeRegistrationInterceptor_NodeUnpublishBlockedUntilReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -412,7 +405,7 @@ func TestNodeRegistrationInterceptor_NodeUnpublishBlockedUntilReady(t *testing.T
 }
 
 func TestNodeRegistrationInterceptor_UnknownNodeMethodBlockedUntilReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -429,7 +422,7 @@ func TestNodeRegistrationInterceptor_UnknownNodeMethodBlockedUntilReady(t *testi
 }
 
 func TestNodeRegistrationInterceptor_NodeDataPathAllowedWhenReady(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: closedCh()}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newReadyNodeCore(t)}
 	called := false
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		called = true
@@ -499,7 +492,7 @@ func TestLogGRPCInterceptor_PropagatesError(t *testing.T) {
 }
 
 func TestChainOrder_TimeoutContextVisibleToMetricsInterceptor(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeReadyCh: closedCh()}
+	plugin := &Plugin{role: CSINode, nodeOrchestrator: newReadyNodeCore(t)}
 	var handlerCtx context.Context
 	handler := stubHandler(&handlerCtx, nil, nil)
 	info := serverInfo(plugin, csi.Node_NodeStageVolume_FullMethodName)
@@ -523,7 +516,7 @@ func TestChainOrder_TimeoutContextVisibleToMetricsInterceptor(t *testing.T) {
 }
 
 func TestChainOrder_BlockedNodeCallBypassesMetricsInterceptor(t *testing.T) {
-	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeReadyCh: make(chan struct{})}
+	plugin := &Plugin{role: CSINode, nodeName: "node-a", nodeOrchestrator: newNotReadyNodeCore()}
 	metricsCalled := false
 	handlerCalled := false
 	info := serverInfo(plugin, csi.Node_NodeStageVolume_FullMethodName)

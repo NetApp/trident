@@ -3,10 +3,8 @@ package crd
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,11 +17,13 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/core/node"
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	faketridentclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -49,28 +49,52 @@ func getFakeTridentClientset() *faketridentclient.Clientset {
 	return faketridentclient.NewSimpleClientset()
 }
 
-// mockCSIPlugin creates a mock CSI plugin for testing
-func mockCSIPlugin(t *testing.T) *csi.Plugin {
-	// Create gomock controller
+// fakeNodeOrchestrator is a minimal no-op node.Orchestrator, used only to satisfy
+// newTridentNodeCrdController's orchestrator parameter in tests that construct a controller
+// but don't exercise node-side volume operations (Attach/Detach/Mount/Unmount/Expand/Graft/Prune).
+type fakeNodeOrchestrator struct{}
+
+func (f *fakeNodeOrchestrator) Bootstrap(context.Context) error { return nil }
+
+func (f *fakeNodeOrchestrator) Deactivate() error { return nil }
+
+func (f *fakeNodeOrchestrator) IsReady() bool { return true }
+
+func (f *fakeNodeOrchestrator) Attach(context.Context, string, node.AttachRequest) error {
+	return nil
+}
+
+func (f *fakeNodeOrchestrator) Detach(context.Context, string, node.DetachRequest) error { return nil }
+
+func (f *fakeNodeOrchestrator) Expand(context.Context, string, node.ExpandRequest) error {
+	return nil
+}
+
+func (f *fakeNodeOrchestrator) Mount(context.Context, string, node.MountRequest) error { return nil }
+
+func (f *fakeNodeOrchestrator) Unmount(context.Context, string, node.UnmountRequest) error {
+	return nil
+}
+
+func (f *fakeNodeOrchestrator) Graft(
+	context.Context, string, node.GraftRequest,
+) (*models.GraftAttachmentResponse, error) {
+	return &models.GraftAttachmentResponse{}, nil
+}
+
+func (f *fakeNodeOrchestrator) Prune(
+	context.Context, string, node.PruneRequest,
+) (*models.PruneAttachmentResponse, error) {
+	return &models.PruneAttachmentResponse{}, nil
+}
+
+var _ node.Orchestrator = (*fakeNodeOrchestrator)(nil)
+
+// mockNodeHelper creates a mockgen-generated NodeHelper for tests (and benchmarks) that only need
+// newTridentNodeCrdController's nodeHelper argument to be non-nil.
+func mockNodeHelper(t gomock.TestReporter) nodehelpers.NodeHelper {
 	ctrl := gomock.NewController(t)
-
-	// Create mock NodeHelper using mockgen-generated mock
-	mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
-
-	// Create a minimal plugin struct
-	plugin := &csi.Plugin{}
-
-	// Use reflection to set the private nodeHelper field
-	// This is necessary because the field is unexported and there's no setter
-	pluginValue := reflect.ValueOf(plugin).Elem()
-	nodeHelperField := pluginValue.FieldByName("nodeHelper")
-
-	// Make the field settable and set it using unsafe
-	// This is necessary in tests to inject the mock dependency
-	nodeHelperField = reflect.NewAt(nodeHelperField.Type(), unsafe.Pointer(nodeHelperField.UnsafeAddr())).Elem()
-	nodeHelperField.Set(reflect.ValueOf(mockNodeHelper))
-
-	return plugin
+	return mockNodeHelpers.NewMockNodeHelper(ctrl)
 }
 
 // MockCSIPlugin is a simple mock that implements the WaitForActivation method
@@ -95,10 +119,11 @@ func (m *MockCSIPlugin) WaitForActivation(ctx context.Context) error {
 func newTestTridentNodeCrdController(t *testing.T, nodeName string) (*TridentNodeCrdController, error) {
 	kubeClient := getFakeKubernetesClientset()
 	crdClient := getFakeTridentClientset()
-	plugin := mockCSIPlugin(t)
+	orchestrator := &fakeNodeOrchestrator{}
+	nodeHelper := mockNodeHelper(t)
 
 	// Use default Autogrow period of 1 minute for tests
-	return newTridentNodeCrdController(testNamespace, kubeClient, crdClient, nodeName, plugin, 1*time.Minute)
+	return newTridentNodeCrdController(testNamespace, kubeClient, crdClient, nodeName, orchestrator, nodeHelper, 1*time.Minute)
 }
 
 // Helper function to create a test TridentVolumePublication
@@ -1309,7 +1334,7 @@ func TestProcessNextWorkItem_RateLimitedRequeue(t *testing.T) {
 func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 	kubeClient := getFakeKubernetesClientset()
 	crdClient := getFakeTridentClientset()
-	plugin := mockCSIPlugin(t)
+	orchestrator := &fakeNodeOrchestrator{}
 
 	tests := []struct {
 		name          string
@@ -1317,7 +1342,7 @@ func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 		kubeClient    kubernetes.Interface
 		crdClient     tridentv1clientset.Interface
 		nodeName      string
-		plugin        *csi.Plugin
+		orchestrator  node.Orchestrator
 		expectError   bool
 		errorContains string
 	}{
@@ -1327,7 +1352,7 @@ func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 			kubeClient:    nil,
 			crdClient:     crdClient,
 			nodeName:      testNodeName,
-			plugin:        plugin,
+			orchestrator:  orchestrator,
 			expectError:   true,
 			errorContains: "kubeClientset cannot be nil",
 		},
@@ -1337,19 +1362,19 @@ func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 			kubeClient:    kubeClient,
 			crdClient:     nil,
 			nodeName:      testNodeName,
-			plugin:        plugin,
+			orchestrator:  orchestrator,
 			expectError:   true,
 			errorContains: "crdClientset cannot be nil",
 		},
 		{
-			name:          "nil plugin",
+			name:          "nil orchestrator",
 			namespace:     testNamespace,
 			kubeClient:    kubeClient,
 			crdClient:     crdClient,
 			nodeName:      testNodeName,
-			plugin:        nil,
+			orchestrator:  nil,
 			expectError:   true,
-			errorContains: "plugin cannot be nil",
+			errorContains: "orchestrator cannot be nil",
 		},
 		{
 			name:          "empty nodeName",
@@ -1357,7 +1382,7 @@ func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 			kubeClient:    kubeClient,
 			crdClient:     crdClient,
 			nodeName:      "",
-			plugin:        plugin,
+			orchestrator:  orchestrator,
 			expectError:   true,
 			errorContains: "nodeName cannot be empty",
 		},
@@ -1365,14 +1390,7 @@ func TestNewTridentNodeCrdControllerImpl_ValidationErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller, err := newTridentNodeCrdController(
-				tt.namespace,
-				tt.kubeClient,
-				tt.crdClient,
-				tt.nodeName,
-				tt.plugin,
-				1*time.Minute, // Default autogrow period for tests
-			)
+			controller, err := newTridentNodeCrdController(tt.namespace, tt.kubeClient, tt.crdClient, tt.nodeName, tt.orchestrator, nil, 1*time.Minute)
 
 			if tt.expectError {
 				assert.Error(t, err, "should return error for "+tt.name)

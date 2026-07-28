@@ -43,10 +43,19 @@ func (p *Plugin) GetPluginInfo(
 	}, nil
 }
 
+// isTopologyInUse reports whether Kubernetes topology-aware provisioning is in effect. This is
+// a Kubernetes-native concept sourced from the K8s Node object, unrelated to the Trident
+// controller or node registration: it reflects the topologyInUse flag set via
+// controllerHelper.IsTopologyInUse (Activate) or the CSINode/CSIAllInOne K8s label fallback (see
+// (*Plugin).getTopologyLabels).
+func (p *Plugin) isTopologyInUse() bool {
+	return p.topologyInUse.Load()
+}
+
 func (p *Plugin) GetPluginCapabilities(
 	ctx context.Context, req *csi.GetPluginCapabilitiesRequest,
 ) (res *csi.GetPluginCapabilitiesResponse, err error) {
-	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.topologyInUse.Load()}
+	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.isTopologyInUse()}
 	Logc(ctx).WithFields(fields).Trace(">>>> GetPluginCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GetPluginCapabilities")
 
@@ -76,7 +85,7 @@ func (p *Plugin) GetPluginCapabilities(
 	}
 
 	// If topology is in use, add VOLUME_ACCESSIBILITY_CONSTRAINTS capability
-	if p.topologyInUse.Load() {
+	if p.isTopologyInUse() {
 		Logc(ctx).WithFields(fields).Info("Topology is in use. Adding VOLUME_ACCESSIBILITY_CONSTRAINTS capability.")
 		csiPluginCap = append(csiPluginCap, &csi.PluginCapability{
 			Type: &csi.PluginCapability_Service_{

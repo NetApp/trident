@@ -73,34 +73,39 @@ func TestGetVolumePathFromTrackingInfo(t *testing.T) {
 		{
 			name: "Has published path",
 			trackingInfo: &models.VolumeTrackingInfo{
+				VolumePublishInfo: models.VolumePublishInfo{
+					GlobalMount: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-123/globalmount",
+				},
 				PublishedPaths: map[string]struct{}{
 					"/var/lib/kubelet/pods/test/volumes/kubernetes.io~csi/pvc-123/mount": {},
 				},
-				StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-123/globalmount",
 			},
 			expected: "/var/lib/kubelet/pods/test/volumes/kubernetes.io~csi/pvc-123/mount",
 		},
 		{
 			name: "No published paths - fallback to staging target path",
 			trackingInfo: &models.VolumeTrackingInfo{
-				PublishedPaths:    map[string]struct{}{},
-				StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-123/globalmount",
+				VolumePublishInfo: models.VolumePublishInfo{
+					GlobalMount: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-123/globalmount",
+				},
+				PublishedPaths: map[string]struct{}{},
 			},
 			expected: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-123/globalmount",
 		},
 		{
 			name: "Nil published paths - fallback to staging target path",
 			trackingInfo: &models.VolumeTrackingInfo{
-				PublishedPaths:    nil,
-				StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-456/globalmount",
+				VolumePublishInfo: models.VolumePublishInfo{
+					GlobalMount: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-456/globalmount",
+				},
+				PublishedPaths: nil,
 			},
 			expected: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-456/globalmount",
 		},
 		{
 			name: "Empty published paths and empty staging path",
 			trackingInfo: &models.VolumeTrackingInfo{
-				PublishedPaths:    map[string]struct{}{},
-				StagingTargetPath: "",
+				PublishedPaths: map[string]struct{}{},
 			},
 			expected: "",
 		},
@@ -558,8 +563,7 @@ func TestGetVolumeStatsByID(t *testing.T) {
 							VolumePublishInfo: models.VolumePublishInfo{
 								FilesystemType: "xfs",
 							},
-							PublishedPaths:    map[string]struct{}{},
-							StagingTargetPath: "",
+							PublishedPaths: map[string]struct{}{},
 						}, nil
 					},
 				}

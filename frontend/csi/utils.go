@@ -476,6 +476,29 @@ func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *m
 	addAccessInfoPortalsToPublishInfo(publishInfo, volumePublishInfo.VolumeAccessInfo)
 }
 
+// unstashIscsiTargetPortals reconstructs the iSCSI target portal list from the flattened
+// p1..pN keys the controller stashes in the CSI publish context.
+func unstashIscsiTargetPortals(publishInfo *models.VolumePublishInfo, reqPublishInfo map[string]string) error {
+	count, err := strconv.Atoi(reqPublishInfo["iscsiTargetPortalCount"])
+	if nil != err {
+		return err
+	}
+	if 1 > count {
+		return fmt.Errorf("iscsiTargetPortalCount=%d may not be less than 1", count)
+	}
+	publishInfo.IscsiTargetPortal = reqPublishInfo["p1"]
+	publishInfo.IscsiPortals = make([]string, count-1)
+	for i := 1; i < count; i++ {
+		key := fmt.Sprintf("p%d", i+1)
+		value, ok := reqPublishInfo[key]
+		if !ok {
+			return fmt.Errorf("missing portal: %s", key)
+		}
+		publishInfo.IscsiPortals[i-1] = value
+	}
+	return nil
+}
+
 // UpsertIscsiTargetPortals replaces the existing target portals in a publishInfo
 // with the portals in the supplied accessInfo.
 func UpsertIscsiTargetPortals(

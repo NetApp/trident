@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/util/retry"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core/node"
 	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
@@ -143,9 +144,8 @@ func (c *TridentNodeCrdController) handleTridentVolumeMoveNodeStaging(ctx contex
 		Logc(ctx).WithFields(fields).Error("Cannot run node staging: status targetAccessInfo is nil.")
 		return errors.InvalidInputError("tvm %q status targetAccessInfo should not be nil", tvm.Name)
 	}
-	res, err := c.plugin.NodeGraftAttachment(ctx, &models.GraftAttachmentRequest{
+	res, err := c.orchestrator.Graft(ctx, tvm.Name, node.GraftRequest{
 		VolumeAccessInfo: *tvm.Status.TargetAccessInfo,
-		VolumeName:       tvm.Name,
 		Protocol:         config.Block,
 	})
 	if err != nil {
@@ -169,9 +169,8 @@ func (c *TridentNodeCrdController) handleTridentVolumeMoveNodeUnstaging(ctx cont
 	}
 	Logc(ctx).WithFields(fields).Info("Running volume move node unstaging (pruning attachments).")
 
-	res, err := c.plugin.NodePruneAttachment(ctx, &models.PruneAttachmentRequest{
+	res, err := c.orchestrator.Prune(ctx, tvm.Name, node.PruneRequest{
 		VolumeAccessInfo: *tvm.Status.TargetAccessInfo,
-		VolumeName:       tvm.Name,
 		Protocol:         config.Block,
 	})
 	if err != nil {
@@ -198,9 +197,8 @@ func (c *TridentNodeCrdController) handleTridentVolumeMoveNodeDetachment(ctx con
 	var errs error
 	if tvm.Status.TargetAccessInfo != nil {
 		Logc(ctx).WithFields(fields).Debug("Running node unstaging for status targetAccessInfo.")
-		_, pruneTargetAccessInfoError := c.plugin.NodePruneAttachment(ctx, &models.PruneAttachmentRequest{
+		_, pruneTargetAccessInfoError := c.orchestrator.Prune(ctx, tvm.Name, node.PruneRequest{
 			VolumeAccessInfo: *tvm.Status.TargetAccessInfo,
-			VolumeName:       tvm.Name,
 			Protocol:         config.Block,
 		})
 		if pruneTargetAccessInfoError != nil {
@@ -211,9 +209,8 @@ func (c *TridentNodeCrdController) handleTridentVolumeMoveNodeDetachment(ctx con
 
 	if tvm.Status.InitialAccessInfo != nil {
 		Logc(ctx).WithFields(fields).Debug("Running node unstaging for status initialAccessInfo.")
-		_, pruneInitialAccessInfoError := c.plugin.NodePruneAttachment(ctx, &models.PruneAttachmentRequest{
+		_, pruneInitialAccessInfoError := c.orchestrator.Prune(ctx, tvm.Name, node.PruneRequest{
 			VolumeAccessInfo: *tvm.Status.InitialAccessInfo,
-			VolumeName:       tvm.Name,
 			Protocol:         config.Block,
 		})
 		if pruneInitialAccessInfoError != nil {

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 package crd
 
 import (
@@ -11,7 +11,6 @@ import (
 	"go.uber.org/mock/gomock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	mockFrontendAutogrow "github.com/netapp/trident/mocks/mock_frontend/mock_autogrow"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -170,10 +169,10 @@ func TestHandleTridentVolumePublications_WithLister(t *testing.T) {
 	fakeClient := faketridentclient.NewSimpleClientset(tvp)
 
 	// Create controller with the fake client
-	plugin := mockCSIPlugin(t)
+	orchestrator := &fakeNodeOrchestrator{}
+	nodeHelper := mockNodeHelper(t)
 
-	controller, err := newTridentNodeCrdController(testNamespace,
-		getFakeKubernetesClientset(), fakeClient, testNodeName, plugin, 1*time.Minute)
+	controller, err := newTridentNodeCrdController(testNamespace, getFakeKubernetesClientset(), fakeClient, testNodeName, orchestrator, nodeHelper, 1*time.Minute)
 	require.NoError(t, err)
 
 	// Add the object to the indexer to simulate what the informer would do
@@ -254,10 +253,10 @@ func TestHandleTridentVolumePublications_EdgeCases(t *testing.T) {
 // Benchmark the handler performance
 func BenchmarkHandleTridentVolumePublications(b *testing.B) {
 	// Create controller with testing interface compatibility
-	plugin := &csi.Plugin{} // Create a minimal plugin for benchmarking
+	orchestrator := &fakeNodeOrchestrator{} // Create a minimal orchestrator for benchmarking
+	nodeHelper := mockNodeHelper(b)
 
-	controller, err := newTridentNodeCrdController(testNamespace,
-		getFakeKubernetesClientset(), getFakeTridentClientset(), testNodeName, plugin, 1*time.Minute)
+	controller, err := newTridentNodeCrdController(testNamespace, getFakeKubernetesClientset(), getFakeTridentClientset(), testNodeName, orchestrator, nodeHelper, 1*time.Minute)
 	require.NoError(b, err)
 
 	// Create a test TridentVolumePublication

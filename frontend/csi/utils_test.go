@@ -573,3 +573,120 @@ func TestEncryptCHAPPublishInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestUnstashIscsiTargetPortals(t *testing.T) {
+	testCases := []struct {
+		name           string
+		reqPublishInfo map[string]string
+		assertErr      assert.ErrorAssertionFunc
+		errContains    string
+		expectedResult *models.VolumePublishInfo
+	}{
+		{
+			name: "Success - single portal",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "1",
+				publishInfoKeyIscsiTargetPortal:      "192.0.2.1:3260",
+			},
+			assertErr: assert.NoError,
+			expectedResult: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiTargetPortal: "192.0.2.1:3260",
+						IscsiPortals:      []string{},
+					},
+				},
+			},
+		},
+		{
+			name: "Success - multiple portals",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "3",
+				publishInfoKeyIscsiTargetPortal:      "192.0.2.1:3260",
+				"p2":                                 "192.0.2.2:3260",
+				"p3":                                 "192.0.2.3:3260",
+			},
+			assertErr: assert.NoError,
+			expectedResult: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiTargetPortal: "192.0.2.1:3260",
+						IscsiPortals:      []string{"192.0.2.2:3260", "192.0.2.3:3260"},
+					},
+				},
+			},
+		},
+		{
+			name:           "Error - iscsiTargetPortalCount missing",
+			reqPublishInfo: map[string]string{},
+			assertErr:      assert.Error,
+			errContains:    "invalid syntax",
+		},
+		{
+			name: "Error - iscsiTargetPortalCount not numeric",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "not-a-number",
+			},
+			assertErr:   assert.Error,
+			errContains: "invalid syntax",
+		},
+		{
+			name: "Error - iscsiTargetPortalCount is zero",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "0",
+			},
+			assertErr:   assert.Error,
+			errContains: "may not be less than 1",
+		},
+		{
+			name: "Error - iscsiTargetPortalCount is negative",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "-1",
+			},
+			assertErr:   assert.Error,
+			errContains: "may not be less than 1",
+		},
+		{
+			name: "Error - missing p2 when count requires it",
+			reqPublishInfo: map[string]string{
+				publishInfoKeyIscsiTargetPortalCount: "2",
+				publishInfoKeyIscsiTargetPortal:      "192.0.2.1:3260",
+			},
+			assertErr:   assert.Error,
+			errContains: "missing portal: p2",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			publishInfo := &models.VolumePublishInfo{}
+			err := unstashIscsiTargetPortals(publishInfo, tc.reqPublishInfo)
+
+			tc.assertErr(t, err)
+			if tc.errContains != "" {
+				assert.Contains(t, err.Error(), tc.errContains)
+			}
+			if tc.expectedResult != nil {
+				assert.Equal(t, tc.expectedResult.IscsiTargetPortal, publishInfo.IscsiTargetPortal)
+				assert.Equal(t, tc.expectedResult.IscsiPortals, publishInfo.IscsiPortals)
+			}
+		})
+	}
+}
+
+// TestUnstashIscsiTargetPortals_MissingTargetPortalKeyIsSilentlyEmpty documents current, known
+// behavior (not changed as part of this PR): unlike the p2..pN loop, the primary target portal
+// (p1) is read directly via a map index rather than validated for presence, so a request missing
+// it does not error - it silently produces an empty IscsiTargetPortal.
+func TestUnstashIscsiTargetPortals_MissingTargetPortalKeyIsSilentlyEmpty(t *testing.T) {
+	publishInfo := &models.VolumePublishInfo{}
+	reqPublishInfo := map[string]string{
+		publishInfoKeyIscsiTargetPortalCount: "1",
+		// publishInfoKeyIscsiTargetPortal ("p1") intentionally omitted.
+	}
+
+	err := unstashIscsiTargetPortals(publishInfo, reqPublishInfo)
+
+	assert.NoError(t, err)
+	assert.Empty(t, publishInfo.IscsiTargetPortal)
+}

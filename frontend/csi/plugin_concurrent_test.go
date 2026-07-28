@@ -45,10 +45,10 @@ func TestPlugin_NodeRegistrationGate_ReproducedWithAndWithoutConcurrentMode(t *t
 			})
 
 			plugin := &Plugin{
-				role:        CSINode,
-				nodeName:    "test-node",
-				endpoint:    "unix:///tmp/test.sock",
-				nodeReadyCh: make(chan struct{}),
+				role:             CSINode,
+				nodeName:         "test-node",
+				endpoint:         "unix:///tmp/test.sock",
+				nodeOrchestrator: newNotReadyNodeCore(),
 			}
 
 			for _, method := range gatedMethods {
@@ -84,7 +84,7 @@ func TestPlugin_NodeRegistrationGate_ReproducedWithAndWithoutConcurrentMode(t *t
 				})
 			}
 
-			plugin.markNodeReady()
+			plugin.nodeOrchestrator = newReadyNodeCore(t)
 
 			for _, method := range gatedMethods {
 				t.Run(method+"_allowed_after_registration", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestPlugin_NodeRegistrationGate_ReproducedWithAndWithoutConcurrentMode(t *t
 				})
 			}
 
-			aioPlugin := &Plugin{role: CSIAllInOne, nodeName: "aio-node", nodeReadyCh: make(chan struct{})}
+			aioPlugin := &Plugin{role: CSIAllInOne, nodeName: "aio-node", nodeOrchestrator: newNotReadyNodeCore()}
 			for _, method := range gatedMethods {
 				t.Run("all_in_one_"+method+"_blocked_before_registration", func(t *testing.T) {
 					called := false
@@ -121,7 +121,7 @@ func TestPlugin_NodeRegistrationGate_ReproducedWithAndWithoutConcurrentMode(t *t
 			}
 
 			t.Run("controller_method_still_allowed", func(t *testing.T) {
-				controllerPlugin := &Plugin{role: CSIController, nodeReadyCh: make(chan struct{})}
+				controllerPlugin := &Plugin{role: CSIController}
 				called := false
 				handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 					called = true
@@ -161,9 +161,9 @@ func TestPlugin_NodeRegistrationGate_ReproducedWithAndWithoutConcurrentMode(t *t
 // node-driver-registrar can still get node info for its bookkeeping.
 func TestPlugin_NodeGetInfoAllowedDuringRegistration(t *testing.T) {
 	plugin := &Plugin{
-		role:        CSINode,
-		nodeName:    "test-node",
-		nodeReadyCh: make(chan struct{}), // Not registered yet
+		role:             CSINode,
+		nodeName:         "test-node",
+		nodeOrchestrator: newNotReadyNodeCore(), // Not registered yet
 	}
 
 	infoHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -182,8 +182,7 @@ func TestPlugin_NodeGetInfoAllowedDuringRegistration(t *testing.T) {
 // RPCs are not gated by node registration status. Only node data-path RPCs should be blocked.
 func TestPlugin_ControllerRPCsUnaffectedByNodeRegistration(t *testing.T) {
 	plugin := &Plugin{
-		role:        CSIController,
-		nodeReadyCh: make(chan struct{}), // Not registered (irrelevant for controller)
+		role: CSIController, // Not registered (irrelevant for controller)
 	}
 
 	ctrlHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
