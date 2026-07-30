@@ -82,13 +82,12 @@ func (g *GCNamedMutex) Unlock(name string) {
 		g.m.Unlock()
 		return
 	}
+	resourceMutex.m.Unlock()
 	resourceMutex.c--
 	if resourceMutex.c == 0 {
 		delete(g.mutexes, name)
 	}
 	g.m.Unlock()
-
-	resourceMutex.m.Unlock()
 }
 
 func (g *GCNamedMutex) RLock(name string) {
@@ -111,13 +110,12 @@ func (g *GCNamedMutex) RUnlock(name string) {
 		g.m.Unlock()
 		return
 	}
+	resourceMutex.m.RUnlock()
 	resourceMutex.c--
 	if resourceMutex.c == 0 {
 		delete(g.mutexes, name)
 	}
 	g.m.Unlock()
-
-	resourceMutex.m.RUnlock()
 }
 
 // LockWithGuard acquires a write lock and returns a wrapper for convenient unlock handling.

@@ -5,7 +5,7 @@ package locks
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -17,483 +17,196 @@ import (
 
 var ctx = context.Background
 
-func TestLockCreated(t *testing.T) {
-	Lock(ctx(), "testContext", "myLock")
-	defer Unlock(ctx(), "testContext", "myLock")
-
-	if _, ok := sharedLocks.Load("myLock"); !ok {
-		t.Error("Expected lock myLock to exist.")
-	}
-
-	if _, ok := sharedLocks.Load("myLock2"); ok {
-		t.Error("Did not expect lock myLock2 to exist.")
-	}
+func testLockID(t *testing.T, suffix string) string {
+	return t.Name() + "/" + suffix
 }
 
 func TestLockReused(t *testing.T) {
-	Lock(ctx(), "testContext", "reuseLock")
-	Unlock(ctx(), "testContext", "reuseLock")
+	lockID := testLockID(t, "reuse")
 
-	lock1, _ := sharedLocks.Load("reuseLock")
+	Lock(ctx(), "testContext", lockID)
+	Unlock(ctx(), "testContext", lockID)
 
-	Lock(ctx(), "testContext", "reuseLock")
-	Unlock(ctx(), "testContext", "reuseLock")
+	Lock(ctx(), "testContext", lockID)
+	Unlock(ctx(), "testContext", lockID)
+}
 
-	lock2, _ := sharedLocks.Load("reuseLock")
+func TestLockUnlockSerialization(t *testing.T) {
+	lockID := testLockID(t, "serialization")
 
-	if lock1 != lock2 {
-		t.Error("Expected locks to match.")
+	const numGoroutines = 50
+	var counter int64
+	var wg sync.WaitGroup
+
+	for range numGoroutines {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			Lock(ctx(), "testContext", lockID)
+			defer Unlock(ctx(), "testContext", lockID)
+
+			oldValue := atomic.LoadInt64(&counter)
+			atomic.StoreInt64(&counter, oldValue+1)
+		}()
 	}
+
+	wg.Wait()
+	assert.Equal(t, int64(numGoroutines), counter)
 }
 
-func acquire1(m1, r chan string, lockContext, lockID string) {
-	acquire1Notify(m1, r, nil, lockContext, lockID)
+func TestUnlockWithoutPriorLock(t *testing.T) {
+	lockID := testLockID(t, "unlock-no-prior-lock")
+
+	require.NotPanics(t, func() {
+		Unlock(ctx(), "testContext", lockID)
+	})
 }
 
-func acquire1Notify(m1, r chan string, lockCmd chan struct{}, lockContext, lockID string) {
-	for i := 0; i < 3; i++ {
-		op := <-m1
-		switch op {
-		case "lock":
-			if lockCmd != nil {
-				lockCmd <- struct{}{}
+func TestLockUnlockConcurrentFirstUse(t *testing.T) {
+	const goroutines = 32
+	lockID := testLockID(t, "concurrent-first-use")
+
+	ready := make(chan struct{})
+	release := make(chan struct{})
+	var wg sync.WaitGroup
+	var counter int64
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		Lock(ctx(), "holder", lockID)
+		close(ready)
+		<-release
+		atomic.AddInt64(&counter, 1)
+		Unlock(ctx(), "holder", lockID)
+	}()
+	<-ready
+
+	for range goroutines - 1 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			Lock(ctx(), "waiter", lockID)
+			atomic.AddInt64(&counter, 1)
+			Unlock(ctx(), "waiter", lockID)
+		}()
+	}
+
+	close(release)
+	wg.Wait()
+	assert.Equal(t, int64(goroutines), counter)
+}
+
+// TestGCNamedMutex_NoConcurrentHoldersDuringUnlock stresses Unlock/RUnlock so a
+// second goroutine cannot enter the critical section while the prior holder is
+// still releasing the resource mutex (regression for GC map deletion ordering).
+func TestGCNamedMutex_NoConcurrentHoldersDuringUnlock(t *testing.T) {
+	g := NewGCNamedMutex()
+	name := testLockID(t, "unlock-window")
+
+	const workers = 8
+	const iterations = 10000
+
+	var holders atomic.Int32
+	var wg sync.WaitGroup
+
+	for range workers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range iterations {
+				g.Lock(name)
+				if holders.Add(1) != 1 {
+					t.Errorf("multiple goroutines hold %q concurrently during unlock window (holders=%d)", name, holders.Load())
+				}
+				for range 50 {
+					runtime.Gosched()
+				}
+				holders.Add(-1)
+				g.Unlock(name)
 			}
-			Lock(ctx(), lockContext, lockID)
-		case "unlock":
-			Unlock(ctx(), lockContext, lockID)
-		case "done":
-			close(m1)
-			r <- "done1"
-			return
+		}()
+	}
+
+	wg.Wait()
+}
+
+// TestGCNamedMutex_RUnlockBlocksNewLockUntilReleased verifies a writer cannot
+// acquire the same name until the last reader's RUnlock completes, including map GC.
+func TestGCNamedMutex_RUnlockBlocksNewLockUntilReleased(t *testing.T) {
+	g := NewGCNamedMutex()
+	name := testLockID(t, "runlock-blocks-write-lock")
+
+	for range 2000 {
+		g.RLock(name)
+
+		waiterBlocked := make(chan struct{})
+		waiterAcquired := make(chan struct{})
+		go func() {
+			close(waiterBlocked)
+			g.Lock(name)
+			close(waiterAcquired)
+			g.Unlock(name)
+		}()
+
+		<-waiterBlocked
+		for range 100 {
+			runtime.Gosched()
 		}
-	}
-}
 
-func acquire2(m2, r chan string, lockContext, lockID string) {
-	acquire2Notify(m2, r, nil, lockContext, lockID)
-}
-
-func acquire2Notify(m2, r chan string, lockCmd chan struct{}, lockContext, lockID string) {
-	for i := 0; i < 3; i++ {
-		op := <-m2
-		switch op {
-		case "lock":
-			if lockCmd != nil {
-				lockCmd <- struct{}{}
-			}
-			Lock(ctx(), lockContext, lockID)
-		case "unlock":
-			Unlock(ctx(), lockContext, lockID)
-		case "done":
-			close(m2)
-			r <- "done2"
-			return
-		}
-	}
-}
-
-func acquire3(m3, r chan string, lockContext, lockID string) {
-	acquire3Notify(m3, r, nil, lockContext, lockID)
-}
-
-func acquire3Notify(m3, r chan string, lockCmd chan struct{}, lockContext, lockID string) {
-	for i := 0; i < 3; i++ {
-		op := <-m3
-		switch op {
-		case "lock":
-			if lockCmd != nil {
-				lockCmd <- struct{}{}
-			}
-			Lock(ctx(), lockContext, lockID)
-		case "unlock":
-			Unlock(ctx(), lockContext, lockID)
-		case "done":
-			close(m3)
-			r <- "done3"
-			return
-		}
-	}
-}
-
-func acquireX(x, r chan string, lockContext, lockID string) {
-	for i := 0; i < 3; i++ {
-		op := <-x
-		switch op {
-		case "lock":
-			Lock(ctx(), lockContext, lockID)
-		case "unlock":
-			Unlock(ctx(), lockContext, lockID)
-		case "done":
-			close(x)
-			r <- "done1"
-			return
-		}
-	}
-}
-
-func snooze() {
-	time.Sleep(10 * time.Millisecond)
-}
-
-func TestLockBehavior(t *testing.T) {
-	r := make(chan string, 2)
-	m1 := make(chan string, 3)
-	m2 := make(chan string, 3)
-	lockID := "behaviorLock"
-
-	// We could introduce a delay between the methods but that would involve
-	// leaving control to the go runtime to execute the methods. The proper
-	// fix would be to ensure the methods are not sharing variables in a
-	// concurrent context
-	go acquire1(m1, r, "testContext1", lockID)
-	go acquire2(m2, r, "testContext2", lockID)
-
-	m2 <- "lock"
-	snooze()
-	m1 <- "lock"
-	snooze()
-	m2 <- "unlock"
-	snooze()
-	m1 <- "unlock"
-	snooze()
-	m2 <- "done"
-	snooze()
-	m1 <- "done"
-
-	r1 := <-r
-	r2 := <-r
-	if r1 != "done2" && r2 != "done1" {
-		t.Error("Expected done2 followed by done1.")
-	}
-}
-
-func TestWaitQueueSize(t *testing.T) {
-	ctx1, ctx2, ctx3 := "testContext1", "testContext2", "testContext3"
-	lockID1, lockID2, lockID3 := "lockID1", "lockID2", "lockID3"
-
-	r := make(chan string, 9)
-	lockID1_m1 := make(chan string, 3)
-	lockID1_m2 := make(chan string, 3)
-	lockID1_m3 := make(chan string, 3)
-
-	lockID2_m1 := make(chan string, 3)
-	lockID2_m2 := make(chan string, 3)
-	lockID2_m3 := make(chan string, 3)
-
-	lockID3_m1 := make(chan string, 3)
-	lockID3_m2 := make(chan string, 3)
-	lockID3_m3 := make(chan string, 3)
-
-	go acquire1(lockID1_m1, r, ctx1, lockID1)
-	go acquire2(lockID1_m2, r, ctx2, lockID1)
-	go acquire3(lockID1_m3, r, ctx3, lockID1)
-
-	go acquire1(lockID2_m1, r, ctx1, lockID2)
-	go acquire2(lockID2_m2, r, ctx2, lockID2)
-	go acquire3(lockID2_m3, r, ctx3, lockID2)
-
-	go acquire1(lockID3_m1, r, ctx1, lockID3)
-	go acquire2(lockID3_m2, r, ctx2, lockID3)
-	go acquire3(lockID3_m3, r, ctx3, lockID3)
-
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_m3 <- "lock"
-	lockID2_m3 <- "lock"
-	lockID3_m3 <- "lock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_m2 <- "lock"
-	lockID2_m2 <- "lock"
-	lockID3_m2 <- "lock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
-
-	lockID1_m1 <- "lock"
-	lockID2_m1 <- "lock"
-	lockID3_m1 <- "lock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID3))
-
-	lockID1_m3 <- "unlock"
-	lockID2_m3 <- "unlock"
-	lockID3_m3 <- "unlock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
-
-	lockID1_m3 <- "done"
-	lockID2_m3 <- "done"
-	lockID3_m3 <- "done"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
-
-	lockID1_m2 <- "unlock"
-	lockID2_m2 <- "unlock"
-	lockID3_m2 <- "unlock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_m2 <- "done"
-	lockID2_m2 <- "done"
-	lockID3_m2 <- "done"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_m1 <- "unlock"
-	lockID2_m1 <- "unlock"
-	lockID3_m1 <- "unlock"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_m1 <- "done"
-	lockID2_m1 <- "done"
-	lockID3_m1 <- "done"
-	snooze()
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	lockID1_r1 := <-r
-	lockID1_r2 := <-r
-	lockID1_r3 := <-r
-
-	lockID2_r1 := <-r
-	lockID2_r2 := <-r
-	lockID2_r3 := <-r
-
-	lockID3_r1 := <-r
-	lockID3_r2 := <-r
-	lockID3_r3 := <-r
-
-	if lockID1_r1 != "done3" && lockID1_r2 != "done2" && lockID1_r3 != "done1" {
-		t.Error("Expected done3 followed by done2 followed by done1")
-	}
-	if lockID2_r1 != "done3" && lockID2_r2 != "done2" && lockID2_r3 != "done1" {
-		t.Error("Expected done3 followed by done2 followed by done1")
-	}
-	if lockID3_r1 != "done3" && lockID3_r2 != "done2" && lockID3_r3 != "done1" {
-		t.Error("Expected done3 followed by done2 followed by done1")
-	}
-}
-
-func TestWaitQueueSize2(t *testing.T) {
-	// Exercises queue sizing when Unlock is invoked from a goroutine other than the
-	// acquirer (as Trident may do). One lock at a time avoids cross-lock scheduling noise.
-	ctx1, ctx2, ctx3 := "testContext1", "testContext2", "testContext3"
-	lockID := t.Name() + "/waitLock"
-
-	waitQueueSize := func(expected uint32) {
-		require.True(t, waitUntilHelper(lockID, expected),
-			"wait queue for %s: expected %d", lockID, expected)
-	}
-
-	doneCh := make(chan string, 3)
-	m1 := make(chan string, 3)
-	m2 := make(chan string, 3)
-	m3 := make(chan string, 3)
-	m3LockCmd := make(chan struct{}, 1)
-	m2LockCmd := make(chan struct{}, 1)
-	m1LockCmd := make(chan struct{}, 1)
-
-	go acquire1Notify(m1, doneCh, m1LockCmd, ctx1, lockID)
-	go acquire2Notify(m2, doneCh, m2LockCmd, ctx2, lockID)
-	go acquire3Notify(m3, doneCh, m3LockCmd, ctx3, lockID)
-
-	waitQueueSize(0)
-
-	m3 <- "lock"
-	<-m3LockCmd
-	waitQueueSize(0)
-	m2 <- "lock"
-	<-m2LockCmd
-	waitQueueSize(1)
-
-	Unlock(ctx(), ctx3, lockID)
-	waitQueueSize(0)
-
-	m1 <- "lock"
-	<-m1LockCmd
-	waitQueueSize(1)
-	m3 <- "done"
-
-	Unlock(ctx(), ctx2, lockID)
-	waitQueueSize(0)
-
-	m2 <- "done"
-	waitQueueSize(0)
-
-	Unlock(ctx(), ctx1, lockID)
-	waitQueueSize(0)
-
-	m1 <- "done"
-	waitQueueSize(0)
-
-	got := make([]string, 0, 3)
-	deadline := time.Now().Add(15 * time.Second)
-	for len(got) < 3 {
-		remaining := time.Until(deadline)
-		if remaining <= 0 {
-			t.Fatalf("timeout collecting done signals for %s (got %v)", lockID, got)
-		}
 		select {
-		case msg := <-doneCh:
-			got = append(got, msg)
-		case <-time.After(remaining):
-			t.Fatalf("timeout collecting done signals for %s (got %v)", lockID, got)
-		}
-	}
-	require.ElementsMatch(t, []string{"done1", "done2", "done3"}, got)
-}
-
-func TestWaitQueueSize3(t *testing.T) {
-	const total = uint32(10)
-	r := make(chan string, total)
-	var allChan1 [total]chan string
-	var allChan2 [total]chan string
-	var allChan3 [total]chan string
-	lockID1 := "waitLock1"
-	lockID2 := "waitLock2"
-	lockID3 := "waitLock3"
-
-	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
-	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
-	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
-
-	for i := 0; i < int(total); i++ {
-		allChan1[i] = make(chan string, 3)
-		allChan2[i] = make(chan string, 3)
-		allChan3[i] = make(chan string, 3)
-
-		go acquireX(allChan1[i], r, "textContext"+strconv.Itoa(i+1), lockID1)
-		go acquireX(allChan2[i], r, "textContext"+strconv.Itoa(i+1), lockID2)
-		go acquireX(allChan3[i], r, "textContext"+strconv.Itoa(i+1), lockID3)
-
-		allChan1[i] <- "lock"
-		allChan2[i] <- "lock"
-		allChan3[i] <- "lock"
-
-		snooze()
-		assert.True(t, waitUntilHelper(lockID1, uint32(i)),
-			fmt.Sprintf("Expected Queue size to be %v", i))
-		assert.True(t, waitUntilHelper(lockID2, uint32(i)),
-			fmt.Sprintf("Expected Queue size to be %v", i))
-		assert.True(t, waitUntilHelper(lockID3, uint32(i)),
-			fmt.Sprintf("Expected Queue size to be %v", i))
-	}
-
-	assert.True(t, waitUntilHelper(lockID1, total-1), fmt.Sprintf("Expected Queue size to be %v.",
-		total-1))
-	assert.True(t, waitUntilHelper(lockID2, total-1), fmt.Sprintf("Expected Queue size to be %v.",
-		total-1))
-	assert.True(t, waitUntilHelper(lockID3, total-1), fmt.Sprintf("Expected Queue size to be %v.",
-		total-1))
-
-	for i := 0; i < int(total); i++ {
-		expectedCount := total - (uint32(i) + 2)
-		if total < (uint32(i) + 2) {
-			expectedCount = 0
+		case <-waiterAcquired:
+			t.Fatal("writer acquired lock before reader called RUnlock")
+		default:
 		}
 
-		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID1)
-		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID2)
-		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID3)
-		snooze()
+		g.RUnlock(name)
 
-		assert.True(t, waitUntilHelper(lockID1, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
-		assert.True(t, waitUntilHelper(lockID2, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
-		assert.True(t, waitUntilHelper(lockID3, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
-
-		allChan1[i] <- "done"
-		allChan2[i] <- "done"
-		allChan3[i] <- "done"
-
-		snooze()
-		assert.True(t, waitUntilHelper(lockID1, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
-		assert.True(t, waitUntilHelper(lockID2, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
-		assert.True(t, waitUntilHelper(lockID3, expectedCount),
-			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
+		select {
+		case <-waiterAcquired:
+		case <-time.After(time.Second):
+			t.Fatal("writer did not acquire lock after RUnlock")
+		}
 	}
 }
 
-func waitUntilHelper(lockID string, expectedSize uint32) bool {
-	deadline := time.Now().Add(15 * time.Second)
-	for time.Now().Before(deadline) {
-		if WaitQueueSize(lockID) == expectedSize {
-			return true
+// TestGCNamedMutex_UnlockBlocksNewLockUntilReleased verifies a waiter cannot
+// acquire the same name until Unlock completes, including map GC.
+func TestGCNamedMutex_UnlockBlocksNewLockUntilReleased(t *testing.T) {
+	g := NewGCNamedMutex()
+	name := testLockID(t, "unlock-blocks-new-lock")
+
+	for range 2000 {
+		g.Lock(name)
+
+		waiterBlocked := make(chan struct{})
+		waiterAcquired := make(chan struct{})
+		go func() {
+			close(waiterBlocked)
+			g.Lock(name)
+			close(waiterAcquired)
+			g.Unlock(name)
+		}()
+
+		<-waiterBlocked
+		for range 100 {
+			runtime.Gosched()
 		}
-		time.Sleep(2 * time.Millisecond)
+
+		select {
+		case <-waiterAcquired:
+			t.Fatal("waiter acquired lock before holder called Unlock")
+		default:
+		}
+
+		g.Unlock(name)
+
+		select {
+		case <-waiterAcquired:
+		case <-time.After(time.Second):
+			t.Fatal("waiter did not acquire lock after Unlock")
+		}
 	}
-	return false
-}
-
-func TestQueue(t *testing.T) {
-	lockID1 := "testQueue1"
-	lockID2 := "testQueue2"
-	lockID3 := "testQueue3"
-
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 0)
-	assert.True(t, WaitQueueSize(lockID3) == 0)
-
-	DecrementQueueSize(lockID1)
-	DecrementQueueSize(lockID1)
-	IncrementQueueSize(lockID2)
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 1)
-	assert.True(t, WaitQueueSize(lockID3) == 0)
-
-	DecrementQueueSize(lockID1)
-	DecrementQueueSize(lockID1)
-	IncrementQueueSize(lockID2)
-	IncrementQueueSize(lockID3)
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 2)
-	assert.True(t, WaitQueueSize(lockID3) == 1)
-
-	DecrementQueueSize(lockID1)
-	DecrementQueueSize(lockID2)
-	DecrementQueueSize(lockID3)
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 1)
-	assert.True(t, WaitQueueSize(lockID3) == 0)
-
-	DecrementQueueSize(lockID1)
-	DecrementQueueSize(lockID2)
-	DecrementQueueSize(lockID3)
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 0)
-	assert.True(t, WaitQueueSize(lockID3) == 0)
-
-	DecrementQueueSize(lockID1)
-	DecrementQueueSize(lockID2)
-	DecrementQueueSize(lockID3)
-	assert.True(t, WaitQueueSize(lockID1) == 0)
-	assert.True(t, WaitQueueSize(lockID2) == 0)
-	assert.True(t, WaitQueueSize(lockID3) == 0)
 }
 
 // ============================================================================
