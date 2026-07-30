@@ -28,7 +28,7 @@ const (
 	testVersionValue = "1.0.0"
 	testGoVersion    = "go1.19"
 	testAPIVersion   = "v1"
-	testLongVersion  = "26.06.0-custom+20250101"
+	testLongVersion  = "26.06.1-custom+20250101"
 )
 
 func withVersionTestMode(clientOnlyVal bool, operatingMode, outputFormat string, fn func()) {

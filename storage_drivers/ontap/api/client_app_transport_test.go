@@ -36,7 +36,7 @@ func TestClientAppHeaderName(t *testing.T) {
 // TestClientAppTransport_RoundTrip verifies the transport stamps the header
 // on every outgoing request.
 func TestClientAppTransport_RoundTrip(t *testing.T) {
-	const want = "Trident/26.06.0"
+	const want = "Trident/26.06.1"
 
 	var seen atomic.Int32
 	base := roundTripFunc(func(r *http.Request) (*http.Response, error) {
