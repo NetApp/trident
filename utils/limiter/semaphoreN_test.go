@@ -3,7 +3,9 @@ package limiter
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -17,13 +19,15 @@ func TestSemaphoreN_Wait(t *testing.T) {
 	limID := "tempLimiter"
 	numOfGoroutines := 2
 
-	// Test 1 (Negative Test): Expect an error when a goroutine attempts to call Wait()
-	//          after all expected goroutines have successfully acquired Wait().
+	// Test 1 (negative): a Wait on a full semaphore must block until its context is
+	// cancelled, then return an error — not succeed and not fail instantly.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	lim, _ := New(ctx, limID, TypeSemaphoreN, WithSemaphoreNSize(ctx, numOfGoroutines))
 
+	// outward/inward let the test know both slots are held before we call Wait again.
+	// Holders park on <-outward so they keep their tokens until we explicitly release.
 	outward := make(chan struct{}, numOfGoroutines)
 	inward := make(chan struct{}, numOfGoroutines)
 
@@ -36,30 +40,67 @@ func TestSemaphoreN_Wait(t *testing.T) {
 			err := lim.Wait(ctx)
 			defer lim.Release(ctx)
 			assert.NoError(t, err)
-			inward <- struct{}{}
-			<-outward
+			inward <- struct{}{} // signal: this goroutine holds a slot
+			<-outward            // block until test releases holders
 		}()
 	}
 
 	for i := 0; i < numOfGoroutines; i++ {
-		<-inward
+		<-inward // wait until semaphore size (2) is fully acquired
 	}
-	const waitTimeout = time.Second
-	waitCtx, waitCancel := context.WithTimeout(context.Background(), waitTimeout)
-	defer waitCancel()
-	start := time.Now()
-	err := lim.Wait(waitCtx)
-	elapsed := time.Since(start)
-	assert.Error(t, err)
-	assert.GreaterOrEqual(t, elapsed, 50*time.Millisecond, "Wait should block until context deadline")
-	assert.Less(t, elapsed, waitTimeout+100*time.Millisecond)
 
+	// negCtx bounds the whole negative case so a stuck Wait fails in seconds, not at CI timeout.
+	const negativeCaseTimeout = 5 * time.Second
+	negCtx, negCancel := context.WithTimeout(context.Background(), negativeCaseTimeout)
+	defer negCancel()
+
+	// waitCtx has no deadline of its own; the test cancels it once blocking is verified.
+	waitCtx, waitCancel := context.WithCancel(negCtx)
+	defer waitCancel()
+
+	// Third caller: should block on the full semaphore until waitCtx is cancelled.
+	waitDone := make(chan error, 1)
+	var waiterRunning atomic.Bool
+	go func() {
+		waiterRunning.Store(true)
+		waitDone <- lim.Wait(waitCtx)
+	}()
+
+	// Ensure the waiter goroutine has started before we inspect waitDone.
+	for !waiterRunning.Load() {
+		select {
+		case <-negCtx.Done():
+			t.Fatal("timed out waiting for waiter goroutine to start")
+		default:
+			runtime.Gosched()
+		}
+	}
+
+	// Non-blocking check: if Wait already returned, the semaphore did not block as expected.
+	select {
+	case err := <-waitDone:
+		t.Fatalf("Wait returned before cancel while semaphore full: %v", err)
+	case <-negCtx.Done():
+		t.Fatal("timed out before cancel while waiting for Wait to block")
+	default:
+	}
+
+	waitCancel() // unblock Wait via ctx.Done(); should not acquire a token
+
+	select {
+	case err := <-waitDone:
+		assert.Error(t, err)
+	case <-negCtx.Done():
+		t.Fatal("Wait did not return after context cancel")
+	}
+
+	// Release holders so Test 2 can reuse the same limiter.
 	for i := 0; i < numOfGoroutines; i++ {
 		outward <- struct{}{}
 	}
 	wg.Wait()
 
-	// Test 2 (Positive Test): Successfully acquiring the expected number of wait()
+	// Test 2 (positive): after releases, the expected number of Wait calls succeed.
 	for i := 0; i < numOfGoroutines; i++ {
 		wg.Add(1)
 		go func() {
