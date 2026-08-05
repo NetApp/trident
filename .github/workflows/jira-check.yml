@@ -1,3 +1,4 @@
+# Runs only when repository variable ENABLE_INTERNAL_GATES=true (internal repo).
 name: jira-check
 
 on:
@@ -12,6 +13,7 @@ permissions:
 
 jobs:
   jira-check:
+    if: vars.ENABLE_INTERNAL_GATES == 'true'
     name: JIRA ticket validation
     runs-on: ubuntu-latest
     steps:

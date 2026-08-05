@@ -1,3 +1,4 @@
+# Runs only when repository variable ENABLE_INTERNAL_GATES=true (internal repo).
 # Post a sticky reminder when a PR is missing a changelog label.
 #
 # Labels: needs-changelog (user-facing change; add release note in PR description)
@@ -23,6 +24,7 @@ concurrency:
 
 jobs:
   assist:
+    if: vars.ENABLE_INTERNAL_GATES == 'true'
     name: Changelog label assist
     runs-on: ubuntu-latest
     steps:

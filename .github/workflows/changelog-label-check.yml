@@ -1,3 +1,5 @@
+# Runs only when repository variable ENABLE_INTERNAL_GATES=true (internal repo).
+# Public mirror (NetApp/trident) omits that variable so this job is skipped.
 name: changelog-label-check
 
 on:
@@ -12,6 +14,7 @@ permissions:
 
 jobs:
   changelog-label-check:
+    if: vars.ENABLE_INTERNAL_GATES == 'true'
     name: Changelog label validation
     runs-on: ubuntu-latest
     steps:

@@ -1,3 +1,4 @@
+# Runs only when repository variable ENABLE_INTERNAL_GATES=true (internal repo).
 # When a PR is merged into master, open backport PRs for each matching label.
 #
 # Labels must be named backport-yy.mm: two-digit year and two-digit month (date-based
@@ -26,7 +27,7 @@ jobs:
   prepare:
     name: Resolve backport targets
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
+    if: vars.ENABLE_INTERNAL_GATES == 'true' && github.event.pull_request.merged == true
     outputs:
       targets: ${{ steps.resolve.outputs.targets }}
       merge_sha: ${{ github.event.pull_request.merge_commit_sha }}
