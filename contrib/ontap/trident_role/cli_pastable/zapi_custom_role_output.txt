@@ -54,8 +54,8 @@ security login role create -role "trident" -cmddirname "volume quota on" -access
 security login role create -role "trident" -cmddirname "volume quota policy rule" -access readonly
 security login role create -role "trident" -cmddirname "volume quota policy rule modify" -access all
 security login role create -role "trident" -cmddirname "volume quota resize" -access all
+security login role create -role "trident" -cmddirname "volume recovery-queue" -access readonly
 security login role create -role "trident" -cmddirname "volume recovery-queue purge" -access all
-security login role create -role "trident" -cmddirname "volume recovery-queue show" -access readonly
 security login role create -role "trident" -cmddirname "volume rename" -access all
 security login role create -role "trident" -cmddirname "volume size" -access all
 security login role create -role "trident" -cmddirname "volume snapshot" -access readonly
