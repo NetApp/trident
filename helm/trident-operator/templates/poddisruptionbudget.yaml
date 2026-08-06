@@ -1,0 +1,19 @@
+{{- if .Values.podDisruptionBudget }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+{{- if .Values.deploymentAnnotations }}
+  annotations:
+{{ toYaml .Values.deploymentAnnotations | indent 4 }}
+{{- end }}
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: operator.trident.netapp.io
+      name: trident-operator
+{{ toYaml .Values.podDisruptionBudget | indent 2 }}
+{{- end }}
