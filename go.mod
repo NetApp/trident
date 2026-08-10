@@ -63,7 +63,7 @@ require (
 	golang.org/x/text v0.38.0 // github.com/golang/text
 	golang.org/x/time v0.15.0 // github.com/golang/time
 	google.golang.org/api v0.285.0
-	google.golang.org/grpc v1.81.1 // github.com/grpc/grpc-go
+	google.golang.org/grpc v1.82.1 // github.com/grpc/grpc-go
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // github.com/protocolbuffers/protobuf-go
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.36.2 // github.com/kubernetes/api
