@@ -11,9 +11,11 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -44,6 +46,27 @@ func newRestClient(ip string, httpClient *http.Client) *RestClient {
 	}
 
 	return rs
+}
+
+func TestNewRestClientStorageAPITimeout(t *testing.T) {
+	t.Parallel()
+
+	defaultClient, err := NewRestClient(context.Background(), ClientConfig{
+		ManagementLIF:   "127.0.0.1",
+		DebugTraceFlags: map[string]bool{},
+	}, "svm0", "ontap-nas")
+	require.NoError(t, err)
+	require.NotNil(t, defaultClient)
+	assert.Equal(t, time.Duration(0), defaultClient.httpClient.Timeout)
+
+	overrideClient, err := NewRestClient(context.Background(), ClientConfig{
+		ManagementLIF:     "127.0.0.1",
+		DebugTraceFlags:   map[string]bool{},
+		StorageAPITimeout: 180 * time.Second,
+	}, "svm0", "ontap-nas")
+	require.NoError(t, err)
+	require.NotNil(t, overrideClient)
+	assert.Equal(t, 180*time.Second, overrideClient.httpClient.Timeout)
 }
 
 func TestPayload(t *testing.T) {

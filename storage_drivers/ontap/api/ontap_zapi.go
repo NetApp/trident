@@ -57,6 +57,7 @@ type ClientConfig struct {
 	DriverContext                  tridentconfig.DriverContext
 	ContextBasedZapiRecords        int
 	DebugTraceFlags                map[string]bool
+	StorageAPITimeout              time.Duration
 	unitTestTransportConfigSchemes string
 }
 
@@ -88,6 +89,7 @@ func NewClient(config ClientConfig, SVM, driverName string) (*Client, error) {
 		true,
 		"",
 		config.DebugTraceFlags,
+		effectiveZapiStorageAPITimeout(config.StorageAPITimeout),
 		storagedrivers.NewSemaphore(config.ManagementLIF, storagedrivers.ONTAPRequestLimit),
 	)
 	d := &Client{

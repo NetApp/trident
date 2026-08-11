@@ -9,6 +9,7 @@
     "password": "password",
     "limitAggregateUsage": "80%",
     "limitVolumeSize": "50Gi",
+    "storageAPITimeout": "90",
     "nfsMountOptions": "nfsvers=4",
     "defaults": {
         "spaceReserve": "volume",
