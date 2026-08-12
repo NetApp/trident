@@ -208,6 +208,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	transport = NewClientAppTransport(transport, ClientAppHeaderValue())
 	result.httpClient = &http.Client{
 		Transport: transport,
+		Timeout:   config.StorageAPITimeout,
 	}
 
 	if config.Username != "" && config.Password != "" {
@@ -280,6 +281,7 @@ func NewGcnvRestClient(ctx context.Context, config ClientConfig, SVM, driverName
 	transport = NewClientAppTransport(transport, ClientAppHeaderValue())
 	result.httpClient = &http.Client{
 		Transport: transport,
+		Timeout:   config.StorageAPITimeout,
 	}
 
 	if rClient, ok := result.api.Transport.(*runtime_client.Runtime); ok {
@@ -370,15 +372,12 @@ func EnsureSVMWithRest(
 func NewRestClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig,
 ) (OntapAPI, error) {
-	restClient, err := NewRestClient(ctx, ClientConfig{
-		ManagementLIF:        ontapConfig.ManagementLIF,
-		Username:             ontapConfig.Username,
-		Password:             ontapConfig.Password,
-		ClientPrivateKey:     ontapConfig.ClientPrivateKey,
-		ClientCertificate:    ontapConfig.ClientCertificate,
-		TrustedCACertificate: ontapConfig.TrustedCACertificate,
-		DebugTraceFlags:      ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
+	clientConfig, err := clientConfigFromOntapConfig(ontapConfig, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	restClient, err := NewRestClient(ctx, clientConfig, ontapConfig.SVM, ontapConfig.StorageDriverName)
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate REST client; %s", err.Error())
 	}
@@ -409,9 +408,12 @@ func NewGcnvRestClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, transport http.RoundTripper,
 ) (OntapAPI, error) {
 	semKey := GCNVSemaphoreKey(ontapConfig.GCNVConfig)
-	restClient, err := NewGcnvRestClient(ctx, ClientConfig{
-		DebugTraceFlags: ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM, ontapConfig.StorageDriverName, transport, semKey)
+	clientConfig, err := clientConfigFromOntapConfig(ontapConfig, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	restClient, err := NewGcnvRestClient(ctx, clientConfig, ontapConfig.SVM, ontapConfig.StorageDriverName, transport, semKey)
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate GCNV REST client; %s", err.Error())
 	}

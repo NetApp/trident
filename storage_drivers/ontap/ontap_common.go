@@ -315,6 +315,12 @@ func InitializeOntapConfig(
 			" present in backend config; please ensure only one authentication method is provided")
 	}
 
+	if config.StorageAPITimeout != "" {
+		if _, err = api.StorageAPITimeoutFromOntapConfig(config); err != nil {
+			return nil, err
+		}
+	}
+
 	return config, nil
 }
 
@@ -2109,6 +2115,12 @@ func PopulateConfigurationDefaults(
 		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
 	}
 
+	if config.StorageAPITimeout != "" {
+		if _, err = api.StorageAPITimeoutFromOntapConfig(config); err != nil {
+			return err
+		}
+	}
+
 	if config.FileSystemType == "" {
 		config.FileSystemType = drivers.DefaultFileSystemType
 	}
@@ -2291,6 +2303,12 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 		config.CloneSplitDelay = strconv.FormatInt(DefaultCloneSplitDelay, 10)
 	} else if v, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0); err != nil || v <= 0 {
 		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
+	}
+
+	if config.StorageAPITimeout != "" {
+		if _, err = api.StorageAPITimeoutFromOntapConfig(config); err != nil {
+			return err
+		}
 	}
 
 	if config.FileSystemType == "" {
