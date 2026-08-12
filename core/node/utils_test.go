@@ -351,18 +351,24 @@ func TestReadAllTrackingFiles_NoTrackingDirReturnsEmpty(t *testing.T) {
 
 // fakeNVMeSubsystem is a minimal hand-rolled fake for nvme.NVMeSubsystemInterface: no gomock
 // mock exists for this interface under mocks/mock_utils/nvme, only for NVMeInterface. Any method
-// besides Disconnect is intentionally left unimplemented (nil-embedded) since
+// besides Disconnect and GetNamespaceCount is intentionally left unimplemented (nil-embedded) since
 // disconnectNVMeSubsystemIfNeeded never calls them; using any of them would panic, which is the
 // desired failure mode if the code under test changes to call something unexpected.
 type fakeNVMeSubsystem struct {
 	nvme.NVMeSubsystemInterface
 	disconnectErr   error
 	disconnectCalls int
+	hostNsCount     int
+	hostNsCountErr  error
 }
 
 func (f *fakeNVMeSubsystem) Disconnect(_ context.Context) error {
 	f.disconnectCalls++
 	return f.disconnectErr
+}
+
+func (f *fakeNVMeSubsystem) GetNamespaceCount(_ context.Context) (int, error) {
+	return f.hostNsCount, f.hostNsCountErr
 }
 
 // withCleanPublishedNVMeSessions snapshots and restores the package-level publishedNVMeSessions
@@ -373,59 +379,56 @@ func withCleanPublishedNVMeSessions(t *testing.T) {
 	t.Cleanup(func() { publishedNVMeSessions = original })
 }
 
-func TestDisconnectNVMeSubsystemIfNeeded_NoNamespaces_DisconnectsRegardlessOfFlag(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, _ := newTestCore(t)
-	pi := samplePublishInfo(NVMe)
-	fakeSubsys := &fakeNVMeSubsystem{}
-
-	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi, false)
-
-	require.NoError(t, err)
-	assert.Equal(t, 1, fakeSubsys.disconnectCalls)
-}
-
-func TestDisconnectNVMeSubsystemIfNeeded_NamespacesPresent_DisconnectFlagFalse_NoDisconnect(t *testing.T) {
+func TestDisconnectNVMeSubsystemIfNeeded_PublishedNamespacePresent_NoDisconnect(t *testing.T) {
 	withCleanPublishedNVMeSessions(t)
 	core, _ := newTestCore(t, WithNVMeSelfHealingInterval(5*time.Second))
 	pi := samplePublishInfo(NVMe)
 	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: pi.NVMeSubsystemNQN}, nil)
 	publishedNVMeSessions.AddNamespaceToSession(pi.NVMeSubsystemNQN, "ns-1")
-	fakeSubsys := &fakeNVMeSubsystem{}
+	fakeSubsys := &fakeNVMeSubsystem{hostNsCount: 1}
 
-	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi, false)
+	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
 
 	require.NoError(t, err)
 	assert.Equal(t, 0, fakeSubsys.disconnectCalls)
 }
 
-func TestDisconnectNVMeSubsystemIfNeeded_NamespacesPresent_SelfHealingDisabled_NoDisconnect(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	// nvmeSelfHealingInterval defaults to zero (disabled) when not set via WithNVMeSelfHealingInterval.
-	core, _ := newTestCore(t)
-	pi := samplePublishInfo(NVMe)
-	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: pi.NVMeSubsystemNQN}, nil)
-	publishedNVMeSessions.AddNamespaceToSession(pi.NVMeSubsystemNQN, "ns-1")
-	fakeSubsys := &fakeNVMeSubsystem{}
+// Once no published sessions remain, the host namespace count is the tie-breaker: a count above one
+// means a concurrent NodeStage already attached a namespace it hasn't recorded a session for yet, so
+// disconnecting would pull that device out from under the new pod. Any other outcome, including an
+// unreadable count, falls through to the disconnect.
+func TestDisconnectNVMeSubsystemIfNeeded_NoPublishedNamespaces_HostCountDecides(t *testing.T) {
+	tests := map[string]struct {
+		hostNsCount         int
+		hostNsCountErr      error
+		wantDisconnectCalls int
+	}{
+		"another namespace still attached on host": {hostNsCount: 2, wantDisconnectCalls: 0},
+		"several namespaces still attached":        {hostNsCount: 5, wantDisconnectCalls: 0},
+		"only our own namespace attached":          {hostNsCount: 1, wantDisconnectCalls: 1},
+		"no namespaces attached":                   {hostNsCount: 0, wantDisconnectCalls: 1},
+		"host count unreadable": {
+			hostNsCountErr:      errors.New("failed to read namespace count"),
+			wantDisconnectCalls: 1,
+		},
+	}
 
-	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi, true)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			withCleanPublishedNVMeSessions(t)
+			core, _ := newTestCore(t)
+			pi := samplePublishInfo(NVMe)
+			fakeSubsys := &fakeNVMeSubsystem{
+				hostNsCount:    test.hostNsCount,
+				hostNsCountErr: test.hostNsCountErr,
+			}
 
-	require.NoError(t, err)
-	assert.Equal(t, 0, fakeSubsys.disconnectCalls, "self-healing disabled must gate the disconnect hint even if disconnect=true")
-}
+			err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
 
-func TestDisconnectNVMeSubsystemIfNeeded_NamespacesPresent_SelfHealingEnabledAndDisconnect_Disconnects(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, _ := newTestCore(t, WithNVMeSelfHealingInterval(5*time.Second))
-	pi := samplePublishInfo(NVMe)
-	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: pi.NVMeSubsystemNQN}, nil)
-	publishedNVMeSessions.AddNamespaceToSession(pi.NVMeSubsystemNQN, "ns-1")
-	fakeSubsys := &fakeNVMeSubsystem{}
-
-	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi, true)
-
-	require.NoError(t, err)
-	assert.Equal(t, 1, fakeSubsys.disconnectCalls)
+			require.NoError(t, err)
+			assert.Equal(t, test.wantDisconnectCalls, fakeSubsys.disconnectCalls)
+		})
+	}
 }
 
 func TestDisconnectNVMeSubsystemIfNeeded_DisconnectErrorPropagates(t *testing.T) {
@@ -434,7 +437,7 @@ func TestDisconnectNVMeSubsystemIfNeeded_DisconnectErrorPropagates(t *testing.T)
 	pi := samplePublishInfo(NVMe)
 	fakeSubsys := &fakeNVMeSubsystem{disconnectErr: errors.New("disconnect failed")}
 
-	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi, false)
+	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disconnect failed")

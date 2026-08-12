@@ -660,15 +660,6 @@ func (c *Core) detachNVMeVolume(
 	defer nvmeSelfHealingLock.RUnlock()
 	nvmeNodeOperationWaitingCount.Add(-1)
 
-	lockContext := "detachNVMeVolume.RemovePublishedNVMeSession"
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-		return errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	disconnect := c.nvme.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
-		publishInfo.NVMeNamespaceUUID)
-	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-
 	nvmeSubsys := c.nvme.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	// Get the device using 'nvme-cli' commands. Flush the device IOs.
 	// Proceed further with detach flow, if device is not found.
@@ -749,8 +740,17 @@ func (c *Core) detachNVMeVolume(
 		locks.Unlock(ctx, "detachNVMeVolume.FlushRetryDelete", nvmeFlushRetryMapLock)
 	}
 
+	lockContext := "detachNVMeVolume.RemovePublishedNVMeSession"
+	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
+		return errors.MaxWaitExceededError("request waited too long for the lock")
+	}
+	c.nvme.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
+		publishInfo.NVMeNamespaceUUID)
+	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
+
 	// Disconnect the subsystem if needed (handled under lock to prevent race conditions).
-	if err = c.disconnectNVMeSubsystemIfNeeded(ctx, nvmeSubsys, publishInfo, disconnect); err != nil {
+	if err = c.disconnectNVMeSubsystemIfNeeded(ctx, nvmeSubsys, publishInfo); err != nil {
 		Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check.")
 		// Continue with cleanup even if disconnect fails.
 	}

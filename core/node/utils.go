@@ -185,7 +185,7 @@ func (c *Core) readAllTrackingFiles(ctx context.Context) []models.VolumePublishI
 // This lock serializes GetNamespaceCount() and Disconnect() operations to ensure accurate namespace counting
 // and prevent race conditions where multiple threads might see the same count simultaneously.
 func (c *Core) disconnectNVMeSubsystemIfNeeded(
-	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo, disconnect bool,
+	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo,
 ) error {
 	lockContext := "disconnectNVMeSubsystemIfNeeded"
 	if !attemptLock(ctx, lockContext, nvmeSubsystemDisconnectLock, sharedLocksNodeLockTimeout) {
@@ -194,20 +194,44 @@ func (c *Core) disconnectNVMeSubsystemIfNeeded(
 	}
 	defer locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
 
+	// publishedNVMeSessions is mutated (Add/Remove) under nvmeSelfHealingSessionLock so this read must
+	// take that same lock to avoid a concurrent map read/write with NodeStage, NodeUnstage, or self-healing.
+	sessionLockContext := "disconnectNVMeSubsystemIfNeeded.SessionRead"
+	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
+		locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
+		return errors.MaxWaitExceededError("request waited too long for the lock")
+	}
 	numNs := publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN)
+	locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
 	Logc(ctx).WithFields(LogFields{
 		"subsystem":      publishInfo.NVMeSubsystemNQN,
 		"namespaceCount": numNs,
-		"disconnectFlag": disconnect,
 	}).Info("Checking if subsystem should be disconnected.")
 
-	if numNs == 0 || (c.nvmeSelfHealingInterval > 0 && disconnect) {
-		if err := nvmeSubsys.Disconnect(ctx); err != nil {
-			Logc(ctx).WithField(
-				"subsystem", publishInfo.NVMeSubsystemNQN,
-			).WithError(err).Debug("Error disconnecting subsystem.")
-			return err
-		}
+	// Another pod still has a published session; we must not disconnect.
+	if numNs > 0 {
+		return nil
+	}
+
+	// In-memory sessions show none left, but a concurrent NodeStage may have already attached a namespace
+	// for a new pod without recording its session yet (recorded only after format/mount). Checking the
+	// host's ground-truth namespace count; if it's >1, another namespace is active, we don't disconnect.
+	if hostNsCount, err := nvmeSubsys.GetNamespaceCount(ctx); err != nil {
+		Logc(ctx).WithField("subsystem", publishInfo.NVMeSubsystemNQN).WithError(err).Debug(
+			"Could not determine host namespace count; proceeding with disconnect based on published sessions.")
+	} else if hostNsCount > 1 {
+		Logc(ctx).WithFields(LogFields{
+			"subsystem":      publishInfo.NVMeSubsystemNQN,
+			"hostNamespaces": hostNsCount,
+		}).Info("Subsystem still has namespace devices attached on host; skipping disconnect.")
+		return nil
+	}
+
+	if err := nvmeSubsys.Disconnect(ctx); err != nil {
+		Logc(ctx).WithField(
+			"subsystem", publishInfo.NVMeSubsystemNQN,
+		).WithError(err).Debug("Error disconnecting subsystem.")
+		return err
 	}
 	return nil
 }

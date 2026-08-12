@@ -751,11 +751,20 @@ type fakeDetachNVMeSubsystem struct {
 	getDeviceErr    error
 	disconnectErr   error
 	disconnectCalls int
+	hostNsCount     int
+	hostNsCountErr  error
 }
 
 func (f *fakeDetachNVMeSubsystem) Disconnect(context.Context) error {
 	f.disconnectCalls++
 	return f.disconnectErr
+}
+
+// GetNamespaceCount feeds disconnectNVMeSubsystemIfNeeded's host-level check, which only skips the
+// disconnect when the count exceeds one; the zero value therefore leaves the disconnect decision to
+// the published session count that each test below sets up.
+func (f *fakeDetachNVMeSubsystem) GetNamespaceCount(context.Context) (int, error) {
+	return f.hostNsCount, f.hostNsCountErr
 }
 
 // GetNVMeDevice/GetNVMeDeviceAt always report "no device found" (nil, getDeviceErr): every
@@ -796,7 +805,8 @@ func TestDetachNVMeVolume_GetNVMeDeviceNonNotFoundError(t *testing.T) {
 	publishInfo := samplePublishInfo(NVMe)
 	subsystem := &fakeDetachNVMeSubsystem{getDeviceErr: errors.New("nvme-cli failed")}
 
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+	// No RemovePublishedNVMeSession expectation: the session is now removed only after the device is
+	// torn down, so bailing out here leaves the published session in place for a later retry.
 	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
 
 	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
@@ -846,7 +856,8 @@ func TestDetachNVMeVolume_LUKSDevicePathLookupError(t *testing.T) {
 	publishInfo.LUKSEncryption = "true"
 	subsystem := &fakeDetachNVMeSubsystem{}
 
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+	// No RemovePublishedNVMeSession expectation: this failure precedes the session removal, which now
+	// happens only after LUKS teardown completes.
 	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
 	mocks.Devices.EXPECT().GetLUKSDevicePathForDevicePath(gomock.Any(), publishInfo.DevicePath).
 		Return("", errors.New("lookup failed"))
