@@ -2765,6 +2765,49 @@ func TestCreateClone(t *testing.T) {
 	}
 }
 
+func TestNVMeCreateClone_VolumeExists(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, sourceVolConfig, _ := getNVMeCreateArgs(d)
+	d.Config.SplitOnClone = "false"
+
+	sourceNamespaceUUID := uuid.New().String()
+	sourceVolConfig.InternalID = fmt.Sprintf("/vol/%s/namespace0", sourceVolConfig.InternalName)
+	sourceVolConfig.AccessInfo.NVMeNamespaceUUID = sourceNamespaceUUID
+
+	// Core copies the source's access info into the clone before CreateClone runs, so the clone
+	// starts out pointing at the source's namespace.
+	cloneVolConfig := &storage.VolumeConfig{
+		InternalName:              "cloneVol1",
+		Size:                      "200000000",
+		CloneSourceVolumeInternal: sourceVolConfig.InternalName,
+	}
+	cloneVolConfig.AccessInfo.NVMeNamespaceUUID = sourceNamespaceUUID
+
+	cloneNsPath := fmt.Sprintf("/vol/%s/namespace0", cloneVolConfig.InternalName)
+	cloneNamespaceUUID := uuid.New().String()
+
+	mAPI.EXPECT().VolumeInfo(ctx, sourceVolConfig.InternalName).Return(
+		&api.Volume{Aggregates: []string{"data"}}, nil)
+	// A previous attempt timed out after ONTAP had already built the flexvol, so cloneFlexvol
+	// reports it exists. VolumeCloneCreate is intentionally not mocked: reaching it would fail.
+	mAPI.EXPECT().VolumeExists(ctx, cloneVolConfig.InternalName).Return(true, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, cloneNsPath).Return(
+		&api.NVMeNamespace{Name: cloneNsPath, UUID: cloneNamespaceUUID}, nil)
+
+	err := d.CreateClone(ctx, sourceVolConfig, cloneVolConfig, pool1)
+
+	assert.True(t, drivers.IsVolumeExistsError(err),
+		"CreateClone must return VolumeExistsError so Backend.CloneVolume keeps treating the clone as "+
+			"pre-existing and does not destroy a volume it did not create")
+	assert.Equal(t, cloneNamespaceUUID, cloneVolConfig.AccessInfo.NVMeNamespaceUUID,
+		"clone must be given its own namespace UUID when the flexvol already exists")
+	assert.NotEqual(t, sourceNamespaceUUID, cloneVolConfig.AccessInfo.NVMeNamespaceUUID,
+		"keeping the source's namespace UUID makes Publish map the source's namespace into the "+
+			"target node's subsystem, which ONTAP rejects with 72089790")
+	assert.Equal(t, cloneNsPath, cloneVolConfig.InternalID,
+		"InternalID must be the clone's own namespace path")
+}
+
 func TestImport(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
