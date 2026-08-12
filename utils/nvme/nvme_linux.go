@@ -29,8 +29,9 @@ var (
 )
 
 const (
-	NVME_PATH = "/sys/class/nvme-subsystem"
-	SUBSYSNQN = "/subsysnqn"
+	NVME_PATH                = "/sys/class/nvme-subsystem"
+	NVME_TCP_SYS_MODULE_PATH = "/sys/module/nvme_tcp"
+	SUBSYSNQN                = "/subsysnqn"
 )
 
 // GetHostNqn returns the Nqn string of the k8s node.
@@ -57,6 +58,15 @@ func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Could not read NVMe CLI version; perhaps NVMe CLI is not installed?")
 		return false, fmt.Errorf("failed to get hostnqn: %v", err)
+	}
+
+	// Loaded and built-in kernel modules are both exposed through sysfs. Checking
+	// sysfs allows NVMe/TCP to be detected on hosts that compile it into the kernel.
+	nvmeTCPModuleExists, err := afero.DirExists(nh.osFs, NVME_TCP_SYS_MODULE_PATH)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Could not inspect the NVMe/TCP kernel module in sysfs.")
+	} else if nvmeTCPModuleExists {
+		return true, nil
 	}
 
 	out, err := nh.command.ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second, false)
