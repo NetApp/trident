@@ -648,7 +648,7 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 	// Double-check locking pattern: VolumeListByAttrs called twice when no FlexVol found
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1016,7 +1016,7 @@ func TestOntapSanEconomyVolumeCreate_OverPoolSizeLimit_CreateNewFlexvol(t *testi
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return([]*api.Volume{existingFlexvol}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(2).Return(existingFlexvol, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return([]api.Lun{existingLUN}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(newFlexvol, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{}, nil) // resizeFlexvol on new FlexVol
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
@@ -1276,7 +1276,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeFailed(t *testing.T) {
 			// 6. VolumeDestroy (cleanup on error)
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil).Times(2)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("error resizing volume"))
 			if test.destroyError {
@@ -1323,7 +1323,7 @@ func TestOntapSanEconomyVolumeCreate_LUNCreateFailed(t *testing.T) {
 			// 7. VolumeDestroy (cleanup on error)
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(errors.New("failed to create lun"))
@@ -1365,7 +1365,7 @@ func TestOntapSanEconomyVolumeCreate_TooManyLUNs(t *testing.T) {
 	// 10. LunGetByName, LunSetAttribute
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(3).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(4).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(2).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(2).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(2).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(2).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(api.TooManyLunsError("too many luns"))
@@ -1394,7 +1394,7 @@ func TestOntapSanEconomyVolumeCreate_GetLUNFailed(t *testing.T) {
 	// Double-check locking pattern: VolumeListByAttrs called twice when no FlexVol found
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1432,7 +1432,7 @@ func TestOntapSanEconomyVolumeCreate_LUNSetAttributeFailed(t *testing.T) {
 			// Double-check locking pattern: VolumeListByAttrs called twice when no FlexVol found
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1480,7 +1480,7 @@ func TestOntapSanEconomyVolumeCreate_Resize(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(2).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1515,7 +1515,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1550,7 +1550,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1586,7 +1586,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed2(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1633,7 +1633,7 @@ func TestOntapSanEconomyVolumeCreate_FormatOptions(t *testing.T) {
 	// Double-check locking pattern: VolumeListByAttrs called twice when no FlexVol found
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return("", nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -4339,7 +4339,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolNotFound(t *testing.T) {
 	// 2. Double-check call to findFlexvolForLUN after acquiring lock - returns empty
 	// 3. Then VolumeCreate is called (which fails in this test)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("failed to create volume"))
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New("failed to create volume"))
 
 	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, &d.Config, pool1, make(map[string]struct{}))
 
@@ -5989,7 +5989,7 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("failed to create volume"))
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New("failed to create volume"))
 
 	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)
 
@@ -6007,7 +6007,7 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 //	pool1 := storage.NewStoragePool(nil, "pool1")
 //	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 //
-//	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+//	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 //	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
 //		gomock.Any(), false).Return(errors.New("failed to disable snapshot directory access"))
 //	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(errors.New("failed to destroy volume"))

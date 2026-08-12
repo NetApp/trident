@@ -4001,7 +4001,7 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
@@ -4082,7 +4082,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBEnabled(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
@@ -4320,7 +4320,7 @@ func TestOntapNasStorageDriverVolumeCreate_ValidationScenarios(t *testing.T) {
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 			if !tt.expectErr {
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 			}
 
@@ -4533,9 +4533,9 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 
 			if tt.expectError {
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New(tt.message))
+				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New(tt.message))
 			} else {
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(api.VolumeCreateJobExistsError(tt.message))
+				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", api.VolumeCreateJobExistsError(tt.message))
 			}
 
 			result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -4576,7 +4576,7 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
@@ -4615,7 +4615,7 @@ func TestOntapNasStorageDriverVolumeCreate_IsMirrorDestination(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
@@ -4651,7 +4651,7 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(errors.New("failed to mount volume"))
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -4757,7 +4757,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareScenarios(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 
 			expectedPath := "/vol1"
@@ -4815,7 +4815,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsScenarios(t *testing.T)
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 			mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, errors.New("server error"))
 
@@ -4866,7 +4866,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlCreateFail(t *t
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
@@ -4921,7 +4921,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlDeleteFail(t *t
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)

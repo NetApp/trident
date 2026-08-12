@@ -174,7 +174,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	return nil
 }
 
-func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
+func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, error) {
 	fields := LogFields{
 		"Method": "VolumeCreate",
 		"Type":   "OntapAPIREST",
@@ -190,17 +190,17 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 		aggregateName = volume.Aggregates[0]
 	}
 
-	creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
+	volumeUUID, creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
-		return fmt.Errorf("error creating volume: %v", creationErr)
+		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
 
-	return nil
+	return volumeUUID, nil
 }
 
-func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) error {
+func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) (string, error) {
 	fields := LogFields{
 		"Method": "VolumeCreateBalanced",
 		"Type":   "OntapAPIREST",
@@ -213,17 +213,17 @@ func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) e
 
 	// Double-check this API is supported
 	if !d.SupportsFeature(ctx, BalancedPlacement) {
-		return errors.UnsupportedError("ONTAP version does not support balanced placement")
+		return "", errors.UnsupportedError("ONTAP version does not support balanced placement")
 	}
 
-	creationErr := d.api.VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
+	volumeUUID, creationErr := d.api.VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
-		return fmt.Errorf("error creating volume: %v", creationErr)
+		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
 
-	return nil
+	return volumeUUID, nil
 }
 
 func (d OntapAPIREST) VolumeModify(ctx context.Context, volume Volume) error {
@@ -233,14 +233,61 @@ func (d OntapAPIREST) VolumeModify(ctx context.Context, volume Volume) error {
 func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
 	destroyVolume := func() error {
 		deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
-		if deletionErr != nil && !IsVolumeBusyRESTError(deletionErr) {
-			return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, deletionErr))
+		return classifyVolumeDeleteError(name, deletionErr)
+	}
+	return d.retryVolumeDestroy(ctx, name, destroyVolume)
+}
+
+// VolumeDestroyByUUID deletes the volume identified by volumeUUID. Addressing the volume by UUID
+// avoids the lag in ONTAP's name index, which can report a just-created volume as missing. A UUID
+// that no longer resolves yields a NotFoundError, meaning the delete already completed.
+func (d OntapAPIREST) VolumeDestroyByUUID(
+	ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool,
+) error {
+	fields := LogFields{
+		"Method": "VolumeDestroyByUUID",
+		"Type":   "OntapAPIREST",
+		"volume": volumeName,
+		"uuid":   volumeUUID,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeDestroyByUUID")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeDestroyByUUID")
+
+	if volumeUUID == "" {
+		return errors.UnsupportedError("no volume UUID provided; delete by name")
+	}
+
+	destroyVolume := func() error {
+		deletionErr := d.api.VolumeDestroyByUUID(ctx, volumeUUID, skipRecoveryQueue)
+		if errors.IsNotFoundError(deletionErr) {
+			return backoff.Permanent(errors.NotFoundError("volume %s (UUID %s) does not exist", volumeName, volumeUUID))
 		}
-		if deletionErr != nil {
-			return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
-		}
+		return classifyVolumeDeleteError(volumeName, deletionErr)
+	}
+	return d.retryVolumeDestroy(ctx, volumeName, destroyVolume)
+}
+
+// classifyVolumeDeleteError wraps a raw delete error so that a busy volume is retried while any
+// other failure aborts the retry loop immediately. A NotFoundError passes through with its type
+// intact, since callers rely on it to tell an already-deleted volume from a real failure.
+func classifyVolumeDeleteError(name string, deletionErr error) error {
+	if deletionErr == nil {
 		return nil
 	}
+	if errors.IsNotFoundError(deletionErr) {
+		return backoff.Permanent(deletionErr)
+	}
+	if !IsVolumeBusyRESTError(deletionErr) {
+		return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, deletionErr))
+	}
+	return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+}
+
+// retryVolumeDestroy runs a delete operation with the shared busy-volume backoff, unwrapping the
+// permanent error (which may be a NotFoundError the caller treats as success) when the loop stops.
+func (d OntapAPIREST) retryVolumeDestroy(ctx context.Context, name string, destroyVolume func() error) error {
 	destroyNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Volume busy, waiting.")
 	}

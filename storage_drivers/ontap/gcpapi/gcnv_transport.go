@@ -10,6 +10,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -21,7 +24,26 @@ import (
 const (
 	gcnvExpertModeAPIVersion = "v1"
 	gcnvExpertModeAPIPathFmt = "%s/" + gcnvExpertModeAPIVersion + "/projects/%s/locations/%s/storagePools/%s/ontap"
+
+	// ontapEntryDoesntExistCode is the ONTAP REST error code for a missing entry.
+	ontapEntryDoesntExistCode = "4"
 )
+
+// gcnvVolumeUUIDNotFoundMessage extracts a volume UUID from GCNV/VCP
+// "volume with UUID … not found" wording. The UUID may be double-quoted,
+// single-quoted, or bare; shape is checked separately (see looksLikeUUID).
+var gcnvVolumeUUIDNotFoundMessage = regexp.MustCompile(
+	`(?i)volume with UUID (?:"([^"]+)"|'([^']+)'|(\S+)) not found`,
+)
+
+// uuidShape matches an 8-4-4-4-12 hex UUID (case-insensitive).
+var uuidShape = regexp.MustCompile(
+	`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+)
+
+// deleteVolumeByUUIDPath matches DELETE /api/storage/volumes/{uuid} (original ONTAP
+// REST path on the request before the proxy base is prepended).
+var deleteVolumeByUUIDPath = regexp.MustCompile(`^/api/storage/volumes/[^/]+$`)
 
 func gcnvExpertModeProxyBase(proxyOrigin, projectNumber, location, poolID string) string {
 	return fmt.Sprintf(gcnvExpertModeAPIPathFmt, proxyOrigin, projectNumber, location, poolID)
@@ -228,6 +250,17 @@ func (t *GCNVOntapModeTransport) RoundTrip(req *http.Request) (*http.Response, e
 		resp.Status = fmt.Sprintf("%d %s", ontapStatus, http.StatusText(ontapStatus))
 	}
 
+	// The proxy likewise reports a missing volume as 400 rather than ONTAP's 404,
+	// which hides "already gone" from delete-by-UUID (see inferONTAPErrorStatus).
+	if errorStatus := inferONTAPErrorStatus(req.Method, req.URL.Path, resp.StatusCode, unwrapped); errorStatus > 0 {
+		Logc(ctx).WithFields(LogFields{
+			"method": req.Method, "proxyURL": parsed.String(),
+			"proxyStatus": resp.StatusCode, "ontapStatus": errorStatus,
+		}).Trace("Restoring ONTAP not-found status from GCNV proxy error response.")
+		resp.StatusCode = errorStatus
+		resp.Status = fmt.Sprintf("%d %s", errorStatus, http.StatusText(errorStatus))
+	}
+
 	resp.Body = io.NopCloser(bytes.NewReader(unwrapped))
 	resp.ContentLength = int64(len(unwrapped))
 
@@ -276,6 +309,82 @@ func inferONTAPStatus(method string, body []byte) int {
 	}
 
 	return 0
+}
+
+// inferONTAPErrorStatus returns ONTAP 404 only for DELETE /api/storage/volumes/{uuid}
+// when the body says that volume is missing (ONTAP code "4", or GCNV's
+// "volume with UUID '…' not found"). GCNV often reports that as wire 400; destroy-by-UUID
+// treats 404 as an already-completed delete. Other 400s — transitional state, VCP
+// registration lag, unrelated validation — stay 400.
+func inferONTAPErrorStatus(method, ontapPath string, statusCode int, body []byte) int {
+	if statusCode != http.StatusBadRequest || method != http.MethodDelete {
+		return 0
+	}
+	if !deleteVolumeByUUIDPath.MatchString(ontapPath) {
+		return 0
+	}
+
+	message, code := gcnvErrorFields(body)
+	if message == "" && code == "" {
+		return 0
+	}
+	if code == ontapEntryDoesntExistCode {
+		return http.StatusNotFound
+	}
+	if gcnvMessageReportsMissingVolumeUUID(message) {
+		return http.StatusNotFound
+	}
+	return 0
+}
+
+// gcnvMessageReportsMissingVolumeUUID reports whether message is GCNV/VCP's
+// "volume with UUID … not found" form for a real UUID. Extraction and shape
+// checks are separate so each regex stays simple; a generic "not found" is not
+// enough — VCP can 400 with other "not found" phrases while the volume still
+// exists on ONTAP (reconciliation lag).
+func gcnvMessageReportsMissingVolumeUUID(message string) bool {
+	matches := gcnvVolumeUUIDNotFoundMessage.FindStringSubmatch(message)
+	if matches == nil {
+		return false
+	}
+	// Submatches: 1 = double-quoted, 2 = single-quoted, 3 = bare.
+	return slices.ContainsFunc(matches[1:], looksLikeUUID)
+}
+
+func looksLikeUUID(s string) bool {
+	return uuidShape.MatchString(s)
+}
+
+// gcnvErrorFields extracts code and message from ONTAP {"error":{...}} or flat
+// {"code","message"} bodies. Code may be a string or number depending on the proxy.
+func gcnvErrorFields(body []byte) (message, code string) {
+	var withError struct {
+		Error map[string]any `json:"error"`
+	}
+	if err := json.Unmarshal(body, &withError); err == nil && withError.Error != nil {
+		message, _ = withError.Error["message"].(string)
+		return message, gcnvErrorCodeString(withError.Error["code"])
+	}
+
+	var flat struct {
+		Code    any    `json:"code"`
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal(body, &flat); err != nil {
+		return "", ""
+	}
+	return flat.Message, gcnvErrorCodeString(flat.Code)
+}
+
+func gcnvErrorCodeString(v any) string {
+	switch c := v.(type) {
+	case string:
+		return c
+	case float64:
+		return strconv.FormatInt(int64(c), 10)
+	default:
+		return ""
+	}
 }
 
 // unwrapProxyResponse extracts the inner "body" from the GCNV proxy envelope {"body": ...}.

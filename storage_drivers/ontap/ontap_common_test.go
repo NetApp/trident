@@ -8856,6 +8856,23 @@ func TestCloneFlexvol(t *testing.T) {
 			split:               false,
 			expectError:         true,
 		},
+		"Backend volume ID inherited from the source is cleared": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(true, nil)
+			},
+			cloneVolumeConfig: storage.VolumeConfig{
+				InternalName:                internalName,
+				CloneSourceVolumeInternal:   cloneSourceVolumeInternal,
+				CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+				BackendVolumeID:             "d0f1f979-2f7b-4a5b-9a7a-1c2b3c4d5e6f",
+			},
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+			validateCloneVolumeConfig: func(t *testing.T, cloneVolumeConfig storage.VolumeConfig) {
+				assert.Empty(t, cloneVolumeConfig.BackendVolumeID)
+			},
+		},
 		"Snapshot cleanup on vol create error": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
@@ -13519,8 +13536,8 @@ func TestCreateFlexvol_BalancedPlacement_Success(t *testing.T) {
 	}
 	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
-	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(nil)
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return("", nil)
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.NoError(t, err)
 }
 
@@ -13535,8 +13552,8 @@ func TestCreateFlexvol_BalancedPlacement_Error(t *testing.T) {
 	}
 	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
-	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(fmt.Errorf("balanced create failed"))
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return("", fmt.Errorf("balanced create failed"))
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "balanced create failed")
 }
@@ -13552,8 +13569,8 @@ func TestCreateFlexvol_LegacyCreate_Success(t *testing.T) {
 	}
 	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
-	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return(nil)
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return("", nil)
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.NoError(t, err)
 }
 
@@ -13568,8 +13585,8 @@ func TestCreateFlexvol_LegacyCreate_Error(t *testing.T) {
 	}
 	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
-	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return(fmt.Errorf("create failed"))
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreate(ctx, volume).Return("", fmt.Errorf("create failed"))
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "create failed")
 }
@@ -13586,8 +13603,8 @@ func TestCreateFlexvol_AFX_NoBalancedPlacementSupport(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.NoError(t, err)
 }
 
@@ -13603,8 +13620,8 @@ func TestCreateFlexvol_AFX_NoBalancedPlacementSupport_Error(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf("legacy create failed"))
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", fmt.Errorf("legacy create failed"))
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "legacy create failed")
 }
@@ -13621,8 +13638,8 @@ func TestCreateFlexvol_AFX_WithBalancedPlacementSupport(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
-	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return(nil)
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreateBalanced(ctx, volume).Return("", nil)
+	_, err := createFlexvol(ctx, mockAPI, volume)
 	assert.NoError(t, err)
 }
 
@@ -13638,7 +13655,88 @@ func TestCreateFlexvol_NonManagedPool_Disaggregated(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().Return(true).AnyTimes()
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 	mockAPI.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	err := createFlexvol(ctx, mockAPI, volume)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
+	_, err := createFlexvol(ctx, mockAPI, volume)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_Success(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_NotFoundIsSuccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	// A volume already gone is not an error; delete-by-UUID is idempotent.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).
+		Return(errors.NotFoundError("gone"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_UnsupportedFallsBackToName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-stale"}
+
+	// UnsupportedError (e.g. ZAPI) means delete-by-UUID is unavailable; fall back to name.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-stale", "vol1", true, false).
+		Return(errors.UnsupportedError("ZAPI does not support delete by volume UUID"))
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	// A non-NotFound, non-Unsupported error is propagated without falling back to name.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).
+		Return(fmt.Errorf("volume busy"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "volume busy")
+}
+
+func TestDestroyFlexvol_NoUUID_DeletesByName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1"}
+
+	// With no recorded UUID the delete goes straight to the name-based path.
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_NoUUID_NameNotFoundIsSuccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1"}
+
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(errors.NotFoundError("gone"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
 	assert.NoError(t, err)
 }

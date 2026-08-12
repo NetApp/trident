@@ -883,7 +883,7 @@ func TestNVMeCreate_CleanupIncompleteNamespace_OrphanedVolumeCleaned(t *testing.
 
 		// After cleanup, Create proceeds normally
 		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil),
+		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
 		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
@@ -940,7 +940,7 @@ func TestNVMeCreate_CleanupIncompleteNamespace_EmptyFileSystemTriggersCleanup(t 
 
 		// Create proceeds normally after cleanup
 		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil),
+		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
 		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
@@ -1125,7 +1125,7 @@ func TestNVMeCreate_VolumeCreateAPIError(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("volume create failed"))
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New("volume create failed"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1141,7 +1141,7 @@ func TestNVMeCreate_VolumeCreateJobExistsError(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("",
 		api.VolumeCreateJobExistsError("volume create job already exists"))
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
@@ -1158,7 +1158,7 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy").Times(2)
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil).Times(2)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil).Times(2)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil).Times(2)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).
 		Return(errors.New("failed to create namespace")).
 		Times(2)
@@ -1184,7 +1184,7 @@ func TestNVMeCreate_LUKSVolume(t *testing.T) {
 	volConfig.LUKSEncryption = "true"
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
@@ -1214,7 +1214,7 @@ func TestNVMeCreate_Success(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
@@ -1231,7 +1231,7 @@ func TestNVMeCreate_NamespaceGetByNameRetriesOnError(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 
 	// First call returns NotFound (ONTAP eventual consistency), second call succeeds
@@ -1254,7 +1254,7 @@ func TestNVMeCreate_NamespaceGetByNameRetriesOnNil(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 
 	// First two calls return nil namespace (no error), third succeeds
@@ -1280,7 +1280,7 @@ func TestNVMeCreate_NamespaceGetByNameAllRetriesFail(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(testCtx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(testCtx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(testCtx, gomock.Any()).Return(nil)
 	// Backoff retries NotFound until budget is exhausted (see api/ontap_wait.go).
 	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(
@@ -1302,7 +1302,7 @@ func TestNVMeCreate_NamespaceGetByNameAllRetriesReturnNil(t *testing.T) {
 
 	mAPI.EXPECT().TieringPolicyValue(testCtx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(testCtx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(testCtx, gomock.Any()).Return(nil)
 	// Backoff retries empty results until budget is exhausted (see api/ontap_wait.go).
 	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(nil, nil).AnyTimes()
@@ -1320,7 +1320,7 @@ func TestNVMeCreate_NamespaceGetByNameFailsImmediatelyOnNonNotFound(t *testing.T
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, fmt.Errorf("transient API error"))
 
@@ -1362,7 +1362,7 @@ func TestNVMeCreate_CleanupIncompleteNamespace_NotFoundErrorTriggersCleanup(t *t
 		mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(nil),
 
 		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil),
+		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
 		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),

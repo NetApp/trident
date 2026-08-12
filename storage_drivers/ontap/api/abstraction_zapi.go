@@ -64,7 +64,7 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 	return nil
 }
 
-func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
+func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) (string, error) {
 	fields := LogFields{
 		"Method": "VolumeCreate",
 		"Type":   "OntapAPIZAPI",
@@ -75,15 +75,18 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
+	// ZAPI does not report a volume UUID on create, and the ZAPI path queries WAFL directly rather
+	// than an asynchronous name index, so it is not exposed to the create/delete propagation race.
+	// Callers therefore always delete ZAPI-created volumes by name.
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
 		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt,
 		volume.SnapshotReserve, volume.DPVolume)
 	if err != nil {
-		return fmt.Errorf("error creating volume: %v", err)
+		return "", fmt.Errorf("error creating volume: %v", err)
 	}
 	if volCreateResponse == nil {
-		return fmt.Errorf("missing volume create response")
+		return "", fmt.Errorf("missing volume create response")
 	}
 	if err = azgo.GetError(ctx, volCreateResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
@@ -97,11 +100,20 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 		}
 	}
 
-	return err
+	return "", err
 }
 
-func (d OntapAPIZAPI) VolumeCreateBalanced(ctx context.Context, volume Volume) error {
-	return errors.UnsupportedError("ZAPI does not support balanced placement")
+func (d OntapAPIZAPI) VolumeCreateBalanced(ctx context.Context, volume Volume) (string, error) {
+	return "", errors.UnsupportedError("ZAPI does not support balanced placement")
+}
+
+// VolumeDestroyByUUID is unsupported on the ZAPI path, which addresses volumes by name and is not
+// exposed to the REST name-index propagation race. It returns an UnsupportedError so callers fall
+// back to deleting by name.
+func (d OntapAPIZAPI) VolumeDestroyByUUID(
+	ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool,
+) error {
+	return errors.UnsupportedError("ZAPI does not support delete by volume UUID; delete by name")
 }
 
 // VolumeDestroy deletes a flexvol via ONTAP ZAPI.

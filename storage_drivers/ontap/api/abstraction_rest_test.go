@@ -1571,16 +1571,16 @@ func TestVolumeCreate(t *testing.T) {
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(nil)
-	err := oapi.VolumeCreate(ctx, volume)
+		Return("", nil)
+	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume")
 
 	// case 2: Create volume, volume creation failed
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(errors.New("Volume create failed"))
-	err = oapi.VolumeCreate(ctx, volume)
+		Return("", errors.New("Volume create failed"))
+	_, err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
 }
 
@@ -1613,7 +1613,7 @@ func TestVolumeCreateBalanced(t *testing.T) {
 
 	// case 1: Create volume balanced, ONTAP version does not support balanced placement
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(false)
-	err := oapi.VolumeCreateBalanced(ctx, volume)
+	_, err := oapi.VolumeCreateBalanced(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume with unsupported feature")
 
 	// case 2: Create volume balanced, returned No error
@@ -1621,17 +1621,18 @@ func TestVolumeCreateBalanced(t *testing.T) {
 	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(nil)
-	err = oapi.VolumeCreateBalanced(ctx, volume)
+		Return("uuid-1", nil)
+	volumeUUID, err := oapi.VolumeCreateBalanced(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume balanced")
+	assert.Equal(t, "uuid-1", volumeUUID)
 
 	// case 3: Create volume balanced, volume creation failed
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
 	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(errors.New("Volume create balanced failed"))
-	err = oapi.VolumeCreateBalanced(ctx, volume)
+		Return("", errors.New("Volume create balanced failed"))
+	_, err = oapi.VolumeCreateBalanced(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume balanced")
 }
 
@@ -1651,6 +1652,45 @@ func TestVolumeDestroy(t *testing.T) {
 	// case 3: Non-busy error is not retried.
 	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(stderrors.New("snapshot not found")).Times(1)
 	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "snapshot not found")
+
+	// case 4: Name no longer resolves -> NotFoundError survives so the caller can treat the
+	// delete as already completed rather than a failure.
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(errors.NotFoundError("could not find volume: vol1")).Times(1)
+	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when the volume is already gone")
+}
+
+func TestVolumeDestroyByUUID(t *testing.T) {
+	uuid := "d0f1f979-2f7b-4a5b-9a7a-1c2b3c4d5e6f"
+	volName := "vol1"
+
+	// case 1: No UUID provided -> UnsupportedError so the caller falls back to delete by name.
+	oapi, rsi := newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	err := oapi.VolumeDestroyByUUID(ctx, "", volName, true, false)
+	assert.True(t, errors.IsUnsupportedError(err), "expected UnsupportedError when UUID is empty")
+
+	// case 2: Delete by UUID succeeds.
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(nil)
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.NoError(t, err, "expected delete by UUID to succeed")
+
+	// case 3: UUID no longer resolves -> NotFoundError (already-completed delete).
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(errors.NotFoundError("gone"))
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when the volume is already gone")
+
+	// case 4: A non-busy failure is returned to the caller without retrying.
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(stderrors.New("snapshot not found")).Times(1)
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "snapshot not found")
 }

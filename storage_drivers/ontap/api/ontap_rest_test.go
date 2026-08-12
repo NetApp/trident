@@ -4816,15 +4816,16 @@ func TestOntapRestRenameVolumeByNameAndStyle(t *testing.T) {
 
 func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 	tests := []struct {
-		name            string
-		mockFunction    func(w http.ResponseWriter, r *http.Request)
-		isErrorExpected bool
+		name               string
+		mockFunction       func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected    bool
+		isNotFoundExpected bool
 	}{
-		{"GetVolume", mockGetVolumeResponseAccepted, false},
-		{"VolumeDeleteFail", mockModifyFailed, true},
-		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
-		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
-		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
+		{"GetVolume", mockGetVolumeResponseAccepted, false, false},
+		{"VolumeDeleteFail", mockModifyFailed, true, false},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true, false},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true, true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -4838,6 +4839,9 @@ func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 			} else {
 				assert.Error(t, err, "volume deleted")
 			}
+			// A volume that no longer resolves by name must be reported as a NotFoundError so
+			// callers can treat the delete as already completed.
+			assert.Equal(t, test.isNotFoundExpected, errors.IsNotFoundError(err))
 			server.Close()
 		})
 	}
@@ -5075,7 +5079,7 @@ func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	rs := newRestClient(server.Listener.Addr().String(), server.Client())
 	assert.NotNil(t, rs)
 
-	err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
+	_, err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
 		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, new(true), 0, models.VolumeStyleFlexvol,
 		false)
@@ -5099,7 +5103,7 @@ func TestOntapREST_VolumeCreate(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "spaceReserve",
+			_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
 				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
 			if !test.isErrorExpected {
@@ -5145,11 +5149,12 @@ func TestOntapREST_VolumeCreateBalanced(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeCreateBalanced(ctx, "fakeVolume", "1g", "spaceReserve",
+			volumeUUID, err := rs.VolumeCreateBalanced(ctx, "fakeVolume", "1g", "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
 				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a balanced volume")
+				assert.NotEmpty(t, volumeUUID, "balanced volume create should return the UUID from its visibility GET")
 			} else {
 				assert.Error(t, err, "balanced volume created")
 			}

@@ -482,6 +482,149 @@ func TestRoundTrip_ErrorResponseUnwrap(t *testing.T) {
 	assert.NotContains(t, string(body), `"body"`)
 }
 
+// TestRoundTrip_NotFoundErrorStatusRestored covers inferONTAPErrorStatus: GCNV reports a
+// missing volume as 400 on DELETE-by-UUID, and callers need ONTAP's 404 to recognize an
+// already-deleted volume. Remap is scoped to that path and to explicit missing-volume signals.
+func TestRoundTrip_NotFoundErrorStatusRestored(t *testing.T) {
+	// Verbatim GCNV proxy response for a DELETE of a volume that no longer exists: the
+	// wire status is 400 and the ONTAP reason is nested inside the message.
+	const gcnvVolumeMissing = `{"error":{"code":"400","message":"code: 400, message: {\n  \"code\":  400,\n  ` +
+		`\"message\":  \"bad request: volume with UUID 'f2cac576-95a8-11f1-9db7-6538c389414f' not found\"\n}"}}`
+
+	tests := []struct {
+		name       string
+		method     string
+		path       string
+		wireStatus int
+		body       string
+		wantStatus int
+	}{
+		{
+			"GCNV volume missing on delete", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, gcnvVolumeMissing, http.StatusNotFound,
+		},
+		{
+			"ONTAP entry doesn't exist code", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, `{"error":{"code":"4","message":"entry doesn't exist"}}`, http.StatusNotFound,
+		},
+		{
+			"generic does not exist is left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, `{"error":{"code":"400","message":"volume vol1 does not exist"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"unrelated bad request is left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"bad request: volume with UUID 'x' is in a transitional state"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"unquoted UUID is remapped", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID f2cac576-95a8-11f1-9db7-6538c389414f not found"}}`,
+			http.StatusNotFound,
+		},
+		{
+			"unquoted non-UUID token is left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID field not found"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"single-quoted non-UUID token is left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID 'field' not found"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"double-quoted UUID is remapped", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID \"f2cac576-95a8-11f1-9db7-6538c389414f\" not found"}}`,
+			http.StatusNotFound,
+		},
+		{
+			"double-quoted non-UUID token is left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID \"field\" not found"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"mismatched quotes are left alone", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest,
+			`{"error":{"code":"400","message":"volume with UUID 'f2cac576-95a8-11f1-9db7-6538c389414f\" not found"}}`,
+			http.StatusBadRequest,
+		},
+		{
+			"non-delete method is left alone", http.MethodPatch, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, gcnvVolumeMissing, http.StatusBadRequest,
+		},
+		{
+			"non-volume path is left alone", http.MethodDelete, "/api/cluster",
+			http.StatusBadRequest, gcnvVolumeMissing, http.StatusBadRequest,
+		},
+		{
+			"numeric code and null message do not panic", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, `{"error":{"code":6684674,"message":null}}`, http.StatusBadRequest,
+		},
+		{
+			"error payload absent", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, `{"records":[]}`, http.StatusBadRequest,
+		},
+		{
+			"non-JSON body", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusBadRequest, `<html>bad request</html>`, http.StatusBadRequest,
+		},
+		{
+			"other error statuses pass through", http.MethodDelete, "/api/storage/volumes/vol-1",
+			http.StatusForbidden, `{"error":{"code":"403","message":"volume with UUID 'x' not found"}}`,
+			http.StatusForbidden,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.wireStatus)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			tr := newTestTransportForTLSServer(t, server)
+
+			req, _ := http.NewRequest(tt.method, "https://placeholder"+tt.path, nil)
+			resp, err := tr.RoundTrip(req)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+			assert.Equal(t, fmt.Sprintf("%d %s", tt.wantStatus, http.StatusText(tt.wantStatus)), resp.Status)
+		})
+	}
+}
+
+// TestRoundTrip_NotFoundErrorStatusRestoredThroughEnvelope verifies the not-found status is
+// recovered when the proxy also wraps the error in its {"body": ...} envelope.
+func TestRoundTrip_NotFoundErrorStatusRestoredThroughEnvelope(t *testing.T) {
+	const missingUUID = "f2cac576-95a8-11f1-9db7-6538c389414f"
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"body":{"error":{"code":"400","message":"volume with UUID '` + missingUUID + `' not found"}}}`))
+	}))
+	defer server.Close()
+
+	tr := newTestTransportForTLSServer(t, server)
+
+	req, _ := http.NewRequest(http.MethodDelete, "https://placeholder/api/storage/volumes/"+missingUUID, nil)
+	resp, err := tr.RoundTrip(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	body, _ := io.ReadAll(resp.Body)
+	assert.NotContains(t, string(body), `"body"`)
+}
+
 func TestRoundTrip_TokenError(t *testing.T) {
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

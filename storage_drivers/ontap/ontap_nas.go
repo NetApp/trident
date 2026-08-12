@@ -442,7 +442,7 @@ func (d *NASStorageDriver) Create(
 			DPVolume:        volConfig.IsMirrorDestination,
 		}
 
-		err = createFlexvol(ctx, d.API, volumeCreateRequest)
+		volumeUUID, err := createFlexvol(ctx, d.API, volumeCreateRequest)
 		if err != nil {
 			if api.IsVolumeCreateJobExistsError(err) {
 				return nil
@@ -454,6 +454,7 @@ func (d *NASStorageDriver) Create(
 			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
+		volConfig.BackendVolumeID = volumeUUID
 
 		if !enableSnapshotDir {
 			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
@@ -668,15 +669,22 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
 
-	// First, check to see if the volume has already been deleted out of band
-	volumeExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for volume %v: %v", name, err)
-	}
-	if !volumeExists {
-		// Not an error if the volume no longer exists
-		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
-		return nil
+	var err error
+
+	// Volumes without a recorded ONTAP UUID (created before it was tracked, or on a backend that
+	// does not report one) fall back to a name-based existence check so an out-of-band deletion is
+	// still treated as success. Volumes with a UUID are deleted directly by UUID below, which
+	// tolerates a not-yet-indexed or already-deleted volume without consulting the name index.
+	if volConfig.BackendVolumeID == "" {
+		volumeExists, existsErr := d.API.VolumeExists(ctx, name)
+		if existsErr != nil {
+			return fmt.Errorf("error checking for volume %v: %v", name, existsErr)
+		}
+		if !volumeExists {
+			// Not an error if the volume no longer exists
+			Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
+			return nil
+		}
 	}
 
 	defer func() {
@@ -715,10 +723,11 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
-	// The shared OntapAPI signature still takes both force and skipRecoveryQueue. The REST adapter
-	// collapses that to one transport flag and uses skipRecoveryQueue semantics there, while ZAPI
-	// continues to use the force argument directly.
-	if err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue); err != nil {
+	// Delete the volume, preferring delete-by-UUID so a volume ONTAP created but has not yet indexed
+	// by name is still removed. The shared OntapAPI signature takes both force and skipRecoveryQueue:
+	// the REST adapter collapses that to one transport flag with skipRecoveryQueue semantics, while
+	// ZAPI uses the force argument directly.
+	if err = destroyFlexvol(ctx, d.API, volConfig, true, skipRecoveryQueue); err != nil {
 		return err
 	}
 
