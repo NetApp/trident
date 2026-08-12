@@ -720,10 +720,9 @@ func (d *NVMeStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err = cloneFlexvol(
-		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
-	); err != nil {
-		return err
+	cloneErr := cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{})
+	if cloneErr != nil && !drivers.IsVolumeExistsError(cloneErr) {
+		return cloneErr
 	}
 
 	// Extract the namespace name from volConfig.InternalID because
@@ -739,7 +738,7 @@ func (d *NVMeStorageDriver) CreateClone(
 	// Populate access info in the cloneVolConfig
 	cloneVolConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
 	cloneVolConfig.InternalID = nsPath
-	return nil
+	return cloneErr
 }
 
 // Import adds non managed ONTAP volume to trident.
