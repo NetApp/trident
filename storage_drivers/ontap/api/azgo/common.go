@@ -48,12 +48,14 @@ type ZapiRunner struct {
 	Secure               bool
 	ontapApiVersion      string
 	DebugTraceFlags      map[string]bool // Example: {"api":false, "method":true}
+	storageAPITimeout    time.Duration
 	m                    *sync.RWMutex
 	httpClient           *http.Client
 }
 
 func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, clientCertificate,
-	clientCACert string, secure bool, ontapApiVersion string, debugTraceFlags map[string]bool, sem *semaphore.Weighted,
+	clientCACert string, secure bool, ontapApiVersion string, debugTraceFlags map[string]bool,
+	storageAPITimeout time.Duration, sem *semaphore.Weighted,
 ) (*ZapiRunner, error) {
 	zr := &ZapiRunner{
 		ManagementLIF:        managementLIF,
@@ -66,6 +68,7 @@ func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, cli
 		Secure:               secure,
 		ontapApiVersion:      ontapApiVersion,
 		DebugTraceFlags:      debugTraceFlags,
+		storageAPITimeout:    storageAPITimeout,
 		m:                    &sync.RWMutex{},
 	}
 
@@ -226,7 +229,13 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	}
 
 	b := []byte(s)
-	ctx, cancel := context.WithTimeout(context.Background(), tridentconfig.StorageAPITimeout)
+
+	// Apply configured timeout, or the 90s ZAPI default when unset.
+	timeout := o.storageAPITimeout
+	if timeout <= 0 {
+		timeout = tridentconfig.StorageAPITimeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(b))
 	if err != nil {

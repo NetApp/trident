@@ -201,6 +201,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	)
 	result.httpClient = &http.Client{
 		Transport: transport,
+		Timeout:   config.StorageAPITimeout,
 	}
 
 	if config.Username != "" && config.Password != "" {
@@ -291,15 +292,12 @@ func EnsureSVMWithRest(
 func NewRestClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig,
 ) (OntapAPI, error) {
-	restClient, err := NewRestClient(ctx, ClientConfig{
-		ManagementLIF:        ontapConfig.ManagementLIF,
-		Username:             ontapConfig.Username,
-		Password:             ontapConfig.Password,
-		ClientPrivateKey:     ontapConfig.ClientPrivateKey,
-		ClientCertificate:    ontapConfig.ClientCertificate,
-		TrustedCACertificate: ontapConfig.TrustedCACertificate,
-		DebugTraceFlags:      ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
+	clientConfig, err := clientConfigFromOntapConfig(ontapConfig, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	restClient, err := NewRestClient(ctx, clientConfig, ontapConfig.SVM, ontapConfig.StorageDriverName)
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate REST client; %s", err.Error())
 	}

@@ -127,6 +127,7 @@ type OntapStorageDriverConfig struct {
 	LUNsPerFlexvol                   string     `json:"lunsPerFlexvol"`                   // default to 100
 	EmptyFlexvolDeferredDeletePeriod string     `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
 	CloneSplitDelay                  string     `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
+	StorageAPITimeout                string     `json:"storageAPITimeout,omitempty"`      // in seconds; ZAPI defaults to 90s when omitted; REST has no client timeout unless set
 	NfsMountOptions                  string     `json:"nfsMountOptions"`
 	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
 	LimitVolumePoolSize              string     `json:"limitVolumePoolSize"`
