@@ -446,7 +446,7 @@ func TestDestroy_PreDeleteSizingUnderFlexvolLock(t *testing.T) {
 	internalName := "storagePrefix_vol1"
 	lunPath := GetLUNPathEconomy(bucketVol, internalName)
 	helper := driver.helper
-	snapPattern := helper.GetSnapPathPatternForVolume(helper.GetExternalVolumeNameFromPath(lunPath))
+	snapPattern := helper.GetSnapPathPatternForVolume(internalName)
 
 	mainLun := economyLun(testEcoDeletedLunBytes, "lun_"+internalName)
 	mainLun.VolumeName = bucketVol

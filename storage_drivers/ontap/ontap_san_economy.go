@@ -96,11 +96,15 @@ func (o *LUNHelper) GetSnapPath(bucketName, internalVolName, snapName string) st
 	return snapPath
 }
 
-// parameter: volName=my-Vol
-// output: /vol/*/storagePrefix_my_Vol_snapshot_*
-func (o *LUNHelper) GetSnapPathPatternForVolume(externalVolumeName string) string {
-	externalVolumeName = strings.ReplaceAll(externalVolumeName, "-", "_")
-	snapPattern := fmt.Sprintf("/vol/*/*%v"+snapshotNameSeparator+"*", externalVolumeName)
+// GetSnapPathPatternForVolume returns a LUN path pattern matching every snap-LUN of the volume whose LUN is named
+// internalVolumeName. The internal name must be used here because it is the only name that appears in ONTAP; a
+// pattern built from the external (Kubernetes) volume name matches nothing when the backend assigns internal names
+// from a nameTemplate.
+// parameter: internalVolumeName=my-Lun
+// output: /vol/*/my_Lun_snapshot_*
+func (o *LUNHelper) GetSnapPathPatternForVolume(internalVolumeName string) string {
+	internalVolumeName = strings.ReplaceAll(internalVolumeName, "-", "_")
+	snapPattern := fmt.Sprintf("/vol/*/%v"+snapshotNameSeparator+"*", internalVolumeName)
 	return snapPattern
 }
 
@@ -178,6 +182,23 @@ func (o *LUNHelper) GetSnapshotNameFromSnapLUNPath(snapLunPath string) string {
 		return result[4]
 	}
 	return ""
+}
+
+// GetSnapshotNameForVolume returns the snapshot name encoded in a snap-LUN path belonging to the volume whose LUN is
+// named internalVolumeName, or "" if the path is not a snap-LUN of that volume. Unlike
+// GetSnapshotNameFromSnapLUNPath, this does not assume the LUN name begins with the configured storage prefix, so
+// it also works for volumes whose internal names come from a nameTemplate.
+// parameters: snapLunPath=/vol/myBucket/storagePrefix_myLun_snapshot_mySnap internalVolumeName=storagePrefix_myLun
+// output: mySnap
+func (o *LUNHelper) GetSnapshotNameForVolume(snapLunPath, internalVolumeName string) string {
+	snapLunName := o.GetInternalVolumeNameFromPath(snapLunPath)
+	snapLunPrefix := strings.ReplaceAll(internalVolumeName, "-", "_") + snapshotNameSeparator
+
+	if internalVolumeName == "" || !strings.HasPrefix(snapLunName, snapLunPrefix) {
+		return ""
+	}
+
+	return strings.TrimPrefix(snapLunName, snapLunPrefix)
 }
 
 // parameter: snapLunPath=/vol/myBucket/storagePrefix_myLun_snapshot_mySnap
@@ -1251,8 +1272,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 
 	// Before deleting the LUN, check if a LUN has associated snapshots. If so, delete all associated snapshots
 	// Note: DeleteSnapshot acquires its own FlexVol lock, so we don't hold the lock here
-	externalVolumeName := d.helper.GetExternalVolumeNameFromPath(lunPathEco)
-	snapList, err := d.getSnapshotsEconomy(ctx, name, externalVolumeName)
+	snapList, err := d.getSnapshotsEconomy(ctx, name, volConfig.Name)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Error enumerating snapshots.")
 		return deleteError
@@ -1726,7 +1746,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getSnapshotsEconomy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getSnapshotsEconomy")
 
-	snapPathPattern := d.helper.GetSnapPathPatternForVolume(externalVolumeName)
+	snapPathPattern := d.helper.GetSnapPathPatternForVolume(internalVolumeName)
 
 	snapList, err := d.API.LunList(ctx, snapPathPattern)
 	if err != nil {
@@ -1743,9 +1763,8 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 		if err != nil {
 			return nil, fmt.Errorf("%v is an invalid volume size: %w", snap.Size, err)
 		}
-		// Check to see if it has the following string pattern. If so, add to snapshot List. Else, skip.
-		if d.helper.IsValidSnapLUNPath(snapLunPath) {
-			snapLunName := d.helper.GetSnapshotNameFromSnapLUNPath(snapLunPath)
+		// Only LUNs that are snapshots of this volume belong in the list; skip anything else.
+		if snapLunName := d.helper.GetSnapshotNameForVolume(snapLunPath, internalVolumeName); snapLunName != "" {
 			snapshot := &storage.Snapshot{
 				Config: &storage.SnapshotConfig{
 					Version:            tridentconfig.OrchestratorAPIVersion,
@@ -1813,31 +1832,34 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 		return nil, fmt.Errorf("could not create snapshot: %w", err)
 	}
 
-	// Fetching list of snapshots to get snapshot creation time
-	snapListResponse, err := d.getSnapshotsEconomy(ctx, internalVolumeName, snapConfig.VolumeName)
+	// Read the new snap-LUN back by its exact path to get the snapshot creation time. The snap-LUN is a clone of
+	// the source LUN and therefore lives in the source LUN's Flexvol, so it is addressable directly and must not
+	// be searched for by name pattern: only one of the snap-LUNs a pattern returns is the one just created.
+	snapLunInfo, err := d.API.LunGetByName(ctx, GetLUNPathEconomy(bucketVol, lunName))
 	if err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %w", err)
+		return nil, fmt.Errorf("could not find snapshot %s for source volume %s: %w",
+			internalSnapName, internalVolumeName, err)
+	}
+	if snapLunInfo == nil {
+		return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolumeName)
 	}
 
-	for _, snap := range snapListResponse {
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}).Info("Snapshot created.")
-
-		sizeBytes, err := convert.ToPositiveInt64(size)
-		if err != nil {
-			return nil, fmt.Errorf("error %v is an invalid volume size: %w", size, err)
-		}
-
-		return &storage.Snapshot{
-			Config:    snapConfig,
-			Created:   snap.Created,
-			SizeBytes: sizeBytes,
-			State:     storage.SnapshotStateOnline,
-		}, nil
+	sizeBytes, err := convert.ToPositiveInt64(size)
+	if err != nil {
+		return nil, fmt.Errorf("error %v is an invalid volume size: %w", size, err)
 	}
-	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolumeName)
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Info("Snapshot created.")
+
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snapLunInfo.CreateTime,
+		SizeBytes: sizeBytes,
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
