@@ -216,6 +216,9 @@ metadata:
   {LABELS}
   {OWNER_REF}
 rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]

@@ -25,6 +25,7 @@ import (
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	tridentconfig "github.com/netapp/trident/config"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
@@ -118,6 +119,11 @@ const (
 	nvmeSelfHealingSessionLock  = "nvmeSelfHealingSessionLock"
 	nvmeSubsystemDisconnectLock = "nvmeSubsystemDisconnectLock"
 	nvmeFlushRetryMapLock       = "nvmeFlushRetryMapLock"
+
+	// NodeGetInfo must return promptly for the registrar, so the topology lookup retry window is short.
+	topologyLabelsInitialInterval = 250 * time.Millisecond
+	topologyLabelsMaxInterval     = 2 * time.Second
+	topologyLabelsMaxElapsedTime  = 5 * time.Second
 )
 
 var (
@@ -129,6 +135,16 @@ var (
 	topologyLabelsLock sync.RWMutex
 	iscsiUtils         = iscsi.IscsiUtils
 	fcpUtils           = utils.FcpUtils
+
+	// makeTopologyLabelsBackoff supplies the retry policy for topology label lookups. Tests replace it
+	// with a zero-interval policy so retry behavior is asserted by attempt count, not elapsed time.
+	makeTopologyLabelsBackoff = func() backoff.BackOff {
+		labelsBackoff := backoff.NewExponentialBackOff()
+		labelsBackoff.InitialInterval = topologyLabelsInitialInterval
+		labelsBackoff.MaxInterval = topologyLabelsMaxInterval
+		labelsBackoff.MaxElapsedTime = topologyLabelsMaxElapsedTime
+		return labelsBackoff
+	}
 
 	publishedISCSISessions, currentISCSISessions *models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   nvme.NVMeSessions
@@ -158,6 +174,18 @@ const (
 	removeMultipathDeviceMappingRetryDelay = 500 * time.Millisecond
 )
 
+// isPermanentTopologyLookupError reports whether a topology label lookup failed for a reason retrying
+// cannot fix, such as the node ClusterRole missing 'get' on nodes.
+func isPermanentTopologyLookupError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) || apierrors.IsNotFound(err) {
+		return true
+	}
+	return errors.IsNotFoundError(err)
+}
+
 // getTopologyLabelsCopy returns a shallow copy of the cached labels.
 // maps.Clone(nil) is safe and returns nil (not {}); shallow copy suffices because values are strings.
 func getTopologyLabelsCopy() map[string]string {
@@ -166,30 +194,51 @@ func getTopologyLabelsCopy() map[string]string {
 	return maps.Clone(topologyLabels)
 }
 
-// getTopologyLabels lazily loads topology segments once. Return paths keep maps.Clone results as-is:
-// nil and {} are equivalent for read-only CSI Segments, and not normalizing on error preserves retry.
-func (p *Plugin) getTopologyLabels(ctx context.Context) map[string]string {
+// getTopologyLabels lazily loads topology segments once. It returns an error only when the labels are
+// genuinely unknown: the lookup failed and neither an earlier lookup nor node registration cached a
+// result. Callers must not report topology in that case. Return paths keep maps.Clone results as-is:
+// nil and {} are equivalent for read-only CSI Segments, and a plugin with no controllerHelper has no
+// topology source to consult.
+func (p *Plugin) getTopologyLabels(ctx context.Context) (map[string]string, error) {
 	topologyLabelsLock.RLock()
 	if topologyLabels != nil || p.controllerHelper == nil {
 		labels := maps.Clone(topologyLabels)
 		topologyLabelsLock.RUnlock()
-		return labels
+		return labels, nil
 	}
 	topologyLabelsLock.RUnlock()
 
-	labels, err := p.controllerHelper.GetNodeTopologyLabels(ctx, p.nodeName)
-	if err != nil {
-		Logc(ctx).WithError(err).Debug("Unable to get topology labels from node; falling back to registered labels.")
-		topologyLabelsLock.RLock()
-		defer topologyLabelsLock.RUnlock()
-		return maps.Clone(topologyLabels)
+	var labels map[string]string
+
+	getLabels := func() error {
+		var getErr error
+		labels, getErr = p.controllerHelper.GetNodeTopologyLabels(ctx, p.nodeName)
+		if isPermanentTopologyLookupError(getErr) {
+			return backoff.Permanent(getErr)
+		}
+		return getErr
+	}
+	labelsNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"error":     err,
+		}).Trace("Unable to get topology labels from node, retrying.")
+	}
+
+	labelsBackoff := backoff.WithContext(makeTopologyLabelsBackoff(), ctx)
+	if err := backoff.RetryNotify(getLabels, labelsBackoff, labelsNotify); err != nil {
+		if cached := getTopologyLabelsCopy(); cached != nil {
+			Logc(ctx).WithError(err).Debug("Unable to get topology labels from node; using registered labels.")
+			return cached, nil
+		}
+		return nil, fmt.Errorf("get topology labels for node %s: %w", p.nodeName, err)
 	}
 
 	topologyLabelsLock.Lock()
 	defer topologyLabelsLock.Unlock()
 
 	if topologyLabels != nil {
-		return maps.Clone(topologyLabels)
+		return maps.Clone(topologyLabels), nil
 	}
 
 	topologyLabels = maps.Clone(labels)
@@ -203,7 +252,7 @@ func (p *Plugin) getTopologyLabels(ctx context.Context) map[string]string {
 		}
 	}
 
-	return maps.Clone(labels)
+	return maps.Clone(labels), nil
 }
 
 func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout time.Duration) bool {
@@ -885,10 +934,19 @@ func (p *Plugin) NodeGetInfo(
 	Logc(ctx).WithFields(fields).Trace(">>>> NodeGetInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< NodeGetInfo")
 
+	segments, err := p.getTopologyLabels(ctx)
+	if err != nil {
+		// Succeeding here with empty segments makes node-driver-registrar publish a CSINode with no
+		// topologyKeys, which silently disables topology-aware scheduling until the pod restarts.
+		// Fail instead so the registrar retries once the labels can be read.
+		Logc(ctx).WithFields(fields).WithError(err).Error("Topology labels unknown; not reporting node topology.")
+		return nil, status.Error(codes.Unavailable, err.Error())
+	}
+
 	return &csi.NodeGetInfoResponse{
 		NodeId: p.nodeName,
 		AccessibleTopology: &csi.Topology{
-			Segments: p.getTopologyLabels(ctx), // nil Segments is valid; nil vs {} equivalent for kubelet
+			Segments: segments, // nil Segments is valid; nil vs {} equivalent for kubelet
 		},
 	}, nil
 }
