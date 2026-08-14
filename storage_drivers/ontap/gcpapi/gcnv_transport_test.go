@@ -784,3 +784,333 @@ func TestRoundTrip_inferONTAPStatus_PostNonObjectBodyLeaves200(t *testing.T) {
 	body, _ := io.ReadAll(resp.Body)
 	assert.Equal(t, `[1,2,3]`, string(body))
 }
+
+func TestStringifyErrorCode(t *testing.T) {
+	tests := []struct {
+		name string
+		in   json.RawMessage
+		want json.RawMessage
+	}{
+		{
+			name: "numeric_code_becomes_string",
+			in:   json.RawMessage(`{"code":404,"message":"not found"}`),
+			want: json.RawMessage(`{"code":"404","message":"not found"}`),
+		},
+		{
+			name: "string_code_unchanged",
+			in:   json.RawMessage(`{"code":"4","message":"entry doesn't exist"}`),
+			want: json.RawMessage(`{"code":"4","message":"entry doesn't exist"}`),
+		},
+		{
+			name: "missing_code_unchanged",
+			in:   json.RawMessage(`{"message":"no code field"}`),
+			want: json.RawMessage(`{"message":"no code field"}`),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := stringifyErrorCode(tt.in)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(tt.want), string(got))
+		})
+	}
+}
+
+func TestParseJSONInt(t *testing.T) {
+	tests := []struct {
+		in      string
+		want    int
+		wantErr bool
+	}{
+		{in: "404", want: 404},
+		{in: "4", want: 4},
+		{in: " 524486 ", want: 524486},
+		{in: "not-a-number", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			got, err := parseJSONInt(tt.in)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestIsHTTPStatusCode(t *testing.T) {
+	tests := []struct {
+		code string
+		want bool
+	}{
+		{code: "404", want: true},
+		{code: "500", want: true},
+		{code: "100", want: true},
+		{code: "599", want: true},
+		{code: "4", want: false},
+		{code: "1703954", want: false},
+		{code: "600", want: false},
+		{code: "99", want: false},
+		{code: "abc", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			assert.Equal(t, tt.want, isHTTPStatusCode(tt.code))
+		})
+	}
+}
+
+func TestDecodeErrorResponse(t *testing.T) {
+	valid := []byte(`{"error":{"code":"4","message":"entry doesn't exist","target":"user_or_group"}}`)
+
+	tests := []struct {
+		name   string
+		in     []byte
+		wantOK bool
+		wantEq []byte
+	}{
+		{
+			name:   "valid_ontap_error_response",
+			in:     valid,
+			wantOK: true,
+			wantEq: valid,
+		},
+		{
+			name:   "missing_error_key",
+			in:     []byte(`{"message":"only message"}`),
+			wantOK: false,
+		},
+		{
+			name:   "invalid_json",
+			in:     []byte(`{not json`),
+			wantOK: false,
+		},
+		{
+			name:   "inner_http_status_not_promoted",
+			in:     []byte(`{"error":{"code":"404","message":"still wrapped"}}`),
+			wantOK: false,
+		},
+		{
+			name:   "missing_inner_code",
+			in:     []byte(`{"error":{"message":"no code"}}`),
+			wantOK: false,
+		},
+		{
+			name:   "numeric_inner_code",
+			in:     []byte(`{"error":{"code":4,"message":"entry doesn't exist"}}`),
+			wantOK: true,
+			wantEq: []byte(`{"error":{"code":4,"message":"entry doesn't exist"}}`),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := decodeErrorResponse(tt.in)
+			assert.Equal(t, tt.wantOK, ok)
+			if tt.wantOK {
+				assert.JSONEq(t, string(tt.wantEq), string(got))
+			}
+		})
+	}
+}
+
+func TestParseEmbeddedErrorResponse(t *testing.T) {
+	nestedJSON := `{
+  "error": {
+    "code": "4",
+    "message": "entry doesn't exist",
+    "target": "user_or_group"
+  }
+}`
+	prefixed := []byte(`code: 404, message: ` + nestedJSON)
+
+	tests := []struct {
+		name   string
+		in     []byte
+		wantOK bool
+	}{
+		{name: "pure_json_message", in: []byte(nestedJSON), wantOK: true},
+		{name: "prefixed_json_message", in: prefixed, wantOK: true},
+		{name: "empty_message", in: []byte(""), wantOK: false},
+		{name: "no_json_object", in: []byte("plain text error"), wantOK: false},
+		{name: "json_without_error_key", in: []byte(`{"message":"nope"}`), wantOK: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := parseEmbeddedErrorResponse(tt.in)
+			assert.Equal(t, tt.wantOK, ok)
+			if tt.wantOK {
+				var parsed struct {
+					Error struct {
+						Code string `json:"code"`
+					} `json:"error"`
+				}
+				require.NoError(t, json.Unmarshal(got, &parsed))
+				assert.Equal(t, "4", parsed.Error.Code)
+			}
+		})
+	}
+}
+
+func TestErrorCodeString(t *testing.T) {
+	tests := []struct {
+		name   string
+		in     json.RawMessage
+		want   string
+		wantOK bool
+	}{
+		{name: "json_string", in: json.RawMessage(`"4"`), want: "4", wantOK: true},
+		{name: "json_number", in: json.RawMessage(`4`), want: "4", wantOK: true},
+		{name: "empty", in: json.RawMessage(``), wantOK: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := errorCodeString(tt.in)
+			assert.Equal(t, tt.wantOK, ok)
+			if tt.wantOK {
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
+func TestPromoteNestedONTAPErrorFromMessage(t *testing.T) {
+	gcpWrapped := json.RawMessage(`{
+  "code": "404",
+  "message": "code: 404, message: {\n  \"error\":  {\n    \"code\":  \"4\",\n    \"message\":  \"entry doesn't exist\",\n    \"target\":  \"user_or_group\"\n  }\n}",
+  "status": "NOT_FOUND"
+}`)
+	directONTAP := json.RawMessage(`{"code":"4","message":"entry doesn't exist"}`)
+	noNested := json.RawMessage(`{"code":"404","message":"resource not found"}`)
+
+	got, ok := promoteNestedONTAPErrorFromMessage(gcpWrapped)
+	require.True(t, ok)
+	assert.JSONEq(t, `{
+  "error": {
+    "code": "4",
+    "message": "entry doesn't exist",
+    "target": "user_or_group"
+  }
+}`, string(got))
+
+	got, ok = promoteNestedONTAPErrorFromMessage(directONTAP)
+	assert.False(t, ok)
+	assert.Nil(t, got)
+
+	got, ok = promoteNestedONTAPErrorFromMessage(noNested)
+	assert.False(t, ok)
+	assert.Nil(t, got)
+}
+
+func TestNormalizeErrorCodes(t *testing.T) {
+	tests := []struct {
+		name string
+		in   []byte
+		want string
+		// rawEqual asserts want against string(got) directly instead of via JSONEq,
+		// for cases where got is not valid JSON (e.g. unchanged malformed input).
+		rawEqual bool
+	}{
+		{
+			name: "promotes_nested_gcp_error",
+			in: []byte(`{
+  "error": {
+    "code": 404,
+    "message": "code: 404, message: {\n  \"error\":  {\n    \"code\":  \"4\",\n    \"message\":  \"entry doesn't exist\",\n    \"target\":  \"user_or_group\"\n  }\n}",
+    "status": "NOT_FOUND"
+  }
+}`),
+			want: `{
+  "error": {
+    "code": "4",
+    "message": "entry doesn't exist",
+    "target": "user_or_group"
+  }
+}`,
+		},
+		{
+			name: "stringifies_numeric_code_without_promotion",
+			in:   []byte(`{"error":{"code":6684674,"message":"some failure"}}`),
+			want: `{"error":{"code":"6684674","message":"some failure"}}`,
+		},
+		{
+			name: "direct_ontap_error_unchanged",
+			in:   []byte(`{"error":{"code":"4","message":"entry doesn't exist"}}`),
+			want: `{"error":{"code":"4","message":"entry doesn't exist"}}`,
+		},
+		{
+			name: "non_error_payload_unchanged",
+			in:   []byte(`{"uuid":"vol-123","name":"vol1"}`),
+			want: `{"uuid":"vol-123","name":"vol1"}`,
+		},
+		{
+			name:     "invalid_json_unchanged",
+			in:       []byte(`{invalid`),
+			want:     `{invalid`,
+			rawEqual: true,
+		},
+		{
+			name: "promotes_nested_numeric_inner_code",
+			in: []byte(`{
+  "error": {
+    "code": 404,
+    "message": "{\"error\":{\"code\":4,\"message\":\"entry doesn't exist\"}}"
+  }
+}`),
+			want: `{"error":{"code":"4","message":"entry doesn't exist"}}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalizeErrorCodes(tt.in)
+			if tt.rawEqual {
+				assert.Equal(t, tt.want, string(got))
+				return
+			}
+			assert.JSONEq(t, tt.want, string(got))
+		})
+	}
+}
+
+func TestUnwrapProxyResponse_NormalizesErrors(t *testing.T) {
+	enveloped := []byte(`{"body":{"error":{"code":404,"message":"code: 404, message: {\"error\":{\"code\":\"4\",\"message\":\"entry doesn't exist\"}}"}}}`)
+	got := unwrapProxyResponse(enveloped)
+	assert.JSONEq(t, `{"error":{"code":"4","message":"entry doesn't exist"}}`, string(got))
+}
+
+func TestRoundTrip_NestedONTAPErrorInMessage(t *testing.T) {
+	// Production GCNV proxy double-wrap for DELETE .../acls/Everyone/windows.
+	const proxyBody = `{
+  "error": {
+    "code": 404,
+    "message": "code: 404, message: {\n  \"error\":  {\n    \"code\":  \"4\",\n    \"message\":  \"entry doesn't exist\",\n    \"target\":  \"user_or_group\"\n  }\n}",
+    "status": "NOT_FOUND"
+  }
+}`
+
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(proxyBody))
+	}))
+	defer server.Close()
+
+	tr := newTestTransportForTLSServer(t, server)
+
+	req, _ := http.NewRequest(http.MethodDelete,
+		"https://placeholder/api/protocols/cifs/shares/svm-uuid/share/acls/Everyone/windows", nil)
+	resp, err := tr.RoundTrip(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	body, _ := io.ReadAll(resp.Body)
+	assert.JSONEq(t, `{
+  "error": {
+    "code": "4",
+    "message": "entry doesn't exist",
+    "target": "user_or_group"
+  }
+}`, string(body))
+}

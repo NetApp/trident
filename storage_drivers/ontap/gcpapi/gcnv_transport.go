@@ -388,7 +388,7 @@ func gcnvErrorCodeString(v any) string {
 }
 
 // unwrapProxyResponse extracts the inner "body" from the GCNV proxy envelope {"body": ...}.
-// If the payload is not that envelope, returns data unchanged (after error-code normalization).
+// If the payload is not that envelope, returns data unchanged (after error normalization).
 func unwrapProxyResponse(data []byte) []byte {
 	var envelope proxyResponse
 	if err := json.Unmarshal(data, &envelope); err != nil || len(envelope.Body) == 0 {
@@ -398,9 +398,9 @@ func unwrapProxyResponse(data []byte) []byte {
 	return normalizeErrorCodes(envelope.Body)
 }
 
-// normalizeErrorCodes converts numeric "code" fields inside "error" objects to strings
-// so the go-openapi ONTAP generated models can unmarshal them.
-// e.g. {"error":{"code":6684674,...}} → {"error":{"code":"6684674",...}}
+// normalizeErrorCodes prepares ONTAP error_response payloads for go-openapi:
+//   - converts numeric error.code values to strings
+//   - promotes a nested ONTAP error when GCNV embeds it in error.message behind an HTTP status code
 func normalizeErrorCodes(data []byte) []byte {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -411,31 +411,145 @@ func normalizeErrorCodes(data []byte) []byte {
 		return data
 	}
 
-	var errObj map[string]json.RawMessage
-	if err := json.Unmarshal(errField, &errObj); err != nil {
-		return data
-	}
-	codeRaw, ok := errObj["code"]
-	if !ok {
-		return data
-	}
-
-	// If code is already a string (starts with '"'), nothing to do.
-	trimmed := bytes.TrimSpace(codeRaw)
-	if len(trimmed) > 0 && trimmed[0] == '"' {
-		return data
-	}
-
-	// It's a number — wrap it in quotes.
-	errObj["code"] = json.RawMessage(`"` + string(trimmed) + `"`)
-	newErr, err := json.Marshal(errObj)
+	normalizedErr, err := stringifyErrorCode(errField)
 	if err != nil {
 		return data
 	}
-	raw["error"] = json.RawMessage(newErr)
+
+	if promoted, ok := promoteNestedONTAPErrorFromMessage(normalizedErr); ok {
+		return normalizeErrorCodes(promoted)
+	}
+
+	raw["error"] = normalizedErr
 	result, err := json.Marshal(raw)
 	if err != nil {
 		return data
 	}
 	return result
+}
+
+// stringifyErrorCode converts a numeric error.code inside errField to a JSON string.
+func stringifyErrorCode(errField json.RawMessage) (json.RawMessage, error) {
+	var errObj map[string]json.RawMessage
+	if err := json.Unmarshal(errField, &errObj); err != nil {
+		return nil, err
+	}
+	codeRaw, ok := errObj["code"]
+	if !ok {
+		return errField, nil
+	}
+
+	trimmed := bytes.TrimSpace(codeRaw)
+	if len(trimmed) > 0 && trimmed[0] == '"' {
+		return errField, nil
+	}
+
+	errObj["code"] = json.RawMessage(`"` + string(trimmed) + `"`)
+	return json.Marshal(errObj)
+}
+
+// promoteNestedONTAPErrorFromMessage replaces a GCP proxy error object when its message
+// embeds a stringified ONTAP error_response and the outer code is an HTTP status (100–599).
+func promoteNestedONTAPErrorFromMessage(errField json.RawMessage) ([]byte, bool) {
+	var errObj struct {
+		Code    *string `json:"code"`
+		Message *string `json:"message"`
+	}
+	if err := json.Unmarshal(errField, &errObj); err != nil || errObj.Code == nil || errObj.Message == nil {
+		return nil, false
+	}
+	if !isHTTPStatusCode(*errObj.Code) {
+		return nil, false
+	}
+
+	nested, ok := parseEmbeddedErrorResponse([]byte(*errObj.Message))
+	if !ok {
+		return nil, false
+	}
+	return nested, true
+}
+
+// isHTTPStatusCode reports whether code falls in the HTTP status range (100-599). GCNV's outer
+// wrapper codes are always HTTP statuses in this band by design; a real ONTAP error_response code
+// (e.g. "4") is a small integer that never overlaps this range, so treating 100-599 as HTTP-only
+// is safe and lets us distinguish outer GCP wrapper codes from nested ONTAP codes.
+func isHTTPStatusCode(code string) bool {
+	n, err := parseJSONInt(code)
+	if err != nil {
+		return false
+	}
+	return n >= 100 && n <= 599
+}
+
+func parseJSONInt(s string) (int, error) {
+	return strconv.Atoi(strings.TrimSpace(s))
+}
+
+// parseEmbeddedErrorResponse extracts an ONTAP error_response JSON object from message bytes.
+// GCNV may return the message as pure JSON or prefix it (e.g. "code: 404, message: {...}").
+func parseEmbeddedErrorResponse(message []byte) ([]byte, bool) {
+	message = bytes.TrimSpace(message)
+	if len(message) == 0 {
+		return nil, false
+	}
+
+	if nested, ok := decodeErrorResponse(message); ok {
+		return nested, true
+	}
+
+	for offset := 0; offset < len(message); offset++ {
+		if message[offset] != '{' {
+			continue
+		}
+		if nested, ok := decodeErrorResponse(message[offset:]); ok {
+			return nested, true
+		}
+	}
+	return nil, false
+}
+
+func decodeErrorResponse(data []byte) ([]byte, bool) {
+	var nested map[string]json.RawMessage
+	if err := json.Unmarshal(data, &nested); err != nil {
+		return nil, false
+	}
+	inner, ok := nested["error"]
+	if !ok || len(inner) == 0 {
+		return nil, false
+	}
+
+	var innerErr struct {
+		Code json.RawMessage `json:"code"`
+	}
+	if err := json.Unmarshal(inner, &innerErr); err != nil {
+		return nil, false
+	}
+	code, ok := errorCodeString(innerErr.Code)
+	if !ok {
+		return nil, false
+	}
+	if isHTTPStatusCode(code) {
+		return nil, false
+	}
+
+	result, err := json.Marshal(nested)
+	if err != nil {
+		return nil, false
+	}
+	return result, true
+}
+
+func errorCodeString(raw json.RawMessage) (string, bool) {
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 {
+		return "", false
+	}
+	if trimmed[0] == '"' {
+		var code string
+		if err := json.Unmarshal(trimmed, &code); err != nil {
+			return "", false
+		}
+		return code, true
+	}
+	return string(trimmed), true
 }
