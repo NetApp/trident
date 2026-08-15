@@ -1904,50 +1904,8 @@ func getVersionAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefiniti
 	t.Helper()
 	schema := apiextensionsv1.CustomResourceValidation{
 		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-			Type: "object",
-			Properties: map[string]apiextensionsv1.JSONSchemaProps{
-				"apiVersion": {
-					Type: "string",
-				},
-				"kind": {
-					Type: "string",
-				},
-				"metadata": {
-					Type: "object",
-				},
-				"spec": {
-					Type:                   "object",
-					XPreserveUnknownFields: new(true),
-				},
-				"status": {
-					Type: "object",
-					Properties: map[string]apiextensionsv1.JSONSchemaProps{
-						"backendNames": {
-							Type: "array",
-							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
-								Schema: &apiextensionsv1.JSONSchemaProps{
-									Type: "string",
-								},
-							},
-						},
-						"message": {
-							Type: "string",
-						},
-						"deletionPolicy": {
-							Type: "string",
-						},
-						"phase": {
-							Type: "string",
-						},
-						"lastOperationStatus": {
-							Type: "string",
-						},
-						"cloudProvider": {
-							Type: "string",
-						},
-					},
-				},
-			},
+			Type:                   "object",
+			XPreserveUnknownFields: new(true),
 		},
 	}
 
