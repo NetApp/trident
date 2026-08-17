@@ -2,7 +2,23 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v26.02.0
+## Changes since v26.06.0
+
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed a race between CSI publish and volume move that could attach a volume using stale access information.
+- **Kubernetes:** Fixed a race where `NodeGetInfo` could return empty topology labels before node registration completed, causing topology-aware provisioning failures.
+- **Kubernetes:** Fixed a rare NVMe disconnect race that could tear down a shared subsystem while another pod was still attaching.
+- **Kubernetes:** Fixed NVMe PVC clone publish failures (and incorrect parent-namespace mapping) when creating clones of a mounted volume under concurrency.
+- **Kubernetes:** Fixed snapshot creation failures for PVCs on ONTAP-SAN-Economy backends using a `nameTemplate`.
+
+**Enhancements:**
+
+- Added optional `storageAPITimeout` (seconds) on ONTAP backend config to set REST and ZAPI API client timeouts per backend.
+
+## v26.06.0
 
 ### Trident
 
