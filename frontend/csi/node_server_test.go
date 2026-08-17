@@ -150,6 +150,8 @@ func TestPlugin_NodeStageVolume_DelegatesToNodeOrchestrator(t *testing.T) {
 	_, err := plugin.NodeStageVolume(context.Background(), req)
 	require.Error(t, err)
 	assert.Equal(t, codes.Unavailable, status.Code(err))
+	assert.Contains(t, err.Error(), "failed to stage volume")
+	assert.Contains(t, err.Error(), "Trident is initializing")
 }
 
 func TestPlugin_NodeUnstageVolume(t *testing.T) {
@@ -172,6 +174,8 @@ func TestPlugin_NodeUnstageVolume(t *testing.T) {
 		})
 		require.Error(t, err)
 		assert.Equal(t, codes.Unavailable, status.Code(err))
+		assert.Contains(t, err.Error(), "failed to unstage volume")
+		assert.Contains(t, err.Error(), "Trident is initializing")
 	})
 }
 
@@ -232,6 +236,8 @@ func TestPlugin_NodePublishVolume(t *testing.T) {
 		})
 		require.Error(t, err)
 		assert.Equal(t, codes.Unavailable, status.Code(err))
+		assert.Contains(t, err.Error(), "failed to publish volume")
+		assert.Contains(t, err.Error(), "Trident is initializing")
 	})
 }
 
@@ -267,6 +273,8 @@ func TestPlugin_NodeUnpublishVolume(t *testing.T) {
 		})
 		require.Error(t, err)
 		assert.Equal(t, codes.Unavailable, status.Code(err))
+		assert.Contains(t, err.Error(), "failed to unpublish volume")
+		assert.Contains(t, err.Error(), "Trident is initializing")
 	})
 }
 
@@ -290,6 +298,8 @@ func TestPlugin_NodeExpandVolume(t *testing.T) {
 		})
 		require.Error(t, err)
 		assert.Equal(t, codes.Unavailable, status.Code(err))
+		assert.Contains(t, err.Error(), "failed to expand volume")
+		assert.Contains(t, err.Error(), "Trident is initializing")
 	})
 }
 

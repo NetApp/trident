@@ -234,7 +234,7 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodeStageVolume timed out")
 		}
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		return nil, p.wrapNodeOpError(err, "failed to stage volume")
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil
@@ -258,11 +258,11 @@ func (p *Plugin) NodeUnstageVolume(
 		return nil, status.Error(codes.InvalidArgument, "no staging target path provided")
 	}
 
-	if err := p.nodeOrchestrator.Detach(ctx, req.GetVolumeId(), nodecore.DetachRequest{}); err != nil {
+	if err = p.nodeOrchestrator.Detach(ctx, req.GetVolumeId(), nodecore.DetachRequest{}); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodeUnstageVolume timed out")
 		}
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		return nil, p.wrapNodeOpError(err, "failed to unstage volume")
 	}
 
 	return &csi.NodeUnstageVolumeResponse{}, nil
@@ -295,7 +295,7 @@ func (p *Plugin) NodePublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
 
-	if err := p.nodeOrchestrator.Mount(ctx, req.GetVolumeId(), nodecore.MountRequest{
+	if err = p.nodeOrchestrator.Mount(ctx, req.GetVolumeId(), nodecore.MountRequest{
 		TargetPath:             req.GetTargetPath(),
 		ReadOnly:               req.GetReadonly(),
 		Secrets:                req.GetSecrets(),
@@ -304,7 +304,7 @@ func (p *Plugin) NodePublishVolume(
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodePublishVolume timed out")
 		}
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		return nil, p.wrapNodeOpError(err, "failed to publish volume")
 	}
 
 	return &csi.NodePublishVolumeResponse{}, nil
@@ -327,13 +327,13 @@ func (p *Plugin) NodeUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no target path provided")
 	}
 
-	if err := p.nodeOrchestrator.Unmount(ctx, req.GetVolumeId(), nodecore.UnmountRequest{
+	if err = p.nodeOrchestrator.Unmount(ctx, req.GetVolumeId(), nodecore.UnmountRequest{
 		TargetPath: req.GetTargetPath(),
 	}); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodeUnpublishVolume timed out")
 		}
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		return nil, p.wrapNodeOpError(err, "failed to unpublish volume")
 	}
 
 	return &csi.NodeUnpublishVolumeResponse{}, nil
@@ -457,7 +457,7 @@ func (p *Plugin) NodeExpandVolume(
 		"limitBytes":    limitBytes,
 	}).Trace("NodeExpandVolumeRequest values")
 
-	if err := p.nodeOrchestrator.Expand(ctx, volumeId, nodecore.ExpandRequest{
+	if err = p.nodeOrchestrator.Expand(ctx, volumeId, nodecore.ExpandRequest{
 		MountPath:     volumePath,
 		RequiredBytes: requiredBytes,
 		Secrets:       req.GetSecrets(),
@@ -465,7 +465,7 @@ func (p *Plugin) NodeExpandVolume(
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodeExpandVolume timed out")
 		}
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		return nil, p.wrapNodeOpError(err, "failed to expand volume")
 	}
 
 	return &csi.NodeExpandVolumeResponse{}, nil
@@ -524,4 +524,9 @@ func hasSingleNodeSingleWriterAccessMode(req *csi.NodePublishVolumeRequest) bool
 	accessMode := req.GetVolumeCapability().GetAccessMode()
 	return accessMode != nil &&
 		accessMode.GetMode() == csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER
+}
+
+func (p *Plugin) wrapNodeOpError(err error, opErrorMsg string) error {
+	mappedErr := p.getCSIErrorForOrchestratorError(err)
+	return status.Error(status.Code(mappedErr), fmt.Sprintf("%s: %v", opErrorMsg, status.Convert(mappedErr).Message()))
 }
