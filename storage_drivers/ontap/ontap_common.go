@@ -209,15 +209,28 @@ func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
 	return t
 }
 
+// newTelemetryRunContext derives the context Start's heartbeat goroutine runs with: it preserves
+// the caller's logging values (request ID, workflow, etc.) via context.WithoutCancel, while
+// dropping the caller's cancellation/deadline so the goroutine can outlive the call that started
+// it (e.g. a bounded bootstrap context, or a REST/CRD request context that is canceled as soon as
+// the handler returns). The returned CancelFunc lets Stop() interrupt an in-flight EMSHeartbeat
+// call, instead of only being able to stop between ticks via t.done.
+func newTelemetryRunContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithCancel(context.WithoutCancel(ctx))
+}
+
 // Start starts the flow of ASUP messages for the driver
 // These messages can be viewed via filer::> event log show -severity NOTICE.
 func (t *Telemetry) Start(ctx context.Context) {
+	ctx, t.cancel = newTelemetryRunContext(ctx)
+	tickerC := tickerChannel(t.ticker)
+
 	go func() {
 		time.Sleep(HousekeepingStartupDelay)
 		EMSHeartbeat(ctx, t.Driver)
 		for {
 			select {
-			case tick := <-t.ticker.C:
+			case tick := <-tickerC:
 				Logc(ctx).WithFields(LogFields{
 					"tick":   tick,
 					"driver": t.Driver.Name(),
@@ -233,6 +246,17 @@ func (t *Telemetry) Start(ctx context.Context) {
 	}()
 }
 
+// tickerChannel returns ticker.C, or a nil channel if ticker is nil. A nil channel is never
+// selected, so callers can safely read from the result in a select without a nil-pointer
+// dereference. ticker is nil when the EMS heartbeat is disabled (usageHeartbeat configured to
+// <= 0 hours; see NewOntapTelemetry).
+func tickerChannel(ticker *time.Ticker) <-chan time.Time {
+	if ticker == nil {
+		return nil
+	}
+	return ticker.C
+}
+
 func (t *Telemetry) Stop() {
 	if t.ticker != nil {
 		t.ticker.Stop()
@@ -240,6 +264,9 @@ func (t *Telemetry) Stop() {
 	if !t.stopped {
 		// calling close on an already closed channel causes a panic, guard against that
 		close(t.done)
+		if t.cancel != nil {
+			t.cancel() // interrupt an in-flight EMSHeartbeat call, not just future ticks
+		}
 		t.stopped = true
 	}
 }

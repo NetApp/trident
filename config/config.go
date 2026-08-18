@@ -156,6 +156,10 @@ const (
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
 
+	// BackendBootstrapTimeout bounds init of a single backend during bootstrap, so one
+	// unreachable/slow backend can't block startup indefinitely.
+	BackendBootstrapTimeout = 90 * time.Second
+
 	/* Telemetry and platform detection constants */
 	// KubeSystemNamespace is the Kubernetes system namespace used for cluster UID retrieval
 	KubeSystemNamespace = "kube-system"

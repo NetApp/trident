@@ -301,8 +301,20 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 			return marshalErr
 		}
 
-		backend, backendErr := o.addBackend(ctx, configJSON, storageBackend.BackendUUID, storageBackend.ConfigRef)
+		// Bound this backend's init so an unreachable backend can't hang bootstrap.
+		bCtx, cancel := context.WithTimeout(ctx, config.BackendBootstrapTimeout)
+		backend, backendErr := o.addBackend(bCtx, configJSON, storageBackend.BackendUUID, storageBackend.ConfigRef)
+		cancel()
+
 		if backendErr != nil {
+			if isBackendBootstrapTimeout(bCtx, backendErr) {
+				Logc(ctx).WithFields(LogFields{
+					"backend":     storageBackend.Name,
+					"backendUUID": storageBackend.BackendUUID,
+					"timeout":     config.BackendBootstrapTimeout,
+				}).Error("Backend bootstrap timed out; continuing with remaining backends.")
+			}
+
 			Logc(ctx).WithError(backendErr).WithFields(LogFields{
 				"handler":            "Bootstrap",
 				"newBackendExternal": backend,

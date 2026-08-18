@@ -3682,6 +3682,52 @@ func TestHousekeepingTask_Run(t *testing.T) {
 	assert.False(t, task.stopped)
 }
 
+// TestHousekeepingTask_Start_SurvivesCallerContextCancellation verifies that Start decouples its
+// goroutine from the caller's context. The housekeeping task must keep running even if the ctx
+// passed to Start is cancelled immediately afterward, e.g. a bounded bootstrap context, or a
+// REST/CRD request context that net/http or the CRD workqueue cancels as soon as the caller's
+// handler function returns.
+func TestHousekeepingTask_Start_SurvivesCallerContextCancellation(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.housekeepingWaitGroup = &sync.WaitGroup{}
+
+	ran := make(chan struct{})
+	ticker := time.NewTicker(time.Hour) // long enough not to fire during the test
+	defer ticker.Stop()
+
+	// Set from the task goroutine and read from the test goroutine only after <-ran, so the
+	// channel receive establishes the happens-before relationship (no data race).
+	var taskCtxErr error
+	task := &HousekeepingTask{
+		Name:         "mockTask",
+		Ticker:       ticker,
+		InitialDelay: 1 * time.Millisecond,
+		Done:         make(chan struct{}),
+		Tasks: []func(context.Context){
+			func(taskCtx context.Context) {
+				taskCtxErr = taskCtx.Err()
+				close(ran)
+			},
+		},
+		Driver: driver,
+	}
+
+	callerCtx, cancel := context.WithCancel(context.Background())
+	task.Start(callerCtx)
+	// Simulate a bounded/request-scoped caller context that is cancelled right after Start
+	// returns.
+	cancel()
+
+	select {
+	case <-ran:
+		assert.NoError(t, taskCtxErr, "task context should not be cancelled")
+	case <-time.After(2 * time.Second):
+		t.Fatal("housekeeping task did not run after caller context was cancelled")
+	}
+
+	close(task.Done)
+}
+
 func TestNewPruneTask_WithDefaultValues(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.QtreePruneFlexvolsPeriod = ""

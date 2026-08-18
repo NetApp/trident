@@ -34,6 +34,7 @@ import (
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils/errors"
@@ -2028,6 +2029,65 @@ func addBackendStorageClass(
 	if err != nil {
 		t.Fatal("Unable to add storage class: ", err)
 	}
+}
+
+// TestBootstrapBackendRetryAfterInitialFailure exercises bootstrapBackends' addBackend-then-retry
+// path (see orchestrator_core.go), which previously had no test coverage. An invalid pool "size"
+// default makes fake driver Initialize() fail deterministically in validate() on every attempt
+// (unlike e.g. a bad Volumes entry, this field round-trips through backend persistence), so this
+// locks in the structural behavior: a backend that fails to initialize during bootstrap is
+// retried and still ends up tracked in Failed state rather than silently dropped.
+func TestBootstrapBackendRetryAfterInitialFailure(t *testing.T) {
+	const (
+		backendName = "retryFailBackend"
+		backendUUID = "retry-fail-backend-uuid"
+	)
+
+	badDefaults := drivers.FakeStorageDriverPool{
+		FakeStorageDriverConfigDefaults: drivers.FakeStorageDriverConfigDefaults{
+			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+				Size: "not-a-valid-size",
+			},
+		},
+	}
+	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSONWithVirtualPools(
+		backendName, config.File,
+		map[string]*fake.StoragePool{
+			"primary": {
+				Attrs: map[string]sa.Offer{
+					sa.Media: sa.NewStringOffer("hdd"),
+				},
+				Bytes: 100 * 1024 * 1024 * 1024,
+			},
+		},
+		badDefaults,
+		nil,
+	)
+	require.NoError(t, err)
+
+	orchestrator := getOrchestrator(t, false)
+	defer cleanup(t, orchestrator)
+
+	// Seed the store directly (AddBackend's public API would reject this config outright)
+	// with a Failed backend built via the same code path bootstrap uses, so the persisted
+	// config reproduces the identical failure on every future bootstrap attempt.
+	failedBackend, err := orchestrator.validateAndCreateBackendFromConfig(ctx(), configJSON, "", backendUUID)
+	require.Error(t, err)
+	require.NotNil(t, failedBackend)
+	require.True(t, failedBackend.State().IsFailed())
+	failedBackend.SetName(backendName)
+
+	require.NoError(t, orchestrator.storeClient.AddBackend(ctx(), failedBackend))
+
+	// Bootstrapping a fresh orchestrator against this persisted backend exercises the
+	// addBackend-then-retry path end-to-end: both attempts fail identically, and the backend
+	// must still come out registered and Failed rather than vanishing from tracking.
+	newOrchestrator := getOrchestrator(t, false)
+
+	registered, found := newOrchestrator.backends[backendUUID]
+	require.True(t, found, "backend should remain tracked after a failed retry")
+	assert.Equal(t, storage.Failed, registered.State())
+	assert.Equal(t, backendName, registered.Name())
 }
 
 func captureOutput(f func()) string {

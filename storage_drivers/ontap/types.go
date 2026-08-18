@@ -35,6 +35,9 @@ type Telemetry struct {
 	done          chan struct{}
 	ticker        *time.Ticker
 	stopped       bool
+	// cancel interrupts the heartbeat goroutine's context (see newTelemetryRunContext), letting
+	// Stop() abort an in-flight EMSHeartbeat call instead of only stopping future ticks.
+	cancel context.CancelFunc
 }
 
 // ChapCredentials holds the bidrectional chap settings

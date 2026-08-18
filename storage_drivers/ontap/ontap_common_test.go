@@ -5321,6 +5321,98 @@ func TestEMSHeartbeat(t *testing.T) {
 	EMSHeartbeat(ctx, driver)
 }
 
+// TestNewTelemetryRunContext verifies the context-derivation helper used by Start: the returned
+// context is decoupled from the caller's cancellation/deadline (e.g. a bounded bootstrap
+// context, or a REST/CRD request context that is cancelled as soon as the caller's handler
+// function returns), and the returned CancelFunc can still interrupt it. This is a pure,
+// synchronous check of the helper itself, so it doesn't need a goroutine, a mock driver, or a
+// real ~10s HousekeepingStartupDelay wait.
+func TestNewTelemetryRunContext(t *testing.T) {
+	callerCtx, callerCancel := context.WithCancel(context.Background())
+	callerCancel() // simulate a bounded/request-scoped caller context that dies before Start is even called
+	assert.Error(t, callerCtx.Err())
+
+	ctx, cancel := newTelemetryRunContext(callerCtx)
+	defer cancel()
+
+	assert.NoError(t, ctx.Err(), "derived context should not inherit the caller's cancellation")
+
+	cancel()
+	assert.ErrorIs(t, ctx.Err(), context.Canceled,
+		"cancel should still be able to interrupt the derived context")
+}
+
+// TestTelemetryStart_SetsCancel verifies that Start wires up t.cancel (recorded synchronously,
+// before the goroutine is spawned) so Stop has something to call. This package's test suite has
+// dozens of pre-existing driver.Initialize() calls that start a Telemetry goroutine and never
+// Stop() it (a separate, pre-existing test-hygiene gap); any test that keeps the process alive
+// past the real ~10s HousekeepingStartupDelay risks one of those leaked goroutines firing into
+// an unrelated, already-finished mock controller. Checking t.cancel synchronously avoids that.
+func TestTelemetryStart_SetsCancel(t *testing.T) {
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+
+	telemetry := &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+		ticker: time.NewTicker(time.Hour), // avoid a real heartbeat firing during the test
+	}
+	defer telemetry.ticker.Stop()
+	defer telemetry.Stop()
+
+	telemetry.Start(context.Background())
+
+	assert.NotNil(t, telemetry.cancel, "Start should record a cancel func so Stop can interrupt in-flight work")
+}
+
+// TestTelemetryStop_CallsCancel verifies that Stop invokes t.cancel (not just closing t.done for
+// future ticks), so a heartbeat call blocked on the goroutine's context is interrupted rather
+// than left to run until it finishes or errors on its own. cancel is injected directly so this
+// doesn't depend on Start's goroutine or timing.
+func TestTelemetryStop_CallsCancel(t *testing.T) {
+	canceled := false
+	telemetry := &Telemetry{
+		done:   make(chan struct{}),
+		ticker: time.NewTicker(time.Hour), // avoid a real heartbeat firing during the test
+		cancel: func() { canceled = true },
+	}
+	defer telemetry.ticker.Stop()
+
+	telemetry.Stop()
+
+	assert.True(t, canceled, "Stop should call cancel to interrupt in-flight work")
+}
+
+// TestTelemetryStop_NilCancel verifies that Stop tolerates a nil cancel func, e.g. for a
+// Telemetry that was constructed for tests without calling Start.
+func TestTelemetryStop_NilCancel(t *testing.T) {
+	telemetry := &Telemetry{
+		done:   make(chan struct{}),
+		ticker: time.NewTicker(time.Hour),
+	}
+	defer telemetry.ticker.Stop()
+
+	assert.NotPanics(t, telemetry.Stop)
+}
+
+// TestTickerChannel verifies the nil-ticker guard used by Telemetry.Start. NewOntapTelemetry
+// leaves Telemetry.ticker nil when usageHeartbeat is configured to <= 0 hours (heartbeat
+// disabled); reading ticker.C directly in that case would panic with a nil-pointer dereference
+// as soon as Start's goroutine reached its select loop. tickerChannel must return a nil channel
+// instead, which is safe to read from a select (it is simply never selected).
+func TestTickerChannel(t *testing.T) {
+	t.Run("nil ticker returns nil channel", func(t *testing.T) {
+		assert.Nil(t, tickerChannel(nil))
+	})
+
+	t.Run("non-nil ticker returns its channel", func(t *testing.T) {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		assert.Equal(t, (<-chan time.Time)(ticker.C), tickerChannel(ticker))
+	})
+}
+
 func TestRefreshDynamicTelemetry(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")

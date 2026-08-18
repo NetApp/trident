@@ -937,6 +937,59 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 	}
 }
 
+// TestBootstrapBackendsConcurrentCoreTimeoutLogged verifies that when a backend's bounded
+// bootstrap context (config.BackendBootstrapTimeout) has already expired by the time addBackend
+// fails, bootstrapBackends logs the distinguishing "timed out" message via
+// isBackendBootstrapTimeout, rather than just the generic failure log, and still continues
+// (rather than hanging or aborting) since CurrentDriverContext isn't Docker. An unknown driver
+// name is used to force backendErr != nil deterministically: the fake driver itself ignores ctx,
+// so it can't be used to simulate a real timeout failure.
+func TestBootstrapBackendsConcurrentCoreTimeoutLogged(t *testing.T) {
+	unknownBackend := &storage.BackendPersistent{
+		Version: "1",
+		Config: storage.PersistentStorageBackendConfig{
+			FakeStorageDriverConfig: &drivers.FakeStorageDriverConfig{
+				CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+					Version:           1,
+					StorageDriverName: "unknown",
+					BackendName:       "fake1",
+				},
+			},
+		},
+		Name:        "fake1",
+		BackendUUID: "backend-uuid1",
+	}
+
+	// Guard against CurrentDriverContext leaking in from another test: persistenceCleanup only
+	// resets it for InMemoryClient-backed tests (not this mock-based one), so a prior test
+	// leaving it set to Docker would otherwise make bootstrapBackends return backendErr here.
+	origDriverContext := config.CurrentDriverContext
+	config.CurrentDriverContext = ""
+	defer func() { config.CurrentDriverContext = origDriverContext }()
+
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+	o.bootstrapped = false
+	defer persistenceCleanup(t, o)
+
+	mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(
+		[]*storage.BackendPersistent{unknownBackend}, nil).AnyTimes()
+
+	var err error
+	output := captureOutput(func() {
+		err = o.bootstrapBackends(expiredCtx)
+	})
+
+	assert.NoError(t, err)
+	assert.Contains(t, output, "Backend bootstrap timed out")
+
+	result := getBackendByUuidFromCache(t, "backend-uuid1")
+	assert.Nil(t, result)
+}
+
 func TestBootstrapStorageClassesConcurrentCore(t *testing.T) {
 	scConfig := &storageclass.Config{
 		Version: "1",

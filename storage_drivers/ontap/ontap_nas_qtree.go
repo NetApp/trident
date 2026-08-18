@@ -2637,6 +2637,10 @@ type HousekeepingTask struct {
 }
 
 func (t *HousekeepingTask) Start(ctx context.Context) {
+	// Detach from the caller's cancellation/deadline: this goroutine must outlive the call that
+	// started it (e.g. a bounded bootstrap context, or a REST/CRD request context that is canceled
+	// as soon as the handler returns), and is only meant to stop via t.Done/Stop().
+	ctx = context.WithoutCancel(ctx)
 	go func() {
 		t.Driver.housekeepingWaitGroup.Add(1) //nolint:govet
 		defer t.Driver.housekeepingWaitGroup.Done()

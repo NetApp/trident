@@ -3,6 +3,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -1240,4 +1242,66 @@ func TestVPSyncRateLimiting_BackoffBehavior(t *testing.T) {
 	assert.Equal(t, "gold", vp.StorageClass)
 
 	t.Logf("Backoff test completed: %d backoff attempts in %v", backoffAttempts, backoffElapsed)
+}
+
+func TestIsBackendBootstrapTimeout(t *testing.T) {
+	tests := []struct {
+		name     string
+		bCtx     func() context.Context
+		callErr  error
+		expected bool
+	}{
+		{
+			name:     "NoError",
+			bCtx:     func() context.Context { return context.Background() },
+			callErr:  nil,
+			expected: false,
+		},
+		{
+			name:     "ErrorButContextNotExpired",
+			bCtx:     func() context.Context { return context.Background() },
+			callErr:  errors.New("some other init failure"),
+			expected: false,
+		},
+		{
+			name: "ErrorAndContextDeadlineExceeded",
+			bCtx: func() context.Context {
+				bCtx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Hour))
+				defer cancel()
+				return bCtx
+			},
+			callErr:  errors.New("dial tcp 172.25.9.93:443: i/o timeout"),
+			expected: true,
+		},
+		{
+			name: "ContextDeadlineExceededButNoError",
+			bCtx: func() context.Context {
+				bCtx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Hour))
+				defer cancel()
+				return bCtx
+			},
+			// A caller that ignored the expired context and returned success anyway should not
+			// be reported as a timeout; the bug is in that caller, not in bootstrap's timing.
+			callErr:  nil,
+			expected: false,
+		},
+		{
+			name: "ErrorAndContextExplicitlyCancelled",
+			bCtx: func() context.Context {
+				bCtx, cancel := context.WithCancel(context.Background())
+				cancel()
+				return bCtx
+			},
+			// Manual cancellation (context.Canceled) is distinct from a deadline expiring
+			// (context.DeadlineExceeded) and must not be misreported as a bootstrap timeout.
+			callErr:  errors.New("context canceled"),
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, isBackendBootstrapTimeout(tt.bCtx(), tt.callErr))
+		})
+	}
 }

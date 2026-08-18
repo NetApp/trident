@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/core/metrics"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -107,6 +108,14 @@ const (
 	NodeRegistrationCooldownPeriod = time.Second * 30
 	AttachISCSIVolumeTimeoutLong   = time.Second * 90
 )
+
+// isBackendBootstrapTimeout reports whether a backend init call failed because its bounded
+// bootstrap context (config.BackendBootstrapTimeout) expired, as opposed to some other init
+// error, so callers can log a distinguishing message. bCtx must be the context
+// actually passed to the failed call, not the parent it was derived from.
+func isBackendBootstrapTimeout(ctx context.Context, err error) bool {
+	return err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded)
+}
 
 var (
 	// VP sync rate limiter tuning (overridden in unit tests for speed).

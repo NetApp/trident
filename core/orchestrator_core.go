@@ -231,10 +231,22 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			return err
 		}
 
-		newBackendExternal, backendErr := o.addBackend(ctx, serializedConfig, b.BackendUUID, b.ConfigRef)
+		// Bound this backend's bootstrap work (including any retry below) so an unreachable
+		// backend can't hang bootstrap or double its worst-case time via a second timeout.
+		bCtx, cancel := context.WithTimeout(ctx, config.BackendBootstrapTimeout)
+		newBackendExternal, backendErr := o.addBackend(bCtx, serializedConfig, b.BackendUUID, b.ConfigRef)
+
 		if backendErr == nil {
 			newBackendExternal.BackendUUID = b.BackendUUID
 		} else {
+
+			if isBackendBootstrapTimeout(bCtx, backendErr) {
+				Logc(ctx).WithFields(LogFields{
+					"backend":     b.Name,
+					"backendUUID": b.BackendUUID,
+					"timeout":     config.BackendBootstrapTimeout,
+				}).Error("Backend bootstrap timed out; continuing with remaining backends.")
+			}
 
 			errorLogFields := LogFields{
 				"handler":            "Bootstrap",
@@ -246,28 +258,45 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			// should not start if the backend fails to initialize, so return any error here.
 			if config.CurrentDriverContext == config.ContextDocker {
 				Logc(ctx).WithFields(errorLogFields).Error("Problem adding backend.")
+				cancel()
 				return backendErr
 			}
 
 			Logc(ctx).WithFields(errorLogFields).Warn("Problem adding backend.")
 
 			if newBackendExternal != nil {
-				newBackend, _ := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, b.ConfigRef, b.BackendUUID)
-				newBackend.SetName(b.Name)
-				newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
-				o.backends[newBackendExternal.BackendUUID] = newBackend
+				// Repeats the same Initialize() call, so it reuses bCtx rather than getting a
+				// fresh timeout: if the first attempt already used up the budget, this fails
+				// fast (still yielding a Failed backend, see validateAndCreateBackendFromConfig)
+				// instead of hanging bootstrap for up to another BackendBootstrapTimeout.
+				newBackend, retryErr := o.validateAndCreateBackendFromConfig(bCtx, serializedConfig, b.ConfigRef, b.BackendUUID)
 
-				Logc(ctx).WithFields(LogFields{
-					"newBackendExternal":             newBackendExternal,
-					"newBackendExternal.Name":        newBackendExternal.Name,
-					"newBackendExternal.State":       newBackendExternal.State.String(),
-					"newBackendExternal.BackendUUID": newBackendExternal.BackendUUID,
-					"persistentBackend.Name":         b.Name,
-					"persistentBackend.State":        b.State.String(),
-					"persistentBackend.BackendUUID":  b.BackendUUID,
-				}).Debug("Backend information.")
+				if newBackend == nil {
+					// Can happen if an early validation step (e.g. secret fetch) fails on retry
+					// without constructing even a Failed backend object; nothing to register.
+					Logc(ctx).WithFields(LogFields{
+						"backend":     b.Name,
+						"backendUUID": b.BackendUUID,
+						"retryErr":    retryErr,
+					}).Error("Retry to construct backend returned nil; skipping registration.")
+				} else {
+					newBackend.SetName(b.Name)
+					newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
+					o.backends[newBackendExternal.BackendUUID] = newBackend
+
+					Logc(ctx).WithFields(LogFields{
+						"newBackendExternal":             newBackendExternal,
+						"newBackendExternal.Name":        newBackendExternal.Name,
+						"newBackendExternal.State":       newBackendExternal.State.String(),
+						"newBackendExternal.BackendUUID": newBackendExternal.BackendUUID,
+						"persistentBackend.Name":         b.Name,
+						"persistentBackend.State":        b.State.String(),
+						"persistentBackend.BackendUUID":  b.BackendUUID,
+					}).Debug("Backend information.")
+				}
 			}
 		}
+		cancel()
 
 		// Note that addBackend returns an external copy of the newly
 		// added backend, so we have to go fetch it manually.
