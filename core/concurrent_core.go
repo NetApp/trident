@@ -2751,6 +2751,8 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	// Clear these values as they were copied from the source volume Config
 	cloneConfig.SubordinateVolumes = make(map[string]interface{})
 	cloneConfig.ShareSourceVolume = ""
+	// The clone gets its own backing volume, whose ID the driver records when it creates it.
+	cloneConfig.BackendVolumeID = ""
 	cloneConfig.LUKSPassphraseNames = sourceVolume.Config.LUKSPassphraseNames
 	// Override this value only if SplitOnClone has been defined in clone volume's config
 	if volConfig.SplitOnClone != "" {

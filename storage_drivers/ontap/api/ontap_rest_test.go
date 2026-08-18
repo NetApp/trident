@@ -2530,6 +2530,31 @@ func mockSnapshotGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(snapShot)
 }
 
+func mockGetVolumeResponseDeleteOK(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "DELETE":
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(map[string]interface{}{})
+		default:
+			volume := &models.Volume{
+				UUID: convert.ToPtr("fakeUUID"),
+				Name: convert.ToPtr("fakeName"),
+			}
+			numRecords := int64(1)
+			volumeResponse := models.VolumeResponse{
+				VolumeResponseInlineRecords: []*models.Volume{volume},
+				NumRecords:                  &numRecords,
+			}
+
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(volumeResponse)
+		}
+	}
+}
+
 func mockGetVolumeResponseAccepted(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/cluster/jobs/1234" {
 		mockJobResponse(w, r)
@@ -4901,15 +4926,17 @@ func TestOntapRestRenameVolumeByNameAndStyle(t *testing.T) {
 
 func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 	tests := []struct {
-		name            string
-		mockFunction    func(w http.ResponseWriter, r *http.Request)
-		isErrorExpected bool
+		name               string
+		mockFunction       func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected    bool
+		isNotFoundExpected bool
 	}{
-		{"GetVolume", mockGetVolumeResponseAccepted, false},
-		{"VolumeDeleteFail", mockModifyFailed, true},
-		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
-		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
-		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
+		{"GetVolume", mockGetVolumeResponseAccepted, false, false},
+		{"VolumeDeleteOK", mockGetVolumeResponseDeleteOK, false, false},
+		{"VolumeDeleteFail", mockModifyFailed, true, false},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true, false},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true, false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -4923,6 +4950,8 @@ func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 			} else {
 				assert.Error(t, err, "volume deleted")
 			}
+			// NotFoundError only when the name lookup finds no volume; other failures stay ordinary errors.
+			assert.Equal(t, test.isNotFoundExpected, errors.IsNotFoundError(err))
 			server.Close()
 		})
 	}
@@ -5162,7 +5191,7 @@ func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	rs := newRestClient(server.Listener.Addr().String(), server.Client())
 	assert.NotNil(t, rs)
 
-	err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
+	_, err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
 		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, models.VolumeStyleFlexvol,
 		false)

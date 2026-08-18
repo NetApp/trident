@@ -4532,6 +4532,10 @@ func cloneFlexvol(
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
+	// A clone config is copied from its source, so drop any inherited backend volume ID before
+	// creating the clone; deleting by the source's ID would destroy the wrong volume.
+	cloneVolConfig.BackendVolumeID = ""
+
 	// Cleanup cloned volume and snapshots we created if we error
 	defer func() {
 		cleanupFailedCloneFlexVol(ctx, client, err, clonedVolName, source, createdSnapName)
@@ -5611,6 +5615,46 @@ func cloneASAvol(
 		}
 	}
 
+	return nil
+}
+
+// destroyFlexvol deletes the FlexVol backing volConfig, treating an already-absent volume as
+// success so the delete is idempotent. When volConfig records the backend volume ID (the FlexVol
+// UUID on ONTAP) it deletes by UUID, which addresses the volume directly and avoids the REST name
+// index that ONTAP updates asynchronously — the index can otherwise report a just-created volume as
+// already gone and leave it orphaned. It falls back to deleting by name when no ID is recorded (a
+// volume created before the ID was tracked, or a backend such as ZAPI that does not report one) or
+// when the backend cannot delete by UUID (ZAPI returns UnsupportedError).
+func destroyFlexvol(
+	ctx context.Context, ontapAPI api.OntapAPI, volConfig *storage.VolumeConfig, force, skipRecoveryQueue bool,
+) error {
+	name := volConfig.InternalName
+
+	if volConfig.BackendVolumeID != "" {
+		err := ontapAPI.VolumeDestroyByUUID(ctx, volConfig.BackendVolumeID, name, force, skipRecoveryQueue)
+		switch {
+		case err == nil:
+			return nil
+		case errors.IsNotFoundError(err):
+			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": volConfig.BackendVolumeID}).
+				Debug("Volume already deleted.")
+			return nil
+		case errors.IsUnsupportedError(err):
+			// The backend cannot delete by UUID (e.g. ZAPI); delete by name.
+			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": volConfig.BackendVolumeID}).
+				Debug("Deleting volume by name instead of UUID.")
+		default:
+			return err
+		}
+	}
+
+	if err := ontapAPI.VolumeDestroy(ctx, name, force, skipRecoveryQueue); err != nil {
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithField("volume", name).Debug("Volume already deleted.")
+			return nil
+		}
+		return err
+	}
 	return nil
 }
 

@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -1521,16 +1522,17 @@ func TestVolumeCreate(t *testing.T) {
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(nil)
-	err := oapi.VolumeCreate(ctx, volume)
+		Return("fake-uuid", nil)
+	volumeUUID, err := oapi.VolumeCreate(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume")
+	assert.Equal(t, "fake-uuid", volumeUUID, "volume UUID not returned")
 
 	// case 2: Create volume, volume creation failed
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(errors.New("Volume create failed"))
-	err = oapi.VolumeCreate(ctx, volume)
+		Return("", errors.New("Volume create failed"))
+	_, err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
 }
 
@@ -1546,6 +1548,19 @@ func TestVolumeDestroy(t *testing.T) {
 	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(errors.New("failed to delete volume"))
 	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
+
+	// case 3: Name no longer resolves -> NotFoundError survives so the caller can treat the
+	// delete as already completed rather than a failure.
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(errors.NotFoundError("could not find volume: vol1"))
+	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when the volume is already gone")
+
+	// case 4: A transient busy response is retried until the delete succeeds.
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).
+		Return(stderrors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(nil)
+	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
+	assert.NoError(t, err, "expected a busy volume delete to be retried")
 }
 
 func TestVolumeInfo(t *testing.T) {
@@ -5969,4 +5984,46 @@ func TestNVMeSubsystemList(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, subsystems)
 	assert.Contains(t, err.Error(), "error listing subsystems")
+}
+
+func TestVolumeDestroyByUUID(t *testing.T) {
+	uuid := "d0f1f979-2f7b-4a5b-9a7a-1c2b3c4d5e6f"
+	volName := "vol1"
+
+	// case 1: No UUID provided -> UnsupportedError so the caller falls back to delete by name.
+	oapi, rsi := newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	err := oapi.VolumeDestroyByUUID(ctx, "", volName, true, false)
+	assert.True(t, errors.IsUnsupportedError(err), "expected UnsupportedError when UUID is empty")
+
+	// case 2: Delete by UUID succeeds.
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(nil)
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.NoError(t, err, "expected delete by UUID to succeed")
+
+	// case 3: UUID no longer resolves -> NotFoundError (already-completed delete).
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(errors.NotFoundError("gone"))
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when the volume is already gone")
+
+	// case 4: Any other failure is returned to the caller.
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(fmt.Errorf("snapshot not found")).Times(1)
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "snapshot not found")
+
+	// case 5: A transient busy response is retried on the UUID path until the delete succeeds.
+	oapi, rsi = newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).
+		Return(stderrors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	rsi.EXPECT().VolumeDestroyByUUID(ctx, uuid, false).Return(nil)
+	err = oapi.VolumeDestroyByUUID(ctx, uuid, volName, true, false)
+	assert.NoError(t, err, "expected a busy UUID volume delete to be retried")
 }

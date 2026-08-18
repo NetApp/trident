@@ -411,7 +411,7 @@ func TestOntapAPIZAPI_VolumeCreate_Success(t *testing.T) {
 		volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
 	).Return(volumeCreateResponse, nil).Times(1)
 
-	err := oapi.VolumeCreate(ctx, volume)
+	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.NoError(t, err)
 }
 
@@ -436,7 +436,7 @@ func TestOntapAPIZAPI_VolumeCreate_Error(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(nil, errors.New("API error")).Times(1)
 
-	err := oapi.VolumeCreate(ctx, volume)
+	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "expected error when volume creation fails")
 	assert.Contains(t, err.Error(), "error creating volume")
 }
@@ -469,7 +469,7 @@ func TestOntapAPIZAPI_VolumeCreate_JobExists(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(volumeCreateResponse, nil).Times(1)
 
-	err := oapi.VolumeCreate(ctx, volume)
+	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "expected VolumeCreateJobExistsError when volume create job already exists")
 	assert.True(t, api.IsVolumeCreateJobExistsError(err))
 }
@@ -6326,4 +6326,14 @@ func TestOntapAPIZAPI_SnapmirrorResync(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOntapAPIZAPI_VolumeDestroyByUUID_Unsupported(t *testing.T) {
+	ctrl, _, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	// ZAPI addresses volumes by name, so delete-by-UUID returns an UnsupportedError that tells the
+	// caller to fall back to deleting by name.
+	err := oapi.VolumeDestroyByUUID(ctx, "some-uuid", "test_volume", true, false)
+	assert.True(t, errors.IsUnsupportedError(err), "expected UnsupportedError from ZAPI VolumeDestroyByUUID")
 }

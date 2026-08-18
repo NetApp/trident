@@ -885,7 +885,8 @@ func (c *RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName,
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-// destroyVolumeByNameAndStyle destroys a volume
+// destroyVolumeByNameAndStyle destroys a volume. A name that no longer resolves yields a
+// NotFoundError, which callers may treat as an already-completed delete.
 func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string, force bool) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, name, style, fields)
@@ -893,8 +894,9 @@ func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, styl
 		return err
 	}
 	if volume == nil {
-		return fmt.Errorf("could not find volume: %v", name)
+		return errors.NotFoundError("could not find volume: %v", name)
 	}
+	// The volume exists but ONTAP did not return a UUID, so DELETE cannot be issued.
 	if volume.UUID == nil {
 		return fmt.Errorf("could not find volume uuid: %v", name)
 	}
@@ -905,16 +907,62 @@ func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, styl
 	params.UUID = *volume.UUID
 	params.Force = &force
 
-	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
+	volumeDeleteOK, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if volumeDeleteOK != nil {
+		return nil
+	} else if volumeDeleteAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if volumeDeleteAccepted == nil {
-		return fmt.Errorf("unexpected response from volume create")
+	return fmt.Errorf("unexpected response from volume delete")
+}
+
+// isRestNotFoundError reports whether a REST client error carries an HTTP 404 status.
+func isRestNotFoundError(err error) bool {
+	if err == nil {
+		return false
 	}
 
-	jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	var apiError *runtime.APIError
+	if errors.As(err, &apiError) {
+		return apiError.Code == http.StatusNotFound
+	}
+
+	// The generated clients return their typed default response as the error for non-2xx codes.
+	var coded interface{ Code() int }
+	if errors.As(err, &coded) {
+		return coded.Code() == http.StatusNotFound
+	}
+
+	return false
+}
+
+// destroyVolumeByUUID destroys the volume with the specified UUID. Addressing the volume directly
+// avoids the name index, so a volume ONTAP has created but not yet indexed is still deleted instead
+// of being mistaken for one that no longer exists. A UUID that no longer resolves yields a
+// NotFoundError, which callers may treat as an already-completed delete.
+func (c *RestClient) destroyVolumeByUUID(ctx context.Context, volumeUUID string, force bool) error {
+	params := storage.NewVolumeDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = volumeUUID
+	params.Force = &force
+
+	volumeDeleteOK, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
+	if err != nil {
+		if isRestNotFoundError(err) {
+			return errors.NotFoundError("volume with UUID %s does not exist", volumeUUID)
+		}
+		return err
+	} else if volumeDeleteOK != nil {
+		return nil
+	} else if volumeDeleteAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
+	}
+	return fmt.Errorf("unexpected response from volume delete")
 }
 
 func (c *RestClient) modifyVolumeExportPolicyByNameAndStyle(
@@ -1306,11 +1354,12 @@ func (c *RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, vol
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
+// It returns the UUID ONTAP assigned to the new volume, which is empty for FlexGroups.
 func (c *RestClient) createVolumeByStyle(
 	ctx context.Context, name string, sizeInBytes int64, aggrs []string,
 	spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
-) error {
+) (string, error) {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1370,7 +1419,7 @@ func (c *RestClient) createVolumeByStyle(
 		unixPermissions = convertUnixPermissions(unixPermissions)
 		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
 		if parseErr != nil {
-			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+			return "", fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
 		}
 		volumeNas.UnixPermissions = &volumePermissions
 		volumeInfo.Nas = volumeNas
@@ -1384,10 +1433,10 @@ func (c *RestClient) createVolumeByStyle(
 
 	_, volumeCreateAccepted, err := c.api.Storage.VolumeCreate(params, c.authInfo)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if volumeCreateAccepted == nil {
-		return fmt.Errorf("unexpected response from volume create")
+		return "", fmt.Errorf("unexpected response from volume create")
 	}
 
 	// Sample ZAPI error: API status: failed, Reason: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 13115
@@ -1397,27 +1446,40 @@ func (c *RestClient) createVolumeByStyle(
 	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
 		apiError, message, code := ExtractError(pollErr)
 		if apiError == "failure" && code == FLEXGROUP_VOLUME_SIZE_ERROR_REST {
-			return errors.InvalidInputError(message)
+			return "", errors.InvalidInputError(message)
 		}
-		return pollErr
+		return "", pollErr
 	}
 
+	// Do not report the create as done until ONTAP can read the volume back. A delete issued moments
+	// later must not mistake a volume that has yet to propagate for one that is already gone. The
+	// same GET also yields the UUID used for later deletes.
 	switch style {
 	case models.VolumeStyleFlexgroup:
-		return c.waitForFlexgroup(ctx, name)
+		return "", c.waitForFlexgroup(ctx, name)
 	default:
 		return c.waitForVolume(ctx, name)
 	}
 }
 
-// waitForVolume polls for the ONTAP volume to exist, with backoff retry logic
-func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) error {
+// waitForVolume polls for the ONTAP volume to exist and returns its UUID from the successful GET.
+// Name lookups are what the rest of provisioning uses, and the wait is the cheapest place to learn a
+// durable handle for delete.
+func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) (string, error) {
+	var volumeUUID string
 	checkStatus := func() error {
-		exists, err := c.VolumeExists(ctx, volumeName)
-		if !exists {
-			return fmt.Errorf("volume '%v' does not exit, will continue checking", volumeName)
+		volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, []string{"uuid"})
+		if err != nil {
+			return err
 		}
-		return err
+		if volume == nil {
+			return fmt.Errorf("volume '%v' does not exist, will continue checking", volumeName)
+		}
+		if volume.UUID == nil || *volume.UUID == "" {
+			return fmt.Errorf("volume '%v' does not have a UUID yet, will continue checking", volumeName)
+		}
+		volumeUUID = *volume.UUID
+		return nil
 	}
 	statusNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Volume not found, waiting.")
@@ -1433,13 +1495,13 @@ func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) error
 	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
 		Logc(ctx).WithField("name", volumeName).Warnf("Volume not found after %3.2f seconds.",
 			statusBackoff.MaxElapsedTime.Seconds())
-		return err
+		return "", err
 	}
 
 	Logc(ctx).WithField("Name", volumeName).Debugf("Flexvol created after %3.2f seconds.",
 		statusBackoff.GetElapsedTime().Seconds())
 
-	return nil
+	return volumeUUID, nil
 }
 
 // waitForFlexgroup polls for the ONTAP flexgroup to exist, with backoff retry logic
@@ -1566,11 +1628,12 @@ func (c *RestClient) VolumeListByAttrs(
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
+// It returns the UUID ONTAP assigned to the new volume.
 func (c *RestClient) VolumeCreate(
 	ctx context.Context,
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
-) error {
+) (string, error) {
 	sizeBytesStr, _ := capacity.ToBytes(size)
 	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
@@ -1655,6 +1718,12 @@ func (c *RestClient) VolumeCloneSplitStart(ctx context.Context, volumeName strin
 // VolumeDestroy destroys a flexvol
 func (c *RestClient) VolumeDestroy(ctx context.Context, name string, force bool) error {
 	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol, force)
+}
+
+// VolumeDestroyByUUID destroys the volume with the specified UUID, returning a NotFoundError if no
+// volume with that UUID exists
+func (c *RestClient) VolumeDestroyByUUID(ctx context.Context, volumeUUID string, force bool) error {
+	return c.destroyVolumeByUUID(ctx, volumeUUID, force)
 }
 
 // VolumeRecoveryQueuePurge uses the cli passthrough REST API to purge a volume from the recovery queue.
@@ -4586,9 +4655,10 @@ func (c *RestClient) FlexGroupCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
-	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
+	_, err := c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
 		models.VolumeStyleFlexgroup, false)
+	return err
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone

@@ -2222,8 +2222,9 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		},
 	).Debug("Creating Flexvol for LUNs.")
 
-	// Create the flexvol
-	err = d.API.VolumeCreate(
+	// Create the flexvol. This FlexVol holds many LUNs rather than backing a single volume config,
+	// so there is nowhere to record its UUID.
+	_, err = d.API.VolumeCreate(
 		ctx, api.Volume{
 			AccessType: "",
 			Aggregates: []string{

@@ -558,7 +558,7 @@ func (d *NVMeStorageDriver) Create(
 		}
 
 		// Create the volume.
-		err = d.API.VolumeCreate(
+		volumeUUID, err := d.API.VolumeCreate(
 			ctx, api.Volume{
 				AccessType: "",
 				Aggregates: []string{
@@ -596,6 +596,7 @@ func (d *NVMeStorageDriver) Create(
 			// we send Namespace create request.
 			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
 		}
+		volConfig.BackendVolumeID = volumeUUID
 
 		osType := "linux"
 		flexVolName := volConfig.InternalName
@@ -914,14 +915,21 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
-	// Validate if FlexVol exists before trying to destroy it.
-	volExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
-		return nil
+	var err error
+
+	// Volumes without a recorded ONTAP UUID (created before it was tracked, or on a backend that does
+	// not report one) fall back to a name-based existence check so an out-of-band deletion is still
+	// treated as success. Volumes with a UUID are deleted directly by UUID below, which tolerates a
+	// not-yet-indexed or already-deleted volume without consulting the name index.
+	if volConfig.BackendVolumeID == "" {
+		volExists, existsErr := d.API.VolumeExists(ctx, name)
+		if existsErr != nil {
+			return fmt.Errorf("error checking for existing volume: %v", existsErr)
+		}
+		if !volExists {
+			Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
+			return nil
+		}
 	}
 
 	defer func() {
@@ -965,9 +973,9 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 		}
 	}
 
-	// Delete the FlexVol and Namespace.
-	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
-	if err != nil {
+	// Delete the FlexVol and Namespace, preferring delete-by-UUID so a volume ONTAP created but has
+	// not yet indexed by name is still removed.
+	if err = destroyFlexvol(ctx, d.API, volConfig, true, skipRecoveryQueue); err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}
 

@@ -170,7 +170,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	return nil
 }
 
-func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
+func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, error) {
 	fields := LogFields{
 		"Method": "VolumeCreate",
 		"Type":   "OntapAPIREST",
@@ -186,21 +186,93 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 		aggregateName = volume.Aggregates[0]
 	}
 
-	creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
+	volumeUUID, creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
-		return fmt.Errorf("error creating volume: %v", creationErr)
+		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
 
-	return nil
+	return volumeUUID, nil
 }
 
+// VolumeDestroy deletes the volume with the given name. A name that no longer resolves yields a
+// NotFoundError, meaning the delete already completed.
 func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
-	deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
-	if deletionErr != nil {
-		return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+	destroyVolume := func() error {
+		deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
+		return classifyVolumeDeleteError(name, deletionErr)
 	}
+	return d.retryVolumeDestroy(ctx, name, destroyVolume)
+}
+
+// VolumeDestroyByUUID deletes the volume identified by volumeUUID. Addressing the volume by UUID
+// avoids the lag in ONTAP's name index, which can report a just-created volume as missing. A UUID
+// that no longer resolves yields a NotFoundError, meaning the delete already completed.
+func (d OntapAPIREST) VolumeDestroyByUUID(
+	ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool,
+) error {
+	fields := LogFields{
+		"Method": "VolumeDestroyByUUID",
+		"Type":   "OntapAPIREST",
+		"volume": volumeName,
+		"uuid":   volumeUUID,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeDestroyByUUID")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeDestroyByUUID")
+
+	if volumeUUID == "" {
+		return errors.UnsupportedError("no volume UUID provided; delete by name")
+	}
+
+	destroyVolume := func() error {
+		deletionErr := d.api.VolumeDestroyByUUID(ctx, volumeUUID, skipRecoveryQueue)
+		if errors.IsNotFoundError(deletionErr) {
+			return backoff.Permanent(errors.NotFoundError(
+				"volume %s (UUID %s) does not exist", volumeName, volumeUUID,
+			))
+		}
+		return classifyVolumeDeleteError(volumeName, deletionErr)
+	}
+	return d.retryVolumeDestroy(ctx, volumeName, destroyVolume)
+}
+
+// classifyVolumeDeleteError wraps a raw delete error so busy volumes are retried while all other failures stop immediately.
+func classifyVolumeDeleteError(name string, deletionErr error) error {
+	if deletionErr == nil {
+		return nil
+	}
+	if errors.IsNotFoundError(deletionErr) {
+		return backoff.Permanent(deletionErr)
+	}
+	if !IsVolumeBusyRESTError(deletionErr) {
+		return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, deletionErr))
+	}
+	return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+}
+
+// retryVolumeDestroy retries an ONTAP volume delete while the volume remains transiently busy.
+func (d OntapAPIREST) retryVolumeDestroy(ctx context.Context, name string, destroyVolume func() error) error {
+	destroyNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Volume busy, waiting.")
+	}
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 2 * time.Second
+	bo.MaxInterval = 10 * time.Second
+	bo.Multiplier = 2
+	bo.RandomizationFactor = 0.1
+	bo.MaxElapsedTime = 60 * time.Second
+	if err := backoff.RetryNotify(destroyVolume, bo, destroyNotify); err != nil {
+		var permanentErr *backoff.PermanentError
+		if errors.As(err, &permanentErr) {
+			return permanentErr.Err
+		}
+		Logc(ctx).WithField("volume", name).Warnf("Volume not destroyed after %3.2f seconds.", bo.MaxElapsedTime.Seconds())
+		return err
+	}
+	Logc(ctx).WithField("volume", name).Debugf("Volume destroyed after %3.2f seconds.", bo.GetElapsedTime().Seconds())
 	return nil
 }
 

@@ -15382,3 +15382,53 @@ func TestSelfHealingRectifySession(t *testing.T) {
 	publishedISCSISessions.RemoveLUNFromPortal("1.2.3.4", 1)
 	publishedISCSISessions.RemovePortal("1.2.3.4")
 }
+
+func TestHasSingleNodeSingleWriterAccessMode(t *testing.T) {
+	t.Run("SNSW access mode", func(t *testing.T) {
+		req := &csi.NodePublishVolumeRequest{
+			VolumeCapability: &csi.VolumeCapability{
+				AccessMode: &csi.VolumeCapability_AccessMode{
+					Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER,
+				},
+			},
+		}
+		assert.True(t, hasSingleNodeSingleWriterAccessMode(req))
+	})
+
+	t.Run("other access mode", func(t *testing.T) {
+		req := &csi.NodePublishVolumeRequest{
+			VolumeCapability: &csi.VolumeCapability{
+				AccessMode: &csi.VolumeCapability_AccessMode{
+					Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_MULTI_WRITER,
+				},
+			},
+		}
+		assert.False(t, hasSingleNodeSingleWriterAccessMode(req))
+	})
+
+	t.Run("nil capability", func(t *testing.T) {
+		assert.False(t, hasSingleNodeSingleWriterAccessMode(&csi.NodePublishVolumeRequest{}))
+	})
+}
+
+func TestIsVolumePublishedElsewhere(t *testing.T) {
+	trackingInfo := &models.VolumeTrackingInfo{
+		PublishedPaths: map[string]struct{}{
+			"/path/a": {},
+		},
+	}
+
+	assert.False(t, isVolumePublishedElsewhere(trackingInfo, "/path/a"))
+	assert.True(t, isVolumePublishedElsewhere(trackingInfo, "/path/b"))
+	assert.False(t, isVolumePublishedElsewhere(&models.VolumeTrackingInfo{}, "/path/b"))
+
+	t.Run("target path present with stale path is idempotent", func(t *testing.T) {
+		info := &models.VolumeTrackingInfo{
+			PublishedPaths: map[string]struct{}{
+				"/path/a": {},
+				"/path/b": {},
+			},
+		}
+		assert.False(t, isVolumePublishedElsewhere(info, "/path/a"))
+	})
+}

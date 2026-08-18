@@ -62,6 +62,8 @@ const (
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 
+	snswAlreadyPublishedElsewhereMsg = "volume uses SINGLE_NODE_SINGLE_WRITER access mode and is already mounted at a different target path"
+
 	// Node Scalability constants.
 	maxNodeStageNFSVolumeOperations     = 10
 	maxNodeStageSMBVolumeOperations     = 10
@@ -299,16 +301,36 @@ func (p *Plugin) NodePublishVolume(
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
 
+	var (
+		trackingInfo    *models.VolumeTrackingInfo
+		trackingInfoErr error
+		trackingLoaded  bool
+	)
+	loadTrackingInfo := func() error {
+		if trackingLoaded {
+			return trackingInfoErr
+		}
+		trackingInfo, trackingInfoErr = p.nodeHelper.ReadTrackingInfo(ctx, req.GetVolumeId())
+		trackingLoaded = true
+		return trackingInfoErr
+	}
+
+	if hasSingleNodeSingleWriterAccessMode(req) {
+		if err := loadTrackingInfo(); err != nil && !errors.IsNotFoundError(err) {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if trackingInfo != nil && isVolumePublishedElsewhere(trackingInfo, req.GetTargetPath()) {
+			return nil, status.Error(codes.FailedPrecondition, snswAlreadyPublishedElsewhereMsg)
+		}
+	}
+
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
-		var trackingInfo *models.VolumeTrackingInfo
-		trackingInfo, err = p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
-		if err != nil {
+		if err := loadTrackingInfo(); err != nil {
 			if errors.IsNotFoundError(err) {
 				return nil, status.Error(codes.FailedPrecondition, err.Error())
-			} else {
-				return nil, status.Error(codes.Internal, err.Error())
 			}
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 		if trackingInfo.VolumePublishInfo.FilesystemType == smb.SMB {
 			res, err = p.nodePublishSMBVolume(ctx, req)
@@ -3458,4 +3480,17 @@ func (p *Plugin) disconnectNVMeSubsystemIfNeeded(
 		}
 	}
 	return nil
+}
+
+func hasSingleNodeSingleWriterAccessMode(req *csi.NodePublishVolumeRequest) bool {
+	accessMode := req.GetVolumeCapability().GetAccessMode()
+	return accessMode != nil &&
+		accessMode.GetMode() == csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER
+}
+
+func isVolumePublishedElsewhere(trackingInfo *models.VolumeTrackingInfo, targetPath string) bool {
+	if _, ok := trackingInfo.PublishedPaths[targetPath]; ok {
+		return false
+	}
+	return len(trackingInfo.PublishedPaths) > 0
 }

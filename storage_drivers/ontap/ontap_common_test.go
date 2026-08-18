@@ -7931,6 +7931,23 @@ func TestCloneFlexvol(t *testing.T) {
 				assert.Empty(t, cloneVolumeConfig.CloneSourceSnapshot)
 			},
 		},
+		"Backend volume ID inherited from the source is cleared": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(true, nil)
+			},
+			cloneVolumeConfig: storage.VolumeConfig{
+				InternalName:                internalName,
+				CloneSourceVolumeInternal:   cloneSourceVolumeInternal,
+				CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+				BackendVolumeID:             "d0f1f979-2f7b-4a5b-9a7a-1c2b3c4d5e6f",
+			},
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+			validateCloneVolumeConfig: func(t *testing.T, cloneVolumeConfig storage.VolumeConfig) {
+				assert.Empty(t, cloneVolumeConfig.BackendVolumeID)
+			},
+		},
 		"Creating clone returns error": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
@@ -12358,4 +12375,85 @@ func TestDeleteSubsystemIfEmpty(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDestroyFlexvol_ByUUID_Success(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_NotFoundIsSuccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	// A volume already gone is not an error; delete-by-UUID is idempotent.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).
+		Return(errors.NotFoundError("gone"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_UnsupportedFallsBackToName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-stale"}
+
+	// UnsupportedError (e.g. ZAPI) means delete-by-UUID is unavailable; fall back to name.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-stale", "vol1", true, false).
+		Return(errors.UnsupportedError("ZAPI does not support delete by volume UUID"))
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_ByUUID_Error(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "uuid-1"}
+
+	// A non-NotFound, non-Unsupported error is propagated without falling back to name.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "uuid-1", "vol1", true, false).
+		Return(fmt.Errorf("volume busy"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "volume busy")
+}
+
+func TestDestroyFlexvol_NoUUID_DeletesByName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1"}
+
+	// With no recorded UUID the delete goes straight to the name-based path.
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil)
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
+}
+
+func TestDestroyFlexvol_NoUUID_NameNotFoundIsSuccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ctx := context.Background()
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	volConfig := &storage.VolumeConfig{InternalName: "vol1"}
+
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(errors.NotFoundError("gone"))
+	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
+	assert.NoError(t, err)
 }

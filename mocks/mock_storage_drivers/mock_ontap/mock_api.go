@@ -2177,11 +2177,12 @@ func (mr *MockOntapAPIMockRecorder) VolumeCloneSplitStart(ctx, cloneName any) *g
 }
 
 // VolumeCreate mocks base method.
-func (m *MockOntapAPI) VolumeCreate(ctx context.Context, volume api.Volume) error {
+func (m *MockOntapAPI) VolumeCreate(ctx context.Context, volume api.Volume) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeCreate", ctx, volume)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // VolumeCreate indicates an expected call of VolumeCreate.
@@ -2202,6 +2203,20 @@ func (m *MockOntapAPI) VolumeDestroy(ctx context.Context, volumeName string, for
 func (mr *MockOntapAPIMockRecorder) VolumeDestroy(ctx, volumeName, force, skipRecoveryQueue any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDestroy), ctx, volumeName, force, skipRecoveryQueue)
+}
+
+// VolumeDestroyByUUID mocks base method.
+func (m *MockOntapAPI) VolumeDestroyByUUID(ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeDestroyByUUID", ctx, volumeUUID, volumeName, force, skipRecoveryQueue)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeDestroyByUUID indicates an expected call of VolumeDestroyByUUID.
+func (mr *MockOntapAPIMockRecorder) VolumeDestroyByUUID(ctx, volumeUUID, volumeName, force, skipRecoveryQueue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroyByUUID", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDestroyByUUID), ctx, volumeUUID, volumeName, force, skipRecoveryQueue)
 }
 
 // VolumeExists mocks base method.

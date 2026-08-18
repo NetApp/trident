@@ -325,8 +325,8 @@ func expectLunAndVolumeCreateSequence(mockAPI *mockapi.MockOntapAPI, fsType, luk
 	).MaxTimes(1)
 
 	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(ctx context.Context, volume api.Volume) error {
-			return nil
+		func(ctx context.Context, volume api.Volume) (string, error) {
+			return "", nil
 		},
 	).MaxTimes(1)
 
@@ -1300,7 +1300,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(errors.New("volume creation failed"))
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", errors.New("volume creation failed"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume is created",
@@ -1310,7 +1310,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("",
 					api.VolumeCreateJobExistsError("Volume creation failed"))
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -1323,7 +1323,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -1335,7 +1335,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
@@ -1348,7 +1348,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
@@ -1363,7 +1363,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
@@ -1378,7 +1378,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
@@ -1433,7 +1433,7 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 
 	// Setting up expected calls.
 	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).Return(false, nil).MaxTimes(1)
-	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil).MaxTimes(1)
 	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)

@@ -534,7 +534,7 @@ func (d *SANStorageDriver) Create(
 			return labelErr
 		}
 		// Create the volume
-		err = d.API.VolumeCreate(
+		volumeUUID, err := d.API.VolumeCreate(
 			ctx, api.Volume{
 				AccessType: "",
 				Aggregates: []string{
@@ -572,6 +572,7 @@ func (d *SANStorageDriver) Create(
 			// LUN create request.
 			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
 		}
+		volConfig.BackendVolumeID = volumeUUID
 
 		// If a DP volume, do not create the LUN, it will be copied over by snapmirror
 		if !volConfig.IsMirrorDestination {
@@ -945,14 +946,19 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
-	// Validate Flexvol exists before trying to destroy
-	volExists, volExistsErr := d.API.VolumeExists(ctx, name)
-	if volExistsErr != nil {
-		return fmt.Errorf("error checking for existing volume: %v", volExistsErr)
-	}
-	if !volExists {
-		Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
-		return nil
+	// Volumes without a recorded ONTAP UUID (created before it was tracked, or on a backend that does
+	// not report one) fall back to a name-based existence check so an out-of-band deletion is still
+	// treated as success. Volumes with a UUID are deleted directly by UUID below, which tolerates a
+	// not-yet-indexed or already-deleted volume without consulting the name index.
+	if volConfig.BackendVolumeID == "" {
+		volExists, volExistsErr := d.API.VolumeExists(ctx, name)
+		if volExistsErr != nil {
+			return fmt.Errorf("error checking for existing volume: %v", volExistsErr)
+		}
+		if !volExists {
+			Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
+			return nil
+		}
 	}
 
 	// If flexvol has been a snapmirror destination
@@ -969,9 +975,9 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
-	// Delete the Flexvol & LUN
-	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
-	if err != nil {
+	// Delete the Flexvol & LUN, preferring delete-by-UUID so a volume ONTAP created but has not yet
+	// indexed by name is still removed.
+	if err = destroyFlexvol(ctx, d.API, volConfig, true, skipRecoveryQueue); err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}
 

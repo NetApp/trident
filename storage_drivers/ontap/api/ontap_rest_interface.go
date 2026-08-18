@@ -48,7 +48,8 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 	// -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error
+	// It returns the UUID ONTAP assigned to the new volume.
+	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (string, error)
 	// VolumeExists tests for the existence of a flexvol
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	// VolumeGetByName gets the flexvol with the specified name
@@ -75,6 +76,9 @@ type RestClientInterface interface {
 	VolumeCloneSplitStart(ctx context.Context, volumeName string) error
 	// VolumeDestroy destroys a flexvol
 	VolumeDestroy(ctx context.Context, name string, force bool) error
+	// VolumeDestroyByUUID destroys the volume with the specified UUID, returning a NotFoundError if no
+	// volume with that UUID exists
+	VolumeDestroyByUUID(ctx context.Context, volumeUUID string, force bool) error
 	// VolumeRecoveryQueuePurge uses the cli passthrough REST API to purge a volume from the recovery queue.
 	// the cli does not support passing in the UUID of the verver instead of the name. This will not work with
 	// a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to

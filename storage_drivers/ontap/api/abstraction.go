@@ -201,8 +201,17 @@ type OntapAPI interface {
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
-	VolumeCreate(ctx context.Context, volume Volume) error
+	// VolumeCreate creates a volume and returns the ID the backend assigned to it, which is empty
+	// when the backend does not report one (the ZAPI path). Callers persist the ID so the volume can
+	// later be deleted by ID rather than by name.
+	VolumeCreate(ctx context.Context, volume Volume) (string, error)
 	VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
+	// VolumeDestroyByUUID deletes the volume identified by volumeUUID. Deleting by UUID avoids the
+	// name index, which ONTAP updates asynchronously and which can therefore report a newly created
+	// volume as missing. It returns a NotFoundError once the UUID no longer resolves, and an
+	// UnsupportedError when the caller must fall back to deleting by name (no UUID provided, or
+	// the ZAPI path which cannot delete by UUID).
+	VolumeDestroyByUUID(ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool) error
 	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)

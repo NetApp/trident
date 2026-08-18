@@ -2656,11 +2656,12 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeCloneSplitStart(ctx, volume
 }
 
 // VolumeCreate mocks base method.
-func (m *MockRestClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error {
+func (m *MockRestClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // VolumeCreate indicates an expected call of VolumeCreate.
@@ -2681,6 +2682,20 @@ func (m *MockRestClientInterface) VolumeDestroy(ctx context.Context, name string
 func (mr *MockRestClientInterfaceMockRecorder) VolumeDestroy(ctx, name, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDestroy), ctx, name, force)
+}
+
+// VolumeDestroyByUUID mocks base method.
+func (m *MockRestClientInterface) VolumeDestroyByUUID(ctx context.Context, volumeUUID string, force bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeDestroyByUUID", ctx, volumeUUID, force)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeDestroyByUUID indicates an expected call of VolumeDestroyByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeDestroyByUUID(ctx, volumeUUID, force any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroyByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDestroyByUUID), ctx, volumeUUID, force)
 }
 
 // VolumeExists mocks base method.
