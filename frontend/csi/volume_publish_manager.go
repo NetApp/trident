@@ -359,6 +359,9 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal != "" {
 			v.ensureTrackingFileCorrect(ctx, volumeId, volumeTrackingInfo, publishedPaths, pvToDeviceMappings)
 		}
+		if err := v.backfillStorageProtocol(ctx, volumeId, volumeTrackingInfo); err != nil {
+			return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
+		}
 		return false, nil
 	}
 
@@ -373,21 +376,19 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
 	}
 
-	_, err = getVolumeProtocolFromPublishInfo(publishInfo)
-	if err != nil {
-		// If we cannot determine the volume protocol from the staged device info, then there is no reason to keep
-		// it around.
-		v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.GlobalMount, volumeId)
-		return true, nil
-	}
-
 	// This legacy publish info predates the StorageProtocol field; populate it now so the
 	// upgraded tracking file dispatches correctly through node core's protocol-based
-	// Mount/Expand/etc. If it can't be inferred, drop the staged device info the same as an
-	// undeterminable protocol above; the upgrade can't produce a usable tracking file otherwise.
-	if publishInfo.StorageProtocol = storageProtocolFromPublishInfo(publishInfo); publishInfo.StorageProtocol == "" {
-		v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.GlobalMount, volumeId)
-		return true, nil
+	// Mount/Expand/etc. If it can't be inferred here, leave it unset and warn rather than
+	// deleting the tracking file outright; GetStorageProtocol's defense-in-depth re-inference
+	// at read time may still succeed later once the volume is otherwise usable.
+	if publishInfo.StorageProtocol = publishInfo.GetStorageProtocol(); publishInfo.StorageProtocol == "" {
+		Logc(ctx).WithFields(LogFields{
+			"volumeId":           volumeId,
+			"publishInfo":        publishInfo,
+			"supportedProtocols": models.SupportedStorageProtocols(),
+		}).Warn("Unable to infer \"storageProtocol\" for volume; node operations may fail until remediated. " +
+			"Please set the \"storageProtocol\" field to a supported protocol before detaching the volume. " +
+			"Example: \"storageProtocol\": \"iscsi\".")
 	}
 
 	volumeTrackingInfo.VolumePublishInfo = *publishInfo
@@ -413,34 +414,47 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	return false, nil
 }
 
-// storageProtocolFromPublishInfo infers the specific models.StorageProtocol from a legacy
-// (pre-StorageProtocol-field) publish info's protocol-identifying attributes, mirroring the same
-// mutually-exclusive checks getVolumeProtocolFromPublishInfo uses to classify File vs Block.
-// Returns "" if the protocol can't be determined.
-func storageProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) models.StorageProtocol {
-	nfsSet := publishInfo.VolumeAccessInfo.NfsServerIP != ""
-	iqnSet := publishInfo.VolumeAccessInfo.IscsiTargetIQN != ""
-	smbSet := publishInfo.SMBPath != ""
-	nqnSet := publishInfo.VolumeAccessInfo.NVMeSubsystemNQN != ""
-	fcpSet := publishInfo.VolumeAccessInfo.FCTargetWWNN != ""
-
-	// Exactly one protocol signal must be set; any other combination is ambiguous and should be
-	// left undeterminable rather than guessed at. Mirrors the mutual-exclusion rules in
-	// core/node's getVolumeProtocolFromPublishInfo.
-	switch {
-	case smbSet && !nfsSet && !iqnSet && !nqnSet && !fcpSet:
-		return models.SMB
-	case nfsSet && !iqnSet && !smbSet && !nqnSet && !fcpSet:
-		return models.NFS
-	case iqnSet && !nfsSet && !smbSet && !nqnSet && !fcpSet:
-		return models.ISCSI
-	case nqnSet && !nfsSet && !smbSet && !iqnSet && !fcpSet:
-		return models.NVMe
-	case fcpSet && !nfsSet && !smbSet && !iqnSet && !nqnSet:
-		return models.FCP
-	default:
-		return ""
+// backfillStorageProtocol populates StorageProtocol on tracking files written before
+// node core when the field is missing. Node activation runs this via UpgradeVolumeTrackingFile.
+func (v *VolumePublishManager) backfillStorageProtocol(
+	ctx context.Context, volumeId string, volumeTrackingInfo *models.VolumeTrackingInfo,
+) error {
+	publishInfo := &volumeTrackingInfo.VolumePublishInfo
+	if publishInfo.StorageProtocol != "" {
+		return nil
 	}
+
+	protocol := publishInfo.GetStorageProtocol()
+	if protocol == "" && publishInfo.GlobalMount != "" {
+		stagedPublishInfo := &models.VolumePublishInfo{}
+		stagedFile := path.Join(publishInfo.GlobalMount, volumePublishInfoFilename)
+		if err := jsonRW.ReadJSONFile(ctx, stagedPublishInfo, stagedFile, "publish info"); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeId":           volumeId,
+				"publishInfo":        publishInfo,
+				"supportedProtocols": models.SupportedStorageProtocols(),
+			}).Warn("Unable to infer \"storageProtocol\" for volume; node operations may fail until remediated. " +
+				"Please set the \"storageProtocol\" field to a supported protocol before detaching the volume. " +
+				"Example: \"storageProtocol\": \"iscsi\"")
+			return nil
+		}
+		protocol = stagedPublishInfo.GetStorageProtocol()
+	}
+	if protocol == "" {
+		Logc(ctx).WithFields(LogFields{
+			"volumeId":    volumeId,
+			"publishInfo": publishInfo,
+		}).Warn("No inferred \"storageProtocol\" from tracking file upgrade.")
+		return nil
+	}
+
+	publishInfo.StorageProtocol = protocol
+	if err := v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo); err != nil {
+		return fmt.Errorf("failed to backfill storageProtocol: %w", err)
+	}
+	Logc(ctx).WithFields(LogFields{"volumeId": volumeId, "storageProtocol": protocol}).Debug(
+		"Volume tracking file storageProtocol backfilled.")
+	return nil
 }
 
 // ValidateTrackingFile checks whether a tracking file needs to be deleted.

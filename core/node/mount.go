@@ -69,7 +69,7 @@ func (c *Core) Mount(ctx context.Context, volumeID string, req MountRequest) err
 	if req.ReadOnly {
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
-	protocol := publishInfo.StorageProtocol
+	protocol := publishInfo.GetStorageProtocol()
 	fields["Protocol"] = protocol
 
 	switch protocol {

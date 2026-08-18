@@ -46,12 +46,12 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 		return errors.InvalidInputError("nil publishInfo")
 	}
 
-	switch publishInfo.StorageProtocol {
+	protocol := publishInfo.GetStorageProtocol()
+	switch protocol {
 	case FCP, ISCSI, NVMe:
 		publishInfo.SharedTarget = req.SharedTarget
 	}
 
-	protocol := publishInfo.StorageProtocol
 	targetPath := publishInfo.GlobalMount
 	fields := LogFields{
 		"Method":     "Attach",

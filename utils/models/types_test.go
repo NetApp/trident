@@ -2221,3 +2221,233 @@ func TestVolumeAutogrowStatus(t *testing.T) {
 	assert.Equal(t, status.TotalAutogrowAttempted, decoded.TotalAutogrowAttempted)
 	assert.Equal(t, status.TotalSuccessfulAutogrow, decoded.TotalSuccessfulAutogrow)
 }
+
+func TestStorageProtocolFromIdentityFields(t *testing.T) {
+	testCases := []struct {
+		name         string
+		buildInfo    func() *VolumePublishInfo
+		expectedProt StorageProtocol
+	}{
+		{
+			name: "NFS",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NfsServerIP = "1.1.1.1"
+				return pi
+			},
+			expectedProt: NFS,
+		},
+		{
+			name: "SMB",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.SMBPath = "\\\\server\\share"
+				return pi
+			},
+			expectedProt: SMB,
+		},
+		{
+			name: "ISCSI",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.IscsiTargetIQN = "iqn.test"
+				return pi
+			},
+			expectedProt: ISCSI,
+		},
+		{
+			name: "NVMe",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NVMeSubsystemNQN = "nqn.test"
+				return pi
+			},
+			expectedProt: NVMe,
+		},
+		{
+			name: "FCP",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.FCTargetWWNN = "wwnn.test"
+				return pi
+			},
+			expectedProt: FCP,
+		},
+		{
+			name:         "no signals set is undeterminable",
+			buildInfo:    func() *VolumePublishInfo { return &VolumePublishInfo{} },
+			expectedProt: "",
+		},
+		{
+			name: "ambiguous NFS and NVMe signals is undeterminable",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NfsServerIP = "1.1.1.1"
+				pi.NVMeSubsystemNQN = "nqn.test"
+				return pi
+			},
+			expectedProt: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expectedProt, storageProtocolFromIdentityFields(tc.buildInfo()))
+		})
+	}
+}
+
+func TestGetStorageProtocol(t *testing.T) {
+	t.Run("returns persisted value when set", func(t *testing.T) {
+		pi := &VolumePublishInfo{StorageProtocol: ISCSI}
+		pi.NVMeSubsystemNQN = "nqn.test"
+		assert.Equal(t, ISCSI, pi.GetStorageProtocol())
+	})
+
+	t.Run("persisted value wins over identity fields", func(t *testing.T) {
+		pi := &VolumePublishInfo{StorageProtocol: SMB}
+		pi.NfsServerIP = "1.1.1.1"
+		pi.IscsiTargetIQN = "iqn.test"
+		assert.Equal(t, SMB, pi.GetStorageProtocol())
+	})
+
+	t.Run("nil receiver", func(t *testing.T) {
+		var pi *VolumePublishInfo
+		assert.Equal(t, StorageProtocol(""), pi.GetStorageProtocol())
+	})
+
+	identityCases := []struct {
+		name         string
+		buildInfo    func() *VolumePublishInfo
+		expectedProt StorageProtocol
+	}{
+		{
+			name: "NFS from nfsServerIP",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NfsServerIP = "1.1.1.1"
+				return pi
+			},
+			expectedProt: NFS,
+		},
+		{
+			name: "SMB from smbPath",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.SMBPath = "\\\\server\\share"
+				return pi
+			},
+			expectedProt: SMB,
+		},
+		{
+			name: "iSCSI from target IQN",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.IscsiTargetIQN = "iqn.test"
+				return pi
+			},
+			expectedProt: ISCSI,
+		},
+		{
+			name: "NVMe from subsystem NQN",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NVMeSubsystemNQN = "nqn.test"
+				return pi
+			},
+			expectedProt: NVMe,
+		},
+		{
+			name: "FCP from target WWNN",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.FCTargetWWNN = "wwnn.test"
+				return pi
+			},
+			expectedProt: FCP,
+		},
+	}
+	for _, tc := range identityCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expectedProt, tc.buildInfo().GetStorageProtocol())
+		})
+	}
+
+	legacyCases := []struct {
+		name         string
+		buildInfo    func() *VolumePublishInfo
+		expectedProt StorageProtocol
+	}{
+		{
+			name: "legacy SANType NVMe without nqn",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.SANType = string(NVMe)
+				pi.FilesystemType = "raw"
+				return pi
+			},
+			expectedProt: NVMe,
+		},
+		{
+			name: "legacy SANType iSCSI",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.SANType = string(ISCSI)
+				return pi
+			},
+			expectedProt: ISCSI,
+		},
+		{
+			name: "legacy SANType FCP",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.SANType = string(FCP)
+				return pi
+			},
+			expectedProt: FCP,
+		},
+		{
+			name: "legacy nfs filesystem type",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.FilesystemType = string(NFS)
+				return pi
+			},
+			expectedProt: NFS,
+		},
+		{
+			name: "legacy smb filesystem type",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.FilesystemType = string(SMB)
+				return pi
+			},
+			expectedProt: SMB,
+		},
+		{
+			name: "nfsPath without nfsServerIp",
+			buildInfo: func() *VolumePublishInfo {
+				pi := &VolumePublishInfo{}
+				pi.NfsPath = "/vol/export"
+				return pi
+			},
+			expectedProt: NFS,
+		},
+	}
+	for _, tc := range legacyCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expectedProt, tc.buildInfo().GetStorageProtocol())
+		})
+	}
+
+	t.Run("ambiguous identity fields are undeterminable", func(t *testing.T) {
+		pi := &VolumePublishInfo{}
+		pi.IscsiTargetIQN = "iqn.test"
+		pi.NVMeSubsystemNQN = "nqn.test"
+		assert.Equal(t, StorageProtocol(""), pi.GetStorageProtocol())
+	})
+
+	t.Run("no signals set is undeterminable", func(t *testing.T) {
+		assert.Equal(t, StorageProtocol(""), (&VolumePublishInfo{}).GetStorageProtocol())
+	})
+}

@@ -432,6 +432,16 @@ const (
 	NFS   StorageProtocol = "nfs"
 )
 
+func SupportedStorageProtocols() []StorageProtocol {
+	return []StorageProtocol{
+		ISCSI,
+		NVMe,
+		FCP,
+		SMB,
+		NFS,
+	}
+}
+
 type VolumePublishInfo struct {
 	Localhost         bool                `json:"localhost,omitempty"`
 	HostIQN           []string            `json:"hostIQN,omitempty"`
@@ -466,6 +476,90 @@ type VolumePublishInfo struct {
 
 func (v *VolumePublishInfo) DeepCopy() *VolumePublishInfo {
 	return deep.MustCopy(v)
+}
+
+// GetStorageProtocol returns the persisted storage protocol when set, otherwise infers it
+// from protocol identity fields and legacy stage metadata (SANType, fstype).
+func (p *VolumePublishInfo) GetStorageProtocol() StorageProtocol {
+	if p == nil {
+		return ""
+	}
+	if p.StorageProtocol != "" {
+		return p.StorageProtocol
+	}
+	if protocol := storageProtocolFromIdentityFields(p); protocol != "" {
+		return protocol
+	}
+	return storageProtocolFromLegacyStageFields(p)
+}
+
+// storageProtocolFromIdentityFields infers StorageProtocol from protocol-identifying
+// attributes using the same mutual-exclusion rules as node core's getVolumeProtocolFromPublishInfo.
+func storageProtocolFromIdentityFields(publishInfo *VolumePublishInfo) StorageProtocol {
+	nfsSet := publishInfo.NfsServerIP != ""
+	iqnSet := publishInfo.IscsiTargetIQN != ""
+	smbSet := publishInfo.SMBPath != ""
+	nqnSet := publishInfo.NVMeSubsystemNQN != ""
+	fcpSet := publishInfo.FCTargetWWNN != ""
+
+	switch {
+	case smbSet && !nfsSet && !iqnSet && !nqnSet && !fcpSet:
+		return SMB
+	case nfsSet && !iqnSet && !smbSet && !nqnSet && !fcpSet:
+		return NFS
+	case iqnSet && !nfsSet && !smbSet && !nqnSet && !fcpSet:
+		return ISCSI
+	case nqnSet && !nfsSet && !smbSet && !iqnSet && !fcpSet:
+		return NVMe
+	case fcpSet && !nfsSet && !smbSet && !iqnSet && !nqnSet:
+		return FCP
+	default:
+		return ""
+	}
+}
+
+// storageProtocolFromLegacyStageFields infers StorageProtocol from NodeStageVolume metadata
+// when protocol identity fields are absent (e.g. pre-node-core tracking files).
+func storageProtocolFromLegacyStageFields(publishInfo *VolumePublishInfo) StorageProtocol {
+	nfsSet := publishInfo.NfsServerIP != "" || publishInfo.NfsPath != ""
+	iqnSet := publishInfo.IscsiTargetIQN != ""
+	smbSet := publishInfo.SMBPath != ""
+	nqnSet := publishInfo.NVMeSubsystemNQN != ""
+	fcpSet := publishInfo.FCTargetWWNN != ""
+
+	signalCount := 0
+	for _, set := range []bool{nfsSet, iqnSet, smbSet, nqnSet, fcpSet} {
+		if set {
+			signalCount++
+		}
+	}
+	if signalCount > 1 {
+		return ""
+	}
+	if signalCount == 1 {
+		if nfsSet && publishInfo.NfsServerIP == "" && publishInfo.NfsPath != "" {
+			return NFS
+		}
+		return ""
+	}
+
+	switch strings.ToLower(publishInfo.SANType) {
+	case string(ISCSI):
+		return ISCSI
+	case string(NVMe):
+		return NVMe
+	case string(FCP):
+		return FCP
+	}
+
+	switch publishInfo.FilesystemType {
+	case string(NFS):
+		return NFS
+	case string(SMB):
+		return SMB
+	}
+
+	return ""
 }
 
 type VolumeTrackingInfo struct {

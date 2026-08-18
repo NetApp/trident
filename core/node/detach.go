@@ -116,7 +116,7 @@ func (c *Core) detach(ctx context.Context, volume string, force bool) error {
 		return err
 	}
 	publishInfo := &trackingInfo.VolumePublishInfo
-	protocol := publishInfo.StorageProtocol
+	protocol := publishInfo.GetStorageProtocol()
 	fields["Protocol"] = protocol
 
 	switch protocol {

@@ -69,7 +69,7 @@ func (c *Core) populatePublishedSessions(ctx context.Context) {
 		}
 
 		publishInfo := &trackingInfo.VolumePublishInfo
-		if publishInfo.StorageProtocol != NVMe {
+		if publishInfo.GetStorageProtocol() != NVMe {
 			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceTrackingInfo)
 			c.iscsi.AddSession(newCtx, publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {

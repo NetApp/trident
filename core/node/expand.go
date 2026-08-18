@@ -66,7 +66,7 @@ func (c *Core) Expand(ctx context.Context, volume string, req ExpandRequest) err
 		return err
 	}
 	publishInfo := &trackingInfo.VolumePublishInfo
-	protocol := publishInfo.StorageProtocol
+	protocol := publishInfo.GetStorageProtocol()
 	fields["Protocol"] = protocol
 
 	stagingTargetPath := publishInfo.GlobalMount
