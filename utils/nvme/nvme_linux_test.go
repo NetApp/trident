@@ -61,18 +61,31 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	osFs := afero.NewMemMapFs()
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
 		false).Return([]byte("nvme_tcp"), nil)
 
-	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, nil)
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, osFs)
 	gotValue, err := handler.NVMeActiveOnHost(ctx)
 
 	assert.Equal(t, expectedValue, gotValue)
 	assert.NoError(t, err)
 
-	// Test2: Error - NVMe cli is not installed on host
+	// Test2: Success - NVMe/TCP is built into the host kernel
+	builtInModuleFs := afero.NewMemMapFs()
+	assert.NoError(t, builtInModuleFs.MkdirAll(NVME_TCP_SYS_MODULE_PATH, 0o755))
+	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
+		false, "version").Return([]byte(""), nil)
+
+	handler = NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, builtInModuleFs)
+	gotValue, err = handler.NVMeActiveOnHost(ctx)
+
+	assert.Equal(t, expectedValue, gotValue)
+	assert.NoError(t, err)
+
+	// Test3: Error - NVMe cli is not installed on host
 	expectedValue = false
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), errors.New("NVMe CLI not installed"))
@@ -82,8 +95,9 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	assert.Equal(t, expectedValue, gotValue)
 	assert.Error(t, err)
 
-	// Test3: Error - Unable to get driver info
+	// Test4: Error - Unable to get driver info
 	expectedValue = false
+	handler = NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, osFs)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
@@ -94,7 +108,7 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	assert.Equal(t, expectedValue, gotValue)
 	assert.Error(t, err)
 
-	// Test4: Error - NVMe/tcp module not loaded on the host
+	// Test5: Error - NVMe/TCP is neither loaded nor built into the host kernel
 	expectedValue = false
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
