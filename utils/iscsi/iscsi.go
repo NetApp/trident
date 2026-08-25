@@ -2544,9 +2544,11 @@ func (client *Client) PrepareDeviceForRemoval(
 					"lunID":           lunID,
 					"lunSerialNumber": publishInfo.IscsiLunSerial,
 					"multipathDevice": deviceInfo.MultipathDevice,
-				}).WithError(err).Warn("Could not remove ghost multipath device; continuing with device removal.")
+				}).WithError(err).Warn("Could not remove ghost multipath device.")
 			}
-			return "", nil
+			// Clear the multipath device. Either we have just removed it, was not safe to remove,
+			// or is already removed. This will cause later paths to skip flushing.
+			deviceInfo.MultipathDevice = ""
 		}
 	}
 

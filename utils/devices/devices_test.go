@@ -428,6 +428,10 @@ func TestFindDevicesForMultipathDevice(t *testing.T) {
 }
 
 func TestVerifyMultipathDevice(t *testing.T) {
+	const matchingSerial = "yocwB?Wl7x2l"
+	matchingSerialVPD := []byte{0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108, 55, 120, 50, 108}
+	matchingSerialUUID := "mpath-3600a0980796f6377423f576c3778326c"
+
 	tests := map[string]struct {
 		getFs           func() afero.Fs
 		publishInfo     *models.VolumePublishInfo
@@ -435,6 +439,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 		allPublishInfos []models.VolumePublishInfo
 		expectGhost     bool
 		expectError     bool
+		expectNotFound  bool
 	}{
 		"CompareWithPublishedDevicePath Happy Path": {
 			publishInfo: &models.VolumePublishInfo{
@@ -494,12 +499,25 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			expectGhost: true,
 			expectError: false,
 		},
+		"CompareWithPublishedDevicePath Missing Slaves Dir": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "/dev/dm-0",
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+			},
+			getFs: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			expectError:    true,
+			expectNotFound: true,
+		},
 		"CompareWithPublishedSerialNumber Happy Path": {
 			publishInfo: &models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "1234",
+						IscsiLunSerial: matchingSerial,
 					},
 				},
 			},
@@ -509,20 +527,17 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
-					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
-					55, 120, 50, 108,
-				}, 0o755)
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", matchingSerialVPD, 0o755)
 				return fs
 			},
 			expectError: false,
 		},
-		"CompareWithPublishedSerialNumber GetDeviceMapperUUID Error": {
+		"CompareWithPublishedSerialNumber Serial Mismatch Rediscovery Succeeds": {
 			publishInfo: &models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "yocwB?Wl7x2l",
+						IscsiLunSerial: matchingSerial,
 					},
 				},
 			},
@@ -532,21 +547,43 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
-					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
-					55, 120, 50, 108,
-				}, 0o755)
-				_ = fs.MkdirAll("/sys/block/dm-0", 0o755)
+				// Discovered path has a different serial than published.
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", append([]byte{0, 128, 0, 12}, []byte("otherSerial1")...), 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte(matchingSerialUUID), 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/sda", 0o755)
 				return fs
 			},
-			expectError: true,
+			expectError: false,
+		},
+		"CompareWithPublishedSerialNumber Serial Mismatch Rediscovery Ghost": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: matchingSerial,
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", append([]byte{0, 128, 0, 12}, []byte("otherSerial1")...), 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte(matchingSerialUUID), 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				return fs
+			},
+			expectGhost: true,
+			expectError: false,
 		},
 		"CompareWithPublishedSerialNumber Missing Multipath Device": {
 			publishInfo: &models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "yocwB?Wl7x2l",
+						IscsiLunSerial: matchingSerial,
 					},
 				},
 			},
@@ -556,20 +593,20 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
-					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
-					55, 120, 50, 108,
-				}, 0o755)
+				// Serial mismatch forces rediscovery; published serial has no matching DM.
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", append([]byte{0, 128, 0, 12}, []byte("otherSerial1")...), 0o755)
+				_ = fs.MkdirAll("/sys/block", 0o755)
 				return fs
 			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: true,
 		},
 		"CompareWithPublishedSerialNumber Fail Getting LUN Serial": {
 			publishInfo: &models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "yocwB?Wl7x2l",
+						IscsiLunSerial: matchingSerial,
 					},
 				},
 			},
@@ -579,10 +616,12 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				// LUN serial is not defined
+				// LUN serial is not defined; rediscovery also finds nothing.
+				_ = fs.MkdirAll("/sys/block", 0o755)
 				return fs
 			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: true,
 		},
 		"CompareWithAllPublishInfos Happy Path": {
 			publishInfo: &models.VolumePublishInfo{
@@ -695,6 +734,9 @@ func TestVerifyMultipathDevice(t *testing.T) {
 				params.deviceInfo)
 			if params.expectError {
 				assert.Error(t, err)
+				if params.expectNotFound {
+					assert.True(t, tridentError.IsNotFoundError(err), "expected NotFoundError, got: %v", err)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
@@ -1029,6 +1071,7 @@ func TestRemoveOrphanedMultipathDevice(t *testing.T) {
 		mockCmd           func(cmd *mockexec.MockCommand)
 		expectError       bool
 		errorContains     string
+		expectNotFound    bool
 	}{
 		"success: ghost device removed (no serial)": {
 			multipathDevice: "dm-1",
@@ -1084,11 +1127,12 @@ func TestRemoveOrphanedMultipathDevice(t *testing.T) {
 			},
 			expectError: false,
 		},
-		"success: device already gone (sysfs missing)": {
+		"error: device already gone (sysfs missing)": {
 			multipathDevice: "dm-99",
 			setupFs:         func(fs afero.Fs) {},
 			mockCmd:         func(cmd *mockexec.MockCommand) {},
-			expectError:     false,
+			expectError:     true,
+			expectNotFound:  true,
 		},
 		"success: device already gone (dmsetup says so)": {
 			multipathDevice: "dm-1",
@@ -1193,6 +1237,9 @@ func TestRemoveOrphanedMultipathDevice(t *testing.T) {
 				assert.Error(t, err)
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+				if tt.expectNotFound {
+					assert.True(t, tridentError.IsNotFoundError(err), "expected NotFoundError, got: %v", err)
 				}
 			} else {
 				assert.NoError(t, err)

@@ -424,7 +424,7 @@ func (c *Client) compareWithPublishedDevicePath(
 
 	devices, err := c.GetMultipathDeviceDisks(ctx, deviceInfo.MultipathDevice)
 	if err != nil {
-		return false, fmt.Errorf("failed to verify paths for '%v'; %v", deviceInfo.MultipathDevice, err)
+		return false, fmt.Errorf("failed to verify paths for '%v': %w", deviceInfo.MultipathDevice, err)
 	}
 	deviceInfo.Devices = devices
 
@@ -465,8 +465,8 @@ func (c *Client) compareWithPublishedSerialNumber(
 			continue
 		}
 
-		lunSerialCheckPassed = serial != publishInfo.IscsiLunSerial
-		if lunSerialCheckPassed {
+		lunSerialCheckPassed = serial == publishInfo.IscsiLunSerial
+		if !lunSerialCheckPassed {
 			Logc(ctx).WithFields(LogFields{
 				"lun":  publishInfo.IscsiLunNumber,
 				"path": path,
@@ -478,12 +478,15 @@ func (c *Client) compareWithPublishedSerialNumber(
 	// It means the multipath device found was wrong
 	if !lunSerialCheckPassed {
 
+		// Clear the devices to protect removal of incorrect devices in case we return early.
+		deviceInfo.Devices = []string{}
+
 		// Get Device based on the serial number and at the same time identify if it is a ghost device.
 		// Multipath UUID contains LUN serial in hex format
 		lunSerialHex := hex.EncodeToString([]byte(publishInfo.IscsiLunSerial))
 		multipathDevice, err := c.GetMultipathDeviceBySerial(ctx, lunSerialHex)
 		if err != nil {
-			return false, fmt.Errorf("failed to verify multipath device for serial '%v'; %v ",
+			return false, fmt.Errorf("failed to verify multipath device for serial '%v'; %w",
 				publishInfo.IscsiLunSerial, err)
 		}
 
@@ -493,25 +496,27 @@ func (c *Client) compareWithPublishedSerialNumber(
 		devices, err := c.GetMultipathDeviceDisks(ctx, multipathDevice)
 		if err != nil {
 			return false, fmt.Errorf("failed to verify multipath disks for '%v', "+
-				"serial '%v'; %v", multipathDevice, publishInfo.IscsiLunSerial, err)
+				"serial '%v': %w", multipathDevice, publishInfo.IscsiLunSerial, err)
 		}
 
-		isProbablyGhostDevice = devices == nil || len(devices) == 0
+		// Update the devices to the rediscovered ones.
+		// If there are no devices, this will be nil/empty (expected).
+		deviceInfo.Devices = devices
+
+		isProbablyGhostDevice = len(devices) == 0
 		if isProbablyGhostDevice {
 			Logc(ctx).WithFields(LogFields{
 				"lun":             publishInfo.IscsiLunNumber,
 				"multipathDevice": multipathDevice,
 			}).Debug("Multipath device may be a ghost device.")
-		} else {
-			deviceInfo.Devices = devices
 		}
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"lun":             publishInfo.IscsiLunNumber,
+			"multipathDevice": deviceInfo.MultipathDevice,
+			"devices":         deviceInfo.Devices,
+		}).Debug("Discovered multipath device and devices have valid serial number.")
 	}
-
-	Logc(ctx).WithFields(LogFields{
-		"lun":             publishInfo.IscsiLunNumber,
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-	}).Debug("Discovered multipath device and devices have valid serial number.")
 
 	return isProbablyGhostDevice, nil
 }
@@ -675,7 +680,7 @@ func (c *Client) RemoveGhostMultipathDevice(
 	if err != nil {
 		if os.IsNotExist(err) {
 			Logc(ctx).WithField("device", device).Debug("Device no longer exists in sysfs; nothing to remove.")
-			return nil
+			return errors.NotFoundError("device no longer exists in sysfs; nothing to remove")
 		}
 		return fmt.Errorf("failed to read slaves dir for %q: %v", device, err)
 	}
@@ -751,6 +756,9 @@ func (c *Client) GetMultipathDeviceDisks(
 	diskPath := c.chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
 	diskDirs, err := c.osFs.ReadDir(diskPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.NotFoundError("multipath device slaves dir '%s' not found", diskPath)
+		}
 		Logc(ctx).WithError(err).Errorf("Could not read %s", diskPath)
 		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskPath)
 	}

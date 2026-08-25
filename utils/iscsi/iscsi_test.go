@@ -3989,6 +3989,11 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 		force             bool
 		expectedMultipath string
 		expectedError     bool
+		expectNotFound    bool
+		// expectMultipathCleared verifies that deviceInfo.MultipathDevice was reset to "" by
+		// PrepareDeviceForRemoval (e.g. after a ghost-device removal attempt), which is what
+		// causes removeSCSIDevice to skip flushing the (removed/non-existent) multipath device.
+		expectMultipathCleared bool
 	}{
 		"Successful removal": {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
@@ -4054,24 +4059,52 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			expectedMultipath: "",
 			expectedError:     true,
 		},
-		"Ghost device removal succeeds": {
+		"Verify mPath device not found propagates error": {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(true, nil)
-				mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).Return(nil)
+					gomock.Any()).Return(false, errors.NotFoundError("multipath device not found"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
 				MultipathDevice: "dm-0",
-				Devices:         []string{},
+				Devices:         []string{"sda", "sdb"},
 			},
 			publishInfo:       &mockPublushInfo,
 			allPublishInfos:   []models.VolumePublishInfo{},
 			ignoreErrors:      false,
 			force:             false,
 			expectedMultipath: "",
-			expectedError:     false,
+			expectedError:     true,
+			expectNotFound:    true,
+		},
+		"Ghost device removal succeeds": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, nil)
+				mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).Return(nil)
+				// After a successful ghost removal, PrepareDeviceForRemoval clears
+				// deviceInfo.MultipathDevice and falls through to removeSCSIDevice.
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(nil)
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{},
+			},
+			publishInfo:            &mockPublushInfo,
+			allPublishInfos:        []models.VolumePublishInfo{},
+			ignoreErrors:           false,
+			force:                  false,
+			expectedMultipath:      "",
+			expectedError:          false,
+			expectMultipathCleared: true,
 		},
 		"Ghost device removal fails, logs warning and continues": {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
@@ -4080,18 +4113,27 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 					gomock.Any()).Return(true, nil)
 				mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).
 					Return(errors.New("dmsetup remove failed"))
+				// Even on failure, PrepareDeviceForRemoval clears deviceInfo.MultipathDevice
+				// (it's either unsafe to remove or already gone) and falls through to removeSCSIDevice.
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(nil)
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
 				MultipathDevice: "dm-0",
 				Devices:         []string{},
 			},
-			publishInfo:       &mockPublushInfo,
-			allPublishInfos:   []models.VolumePublishInfo{},
-			ignoreErrors:      false,
-			force:             false,
-			expectedMultipath: "",
-			expectedError:     false,
+			publishInfo:            &mockPublushInfo,
+			allPublishInfos:        []models.VolumePublishInfo{},
+			ignoreErrors:           false,
+			force:                  false,
+			expectedMultipath:      "",
+			expectedError:          false,
+			expectMultipathCleared: true,
 		},
 	}
 
@@ -4112,11 +4154,17 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 
 			if params.expectedError {
 				assert.Error(t, err)
+				if params.expectNotFound {
+					assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError, got: %v", err)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
 
 			assert.Equal(t, params.expectedMultipath, multipath)
+			if params.expectMultipathCleared {
+				assert.Equal(t, "", params.deviceInfo.MultipathDevice, "expected MultipathDevice to be cleared")
+			}
 		})
 	}
 }

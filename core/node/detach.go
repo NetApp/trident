@@ -554,9 +554,11 @@ func (c *Core) detachISCSIVolume(
 	// Always check for a ghost multipath device.
 	if mpathDevicePath != "" {
 		if err = c.dev.RemoveGhostMultipathDevice(ctx, mpathDevicePath, publishInfo.IscsiLunSerial); err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"devicePath": mpathDevicePath,
-			}).WithError(err).Warn("Failed to remove ghost multipath device.")
+			if !errors.IsNotFoundError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": mpathDevicePath,
+				}).WithError(err).Warn("Failed to remove ghost multipath device.")
+			}
 		}
 	}
 

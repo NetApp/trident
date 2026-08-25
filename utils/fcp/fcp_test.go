@@ -1870,6 +1870,38 @@ func TestPrepareDeviceForRemoval_VerifyMpathError(t *testing.T) {
 	assert.NotNil(t, err, "PrepareDeviceForRemoval returns nil error")
 }
 
+func TestPrepareDeviceForRemoval_VerifyMpathNotFound(t *testing.T) {
+	publishInfo := &mockPublushInfo
+	allPublishInfos := []models.VolumePublishInfo{}
+	deviceInfo := &models.ScsiDeviceInfo{
+		MultipathDevice: "dm-0",
+		Devices:         []string{"sda", "sdb"},
+	}
+
+	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
+
+	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Return(false, errors.NotFoundError("multipath device not found"))
+
+	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
+		mockOsClient, mockDevices, mockFileSystem,
+		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
+
+	multipath, err := fcpClient.PrepareDeviceForRemoval(
+		context.TODO(),
+		deviceInfo,
+		publishInfo,
+		allPublishInfos,
+		false,
+		false,
+	)
+	// NotFound from VerifyMultipathDevice is propagated as a real error (not swallowed);
+	// removeSCSIDevice is never reached.
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError, got: %v", err)
+	assert.Equal(t, "", multipath)
+}
+
 func TestPrepareDeviceForRemoval_GhostDeviceRemoval(t *testing.T) {
 	publishInfo := &mockPublushInfo
 	allPublishInfos := []models.VolumePublishInfo{}
@@ -1879,6 +1911,14 @@ func TestPrepareDeviceForRemoval_GhostDeviceRemoval(t *testing.T) {
 	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(true, nil)
 	mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).Return(nil)
+	// After a successful ghost removal, PrepareDeviceForRemoval clears deviceInfo.MultipathDevice
+	// and falls through to removeSCSIDevice.
+	mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+		devicesRemovalMaxWaitTime).Return(nil)
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1892,6 +1932,7 @@ func TestPrepareDeviceForRemoval_GhostDeviceRemoval(t *testing.T) {
 		context.TODO(), deviceInfo, publishInfo, allPublishInfos, false, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "", multipath)
+	assert.Equal(t, "", deviceInfo.MultipathDevice, "expected MultipathDevice to be cleared")
 }
 
 func TestPrepareDeviceForRemoval_GhostDeviceRemovalFails_LogsAndContinues(t *testing.T) {
@@ -1904,6 +1945,14 @@ func TestPrepareDeviceForRemoval_GhostDeviceRemovalFails_LogsAndContinues(t *tes
 		gomock.Any()).Return(true, nil)
 	mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).
 		Return(errors.New("dmsetup remove failed"))
+	// Even on failure, PrepareDeviceForRemoval clears deviceInfo.MultipathDevice (it's either
+	// unsafe to remove or already gone) and falls through to removeSCSIDevice.
+	mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+		devicesRemovalMaxWaitTime).Return(nil)
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1917,6 +1966,7 @@ func TestPrepareDeviceForRemoval_GhostDeviceRemovalFails_LogsAndContinues(t *tes
 		context.TODO(), deviceInfo, publishInfo, allPublishInfos, false, false)
 	assert.Nil(t, err, "ghost removal failure should not propagate as error")
 	assert.Equal(t, "", multipath)
+	assert.Equal(t, "", deviceInfo.MultipathDevice, "expected MultipathDevice to be cleared")
 }
 
 func TestRemoveSCSIDevice_TimeOutError(t *testing.T) {
