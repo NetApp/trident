@@ -46,6 +46,13 @@ func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	return errors.UnsupportedError("DisconnectSubsystemFromHost is not supported for darwin")
 }
 
+// RescanNamespaces re-enumerates the namespaces on the subsystem's controllers.
+func (s *NVMeSubsystem) RescanNamespaces(ctx context.Context) error {
+	Logc(ctx).Debug(">>>> nvme_darwin.RescanNamespaces")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.RescanNamespaces")
+	return errors.UnsupportedError("RescanNamespaces is not supported for darwin")
+}
+
 func (nh *NVMeHandler) GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem,
 	error,
 ) {

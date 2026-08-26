@@ -113,6 +113,7 @@ type NVMeOperation int8
 const (
 	NoOp NVMeOperation = iota
 	ConnectOp
+	RescanOp
 )
 
 // NVMeSessionData contains all the information related to any NVMe session. It has the subsystem information, the
@@ -136,6 +137,7 @@ type NVMeSessions struct {
 type NVMeSubsystemInterface interface {
 	GetConnectionStatus() NVMeSubsystemConnectionStatus
 	Connect(ctx context.Context, nvmeTargetIps []string, connectOnly bool) error
+	RescanNamespaces(ctx context.Context) error
 	Disconnect(ctx context.Context) error
 	GetNamespaceCount(ctx context.Context) (int, error)
 	IsNetworkPathPresent(ip string) bool
