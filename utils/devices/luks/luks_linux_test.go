@@ -50,7 +50,7 @@ func mockCryptsetupLuksOpen(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
 		gomock.Any(), "cryptsetup", luksCommandTimeout, true, gomock.Any(),
 		"open", gomock.Any(), gomock.Any(), "--type", "luks2",
-		"--allow-discards", "--persistent",
+		"--allow-discards",
 	)
 }
 

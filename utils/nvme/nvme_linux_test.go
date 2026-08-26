@@ -813,7 +813,7 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 					Return([]byte{}, nil).Times(1)
 				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
 					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "open", gomock.Any(),
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return([]byte{}, nil).Times(1)
 				return mockCommand
 			},
@@ -854,7 +854,7 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 					Return([]byte{}, nil).Times(1)
 				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
 					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "open", gomock.Any(),
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return([]byte{}, nil).Times(1)
 				return mockCommand
 			},
