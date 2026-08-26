@@ -4085,6 +4085,9 @@ func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
 	// GET the storage unit snapshot by name
 	snapshot, err := d.api.StorageUnitSnapshotGetByName(ctx, snapshotName, suUUID)
 	if err != nil {
+		if IsNotFoundError(err) {
+			return errors.NotFoundError("%s", err.Error())
+		}
 		return fmt.Errorf("error checking for snapshot; %w", err)
 	}
 	if snapshot == nil || snapshot.UUID == nil {
@@ -4158,6 +4161,9 @@ func (d OntapAPIREST) getStorageUnitUUID(
 ) (string, error) {
 	su, err := d.StorageUnitGetByName(ctx, suName)
 	if err != nil {
+		if IsNotFoundError(err) {
+			return "", errors.NotFoundError("%s", err.Error())
+		}
 		return "", err
 	}
 	if su == nil || su.UUID == nil {

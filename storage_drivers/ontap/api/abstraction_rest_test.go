@@ -4780,6 +4780,55 @@ func TestStorageUnitSnapshotCreate(t *testing.T) {
 	assert.Error(t, err, "expected an error while creating snapshot")
 }
 
+func TestStorageUnitSnapshotDelete(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	snapshotName := "testSnapshot"
+	suName := "testStorageUnit"
+	suUUID := "testUUID"
+	snapshotUUID := "snapshotUUID"
+	mockSU := &models.StorageUnit{
+		UUID: new(suUUID),
+	}
+	mockSnapshot := &models.StorageUnitSnapshot{
+		UUID: new(snapshotUUID),
+		Name: new(snapshotName),
+	}
+	jobLink := models.JobLink{UUID: new(strfmt.UUID("1234"))}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+
+	// Case 1: Storage unit deleted before transaction recovery returns utils NotFoundError.
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, api.NotFoundError(
+		fmt.Sprintf("could not find storage unit with name %v", suName),
+	))
+
+	err := oapi.StorageUnitSnapshotDelete(ctx, snapshotName, suName)
+	assert.Error(t, err, "expected an error when storage unit is not found")
+	assert.True(t, errors.IsNotFoundError(err),
+		"expected utils NotFoundError when storage unit was deleted before recovery")
+
+	// Case 2: Snapshot not found returns utils NotFoundError.
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockSU, nil)
+	rsi.EXPECT().StorageUnitSnapshotGetByName(ctx, snapshotName, suUUID).Return(nil, api.NotFoundError(
+		fmt.Sprintf("snapshot %v not found", snapshotName),
+	))
+
+	err = oapi.StorageUnitSnapshotDelete(ctx, snapshotName, suName)
+	assert.Error(t, err, "expected an error when snapshot is not found")
+	assert.True(t, errors.IsNotFoundError(err),
+		"expected utils NotFoundError when snapshot was deleted before recovery")
+
+	// Case 3: Successful delete.
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockSU, nil)
+	rsi.EXPECT().StorageUnitSnapshotGetByName(ctx, snapshotName, suUUID).Return(mockSnapshot, nil)
+	rsi.EXPECT().StorageUnitSnapshotDelete(ctx, suUUID, snapshotUUID).Return(&jobResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
+
+	err = oapi.StorageUnitSnapshotDelete(ctx, snapshotName, suName)
+	assert.NoError(t, err, "unexpected error while deleting snapshot")
+}
+
 func TestAPIVersion(t *testing.T) {
 	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
 	defer ctrl.Finish()
