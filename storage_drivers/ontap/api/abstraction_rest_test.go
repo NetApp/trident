@@ -264,6 +264,12 @@ func TestNVMeNamespaceCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.Error(t, err)
+
+	// case 3: A busy FlexVol keeps its typed retry signal.
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).
+		Return(errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	err = oapi.NVMeNamespaceCreate(ctx, ns)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err))
 }
 
 func TestNVMeNamespaceExists(t *testing.T) {
@@ -1534,6 +1540,23 @@ func TestVolumeCreate(t *testing.T) {
 		Return("", errors.New("Volume create failed"))
 	_, err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
+
+	// case 3: A busy volume create is retryable.
+	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		Return("", errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	_, err = oapi.VolumeCreate(ctx, volume)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err))
+
+	// case 4: A pre-classified create error remains discoverable after abstraction handling.
+	typedBusy := api.VolumeCreateJobExistsError("create job exists")
+	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		Return("", typedBusy)
+	_, err = oapi.VolumeCreate(ctx, volume)
+	assert.Same(t, typedBusy, err)
 }
 
 func TestVolumeDestroy(t *testing.T) {
@@ -1699,6 +1722,26 @@ func TestFlexgroupCreate(t *testing.T) {
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a flexgroup volume")
+
+	// case 3: Volume busy on FlexGroup create becomes typed VolumeCreateJobExistsError
+	busyErr := errors.New("API State: failure, Message: Volume busy., Code: 524486")
+	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(busyErr)
+	err = oapi.FlexgroupCreate(ctx, volume)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err), "expected VolumeCreateJobExistsError, got %v", err)
+	assert.ErrorContains(t, err, "volume vol1 is busy")
+
+	// case 4: Typed VolumeCreateJobExistsError is preserved as-is
+	typedBusy := api.VolumeCreateJobExistsError("volume vol1 is busy: job exists")
+	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(typedBusy)
+	err = oapi.FlexgroupCreate(ctx, volume)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err))
+	assert.Equal(t, typedBusy, err)
 }
 
 func TestFlexgroupCloneSplitStart(t *testing.T) {
@@ -1734,9 +1777,14 @@ func TestFlexgroupDisableSnapshotDirectoryAccess(t *testing.T) {
 func TestFlexgroupInfo(t *testing.T) {
 	volume := getVolumeInfo()
 	oapi, rsi := newMockOntapAPIREST(t)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee", "snapshot_policy",
+		"snapshot_directory_access_enabled", "space.snapshot.used", "space.snapshot.reserve_percent",
+		"nas.export_policy.name", "encryption.enabled", "tiering.policy", "qos.policy.name",
+	}
 
 	// case 1: Flexgroup get by name
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", fields).Return(volume, nil)
 	_, err := oapi.FlexgroupInfo(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a flexgroup volume")
 
@@ -3763,6 +3811,25 @@ func TestLunCreate(t *testing.T) {
 		lun.SpaceAllocated).Return(errors.New("Failed to create LUN"))
 	err = oapi.LunCreate(ctx, lun)
 	assert.Error(t, err, "no error returned while creating a LUN info")
+	assert.False(t, api.IsVolumeCreateJobExistsError(err))
+	assert.ErrorContains(t, err, "error creating LUN")
+	assert.ErrorContains(t, err, "Failed to create LUN")
+
+	// case 3: Volume busy on LUN create becomes typed VolumeCreateJobExistsError
+	busyErr := errors.New("API State: failure, Message: Volume busy., Code: 524486")
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).Return(busyErr)
+	err = oapi.LunCreate(ctx, lun)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err), "expected VolumeCreateJobExistsError, got %v", err)
+	assert.ErrorContains(t, err, "volume is busy creating LUN")
+
+	// case 4: Typed VolumeCreateJobExistsError is preserved as-is
+	typedBusy := api.VolumeCreateJobExistsError("volume is busy creating LUN fake-lun: job exists")
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).Return(typedBusy)
+	err = oapi.LunCreate(ctx, lun)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err))
+	assert.Equal(t, typedBusy, err)
 }
 
 func TestLunDestroy(t *testing.T) {
@@ -5073,7 +5140,7 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 				"type", "size", "comment", "aggregates", "nas", "guarantee",
 				"snapshot_policy", "snapshot_directory_access_enabled",
 				"space.snapshot.used", "space.snapshot.reserve_percent",
-				"nas.export_policy.name",
+				"nas.export_policy.name", "encryption.enabled", "tiering.policy", "qos.policy.name",
 			}
 			rsi.EXPECT().VolumeGetByName(ctx, tt.sourceVolume, expectedFields).Return(tt.mockVolumeInfo, tt.mockVolumeErr)
 
@@ -5228,6 +5295,61 @@ func TestFcpInterfaceGet(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedNames, result)
 			}
+		})
+	}
+}
+
+// TestVolumeInfoFromRestAttrsHelper_CreateOnlyAttributes covers the attributes ONTAP only honors when a
+// volume is created, which a resumed create compares before it decides whether the volume can be reused.
+func TestVolumeInfoFromRestAttrsHelper_CreateOnlyAttributes(t *testing.T) {
+	baseVolume := func() *models.Volume {
+		return &models.Volume{
+			Name: convert.ToPtr("vol1"),
+			Size: convert.ToPtr(int64(1073741824)),
+		}
+	}
+
+	tests := []struct {
+		name              string
+		volume            func() *models.Volume
+		wantEncrypt       *bool
+		wantSecurityStyle string
+		wantTieringPolicy string
+		wantQos           api.QosPolicyGroup
+	}{
+		{
+			name: "AllAttributesReported",
+			volume: func() *models.Volume {
+				volume := baseVolume()
+				volume.Encryption = &models.VolumeInlineEncryption{Enabled: convert.ToPtr(true)}
+				volume.Nas = &models.VolumeInlineNas{SecurityStyle: convert.ToPtr("unix")}
+				volume.Tiering = &models.VolumeInlineTiering{Policy: convert.ToPtr("snapshot_only")}
+				volume.Qos = &models.VolumeInlineQos{
+					Policy: &models.VolumeInlineQosInlinePolicy{Name: convert.ToPtr("fast")},
+				}
+				return volume
+			},
+			wantEncrypt:       convert.ToPtr(true),
+			wantSecurityStyle: "unix",
+			wantTieringPolicy: "snapshot_only",
+			// REST reports fixed and adaptive policy groups in the same field, so only the name is known.
+			wantQos: api.QosPolicyGroup{Name: "fast"},
+		},
+		{
+			name:   "NoAttributesReported",
+			volume: baseVolume,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volume, err := api.VolumeInfoFromRestAttrsHelper(test.volume())
+
+			assert.NoError(t, err)
+			assert.Equal(t, test.wantEncrypt, volume.Encrypt, "unexpected encryption")
+			assert.Equal(t, test.wantSecurityStyle, volume.SecurityStyle, "unexpected security style")
+			assert.Equal(t, test.wantTieringPolicy, volume.TieringPolicy, "unexpected tiering policy")
+			assert.Equal(t, test.wantQos, volume.Qos, "unexpected QoS policy group")
 		})
 	}
 }

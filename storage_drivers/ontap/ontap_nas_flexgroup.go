@@ -516,12 +516,13 @@ func (d *NASFlexGroupStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// If the volume already exists, bail out
+	// Check now so backend connectivity failures are reported before resolving the request. If the FlexGroup
+	// exists, reconcile it after the desired attributes are known.
 	volExists, err := d.API.FlexgroupExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing FlexGroup: %v", err)
 	}
-	if volExists {
+	if volExists && volConfig.IsMirrorDestination {
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -665,25 +666,36 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return labelErr
 	}
 
+	desiredVolume := api.Volume{
+		Aggregates:      flexGroupAggregateList,
+		Comment:         labels,
+		Encrypt:         enableEncryption,
+		ExportPolicy:    exportPolicy,
+		Name:            name,
+		Qos:             qosPolicyGroup,
+		Size:            strconv.FormatUint(sizeBytes, 10),
+		SpaceReserve:    spaceReserve,
+		SnapshotPolicy:  snapshotPolicy,
+		SecurityStyle:   securityStyle,
+		SnapshotReserve: snapshotReserveInt,
+		TieringPolicy:   tieringPolicy,
+		UnixPermissions: unixPermissions,
+		DPVolume:        volConfig.IsMirrorDestination,
+	}
+	if volExists {
+		if err = reconcileExistingFlexgroupForCreate(ctx, d.API, desiredVolume); err != nil {
+			return err
+		}
+		return drivers.NewVolumeExistsError(name)
+	}
+
 	// Create the FlexGroup
-	err = d.API.FlexgroupCreate(
-		ctx, api.Volume{
-			Aggregates:      flexGroupAggregateList,
-			Comment:         labels,
-			Encrypt:         enableEncryption,
-			ExportPolicy:    exportPolicy,
-			Name:            name,
-			Qos:             qosPolicyGroup,
-			Size:            strconv.FormatUint(sizeBytes, 10),
-			SpaceReserve:    spaceReserve,
-			SnapshotPolicy:  snapshotPolicy,
-			SecurityStyle:   securityStyle,
-			SnapshotReserve: snapshotReserveInt,
-			TieringPolicy:   tieringPolicy,
-			UnixPermissions: unixPermissions,
-			DPVolume:        volConfig.IsMirrorDestination,
-		})
+	err = d.API.FlexgroupCreate(ctx, desiredVolume)
 	if err != nil {
+		if api.IsVolumeCreateJobExistsError(err) {
+			return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
+		}
+
 		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
 		createErrors = append(createErrors, errors.New(errMessage))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)

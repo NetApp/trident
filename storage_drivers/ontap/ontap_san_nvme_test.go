@@ -823,77 +823,63 @@ func getNVMeCreateArgs(d *NVMeStorageDriver) (storage.Pool, *storage.VolumeConfi
 	return pool1, volConfig, volAttrs
 }
 
-func TestNVMeCreate_VolumeExists(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
+// testNVMeResumeNamespaceSize is the namespace size Create derives from the volume config the NVMe create
+// tests share, so an existing namespace can be handed back at exactly the requested size.
+const testNVMeResumeNamespaceSize = "200000000"
 
-	// Volume exists API error test case.
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, errors.New("api invocation error"))
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.ErrorContains(t, err, "api invocation error")
-
-	// Volume and namespace both exist with FileSystem populated -- should return VolumeExistsError.
-	expectedUUID := uuid.New().String()
-	volConfig.FileSystem = "ext4"
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: expectedUUID}, nil)
-
-	err = d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.True(t, drivers.IsVolumeExistsError(err), "Volume doesn't exist.")
-	assert.Equal(t, expectedUUID, volConfig.AccessInfo.NVMeNamespaceUUID,
-		"Namespace UUID should be populated when volume+namespace already exist")
-	assert.Equal(t, nsPath, volConfig.InternalID,
-		"InternalID should be populated when volume+namespace already exist")
+// expectExistingNVMeVolumeOnline sets up the reads a resumed create makes on a healthy existing FlexVol
+// whose attributes already match the request. The label comment is the one attribute the shared test pool
+// leaves unset on the existing volume, so its repair is allowed but not required.
+func expectExistingNVMeVolumeOnline(mAPI *mockapi.MockOntapAPI, name string) {
+	mAPI.EXPECT().VolumeWaitForStates(ctx, name, []string{"online"}, []string{"error"},
+		gomock.Any()).Return("online", nil)
+	mAPI.EXPECT().VolumeInfo(ctx, name).Return(&api.Volume{Name: name, Size: "10000000000000"}, nil)
+	mAPI.EXPECT().VolumeSetComment(ctx, name, name, gomock.Any()).Return(nil).AnyTimes()
 }
 
-func TestNVMeCreate_CleanupIncompleteNamespace_OrphanedVolumeCleaned(t *testing.T) {
+// newMatchingNVMeNamespace returns the namespace NVMeNamespaceGetByName reports for one that matches the
+// request the shared NVMe create tests make.
+func newMatchingNVMeNamespace(t *testing.T, d *NVMeStorageDriver, nsPath string) *api.NVMeNamespace {
+	comment, err := d.createNVMeNamespaceCommentString(ctx, map[string]string{
+		nsAttributeFSType:    filesystem.Ext4,
+		nsAttributeLUKS:      "",
+		nsAttributeDriverCtx: string(d.Config.DriverContext),
+	}, nsMaxCommentLength)
+	assert.NoError(t, err, "could not build the namespace comment the driver stamps")
+
+	return &api.NVMeNamespace{
+		Name:      nsPath,
+		UUID:      uuid.New().String(),
+		Size:      testNVMeResumeNamespaceSize,
+		OsType:    "linux",
+		BlockSize: defaultNamespaceBlockSize,
+		Comment:   comment,
+	}
+}
+
+func TestNVMeCreate_ResumeNamespaceCreate_NamespaceCreateFails(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
-	// First call: volume exists but namespace missing -> cleanup -> proceeds to create
+	// FlexVol exists without its namespace, and the resumed namespace create fails, so the FlexVol is
+	// cleaned up before moving on.
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	expectExistingNVMeVolumeOnline(mAPI, volConfig.InternalName)
 	gomock.InOrder(
-		// cleanupIncompleteNamespace: FlexVol exists, no namespace -> destroy
-		mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil),
-		mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(nil),
-
-		// After cleanup, Create proceeds normally
-		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
-		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
+		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(errors.New("namespace create failed")),
+		mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, false).Return(nil),
+		mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil),
 	)
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.NoError(t, err, "Create should succeed after cleaning up orphaned volume.")
+	assert.Error(t, err, "Create should fail when the resumed namespace create fails.")
 }
 
-func TestNVMeCreate_CleanupIncompleteNamespace_CleanupFails(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	// Volume exists, namespace missing, cleanup fails
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil)
-	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(
-		fmt.Errorf("destroy failed"))
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.Error(t, err)
-	assert.ErrorContains(t, err, "could not clean up incomplete volume")
-}
-
-func TestNVMeCreate_CleanupIncompleteNamespace_MirrorDestination(t *testing.T) {
+func TestNVMeCreate_ReconcileNamespace_MirrorDestination(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	volConfig.IsMirrorDestination = true
@@ -906,49 +892,23 @@ func TestNVMeCreate_CleanupIncompleteNamespace_MirrorDestination(t *testing.T) {
 	assert.True(t, drivers.IsVolumeExistsError(err))
 }
 
-func TestNVMeCreate_CleanupIncompleteNamespace_EmptyFileSystemTriggersCleanup(t *testing.T) {
+func TestNVMeCreate_UnusableNamespaceDestroyFails(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
-	// Vol+NS exist but volConfig.FileSystem is empty (fresh CSI retry).
-	// Should destroy and re-create to ensure volConfig is fully populated.
-	gomock.InOrder(
-		// Cleanup detects vol+ns but FileSystem is empty -> destroy
-		mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-		mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(nil),
+	bigNamespace := newMatchingNVMeNamespace(t, d, nsPath)
+	bigNamespace.Size = "900000000"
 
-		// Create proceeds normally after cleanup
-		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
-		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-	)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.NoError(t, err, "Create should succeed after cleaning up volume with empty FileSystem.")
-}
-
-func TestNVMeCreate_CleanupIncompleteNamespace_EmptyFileSystemDestroyFails(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	// Vol+NS exist, FileSystem empty, but VolumeDestroy fails.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
-	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(
-		fmt.Errorf("destroy failed"))
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	expectExistingNVMeVolumeOnline(mAPI, volConfig.InternalName)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(bigNamespace, nil)
+	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, false).Return(fmt.Errorf("destroy failed"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.Error(t, err)
-	assert.ErrorContains(t, err, "could not clean up incomplete volume")
+	assert.ErrorContains(t, err, "could not destroy unusable volume")
 }
 
 func TestNVMeCreate_InvalidVolHandle(t *testing.T) {
@@ -1114,24 +1074,37 @@ func TestNVMeCreate_VolumeCreateAPIError(t *testing.T) {
 	assert.ErrorContains(t, err, "volume create failed")
 }
 
-func TestNVMeCreate_VolumeCreateJobExistsError(t *testing.T) {
-	// VolumeCreateJobExistsError: an async ONTAP job is already creating this volume.
-	// The driver should fall through to namespace creation, same as the iSCSI SAN driver.
+func TestNVMeCreate_VolumeCreateInProgress(t *testing.T) {
+	// An async ONTAP job is already creating this volume. The driver must report the volume as still being
+	// created and leave it alone: no namespace create and no VolumeDestroy, so gomock fails on either call.
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("",
-		api.VolumeCreateJobExistsError("volume create job already exists"))
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
+		api.VolumeCreateJobExistsError("volume is busy: Volume is busy with a volume create, job ID [abc]"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.NoError(t, err, "Create should succeed by falling through to namespace creation")
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestNVMeCreate_NamespaceCreateInProgress(t *testing.T) {
+	// Namespace create is already running on this FlexVol. Leave the volume; gomock fails if VolumeDestroy
+	// is attempted.
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).
+		Return(api.VolumeCreateJobExistsError("volume is busy creating NVMe namespace"))
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
 }
 
 func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
@@ -1145,17 +1118,19 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 		Return(errors.New("failed to create namespace")).
 		Times(2)
 	// Volume destroy error test case.
-	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(errors.New("failed to delete volume"))
+	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(errors.New("failed to delete volume"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.ErrorContains(t, err, "failed to create namespace")
 
 	// Volume destroy success test case.
-	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
+	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
-	assert.ErrorContains(t, err, "failed to create namespace")
+	assert.True(t, errors.IsVolumeCreatingError(err),
+		"a confirmed delete must return to core without trying another aggregate, got %v", err)
 }
 
 func TestNVMeCreate_LUKSVolume(t *testing.T) {
@@ -1206,115 +1181,6 @@ func TestNVMeCreate_Success(t *testing.T) {
 	assert.NoError(t, err, "Failed to create NVMe volume.")
 }
 
-func TestNVMeCreate_NamespaceGetByNameRetriesOnError(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// First call returns error (ONTAP eventual consistency), second call succeeds
-	gomock.InOrder(
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			nil, fmt.Errorf("could not find namespace with name %s", nsPath)),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-	)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.NoError(t, err, "Create should succeed after retrying NVMeNamespaceGetByName.")
-}
-
-func TestNVMeCreate_NamespaceGetByNameRetriesOnNil(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// First two calls return nil namespace (no error), third succeeds
-	gomock.InOrder(
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-	)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.NoError(t, err, "Create should succeed after retrying NVMeNamespaceGetByName on nil result.")
-}
-
-func TestNVMeCreate_NamespaceGetByNameAllRetriesFail(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// All 3 retry attempts return error
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-		nil, fmt.Errorf("could not find namespace with name %s", nsPath)).Times(3)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.Error(t, err, "Create should fail when all NVMeNamespaceGetByName retries fail.")
-	assert.ErrorContains(t, err, "error retrieving namespace")
-}
-
-func TestNVMeCreate_NamespaceGetByNameAllRetriesReturnNil(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// All 3 retry attempts return nil namespace with no error
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil).Times(3)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.Error(t, err, "Create should fail when namespace is nil after all retries.")
-	assert.ErrorContains(t, err, "not found")
-}
-
-func TestNVMeCreate_NamespaceGetByNameRetriesMixedErrorThenNil(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
-	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
-
-	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
-
-	// Attempt 1: API error, attempt 2: nil namespace (no error), attempt 3: success
-	gomock.InOrder(
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			nil, fmt.Errorf("transient API error")),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(nil, nil),
-		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
-			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
-	)
-
-	err := d.Create(ctx, volConfig, pool1, volAttrs)
-
-	assert.NoError(t, err, "Create should succeed after mixed error/nil retries.")
-}
-
 func TestNVMeCreate_CleanupIncompleteNamespace_NamespaceLookupError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
@@ -1323,6 +1189,8 @@ func TestNVMeCreate_CleanupIncompleteNamespace_NamespaceLookupError(t *testing.T
 	// Volume exists, but NVMeNamespaceGetByName returns a real API error (not NotFoundError).
 	// Should propagate the error without attempting VolumeDestroy.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	expectExistingNVMeVolumeOnline(mAPI, volConfig.InternalName)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 		nil, fmt.Errorf("ONTAP API timeout"))
 
@@ -1333,21 +1201,19 @@ func TestNVMeCreate_CleanupIncompleteNamespace_NamespaceLookupError(t *testing.T
 	assert.ErrorContains(t, err, "ONTAP API timeout")
 }
 
-func TestNVMeCreate_CleanupIncompleteNamespace_NotFoundErrorTriggersCleanup(t *testing.T) {
+func TestNVMeCreate_ReconcileNamespace_NotFoundErrorResumesNamespaceCreate(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
 	// Volume exists, NVMeNamespaceGetByName returns NotFoundError.
-	// Should treat as namespace-missing and clean up, then re-create successfully.
+	// Should treat as namespace-missing and resume namespace creation on the existing FlexVol.
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	expectExistingNVMeVolumeOnline(mAPI, volConfig.InternalName)
 	gomock.InOrder(
-		mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			nil, errors.NotFoundError("namespace %s not found", nsPath)),
-		mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, true).Return(nil),
-
-		mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy"),
-		mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil),
 		mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil),
 		mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 			&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil),
@@ -1355,7 +1221,27 @@ func TestNVMeCreate_CleanupIncompleteNamespace_NotFoundErrorTriggersCleanup(t *t
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
-	assert.NoError(t, err, "Create should succeed after NotFoundError triggers cleanup.")
+	assert.NoError(t, err, "Create should resume namespace creation after a NotFoundError.")
+}
+
+func TestNVMeCreate_ResumeNamespaceCreate_NamespaceCreateInProgress(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
+
+	// FlexVol exists without its namespace, and namespace create is already in progress. Leave the FlexVol;
+	// gomock fails if VolumeDestroy is attempted.
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	expectExistingNVMeVolumeOnline(mAPI, volConfig.InternalName)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
+		nil, errors.NotFoundError("namespace %s not found", nsPath))
+	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).
+		Return(api.VolumeCreateJobExistsError("volume is busy creating NVMe namespace"))
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
 }
 
 func TestNVMeDestroy_VolumeExists(t *testing.T) {

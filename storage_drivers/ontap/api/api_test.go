@@ -13,5 +13,6 @@ import (
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	log.SetOutput(io.Discard)
+	ConfigureWaitForOntapBackoffForTests()
 	os.Exit(m.Run())
 }

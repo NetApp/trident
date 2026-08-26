@@ -2016,6 +2016,119 @@ func addBackendStorageClass(
 	}
 }
 
+// TestAddVolumeRetryCleanup_PreservesTransactionForInProgressCreate covers the errors a driver uses to say
+// the create has not finished: the create itself is still running, or an unusable volume left by an earlier
+// attempt is still being deleted so the create can start over. Both have to keep a retry transaction, or the
+// next attempt loses the state it needs and the volume is orphaned on the backend.
+func TestAddVolumeRetryCleanup_PreservesTransactionForInProgressCreate(t *testing.T) {
+	tests := []struct {
+		name          string
+		driverErr     error
+		wantTxnOp     storage.VolumeOperation
+		assertMessage string
+	}{
+		{
+			name:          "CreateStillInProgress",
+			driverErr:     errors.VolumeCreatingError("volume vol1 is busy: volume create job exists"),
+			wantTxnOp:     storage.VolumeCreating,
+			assertMessage: "A create still in progress must be preserved as a VolumeCreating transaction",
+		},
+		{
+			name:          "UnusableVolumeStillDeleting",
+			driverErr:     errors.VolumeDeletingError("volume vol1 delete is still in progress"),
+			wantTxnOp:     storage.VolumeCreating,
+			assertMessage: "A leftover volume still being deleted must be preserved for retry as well",
+		},
+		{
+			name:          "PermanentFailure",
+			driverErr:     errors.New("aggregate is full"),
+			wantTxnOp:     storage.AddVolume,
+			assertMessage: "A permanent failure must be left for addVolumeCleanup to roll back",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator, err := NewTridentOrchestrator(persistentstore.NewInMemoryClient())
+			assert.NoError(t, err)
+			if err != nil {
+				return
+			}
+
+			mockCtrl := gomock.NewController(t)
+			backend := mockstorage.NewMockBackend(mockCtrl)
+			backend.EXPECT().BackendUUID().Return("backend-uuid").AnyTimes()
+			pool := storage.NewStoragePool(backend, "pool1")
+
+			volumeConfig := tu.GenerateVolumeConfig("vol1", 1, "slow", config.File)
+			txn := &storage.VolumeTransaction{Config: volumeConfig, Op: storage.AddVolume}
+			assert.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			err = orchestrator.addVolumeRetryCleanup(ctx(), test.driverErr, backend, pool, txn, volumeConfig, nil)
+
+			assert.Equal(t, test.driverErr, err, "addVolumeRetryCleanup must hand back the driver's error")
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			assert.NoError(t, getErr)
+			if !assert.NotNil(t, storedTxn, "the transaction must still be there") {
+				return
+			}
+			assert.Equal(t, test.wantTxnOp, storedTxn.Op, test.assertMessage)
+		})
+	}
+}
+
+// TestAddVolumeCleanup_KeepsTransactionForInProgressCreate is the other half of the retry path: the cleanup
+// that rolls a failed create back must not delete the transaction that addVolumeRetryCleanup just preserved.
+func TestAddVolumeCleanup_KeepsTransactionForInProgressCreate(t *testing.T) {
+	tests := []struct {
+		name          string
+		driverErr     error
+		wantTxnKept   bool
+		assertMessage string
+	}{
+		{
+			name:          "CreateStillInProgress",
+			driverErr:     errors.VolumeCreatingError("volume vol1 is busy: volume create job exists"),
+			wantTxnKept:   true,
+			assertMessage: "A create still in progress keeps its transaction for the next attempt",
+		},
+		{
+			name:          "UnusableVolumeStillDeleting",
+			driverErr:     errors.VolumeDeletingError("volume vol1 delete is still in progress"),
+			wantTxnKept:   true,
+			assertMessage: "A leftover volume still being deleted keeps its transaction too",
+		},
+		{
+			name:          "PermanentFailure",
+			driverErr:     errors.New("aggregate is full"),
+			assertMessage: "A permanent failure rolls the transaction back",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator, err := NewTridentOrchestrator(persistentstore.NewInMemoryClient())
+			assert.NoError(t, err)
+			if err != nil {
+				return
+			}
+
+			volumeConfig := tu.GenerateVolumeConfig("vol1", 1, "slow", config.File)
+			txn := &storage.VolumeTransaction{Config: volumeConfig, Op: storage.AddVolume}
+			assert.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			err = orchestrator.addVolumeCleanup(ctx(), test.driverErr, nil, nil, txn, volumeConfig)
+
+			assert.Equal(t, test.driverErr, err, "addVolumeCleanup must hand back the driver's error")
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			assert.NoError(t, getErr)
+			assert.Equal(t, test.wantTxnKept, storedTxn != nil, test.assertMessage)
+		})
+	}
+}
+
 func captureOutput(f func()) string {
 	var buf bytes.Buffer
 	logging.InitLogOutput(&buf)

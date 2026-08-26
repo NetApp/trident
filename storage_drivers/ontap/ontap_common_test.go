@@ -12457,3 +12457,501 @@ func TestDestroyFlexvol_NoUUID_NameNotFoundIsSuccess(t *testing.T) {
 	err := destroyFlexvol(ctx, mockAPI, volConfig, true, false)
 	assert.NoError(t, err)
 }
+
+func TestReconcileExistingFlexvol(t *testing.T) {
+	desired := func() api.Volume {
+		return api.Volume{
+			Name:            "vol1",
+			Comment:         "label",
+			Encrypt:         convert.ToPtr(false),
+			ExportPolicy:    "default",
+			SecurityStyle:   "unix",
+			Size:            "1000000000",
+			SnapshotPolicy:  "none",
+			SpaceReserve:    "none",
+			TieringPolicy:   "none",
+			UnixPermissions: "0777",
+		}
+	}
+
+	tests := []struct {
+		name          string
+		existing      func() *api.Volume
+		desired       func() api.Volume
+		mocks         func(mockAPI *mockapi.MockOntapAPI)
+		wantUnusable  bool
+		wantErr       assert.ErrorAssertionFunc
+		assertMessage string
+	}{
+		{
+			name: "MatchingFlexvol",
+			existing: func() *api.Volume {
+				existing := desired()
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "A Flexvol that already matches the request needs no repair",
+		},
+		{
+			name: "EncryptionMismatch",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.Encrypt = convert.ToPtr(true)
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "Encryption is fixed at create time, so the Flexvol cannot be reused",
+		},
+		{
+			name: "EncryptionNotRequested",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.Encrypt = convert.ToPtr(true)
+				return &existing
+			},
+			desired: func() api.Volume {
+				want := desired()
+				want.Encrypt = nil
+				return want
+			},
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "A request that does not ask for encryption takes whatever ONTAP chose",
+		},
+		{
+			name: "SecurityStyleMismatch",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.SecurityStyle = "ntfs"
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "Security style is fixed at create time, so the Flexvol cannot be reused",
+		},
+		{
+			name: "SecurityStyleNotReported",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.SecurityStyle = ""
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "A security style ONTAP does not report cannot be compared, so the Flexvol is kept",
+		},
+		{
+			name: "TieringPolicyMismatch",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.TieringPolicy = "auto"
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "Tiering policy cannot be repaired, so the Flexvol cannot be reused",
+		},
+		{
+			name: "TieringPolicySeparatorDiffers",
+			existing: func() *api.Volume {
+				existing := desired()
+				existing.TieringPolicy = "snapshot_only"
+				return &existing
+			},
+			desired: func() api.Volume {
+				want := desired()
+				want.TieringPolicy = "snapshot-only"
+				return want
+			},
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "REST and ZAPI spell the same tiering policy differently, which is not a mismatch",
+		},
+		{
+			name: "QosPolicyGroupIsApplied",
+			existing: func() *api.Volume {
+				existing := desired()
+				return &existing
+			},
+			desired: func() api.Volume {
+				want := desired()
+				want.Qos = api.QosPolicyGroup{Name: "fast", Kind: api.QosPolicyGroupKind}
+				return want
+			},
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, "vol1",
+					api.QosPolicyGroup{Name: "fast", Kind: api.QosPolicyGroupKind}).Return(nil)
+			},
+			wantErr:       assert.NoError,
+			assertMessage: "A QoS policy group the request asks for should be applied to the existing Flexvol",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			test.mocks(mockAPI)
+
+			err := reconcileExistingFlexvol(ctx, mockAPI, test.existing(), test.desired(), nil)
+
+			test.wantErr(t, err, test.assertMessage)
+			assert.Equal(t, test.wantUnusable, isUnusableVolumeError(err), test.assertMessage)
+		})
+	}
+}
+
+func TestReconcileExistingLun(t *testing.T) {
+	desired := func() api.Lun {
+		return api.Lun{
+			Name:           "/vol/vol1/lun0",
+			Size:           "1000000000",
+			OsType:         "linux",
+			SpaceAllocated: convert.ToPtr(false),
+		}
+	}
+
+	tests := []struct {
+		name          string
+		existing      func() *api.Lun
+		desired       func() api.Lun
+		mocks         func(mockAPI *mockapi.MockOntapAPI)
+		wantUnusable  bool
+		wantErr       assert.ErrorAssertionFunc
+		assertMessage string
+	}{
+		{
+			name: "MatchingLun",
+			existing: func() *api.Lun {
+				existing := desired()
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "A LUN that already matches the request needs no repair",
+		},
+		{
+			name: "OsTypeMismatch",
+			existing: func() *api.Lun {
+				existing := desired()
+				existing.OsType = "windows"
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "OS type is fixed at create time, so the LUN cannot be reused",
+		},
+		{
+			name: "SpaceAllocationMismatch",
+			existing: func() *api.Lun {
+				existing := desired()
+				existing.SpaceAllocated = convert.ToPtr(true)
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "Space allocation is fixed at create time, so the LUN cannot be reused",
+		},
+		{
+			name: "QosPolicyGroupIsApplied",
+			existing: func() *api.Lun {
+				existing := desired()
+				return &existing
+			},
+			desired: func() api.Lun {
+				want := desired()
+				want.Qos = api.QosPolicyGroup{Name: "fast", Kind: api.QosPolicyGroupKind}
+				return want
+			},
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, "/vol/vol1/lun0",
+					api.QosPolicyGroup{Name: "fast", Kind: api.QosPolicyGroupKind}).Return(nil)
+			},
+			wantErr:       assert.NoError,
+			assertMessage: "A QoS policy group the request asks for should be applied to the existing LUN",
+		},
+		{
+			name: "UnparseableSize",
+			existing: func() *api.Lun {
+				existing := desired()
+				existing.Size = "not-a-number"
+				return &existing
+			},
+			desired:       desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.Error,
+			assertMessage: "A size ONTAP reports that cannot be parsed is an error, not a reason to destroy",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			test.mocks(mockAPI)
+
+			err := reconcileExistingLun(ctx, mockAPI, test.existing(), test.desired())
+
+			test.wantErr(t, err, test.assertMessage)
+			assert.Equal(t, test.wantUnusable, isUnusableVolumeError(err), test.assertMessage)
+		})
+	}
+}
+
+func TestReconcileExistingNamespace(t *testing.T) {
+	desired := api.NVMeNamespace{
+		Name:      "/vol/vol1/namespace0",
+		Size:      "1000000000",
+		OsType:    "linux",
+		BlockSize: 4096,
+	}
+
+	tests := []struct {
+		name          string
+		existing      api.NVMeNamespace
+		mocks         func(mockAPI *mockapi.MockOntapAPI)
+		wantUnusable  bool
+		wantErr       assert.ErrorAssertionFunc
+		assertMessage string
+	}{
+		{
+			name:          "MatchingNamespace",
+			existing:      desired,
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantErr:       assert.NoError,
+			assertMessage: "A namespace that already matches the request needs no repair",
+		},
+		{
+			name:          "OsTypeMismatch",
+			existing:      api.NVMeNamespace{UUID: "uuid1", Size: "1000000000", OsType: "windows", BlockSize: 4096},
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "OS type is fixed at create time, so the namespace cannot be reused",
+		},
+		{
+			name:          "BlockSizeMismatch",
+			existing:      api.NVMeNamespace{UUID: "uuid1", Size: "1000000000", OsType: "linux", BlockSize: 512},
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "Block size is fixed at create time, so the namespace cannot be reused",
+		},
+		{
+			name:          "Oversized",
+			existing:      api.NVMeNamespace{UUID: "uuid1", Size: "2000000000", OsType: "linux", BlockSize: 4096},
+			mocks:         func(*mockapi.MockOntapAPI) {},
+			wantUnusable:  true,
+			wantErr:       assert.Error,
+			assertMessage: "A namespace ONTAP cannot shrink has to be destroyed",
+		},
+		{
+			name:     "Undersized",
+			existing: api.NVMeNamespace{UUID: "uuid1", Size: "500000000", OsType: "linux", BlockSize: 4096},
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeNamespaceSetSize(ctx, "uuid1", int64(1000000000)).Return(nil)
+			},
+			wantErr:       assert.NoError,
+			assertMessage: "An undersized namespace should be grown, not destroyed",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			test.mocks(mockAPI)
+
+			existing := test.existing
+			err := reconcileExistingNamespace(ctx, mockAPI, &existing, desired)
+
+			test.wantErr(t, err, test.assertMessage)
+			assert.Equal(t, test.wantUnusable, isUnusableVolumeError(err), test.assertMessage)
+		})
+	}
+}
+
+func TestDestroyUnusableVolume_WaitsForTheVolumeToBeGone(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+
+	gomock.InOrder(
+		mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil),
+		mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(true, nil),
+		mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil),
+	)
+
+	err := destroyUnusableVolume(ctx, mockAPI, "vol1", "snapshot policy differs")
+
+	assert.True(t, errors.IsVolumeCreatingError(err),
+		"a volume confirmed gone should leave the create retryable, got %v", err)
+	assert.ErrorContains(t, err, "snapshot policy differs")
+}
+
+func TestDestroyUnusableVolume_ReportsDeleteStillInProgress(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(true, nil).MinTimes(1)
+
+	err := destroyUnusableVolume(ctx, mockAPI, "vol1", "snapshot policy differs")
+
+	assert.True(t, errors.IsVolumeDeletingError(err),
+		"a volume that has not gone away yet should be reported as still deleting, got %v", err)
+}
+
+func TestDestroyUnusableVolume_DestroyFails(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+
+	// A destroy ONTAP refused is not a wait, so no existence check may follow it.
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).Return(errors.New("destroy failed"))
+
+	err := destroyUnusableVolume(ctx, mockAPI, "vol1", "snapshot policy differs")
+
+	assert.ErrorContains(t, err, "could not destroy unusable volume vol1")
+	assert.False(t, errors.IsVolumeCreatingError(err), "a failed destroy is not a create in progress")
+	assert.False(t, errors.IsVolumeDeletingError(err), "a failed destroy is not a delete in progress")
+}
+
+func TestDestroyUnusableVolume_DestroyRemainsBusy(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	mockAPI.EXPECT().VolumeDestroy(ctx, "vol1", true, false).
+		Return(errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+
+	err := destroyUnusableVolume(ctx, mockAPI, "vol1", "snapshot policy differs")
+
+	assert.True(t, errors.IsVolumeDeletingError(err), "a busy destroy must remain retryable, got %v", err)
+}
+
+func TestDestroyUnusableFlexgroup_WaitsForTheVolumeToBeGone(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+
+	gomock.InOrder(
+		mockAPI.EXPECT().FlexgroupDestroy(ctx, "fg1", true, false).Return(nil),
+		mockAPI.EXPECT().FlexgroupExists(ctx, "fg1").Return(true, nil),
+		mockAPI.EXPECT().FlexgroupExists(ctx, "fg1").Return(false, nil),
+	)
+
+	err := destroyUnusableFlexgroup(ctx, mockAPI, "fg1", "snapshot policy differs")
+
+	assert.True(t, errors.IsVolumeCreatingError(err),
+		"a FlexGroup confirmed gone should leave the create retryable, got %v", err)
+}
+
+func TestDestroyUnusableFlexgroup_ReportsDeleteStillInProgress(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	mockAPI.EXPECT().FlexgroupDestroy(ctx, "fg1", true, false).Return(nil)
+	mockAPI.EXPECT().FlexgroupExists(ctx, "fg1").Return(true, nil).MinTimes(1)
+
+	err := destroyUnusableFlexgroup(ctx, mockAPI, "fg1", "snapshot policy differs")
+
+	assert.True(t, errors.IsVolumeDeletingError(err),
+		"a FlexGroup that has not gone away yet should be reported as still deleting, got %v", err)
+}
+
+func TestReconcileExistingFlexgroupForCreate_RepairsMutableAttributes(t *testing.T) {
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	desired := api.Volume{
+		Name:            "fg1",
+		Aggregates:      []string{"aggr1"},
+		Size:            "2000000000",
+		SpaceReserve:    "none",
+		SnapshotPolicy:  "none",
+		SnapshotReserve: 0,
+		ExportPolicy:    "desired-policy",
+		UnixPermissions: "0770",
+		Comment:         "desired-comment",
+		Qos:             api.QosPolicyGroup{Name: "desired-qos"},
+	}
+	existing := desired
+	existing.Size = "1000000000"
+	existing.ExportPolicy = "other-policy"
+	existing.UnixPermissions = "0755"
+	existing.Comment = "other-comment"
+	existing.Qos = api.QosPolicyGroup{Name: "other-qos"}
+
+	gomock.InOrder(
+		mockAPI.EXPECT().VolumeWaitForStates(ctx, "fg1", []string{"online"}, []string{"error"},
+			maxFlexvolResumeWait).Return("online", nil),
+		mockAPI.EXPECT().FlexgroupInfo(ctx, "fg1").Return(&existing, nil),
+		mockAPI.EXPECT().FlexgroupSetSize(ctx, "fg1", desired.Size).Return(nil),
+		mockAPI.EXPECT().FlexgroupModifyExportPolicy(ctx, "fg1", desired.ExportPolicy).Return(nil),
+		mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, "fg1", "fg1", desired.UnixPermissions).Return(nil),
+		mockAPI.EXPECT().FlexgroupSetComment(ctx, "fg1", "fg1", desired.Comment).Return(nil),
+		mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, "fg1", desired.Qos).Return(nil),
+	)
+
+	assert.NoError(t, reconcileExistingFlexgroupForCreate(ctx, mockAPI, desired))
+}
+
+func TestReconcileExistingVolumeForCreate_VolumeInfoFails(t *testing.T) {
+	desired := api.Volume{
+		Name:            "vol1",
+		Size:            "1000000000",
+		SnapshotPolicy:  "none",
+		SnapshotReserve: 0,
+		SpaceReserve:    "none",
+	}
+
+	tests := []struct {
+		name             string
+		mocks            func(mockAPI *mockapi.MockOntapAPI)
+		wantCreatingErr  bool
+		wantErrSubstring string
+		assertMessage    string
+	}{
+		{
+			name: "VolumeDeletedUnderneathTheRequest",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+			},
+			wantCreatingErr: true,
+			assertMessage:   "a volume that has gone away is a create waiting to be retried",
+		},
+		{
+			name: "VolumeStillPresent",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(true, nil)
+			},
+			wantErrSubstring: "error reading existing volume vol1",
+			assertMessage:    "an unreadable volume that is still there must not look transient",
+		},
+		{
+			name: "ExistenceCheckAlsoFails",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, errors.New("API connection error"))
+			},
+			wantErrSubstring: "error reading existing volume vol1",
+			assertMessage:    "an existence check that failed proves nothing, so report the read error",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, "vol1", []string{"online"}, []string{"error"},
+				gomock.Any()).Return("online", nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(nil, api.VolumeReadError("could not find volume"))
+			test.mocks(mockAPI)
+
+			err := reconcileExistingVolumeForCreate(ctx, mockAPI, desired, []string{"aggr1"})
+
+			assert.Error(t, err, test.assertMessage)
+			assert.Equal(t, test.wantCreatingErr, errors.IsVolumeCreatingError(err), test.assertMessage)
+			if test.wantErrSubstring != "" {
+				assert.ErrorContains(t, err, test.wantErrSubstring, test.assertMessage)
+			}
+		})
+	}
+}

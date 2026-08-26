@@ -1162,6 +1162,48 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 	assert.Contains(t, result.Error(), "volume creation failed")
 }
 
+func TestOntapNasFlexgroupStorageDriverVolumeCreate_CreateInProgress(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "400g",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm:vol1",
+	}
+
+	sb := storage.NewTestStorageBackend()
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+	})
+	driver.physicalPool = pool1
+	driver.Config.AutoExportPolicy = true
+	driver.timeout = 1 * time.Second
+	volAttrs := map[string]sa.Request{}
+
+	// ONTAP is still creating the FlexGroup, so it cannot be mounted or shared yet; gomock fails the test if
+	// Create tries to mount it.
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(
+		api.VolumeCreateJobExistsError("volume vol1 is busy: Volume is busy with a volume create, job ID [abc]"))
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(result), "expected VolumeCreatingError, got %v", result)
+}
+
 func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	volConfig := &storage.VolumeConfig{
@@ -1379,6 +1421,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 		SnapshotDir:     "true",
 	})
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
+	driver.physicalPool = pool1
 
 	volAttrs := map[string]sa.Request{}
 
@@ -1394,10 +1437,14 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "flexgroupAlreadyExists" {
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, nil)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"aggr1"}, nil)
+				mockAPI.EXPECT().VolumeWaitForStates(
+					ctx, "vol1", []string{"online"}, []string{"error"}, maxFlexvolResumeWait,
+				).Return("creating", errors.New("still creating"))
 				result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
 				assert.Error(t, result, "Flexgroup volume exists")
-				assert.Contains(t, result.Error(), "volume vol1 already exists")
+				assert.True(t, errors.IsVolumeCreatingError(result))
 			} else {
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, errors.New(test.errMessage))
 				result := driver.Create(ctx, volConfig, pool1, volAttrs)

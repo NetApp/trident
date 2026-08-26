@@ -113,6 +113,10 @@ const (
 	maxFlexGroupCloneWait = 120 * time.Second
 	maxFlexvolCloneWait   = 30 * time.Second
 
+	// maxFlexvolResumeWait bounds how long a resumed Create waits for a Flexvol left behind by an earlier
+	// attempt to come online before reporting the volume as still being created.
+	maxFlexvolResumeWait = 10 * time.Second
+
 	// maxSnapshotDeleteRetry and maxSnapshotDeleteWait should be used
 	// together to balance snapshot deletion wait times and retries.
 	maxSnapshotDeleteRetry = 10
@@ -5655,6 +5659,373 @@ func destroyFlexvol(
 		}
 		return err
 	}
+	return nil
+}
+
+// unusableVolumeError marks a Flexvol or LUN left behind by an earlier Create that differs from the current
+// request in an attribute ONTAP only accepts at create time. The object has to be destroyed and rebuilt.
+type unusableVolumeError struct {
+	name   string
+	reason string
+}
+
+func (e *unusableVolumeError) Error() string {
+	return fmt.Sprintf("%s cannot be reused: %s", e.name, e.reason)
+}
+
+// isUnusableVolumeError reports whether err means an object left behind by an earlier Create has to be
+// destroyed rather than repaired.
+func isUnusableVolumeError(err error) bool {
+	var unusable *unusableVolumeError
+	return errors.As(err, &unusable)
+}
+
+// destroyUnusableVolume removes a Flexvol that cannot be reconciled with the current create request and
+// returns the error Create hands back, so the next attempt starts from a clean slate.
+//
+// ONTAP deletes a Flexvol asynchronously, so the destroy only queues the work. Recreating the same name
+// while the delete is still running fails with a busy error, and reads of the volume fail intermittently
+// while it goes away, so this waits for the volume to actually disappear. Both outcomes are reported with a
+// typed error the core keeps the volume transaction for: a volume that is gone is a create waiting to be
+// retried, and a volume that is still being deleted is reported as such so the retry comes later.
+func destroyUnusableVolume(ctx context.Context, client api.OntapAPI, name, reason string) error {
+	Logc(ctx).WithFields(LogFields{
+		"volume": name,
+		"reason": reason,
+	}).Warning("Destroying volume left over from an earlier create attempt.")
+
+	// Automatic create reconciliation must be less destructive than an explicit user delete. Preserve the
+	// volume in ONTAP's recovery queue so a mistaken ownership or attribute decision remains recoverable.
+	if err := client.VolumeDestroy(ctx, name, true, false); err != nil {
+		Logc(ctx).WithError(err).WithField("volume", name).Error("Could not clean up volume")
+		if api.IsVolumeBusyError(err) {
+			return errors.VolumeDeletingError(
+				"volume %s that could not be reused (%s) is still busy deleting: %v", name, reason, err)
+		}
+		return fmt.Errorf("could not destroy unusable volume %s (%s): %v", name, reason, err)
+	}
+
+	if err := api.WaitForVolumeToBeDeleted(ctx, client, name); err != nil {
+		Logc(ctx).WithError(err).WithField("volume", name).Warning(
+			"Volume delete is still in progress; the create will be retried once it completes.")
+		return errors.VolumeDeletingError(
+			"destroyed volume %s that could not be reused (%s), but its delete is still in progress; %v",
+			name, reason, err)
+	}
+
+	return errors.VolumeCreatingError("destroyed volume %s that could not be reused (%s); retrying the create",
+		name, reason)
+}
+
+// reconcileExistingVolumeForCreate prepares a Flexvol left behind by an earlier Create for reuse by the
+// current request: it waits for ONTAP to finish building the volume, validates its attributes and repairs
+// the ones ONTAP still accepts.
+//
+// A Flexvol that has not come online is still being built, so it is reported as still creating and left
+// alone -- destroying it would restart a slow create on every retry, and provisioning on top of it now could
+// fail and take the Flexvol down with it. A Flexvol that cannot be reconciled is destroyed, and the returned
+// error asks the caller to retry with a clean create.
+func reconcileExistingVolumeForCreate(
+	ctx context.Context, client api.OntapAPI, desired api.Volume, allowedAggregates []string,
+) error {
+	name := desired.Name
+
+	state, err := client.VolumeWaitForStates(ctx, name, []string{"online"}, []string{"error"},
+		maxFlexvolResumeWait)
+	if err != nil {
+		var terminal *api.TerminalStateError
+		if errors.As(err, &terminal) {
+			return destroyUnusableVolume(ctx, client, name, fmt.Sprintf("volume is in state %q", state))
+		}
+		return errors.VolumeCreatingError("volume %s is not online yet (state %q): %v", name, state, err)
+	}
+
+	existing, err := client.VolumeInfo(ctx, name)
+	if err != nil {
+		if exists, existsErr := client.VolumeExists(ctx, name); existsErr == nil && !exists {
+			return errors.VolumeCreatingError("volume %s is no longer present; retrying the create", name)
+		}
+		return fmt.Errorf("error reading existing volume %s: %v", name, err)
+	}
+
+	if err = reconcileExistingFlexvol(ctx, client, existing, desired, allowedAggregates); err != nil {
+		if isUnusableVolumeError(err) {
+			return destroyUnusableVolume(ctx, client, name, err.Error())
+		}
+		return err
+	}
+
+	return nil
+}
+
+func reconcileExistingFlexgroupForCreate(ctx context.Context, client api.OntapAPI, desired api.Volume) error {
+	name := desired.Name
+	state, err := client.VolumeWaitForStates(ctx, name, []string{"online"}, []string{"error"},
+		maxFlexvolResumeWait)
+	if err != nil {
+		var terminal *api.TerminalStateError
+		if errors.As(err, &terminal) {
+			return destroyUnusableFlexgroup(ctx, client, name, fmt.Sprintf("FlexGroup is in state %q", state))
+		}
+		return errors.VolumeCreatingError("FlexGroup %s is not online yet (state %q): %v", name, state, err)
+	}
+
+	existing, err := client.FlexgroupInfo(ctx, name)
+	if err != nil {
+		if exists, existsErr := client.FlexgroupExists(ctx, name); existsErr == nil && !exists {
+			return errors.VolumeCreatingError("FlexGroup %s is no longer present; retrying the create", name)
+		}
+		return fmt.Errorf("error reading existing FlexGroup %s: %w", name, err)
+	}
+
+	if err = reconcileExistingFlexgroup(ctx, client, existing, desired); err != nil {
+		if isUnusableVolumeError(err) {
+			return destroyUnusableFlexgroup(ctx, client, name, err.Error())
+		}
+		return err
+	}
+	return nil
+}
+
+func destroyUnusableFlexgroup(ctx context.Context, client api.OntapAPI, name, reason string) error {
+	Logc(ctx).WithFields(LogFields{"volume": name, "reason": reason}).
+		Warning("Destroying FlexGroup left over from an earlier create attempt.")
+	// Automatic create reconciliation must retain the same recovery protection as FlexVol cleanup.
+	if err := client.FlexgroupDestroy(ctx, name, true, false); err != nil {
+		Logc(ctx).WithError(err).WithField("volume", name).Error("Could not clean up FlexGroup")
+		if api.IsVolumeBusyError(err) {
+			return errors.VolumeDeletingError(
+				"FlexGroup %s that could not be reused (%s) is still busy deleting: %v", name, reason, err)
+		}
+		return fmt.Errorf("could not destroy unusable FlexGroup %s (%s): %w", name, reason, err)
+	}
+	if err := api.WaitForFlexgroupToBeDeleted(ctx, client, name); err != nil {
+		Logc(ctx).WithError(err).WithField("volume", name).Warning(
+			"FlexGroup delete is still in progress; the create will be retried once it completes.")
+		return errors.VolumeDeletingError(
+			"destroyed FlexGroup %s that could not be reused (%s), but its delete is still in progress; %v",
+			name, reason, err)
+	}
+	return errors.VolumeCreatingError("destroyed FlexGroup %s that could not be reused (%s); retrying the create",
+		name, reason)
+}
+
+func reconcileExistingFlexgroup(
+	ctx context.Context, client api.OntapAPI, existing *api.Volume, desired api.Volume,
+) error {
+	name := desired.Name
+	for _, aggregate := range existing.Aggregates {
+		if len(desired.Aggregates) > 0 && !collection.ContainsString(desired.Aggregates, aggregate) {
+			return &unusableVolumeError{
+				name:   name,
+				reason: fmt.Sprintf("FlexGroup uses aggregate %s, which this pool cannot use", aggregate),
+			}
+		}
+	}
+	if err := immutableAttributeMismatch(existing, desired); err != nil {
+		return err
+	}
+
+	desiredSize, err := strconv.ParseUint(desired.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse requested size %q for FlexGroup %s: %w", desired.Size, name, err)
+	}
+	existingSize, err := strconv.ParseUint(existing.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse size %q of FlexGroup %s: %w", existing.Size, name, err)
+	}
+	if existingSize < desiredSize {
+		if err = client.FlexgroupSetSize(ctx, name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.ExportPolicy != "" && existing.ExportPolicy != desired.ExportPolicy {
+		if err = client.FlexgroupModifyExportPolicy(ctx, name, desired.ExportPolicy); err != nil {
+			return fmt.Errorf("could not set export policy on FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.UnixPermissions != "" && existing.UnixPermissions != desired.UnixPermissions {
+		if err = client.FlexgroupModifyUnixPermissions(ctx, name, name, desired.UnixPermissions); err != nil {
+			return fmt.Errorf("could not set unix permissions on FlexGroup %s: %w", name, err)
+		}
+	}
+	if existing.Comment != desired.Comment {
+		if err = client.FlexgroupSetComment(ctx, name, name, desired.Comment); err != nil {
+			return fmt.Errorf("could not set comment on FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.FlexgroupSetQosPolicyGroupName(ctx, name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on FlexGroup %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
+// reconcileExistingFlexvol validates a Flexvol left behind by an earlier Create against the attributes the
+// current request asks for and repairs the differences ONTAP accepts on a live volume.
+func reconcileExistingFlexvol(
+	ctx context.Context, client api.OntapAPI, existing *api.Volume, desired api.Volume,
+	allowedAggregates []string,
+) error {
+	name := desired.Name
+
+	if len(existing.Aggregates) > 0 && len(allowedAggregates) > 0 &&
+		!collection.ContainsString(allowedAggregates, existing.Aggregates[0]) {
+		return &unusableVolumeError{
+			name:   name,
+			reason: fmt.Sprintf("volume is on aggregate %s, which this pool cannot use", existing.Aggregates[0]),
+		}
+	}
+	if err := immutableAttributeMismatch(existing, desired); err != nil {
+		return err
+	}
+
+	desiredSize, err := strconv.ParseUint(desired.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse requested size %q for volume %s: %w", desired.Size, name, err)
+	}
+	existingSize, err := strconv.ParseUint(existing.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse size %q of volume %s: %w", existing.Size, name, err)
+	}
+	if existingSize < desiredSize {
+		Logc(ctx).WithFields(LogFields{
+			"volume": name, "size": existingSize, "newSize": desiredSize,
+		}).Debug("Growing existing volume to the requested size.")
+		if err = client.VolumeSetSize(ctx, name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize volume %s: %w", name, err)
+		}
+	}
+
+	if desired.ExportPolicy != "" && existing.ExportPolicy != desired.ExportPolicy {
+		if err = client.VolumeModifyExportPolicy(ctx, name, desired.ExportPolicy); err != nil {
+			return fmt.Errorf("could not set export policy on volume %s: %w", name, err)
+		}
+	}
+	if desired.UnixPermissions != "" && existing.UnixPermissions != desired.UnixPermissions {
+		if err = client.VolumeModifyUnixPermissions(ctx, name, name, desired.UnixPermissions); err != nil {
+			return fmt.Errorf("could not set unix permissions on volume %s: %w", name, err)
+		}
+	}
+	if existing.Comment != desired.Comment {
+		if err = client.VolumeSetComment(ctx, name, name, desired.Comment); err != nil {
+			return fmt.Errorf("could not set comment on volume %s: %w", name, err)
+		}
+	}
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.VolumeSetQosPolicyGroupName(ctx, name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on volume %s: %w", name, err)
+		}
+	}
+
+	return nil
+}
+
+// immutableAttributeMismatch reports create-time FlexVol/FlexGroup attributes that ONTAP will not
+// change after the object exists. Each check runs only when both sides carry a value, because a
+// request that does not ask for a setting takes whatever ONTAP chose.
+func immutableAttributeMismatch(existing *api.Volume, desired api.Volume) error {
+	name := desired.Name
+	if desired.SpaceReserve != "" && existing.SpaceReserve != desired.SpaceReserve {
+		return &unusableVolumeError{
+			name:   name,
+			reason: fmt.Sprintf("space reserve is %q, request asks for %q", existing.SpaceReserve, desired.SpaceReserve),
+		}
+	}
+	if desired.SnapshotPolicy != "" && existing.SnapshotPolicy != desired.SnapshotPolicy {
+		return &unusableVolumeError{
+			name: name,
+			reason: fmt.Sprintf("snapshot policy is %q, request asks for %q",
+				existing.SnapshotPolicy, desired.SnapshotPolicy),
+		}
+	}
+	if desired.SnapshotReserve >= 0 && existing.SnapshotReserve != desired.SnapshotReserve {
+		return &unusableVolumeError{
+			name: name,
+			reason: fmt.Sprintf("snapshot reserve is %d%%, request asks for %d%%",
+				existing.SnapshotReserve, desired.SnapshotReserve),
+		}
+	}
+	if desired.Encrypt != nil && existing.Encrypt != nil && *existing.Encrypt != *desired.Encrypt {
+		return &unusableVolumeError{
+			name: name,
+			reason: fmt.Sprintf("encryption is %t, request asks for %t",
+				*existing.Encrypt, *desired.Encrypt),
+		}
+	}
+	if desired.SecurityStyle != "" && existing.SecurityStyle != "" &&
+		existing.SecurityStyle != desired.SecurityStyle {
+		return &unusableVolumeError{
+			name: name,
+			reason: fmt.Sprintf("security style is %q, request asks for %q",
+				existing.SecurityStyle, desired.SecurityStyle),
+		}
+	}
+	if desired.TieringPolicy != "" && existing.TieringPolicy != "" &&
+		!sameTieringPolicy(existing.TieringPolicy, desired.TieringPolicy) {
+		return &unusableVolumeError{
+			name: name,
+			reason: fmt.Sprintf("tiering policy is %q, request asks for %q",
+				existing.TieringPolicy, desired.TieringPolicy),
+		}
+	}
+	return nil
+}
+
+func sameTieringPolicy(a, b string) bool {
+	normalize := func(policy string) string {
+		return strings.ReplaceAll(strings.ToLower(policy), "-", "_")
+	}
+	return normalize(a) == normalize(b)
+}
+
+// reconcileExistingLun validates a LUN left behind by an earlier Create against the current request and
+// grows it or re-points its QoS policy group where ONTAP allows.
+func reconcileExistingLun(ctx context.Context, client api.OntapAPI, existing *api.Lun, desired api.Lun) error {
+	if existing.OsType != "" && desired.OsType != "" && existing.OsType != desired.OsType {
+		return &unusableVolumeError{
+			name:   desired.Name,
+			reason: fmt.Sprintf("LUN OS type is %q, request asks for %q", existing.OsType, desired.OsType),
+		}
+	}
+	if existing.SpaceAllocated != nil && desired.SpaceAllocated != nil &&
+		*existing.SpaceAllocated != *desired.SpaceAllocated {
+		return &unusableVolumeError{
+			name: desired.Name,
+			reason: fmt.Sprintf("LUN space allocation is %t, request asks for %t",
+				*existing.SpaceAllocated, *desired.SpaceAllocated),
+		}
+	}
+
+	desiredSize, err := strconv.ParseUint(desired.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse requested size %q for LUN %s: %w", desired.Size, desired.Name, err)
+	}
+	existingSize, err := strconv.ParseUint(existing.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse size %q of LUN %s: %w", existing.Size, desired.Name, err)
+	}
+	if existingSize > desiredSize {
+		return &unusableVolumeError{
+			name:   desired.Name,
+			reason: fmt.Sprintf("LUN is %d bytes, request asks for %d", existingSize, desiredSize),
+		}
+	}
+	if existingSize < desiredSize {
+		Logc(ctx).WithFields(LogFields{
+			"LUN": desired.Name, "size": existingSize, "newSize": desiredSize,
+		}).Debug("Growing existing LUN to the requested size.")
+		if _, err = client.LunSetSize(ctx, desired.Name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize LUN %s: %w", desired.Name, err)
+		}
+	}
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.LunSetQosPolicyGroup(ctx, desired.Name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on LUN %s: %w", desired.Name, err)
+		}
+	}
+
 	return nil
 }
 

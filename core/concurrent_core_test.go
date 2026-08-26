@@ -1206,6 +1206,444 @@ func TestBootstrapSnapshotsConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestConcurrentCorePersistsInProgressVolumeCreate(t *testing.T) {
+	mockStore := mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := storage.NewTestStorageBackend()
+	backend.SetBackendUUID("backend-uuid")
+	pool := storage.NewStoragePool(backend, "pool1")
+	volumeConfig := &storage.VolumeConfig{Name: "vol1", InternalName: "internal-vol1", Size: "1Gi"}
+	volumeAttributes := map[string]sa.Request{
+		sa.ProvisioningType: sa.NewStringRequest("thin"),
+		sa.Encryption:       sa.NewBoolRequest(true),
+	}
+
+	mockStore.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, txn *storage.VolumeTransaction) error {
+			require.Equal(t, storage.VolumeCreating, txn.Op)
+			require.Equal(t, "backend-uuid", txn.VolumeCreatingConfig.BackendUUID)
+			require.Equal(t, "pool1", txn.VolumeCreatingConfig.Pool)
+			require.Equal(t, "internal-vol1", txn.VolumeCreatingConfig.InternalName)
+			require.False(t, txn.VolumeCreatingConfig.StartTime.IsZero())
+			persistedAttributes, err := sa.UnmarshalRequestMap(txn.VolumeCreatingConfig.StorageClassAttributes)
+			require.NoError(t, err)
+			require.Equal(t, "thin", persistedAttributes[sa.ProvisioningType].Value())
+			require.Equal(t, true, persistedAttributes[sa.Encryption].Value())
+			return nil
+		})
+
+	require.NoError(t, orchestrator.persistVolumeCreatingTransaction(
+		testCtx, backend, pool, volumeConfig, volumeAttributes,
+	))
+}
+
+func TestConcurrentCoreCleanupPreservesInProgressVolumeCreate(t *testing.T) {
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
+	txn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1"},
+		Op:     storage.AddVolume,
+	}
+	unlocked := false
+	createErr := fmt.Errorf("driver create: %w", errors.VolumeCreatingError("still creating"))
+
+	err := orchestrator.addVolumeCleanup(testCtx, createErr, nil, nil, txn, func() {
+		unlocked = true
+	})
+
+	assert.ErrorIs(t, err, createErr)
+	assert.True(t, unlocked)
+}
+
+func TestConcurrentCoreCleanupDeletesVolumeCreateOnHardError(t *testing.T) {
+	mockStore := mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	txn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1"},
+		Op:     storage.AddVolume,
+	}
+	unlocked := false
+	createErr := errors.New("volume create failed")
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	err := orchestrator.addVolumeCleanup(testCtx, createErr, nil, nil, txn, func() {
+		unlocked = true
+	})
+
+	assert.ErrorIs(t, err, createErr)
+	assert.True(t, unlocked)
+}
+
+func TestConcurrentCoreRetriesPersistedVolumeCreateOnPinnedPool(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	volumeAttributes, err := sa.MarshalRequestMap(map[string]sa.Request{
+		sa.ProvisioningType: sa.NewStringRequest("thin"),
+		sa.Encryption:       sa.NewBoolRequest(true),
+	})
+	require.NoError(t, err)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:              time.Now().Add(-time.Hour),
+			BackendUUID:            "backend-uuid1",
+			Pool:                   "pool1",
+			StorageClassAttributes: volumeAttributes,
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+				Size:         "1Gi",
+			},
+		},
+	}
+	createdVolume := &storage.Volume{
+		Config:      &txn.VolumeCreatingConfig.VolumeConfig,
+		BackendUUID: "backend-uuid1",
+		Pool:        "pool1",
+	}
+
+	backend.EXPECT().AddVolume(
+		gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), gomock.Any(), true,
+	).DoAndReturn(func(
+		_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, attributes map[string]sa.Request, _ bool,
+	) (*storage.Volume, error) {
+		require.Equal(t, "thin", attributes[sa.ProvisioningType].Value())
+		require.Equal(t, true, attributes[sa.Encryption].Value())
+		return createdVolume, nil
+	})
+	mockStore.EXPECT().AddVolume(gomock.Any(), createdVolume).Return(nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	result, err := orchestrator.retryVolumeCreatingTransaction(testCtx, txn)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "vol1", result.Config.Name)
+	assert.NotNil(t, getVolumeByNameFromCache(t, "vol1"))
+}
+
+func TestConcurrentCoreRetryPreservesPersistedVolumeCreateWhenStillInProgress(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+				Size:         "1Gi",
+			},
+		},
+	}
+
+	backend.EXPECT().AddVolume(
+		gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), gomock.Any(), true,
+	).Return(nil, errors.VolumeCreatingError("still creating"))
+
+	result, err := orchestrator.retryVolumeCreatingTransaction(testCtx, txn)
+
+	assert.Error(t, err)
+	assert.True(t, errors.IsVolumeCreatingError(err))
+	assert.Nil(t, result)
+	assert.Nil(t, getVolumeByNameFromCache(t, "vol1"))
+}
+
+func TestConcurrentCoreRetryReturnsCachedVolumeAndDeletesTransaction(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+				Size:         "1Gi",
+			},
+		},
+	}
+	cachedVolume := &storage.Volume{
+		Config:      &txn.VolumeCreatingConfig.VolumeConfig,
+		BackendUUID: "backend-uuid1",
+		Pool:        "pool1",
+	}
+	addVolumesToCache(t, cachedVolume)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	result, err := orchestrator.retryVolumeCreatingTransaction(testCtx, txn)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "vol1", result.Config.Name)
+	assert.NotNil(t, getVolumeByNameFromCache(t, "vol1"))
+}
+
+func TestConcurrentCoreRetryDeletesTransactionOnHardError(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+				Size:         "1Gi",
+			},
+		},
+	}
+	createErr := errors.New("volume create failed")
+	backend.EXPECT().AddVolume(
+		gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), gomock.Any(), true,
+	).Return(nil, createErr)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	result, err := orchestrator.retryVolumeCreatingTransaction(testCtx, txn)
+
+	assert.ErrorIs(t, err, createErr)
+	assert.Nil(t, result)
+	assert.Nil(t, getVolumeByNameFromCache(t, "vol1"))
+}
+
+func TestConcurrentCoreRetriesPersistedCloneOnPinnedBackend(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	sourceConfig := &storage.VolumeConfig{Name: "source", InternalName: "internal-source"}
+	sourceVolume := &storage.Volume{Config: sourceConfig, BackendUUID: "backend-uuid1", Pool: "pool1"}
+	addVolumesToCache(t, sourceVolume)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:                      "clone",
+				InternalName:              "internal-clone",
+				CloneSourceVolume:         "source",
+				CloneSourceVolumeInternal: "internal-source",
+			},
+		},
+	}
+	createdVolume := &storage.Volume{
+		Config:      &txn.VolumeCreatingConfig.VolumeConfig,
+		BackendUUID: "backend-uuid1",
+		Pool:        "pool1",
+	}
+
+	backend.EXPECT().CloneVolume(
+		gomock.Any(), sourceConfig, &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), true,
+	).Return(createdVolume, nil)
+	mockStore.EXPECT().AddVolume(gomock.Any(), createdVolume).Return(nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	result, err := orchestrator.retryVolumeCreatingTransaction(testCtx, txn)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "clone", result.Config.Name)
+	assert.NotNil(t, getVolumeByNameFromCache(t, "clone"))
+}
+
+func TestConcurrentCoreReapsExpiredVolumeCreate(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	orchestrator.checkLongRunningTransactions(testCtx, 24*time.Hour)
+}
+
+func TestConcurrentCoreReaperSkipsBackendRemoveWhenVolumeIsKnown(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+	addVolumesToCache(t, &storage.Volume{
+		Config:      &txn.VolumeCreatingConfig.VolumeConfig,
+		BackendUUID: "backend-uuid1",
+		Pool:        "pool1",
+	})
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	orchestrator.checkLongRunningTransactions(testCtx, 24*time.Hour)
+}
+
+func TestConcurrentCoreReaperLeavesTransactionWhenStartTimeChanged(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+
+	listedTxn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+	currentTxn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:    listedTxn.VolumeCreatingConfig.StartTime.Add(time.Hour),
+			BackendUUID:  listedTxn.VolumeCreatingConfig.BackendUUID,
+			Pool:         listedTxn.VolumeCreatingConfig.Pool,
+			VolumeConfig: listedTxn.VolumeCreatingConfig.VolumeConfig,
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{listedTxn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), listedTxn).Return(currentTxn, nil)
+
+	orchestrator.checkLongRunningTransactions(testCtx, 24*time.Hour)
+}
+
+func TestConcurrentCoreReaperLeavesTransactionWhenTxnGone(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(nil, nil)
+
+	orchestrator.checkLongRunningTransactions(testCtx, 24*time.Hour)
+}
+
+func TestConcurrentCoreReaperLeavesTransactionWhenRemoveVolumeFails(t *testing.T) {
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getConcurrentOrchestrator()
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addBackendsToCache(t, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(failed)
+
+	orchestrator.checkLongRunningTransactions(testCtx, 24*time.Hour)
+}
+
 func TestBootstrapVolumeTransactionsConcurrentCore(t *testing.T) {
 	txn := &storage.VolumeTransaction{
 		Op: storage.VolumeCreating,
@@ -1235,7 +1673,6 @@ func TestBootstrapVolumeTransactionsConcurrentCore(t *testing.T) {
 			name: "Success",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil).AnyTimes()
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil).AnyTimes()
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -4382,7 +4819,14 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, txn *storage.VolumeTransaction) error {
+						require.Equal(t, storage.AddVolume, txn.Op)
+						require.NotNil(t, txn.VolumeCreatingConfig)
+						assert.Equal(t, "backend-uuid1", txn.VolumeCreatingConfig.BackendUUID)
+						assert.Equal(t, "pool1", txn.VolumeCreatingConfig.Pool)
+						return nil
+					}).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
@@ -4517,7 +4961,7 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 				fakePool1.SetBackend(mockBackend)
 				o.RebuildStorageClassPoolMap(testCtx)
 
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(failed).Times(1)
 			},
 			verifyError: func(err error) {
@@ -4545,7 +4989,7 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 
 				fakePool1.SetBackend(mockBackend)
 
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			verifyError: func(err error) {
@@ -4579,7 +5023,7 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 				fakePool1.SetBackend(mockBackend)
 				o.RebuildStorageClassPoolMap(testCtx)
 
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
@@ -4614,7 +5058,7 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 				fakePool1.SetBackend(mockBackend)
 				o.RebuildStorageClassPoolMap(testCtx)
 
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
@@ -4742,6 +5186,52 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 				// Additionally verify the volume is added to the cache
 				volume := getVolumeByNameFromCache(t, "vol1")
 				assert.NotNil(t, volume)
+			},
+		},
+		{
+			name:         "ResumePersistedVolumeCreating",
+			volumeConfig: volumeConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				creatingTxn := &storage.VolumeTransaction{
+					Op: storage.VolumeCreating,
+					VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+						StartTime:   time.Now().Add(-time.Hour),
+						BackendUUID: "backend-uuid1",
+						Pool:        "pool1",
+						VolumeConfig: storage.VolumeConfig{
+							Name:         "vol1",
+							InternalName: "vol1",
+							Size:         "1G",
+						},
+					},
+				}
+				createdVolume := &storage.Volume{
+					Config:      &creatingTxn.VolumeCreatingConfig.VolumeConfig,
+					BackendUUID: "backend-uuid1",
+					Pool:        "pool1",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+				fakePool1.SetBackend(mockBackend)
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(creatingTxn, nil).Times(1)
+				mockBackend.EXPECT().AddVolume(
+					gomock.Any(), &creatingTxn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), gomock.Any(), true,
+				).Return(createdVolume, nil)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), createdVolume).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), creatingTxn).Return(nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "vol1", result.Config.Name)
+				assert.NotNil(t, getVolumeByNameFromCache(t, "vol1"))
 			},
 		},
 	}
@@ -6729,6 +7219,51 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 				// Additionally verify the volume is not added to the cache
 				volume := getVolumeByNameFromCache(t, "cloneVolume")
 				assert.Nil(t, volume)
+			},
+		},
+		{
+			name:         "ResumePersistedVolumeCreating",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				creatingTxn := &storage.VolumeTransaction{
+					Op: storage.VolumeCreating,
+					VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+						StartTime:   time.Now().Add(-time.Hour),
+						BackendUUID: "backend-uuid",
+						Pool:        "pool1",
+						VolumeConfig: storage.VolumeConfig{
+							Name:                      "cloneVolume",
+							InternalName:              "cloneVolume",
+							CloneSourceVolume:         "sourceVolume",
+							CloneSourceVolumeInternal: "sourceVolume",
+						},
+					},
+				}
+				createdVolume := &storage.Volume{
+					Config:      &creatingTxn.VolumeCreatingConfig.VolumeConfig,
+					BackendUUID: "backend-uuid",
+					Pool:        "pool1",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, sourceVolume)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(creatingTxn, nil).Times(1)
+				mockBackend.EXPECT().CloneVolume(
+					gomock.Any(), sourceVolume.Config, &creatingTxn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), true,
+				).Return(createdVolume, nil)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), createdVolume).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), creatingTxn).Return(nil)
+			},
+			volumeConfig: cloneVolumeConfig,
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+				assert.NotNil(t, getVolumeByNameFromCache(t, "cloneVolume"))
 			},
 		},
 	}
@@ -16354,60 +16889,67 @@ func TestHandleFailedTransactionVolumeCreatingConcurrentCore(t *testing.T) {
 		Op:                   storage.VolumeCreating,
 	}
 
-	tests := []struct {
-		name        string
-		ctx         context.Context
-		txn         *storage.VolumeTransaction
-		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
-		verifyError func(err error)
-	}{
-		{
-			name: "Success",
-			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
-			txn:  txn,
-			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil)
-			},
-			verifyError: func(err error) {
-				assert.NoError(t, err)
-			},
-		},
-		{
-			name: "Failure_DeleteTransactionStoreError",
-			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
-			txn:  txn,
-			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(failed)
-			},
-			verifyError: func(err error) {
-				assert.Error(t, err)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	assert.NoError(t, o.handleFailedTransaction(expiredCtx, txn))
+}
+
+func TestHandleFailedTransactionPreservesAddVolumeWithCreatePlacement(t *testing.T) {
+	txn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now(),
+			Pool:        "pool1",
+			BackendUUID: "backend-uuid1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "vol1",
 			},
 		},
+		Op: storage.AddVolume,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
+	// No store delete or backend remove is expected. This AddVolume may be the fallback left when the
+	// post-create update to VolumeCreating failed.
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
 
-			// Re-initialize the concurrent cache for each test
-			db.Initialize()
+	assert.NoError(t, o.handleFailedTransaction(expiredCtx, txn))
+}
 
-			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			o := getConcurrentOrchestrator()
-			o.storeClient = mockStoreClient
-
-			if tt.setupMocks != nil {
-				tt.setupMocks(mockCtrl, mockStoreClient, o)
-			}
-
-			err := o.handleFailedTransaction(tt.ctx, tt.txn)
-
-			if tt.verifyError != nil {
-				tt.verifyError(err)
-			}
-		})
+func TestGetVolumeCreatingTransactionResumesAddVolumeWithCreatePlacement(t *testing.T) {
+	requestTxn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1"},
+		Op:     storage.AddVolume,
 	}
+	storedTxn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1", InternalName: "internal-vol1"},
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now(),
+			Pool:        "pool1",
+			BackendUUID: "backend-uuid1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+		Op: storage.AddVolume,
+	}
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(gomock.NewController(t))
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), requestTxn).Return(storedTxn, nil)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	txn, err := o.GetVolumeCreatingTransaction(testCtx, requestTxn)
+
+	require.NoError(t, err)
+	require.NotNil(t, txn)
+	assert.Equal(t, storage.VolumeCreating, txn.Op)
+	assert.Equal(t, "backend-uuid1", txn.VolumeCreatingConfig.BackendUUID)
+	assert.Equal(t, "pool1", txn.VolumeCreatingConfig.Pool)
+	assert.Equal(t, storage.AddVolume, storedTxn.Op, "looking up a resumable transaction must not mutate the store")
 }
 
 func TestGetVolumeTransactionConcurrentCore(t *testing.T) {

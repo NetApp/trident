@@ -246,12 +246,14 @@ func (d *NASStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// If the volume already exists, bail out
+	// Check now so backend connectivity failures are reported before resolving the request. If the volume
+	// exists, reconcile it after the desired attributes are known instead of accepting an arbitrary object
+	// with the same name.
 	volExists, err := d.API.VolumeExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
-	if volExists {
+	if volExists && volConfig.IsMirrorDestination {
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -391,10 +393,39 @@ func (d *NASStorageDriver) Create(
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
+	for _, physicalPool := range physicalPools {
+		physicalPoolNames = append(physicalPoolNames, physicalPool.Name())
+	}
+
+	if volExists {
+		labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+		if labelErr != nil {
+			return labelErr
+		}
+		desiredVolume := api.Volume{
+			Comment:         labels,
+			Encrypt:         enableEncryption,
+			ExportPolicy:    exportPolicy,
+			Name:            name,
+			Qos:             qosPolicyGroup,
+			Size:            size,
+			SpaceReserve:    spaceReserve,
+			SnapshotPolicy:  snapshotPolicy,
+			SecurityStyle:   securityStyle,
+			SnapshotReserve: snapshotReserveInt,
+			TieringPolicy:   tieringPolicy,
+			UnixPermissions: unixPermissions,
+			DPVolume:        volConfig.IsMirrorDestination,
+		}
+		if err = reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, physicalPoolNames); err != nil {
+			return err
+		}
+		return drivers.NewVolumeExistsError(name)
+	}
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name()
-		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
@@ -437,7 +468,7 @@ func (d *NASStorageDriver) Create(
 		volumeUUID, err := d.API.VolumeCreate(ctx, volumeCreateRequest)
 		if err != nil {
 			if api.IsVolumeCreateJobExistsError(err) {
-				return nil
+				return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
 			}
 
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name(),

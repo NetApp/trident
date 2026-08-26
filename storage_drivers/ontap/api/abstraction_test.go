@@ -195,6 +195,7 @@ func TestAbstractionErrorTypes(t *testing.T) {
 		assert.Error(t, err, "expected VolumeCreateJobExistsError to be an error")
 		assert.Equal(t, msg, err.Error())
 		assert.True(t, IsVolumeCreateJobExistsError(err))
+		assert.True(t, IsVolumeCreateJobExistsError(fmt.Errorf("create volume: %w", err)))
 		assert.False(t, IsVolumeCreateJobExistsError(nil))
 		assert.False(t, IsVolumeCreateJobExistsError(fmt.Errorf("other error")))
 	})

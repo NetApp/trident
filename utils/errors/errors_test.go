@@ -260,6 +260,11 @@ func TestSimpleErrorTypes(t *testing.T) {
 	}
 }
 
+func TestVolumeCreateStateErrorsRemainDetectableWhenWrapped(t *testing.T) {
+	assert.True(t, IsVolumeCreatingError(fmt.Errorf("create retry: %w", VolumeCreatingError("still creating"))))
+	assert.True(t, IsVolumeDeletingError(fmt.Errorf("create retry: %w", VolumeDeletingError("still deleting"))))
+}
+
 // Test TempOperatorError separately due to different signature
 func TestTempOperatorError(t *testing.T) {
 	originalErr := errors.New("connection failed")

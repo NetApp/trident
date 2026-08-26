@@ -266,117 +266,144 @@ func (d *NVMeStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// cleanupIncompleteNamespace checks for an existing FlexVol and handles three cases:
-//   - No volume exists: returns nil so Create proceeds normally.
-//   - Volume + namespace exist with a fully populated volConfig: returns VolumeExistsError.
-//   - Volume exists but namespace is missing, or volConfig.FileSystem is empty: destroys the
-//     FlexVol so Create can re-create it with a fully populated volConfig.
-func (d *NVMeStorageDriver) cleanupIncompleteNamespace(
-	ctx context.Context, volConfig *storage.VolumeConfig,
+// reconcileNamespaceCreateState drives a FlexVol/namespace pair left behind by an earlier Create to the state
+// this request asks for, repairing whatever ONTAP allows rather than starting over.
+func (d *NVMeStorageDriver) reconcileNamespaceCreateState(
+	ctx context.Context, volConfig *storage.VolumeConfig, desiredVolume api.Volume,
+	desiredNamespace api.NVMeNamespace, poolName string, allowedAggregates []string,
 ) error {
 	name := volConfig.InternalName
 
 	fields := LogFields{
-		"method": "cleanupIncompleteNamespace",
-		"type":   "NVMeStorageDriver",
-		"name":   name,
+		"method":   "reconcileNamespaceCreateState",
+		"type":     "NVMeStorageDriver",
+		"name":     name,
+		"poolName": poolName,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		">>>> cleanupIncompleteNamespace")
+		">>>> reconcileNamespaceCreateState")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		"<<<< cleanupIncompleteNamespace")
+		"<<<< reconcileNamespaceCreateState")
 
-	volExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		return nil
-	}
-	if volConfig.IsMirrorDestination {
-		return drivers.NewVolumeExistsError(name)
+	if err := reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, allowedAggregates); err != nil {
+		return err
 	}
 
-	nsName := extractNamespaceName(volConfig.InternalID)
-	nsPath := createNamespacePath(name, nsName)
-
-	ns, nsErr := d.API.NVMeNamespaceGetByName(ctx, nsPath)
-	if nsErr != nil && !errors.IsNotFoundError(nsErr) {
-		return fmt.Errorf("error checking for existing namespace %s: %v", nsPath, nsErr)
+	nsPath := desiredNamespace.Name
+	lookupID := volConfig.InternalID
+	if lookupID == "" {
+		lookupID = nsPath
+	}
+	ns, err := d.API.NVMeNamespaceGetByName(ctx, lookupID)
+	if err != nil && !errors.IsNotFoundError(err) {
+		return fmt.Errorf("error checking for existing namespace %s: %v", nsPath, err)
 	}
 
-	// If both volume and namespace exist and volConfig has all critical fields populated,
-	// this is a fully formed volume from a prior successful create -- report it as existing.
-	if ns != nil && volConfig.FileSystem != "" {
+	if ns == nil {
 		Logc(ctx).WithFields(LogFields{
 			"volume":    name,
 			"namespace": nsPath,
-			"uuid":      ns.UUID,
-		}).Debug("Found existing volume and namespace.")
-		volConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
-		volConfig.InternalID = nsPath
-		return drivers.NewVolumeExistsError(name)
+		}).Debug("Volume exists without its namespace; resuming namespace create on the existing volume.")
+
+		if created, nsErr := d.createNamespace(ctx, volConfig, desiredNamespace); nsErr != nil {
+			if created {
+				return nsErr
+			}
+			return destroyUnusableVolume(ctx, d.API, name,
+				fmt.Sprintf("namespace create failed in pool %s: %v", poolName, nsErr))
+		}
+		return afterNamespaceCreate.Inject()
 	}
 
-	// Either the namespace is missing (partial create) or volConfig is incomplete (e.g. empty
-	// FileSystem from a fresh CSI retry). In both cases, destroy the FlexVol so Create can
-	// re-create it with a fully populated volConfig.
-	reason := "namespace missing"
-	if ns != nil {
-		reason = "volConfig.FileSystem is empty"
+	if err = reconcileExistingNamespace(ctx, d.API, ns, desiredNamespace); err != nil {
+		if isUnusableVolumeError(err) {
+			return destroyUnusableVolume(ctx, d.API, name, err.Error())
+		}
+		return err
 	}
-	Logc(ctx).WithFields(LogFields{
-		"volume": name,
-		"reason": reason,
-	}).Warning("Cleaning up incomplete volume to allow re-creation.")
-	// Destroying the FlexVol is safe: ONTAP implicitly removes any contained namespaces,
-	// and no pod can be using this volume yet since Create has not returned success.
-	if err = d.API.VolumeDestroy(ctx, name, true, true); err != nil {
-		return fmt.Errorf("could not clean up incomplete volume %s: %v", name, err)
+
+	volConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
+	volConfig.InternalID = ns.Name
+	if ns.Comment != desiredNamespace.Comment {
+		if err = d.API.NVMeNamespaceSetComment(ctx, ns.Name, desiredNamespace.Comment); err != nil {
+			return fmt.Errorf("ONTAP-NVMe pool %s; error saving attributes for namespace %s: %v",
+				poolName, ns.Name, err)
+		}
+		return nil
+	}
+
+	return drivers.NewVolumeExistsError(name)
+}
+
+func reconcileExistingNamespace(
+	ctx context.Context, client api.OntapAPI, existing *api.NVMeNamespace, desired api.NVMeNamespace,
+) error {
+	if existing.OsType != "" && desired.OsType != "" && existing.OsType != desired.OsType {
+		return &unusableVolumeError{
+			name:   desired.Name,
+			reason: fmt.Sprintf("namespace OS type is %q, request asks for %q", existing.OsType, desired.OsType),
+		}
+	}
+	if existing.BlockSize != 0 && desired.BlockSize != 0 && existing.BlockSize != desired.BlockSize {
+		return &unusableVolumeError{
+			name: desired.Name,
+			reason: fmt.Sprintf("namespace block size is %d, request asks for %d",
+				existing.BlockSize, desired.BlockSize),
+		}
+	}
+
+	desiredSize, err := strconv.ParseUint(desired.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse requested size %q for namespace %s: %w", desired.Size, desired.Name, err)
+	}
+	existingSize, err := strconv.ParseUint(existing.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse size %q of namespace %s: %w", existing.Size, existing.Name, err)
+	}
+	if existingSize > desiredSize {
+		return &unusableVolumeError{
+			name:   desired.Name,
+			reason: fmt.Sprintf("namespace is %d bytes, request asks for %d", existingSize, desiredSize),
+		}
+	}
+	if existingSize < desiredSize {
+		if desiredSize > math.MaxInt64 {
+			return fmt.Errorf("invalid requested size for namespace %s: %d exceeds maximum supported size",
+				desired.Name, desiredSize)
+		}
+		newSize := int64(desiredSize)
+		if err = client.NVMeNamespaceSetSize(ctx, existing.UUID, newSize); err != nil {
+			return fmt.Errorf("could not resize namespace %s: %w", desired.Name, err)
+		}
 	}
 	return nil
 }
 
-// getNamespaceWithRetry retrieves a namespace by path, retrying with linear backoff to handle
-// ONTAP eventual consistency where a namespace may not be visible immediately after creation.
-func (d *NVMeStorageDriver) getNamespaceWithRetry(
-	ctx context.Context, nsPath string,
-) (*api.NVMeNamespace, error) {
-	const maxRetries = 3
-	var ns *api.NVMeNamespace
-	var err error
-
-	for attempt := 1; attempt <= maxRetries; attempt++ {
-		ns, err = d.API.NVMeNamespaceGetByName(ctx, nsPath)
-		if err == nil && ns != nil {
-			return ns, nil
+func (d *NVMeStorageDriver) createNamespace(
+	ctx context.Context, volConfig *storage.VolumeConfig, ns api.NVMeNamespace,
+) (bool, error) {
+	if err := beforeNamespaceCreate.Inject(); err != nil {
+		return false, err
+	}
+	if err := d.API.NVMeNamespaceCreate(ctx, ns); err != nil {
+		if api.IsVolumeCreateJobExistsError(err) {
+			// ONTAP is still creating this namespace (or the FlexVol under it). Keep the FlexVol so a
+			// retry can finish the pair instead of destroying a volume that is in progress.
+			return true, errors.VolumeCreatingError("volume is busy creating NVMe namespace %s: %v", ns.Name, err)
 		}
-
-		if attempt < maxRetries {
-			Logc(ctx).WithFields(LogFields{
-				"namespace": nsPath,
-				"attempt":   attempt,
-				"error":     err,
-			}).Trace("Namespace not yet visible after creation, retrying.")
-
-			select {
-			case <-time.After(time.Duration(attempt) * time.Second):
-			case <-ctx.Done():
-				return nil, fmt.Errorf("context cancelled while waiting for namespace visibility: %v", ctx.Err())
-			}
-		} else {
-			Logc(ctx).WithFields(LogFields{
-				"namespace": nsPath,
-				"attempt":   attempt,
-				"error":     err,
-			}).Error("Namespace not visible after all retries.")
-		}
+		return false, fmt.Errorf("error creating NVMe Namespace %s: %w", ns.Name, err)
 	}
 
+	newNamespace, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, ns.Name, true)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving namespace %s after creation: %v", nsPath, err)
+		return true, errors.VolumeCreatingError("error retrieving namespace %s after creation: %v", ns.Name, err)
 	}
-	return nil, fmt.Errorf("newly created namespace %s not found", nsPath)
+	if newNamespace == nil {
+		return true, errors.VolumeCreatingError("newly created namespace %s not found", ns.Name)
+	}
+	volConfig.AccessInfo.NVMeNamespaceUUID = newNamespace.UUID
+	volConfig.InternalID = ns.Name
+	return true, nil
 }
 
 func (d *NVMeStorageDriver) Create(
@@ -393,10 +420,16 @@ func (d *NVMeStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// Check if volume+namespace already exist. Clean up orphaned FlexVols (volume without namespace).
-	// Returns VolumeExistsError if both are present, nil if creation should proceed.
-	if err := d.cleanupIncompleteNamespace(ctx, volConfig); err != nil {
-		return err
+	// An earlier attempt may have left a FlexVol behind. Note it here so the create fails fast if the backend
+	// cannot be reached; its attributes and its namespace are reconciled further down, once this request's own
+	// attributes have been resolved.
+	volExists, err := d.API.VolumeExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volExists && volConfig.IsMirrorDestination {
+		// A DP volume's contents arrive by snapmirror, so there is no namespace for Trident to create or check.
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Get candidate physical pools.
@@ -532,17 +565,79 @@ func (d *NVMeStorageDriver) Create(
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating FlexVol with NVMe namespace.")
 
+	// Make comment field from labels
+	labels, err := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+		d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+	if err != nil {
+		return err
+	}
+
+	// The FlexVol this request asks for. The aggregate is filled in per candidate pool below; a resumed
+	// create keeps the aggregate the existing FlexVol already sits on.
+	desiredVolume := api.Volume{
+		AccessType:      "",
+		Comment:         labels,
+		Encrypt:         enableEncryption,
+		ExportPolicy:    exportPolicy,
+		JunctionPath:    "",
+		Name:            name,
+		Qos:             qosPolicyGroup,
+		SecurityStyle:   securityStyle,
+		Size:            volumeSize,
+		SnapshotPolicy:  snapshotPolicy,
+		SnapshotReserve: snapshotReserveInt,
+		SpaceReserve:    spaceReserve,
+		TieringPolicy:   tieringPolicy,
+		UnixPermissions: unixPermissions,
+		UUID:            "",
+		DPVolume:        volConfig.IsMirrorDestination,
+	}
+
+	physicalPoolNames := make([]string, 0, len(physicalPools))
+	for _, physicalPool := range physicalPools {
+		physicalPoolNames = append(physicalPoolNames, physicalPool.Name())
+	}
+
+	// A DP volume's namespace is copied over by snapmirror, so there is nothing for Trident to build or stamp.
+	var desiredNamespace api.NVMeNamespace
+	if !volConfig.IsMirrorDestination {
+		// Attributes stored in the namespace comment field.
+		nsCommentString, commentErr := d.createNVMeNamespaceCommentString(ctx, map[string]string{
+			nsAttributeFSType:    fstype,
+			nsAttributeLUKS:      luksEncryption,
+			nsAttributeDriverCtx: string(d.Config.DriverContext),
+		}, nsMaxCommentLength)
+		if commentErr != nil {
+			// Every pool would fail on the same comment, so there is no point trying them.
+			return commentErr
+		}
+
+		desiredNamespace = api.NVMeNamespace{
+			Name:      createNamespacePath(name, extractNamespaceName(volConfig.InternalID)),
+			Size:      namespaceSize,
+			OsType:    "linux",
+			BlockSize: defaultNamespaceBlockSize,
+			Comment:   nsCommentString,
+		}
+	}
+
+	// Reconcile whatever the earlier attempt left behind against this request, repairing what ONTAP allows,
+	// so a retry finishes the job instead of starting over.
+	if volExists {
+		return d.reconcileNamespaceCreateState(ctx, volConfig, desiredVolume, desiredNamespace,
+			storagePool.Name(), physicalPoolNames)
+	}
+
 	createErrors := make([]error, 0)
-	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name()
-		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, flexVolBufferSize, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
-			errMessage := fmt.Sprintf("ONTAP-NVMe pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
+			errMessage := fmt.Sprintf("ONTAP-NVMe pool %s/%s; error: %v", storagePool.Name(), aggregate,
+				aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, errors.New(errMessage))
 
@@ -550,114 +645,40 @@ func (d *NVMeStorageDriver) Create(
 			continue
 		}
 
-		// Make comment field from labels
-		labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
-			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
-		if labelErr != nil {
-			return labelErr
-		}
-
 		// Create the volume.
-		volumeUUID, err := d.API.VolumeCreate(
-			ctx, api.Volume{
-				AccessType: "",
-				Aggregates: []string{
-					aggregate,
-				},
-				Comment:         labels,
-				Encrypt:         enableEncryption,
-				ExportPolicy:    exportPolicy,
-				JunctionPath:    "",
-				Name:            name,
-				Qos:             qosPolicyGroup,
-				SecurityStyle:   securityStyle,
-				Size:            volumeSize,
-				SnapshotPolicy:  snapshotPolicy,
-				SnapshotReserve: snapshotReserveInt,
-				SpaceReserve:    spaceReserve,
-				TieringPolicy:   tieringPolicy,
-				UnixPermissions: unixPermissions,
-				UUID:            "",
-				DPVolume:        volConfig.IsMirrorDestination,
-			})
+		desiredVolume.Aggregates = []string{aggregate}
+		volumeUUID, err := d.API.VolumeCreate(ctx, desiredVolume)
 		if err != nil {
-			if !api.IsVolumeCreateJobExistsError(err) {
-				errMessage := fmt.Sprintf(
-					"ONTAP-NVMe pool %s/%s; error creating volume %s: %v", storagePool.Name(),
-					aggregate, name, err,
-				)
-				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, errors.New(errMessage))
-
-				// Move on to the next pool.
-				continue
+			if api.IsVolumeCreateJobExistsError(err) {
+				return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
 			}
-			// Log a message. Proceed to create Namespace, hoping volume would have been created by the time
-			// we send Namespace create request.
-			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
+
+			errMessage := fmt.Sprintf(
+				"ONTAP-NVMe pool %s/%s; error creating volume %s: %v", storagePool.Name(),
+				aggregate, name, err,
+			)
+			Logc(ctx).Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
 		}
 		volConfig.BackendVolumeID = volumeUUID
 
-		osType := "linux"
-		flexVolName := volConfig.InternalName
-		namespaceName := extractNamespaceName(volConfig.InternalID)
-		nsPath := createNamespacePath(flexVolName, namespaceName)
-
 		// If a DP volume, do not create the Namespace, it will be copied over by snapmirror.
 		if !volConfig.IsMirrorDestination {
-			// Attributes stored in the namespace comment field.
-			nsComment := map[string]string{
-				nsAttributeFSType:    fstype,
-				nsAttributeLUKS:      luksEncryption,
-				nsAttributeDriverCtx: string(d.Config.DriverContext),
-			}
+			created, nsErr := d.createNamespace(ctx, volConfig, desiredNamespace)
+			if nsErr != nil {
+				if created {
+					return nsErr
+				}
 
-			nsCommentString, err := d.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
-			if err != nil {
-				// If we come here due to any failure, namespace creation will fail for all the pools as this is a
-				// necessary step before we call NVMeNamespaceCreate. So, we return from here itself.
-				return err
-			}
-
-			if err := beforeNamespaceCreate.Inject(); err != nil {
-				return err
-			}
-
-			// Create namespace. If this fails, clean up and move on to the next pool.
-			err = d.API.NVMeNamespaceCreate(
-				ctx, api.NVMeNamespace{
-					Name:      nsPath,
-					Size:      namespaceSize,
-					OsType:    osType,
-					BlockSize: defaultNamespaceBlockSize,
-					Comment:   nsCommentString,
-				})
-			if err != nil {
-				errMessage := fmt.Sprintf(
-					"ONTAP-NVMe pool %s/%s; error creating NVMe Namespace %s: %v", storagePool.Name(),
-					aggregate, name, err,
-				)
+				errMessage := fmt.Sprintf("ONTAP-NVMe pool %s/%s; %v", storagePool.Name(), aggregate, nsErr)
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, errors.New(errMessage))
 
-				// Don't leave the new FlexVol around.
-				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
-					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after Namespace create error.")
-				}
-
-				// Move on to the next pool.
-				continue
+				destroyErr := destroyUnusableVolume(ctx, d.API, name,
+					fmt.Sprintf("namespace create failed in pool %s/%s: %v", storagePool.Name(), aggregate, nsErr))
+				return destroyErr
 			}
-
-			newNamespace, err := d.getNamespaceWithRetry(ctx, nsPath)
-			if err != nil {
-				return err
-			}
-
-			volConfig.AccessInfo.NVMeNamespaceUUID = newNamespace.UUID
-			volConfig.InternalID = nsPath
 
 			Logc(ctx).WithFields(LogFields{
 				"name":          name,

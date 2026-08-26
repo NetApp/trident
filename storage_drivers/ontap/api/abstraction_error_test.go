@@ -292,8 +292,12 @@ func TestErrorWrapping(t *testing.T) {
 					originalErr := errorType.createFunc(testErrorMessage)
 					wrappedErr := wrapTest.wrapFunc(originalErr)
 
-					// Type checker should not recognize wrapped errors
-					assert.Equal(t, wrapTest.shouldMatch, errorType.checkFunc(wrappedErr),
+					shouldMatch := wrapTest.shouldMatch
+					if errorType.name == "VolumeCreateJobExistsError" && wrapTest.testErrorsIs {
+						shouldMatch = true
+					}
+
+					assert.Equal(t, shouldMatch, errorType.checkFunc(wrappedErr),
 						"Wrapped error type checking failed for %s: %s", wrapTest.name, wrapTest.description)
 
 					// Original error should still be recognized
@@ -440,11 +444,21 @@ func TestIsVolumeBusyRESTError(t *testing.T) {
 			err:  errors.New("API State: failure, Message: vol offline: Volume busy., Code: 524486"),
 			want: true,
 		},
+		"matches competing create job code": {
+			err: errors.New(
+				"API State: failure, Message: Another volume is currently being created, Code: 13107405",
+			),
+			want: true,
+		},
 		"comma-heavy message": {
 			err: errors.New(
 				"API State: failure, Message: offlining volume \"x\", retry later, still busy, Code: 524486",
 			),
 			want: true,
+		},
+		"competing create code prefix longer number": {
+			err:  errors.New("API State: failure, Message: unrelated, Code: 131074050"),
+			want: false,
 		},
 		"code prefix longer number": {err: errors.New("API State: failure, Message: unrelated, Code: 5244860"), want: false},
 		"code suffix longer number": {err: errors.New("API State: failure, Message: unrelated, Code: 1524486"), want: false},

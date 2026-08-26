@@ -3,14 +3,18 @@
 package core
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -319,4 +323,127 @@ func restartTransactionMonitor(o *TridentOrchestrator) {
 	o.StopTransactionMonitor()
 	o.StartTransactionMonitor(ctx(), period, maxAge)
 	time.Sleep(1 * time.Second)
+}
+
+func getSerialOrchestratorForReaperTest(t *testing.T, mockStore *mockpersistentstore.MockStoreClient) *TridentOrchestrator {
+	t.Helper()
+
+	orchestrator, err := NewTridentOrchestrator(mockStore)
+	if err != nil {
+		t.Fatalf("failed to create orchestrator: %v", err)
+	}
+	orchestrator.storeClient = mockStore
+	orchestrator.bootstrapError = nil
+	orchestrator.bootstrapped = true
+	return orchestrator
+}
+
+func addSerialBackend(orchestrator *TridentOrchestrator, backend storage.Backend) {
+	orchestrator.backends[backend.BackendUUID()] = backend
+}
+
+func addSerialVolume(orchestrator *TridentOrchestrator, vol *storage.Volume) {
+	orchestrator.volumes[vol.Config.Name] = vol
+}
+
+func TestSerialCoreReapsExpiredAddVolumeWithCreatePlacement(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getSerialOrchestratorForReaperTest(t, mockStore)
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addSerialBackend(orchestrator, backend)
+	volumeConfig := storage.VolumeConfig{Name: "vol1", InternalName: "internal-vol1"}
+	txn := &storage.VolumeTransaction{
+		Config: &volumeConfig,
+		Op:     storage.AddVolume,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:    time.Now().Add(-25 * time.Hour),
+			BackendUUID:  "backend-uuid1",
+			Pool:         "pool1",
+			VolumeConfig: volumeConfig,
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	orchestrator.checkLongRunningTransactions(context.Background(), 24*time.Hour)
+}
+
+func TestSerialCoreReaperSkipsBackendRemoveWhenVolumeIsKnown(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getSerialOrchestratorForReaperTest(t, mockStore)
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addSerialBackend(orchestrator, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+	addSerialVolume(orchestrator, &storage.Volume{
+		Config:      &txn.VolumeCreatingConfig.VolumeConfig,
+		BackendUUID: "backend-uuid1",
+		Pool:        "pool1",
+	})
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	mockStore.EXPECT().DeleteVolumeTransaction(gomock.Any(), txn).Return(nil)
+
+	orchestrator.checkLongRunningTransactions(context.Background(), 24*time.Hour)
+}
+
+func TestSerialCoreReaperLeavesTransactionWhenRemoveVolumeFails(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getSerialOrchestratorForReaperTest(t, mockStore)
+
+	backend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+	addSerialBackend(orchestrator, backend)
+	txn := &storage.VolumeTransaction{
+		Op: storage.VolumeCreating,
+		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+			StartTime:   time.Now().Add(-25 * time.Hour),
+			BackendUUID: "backend-uuid1",
+			Pool:        "pool1",
+			VolumeConfig: storage.VolumeConfig{
+				Name:         "vol1",
+				InternalName: "internal-vol1",
+			},
+		},
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+	mockStore.EXPECT().GetVolumeTransaction(gomock.Any(), txn).Return(txn, nil)
+	backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(failed)
+
+	orchestrator.checkLongRunningTransactions(context.Background(), 24*time.Hour)
+}
+
+func TestSerialCoreReaperSkipsPlainAddVolumeWithoutCreatePlacement(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getSerialOrchestratorForReaperTest(t, mockStore)
+
+	volumeConfig := storage.VolumeConfig{Name: "vol1", InternalName: "internal-vol1"}
+	txn := &storage.VolumeTransaction{
+		Config: &volumeConfig,
+		Op:     storage.AddVolume,
+	}
+
+	mockStore.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{txn}, nil)
+
+	orchestrator.checkLongRunningTransactions(context.Background(), 24*time.Hour)
 }

@@ -2,7 +2,11 @@
 
 package api
 
-import "regexp"
+import (
+	"errors"
+	"regexp"
+	"strings"
+)
 
 // ///////////////////////////////////////////////////////////////////////////
 // REST error codes
@@ -22,18 +26,32 @@ const (
 	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
 	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
 	VOLUME_BUSY_ERROR_REST                     = "524486"
+	VOLUME_CREATE_IN_PROGRESS_ERROR_REST       = "13107405"
 )
 
 // VolumeBusyRESTCodeRegexp matches REST errno VOLUME_BUSY_ERROR_REST when comma-heavy messages break ExtractError.
 var VolumeBusyRESTCodeRegexp = regexp.MustCompile(`(?i)\bCode:\s*` + VOLUME_BUSY_ERROR_REST + `\b`)
 
-// IsVolumeBusyRESTError reports whether err is the ONTAP REST "Volume busy" response seen during volume deletion.
+// VolumeCreateInProgressRESTCodeRegexp matches the REST job error returned for a competing volume create.
+var VolumeCreateInProgressRESTCodeRegexp = regexp.MustCompile(
+	`(?i)\bCode:\s*` + VOLUME_CREATE_IN_PROGRESS_ERROR_REST + `\b`,
+)
+
+// IsVolumeBusyRESTError reports whether err means another ONTAP volume job is still active.
 func IsVolumeBusyRESTError(err error) bool {
 	if err == nil {
 		return false
 	}
 	_, _, code := ExtractError(err)
-	return code == VOLUME_BUSY_ERROR_REST || VolumeBusyRESTCodeRegexp.MatchString(err.Error())
+	return code == VOLUME_BUSY_ERROR_REST || code == VOLUME_CREATE_IN_PROGRESS_ERROR_REST ||
+		VolumeBusyRESTCodeRegexp.MatchString(err.Error()) ||
+		VolumeCreateInProgressRESTCodeRegexp.MatchString(err.Error())
+}
+
+// IsVolumeBusyError reports whether ONTAP rejected an operation because another volume job is still active.
+func IsVolumeBusyError(err error) bool {
+	return err != nil &&
+		(IsVolumeBusyRESTError(err) || strings.Contains(strings.ToLower(err.Error()), "volume is busy"))
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -53,8 +71,8 @@ func IsVolumeCreateJobExistsError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*volumeCreateJobExistsError)
-	return ok
+	var target *volumeCreateJobExistsError
+	return errors.As(err, &target)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

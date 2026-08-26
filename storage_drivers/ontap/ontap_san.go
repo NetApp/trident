@@ -265,88 +265,157 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// cleanupIncompleteLUN attempts to destroy volume if there exists a volume with no associated LUN.
-// This is used to make Create() idempotent by cleaning up a Flexvol with no LUN or
-// the LUN exists but is associated with a different pool as it was not cleaned up properly and creation is retried
-// with different pool.
-// This can happen if volume creation succeeded but LUN creation failed in a previous Create() call.
-// Returns (Volume State, error)
+// lunAttributes are the values Trident stamps onto a LUN once it exists. Attach reads them back to learn how
+// to format and mount the LUN, so they have to survive a resumed create.
+type lunAttributes struct {
+	fsType         string
+	driverContext  string
+	luksEncryption string
+	formatOptions  string
+	poolName       string
+}
+
+// reconcileLUNCreateState drives a Flexvol/LUN pair left behind by an earlier Create to the state this
+// request asks for, so that Create() is idempotent: it discovers what the earlier attempt left behind and
+// performs the work that finishes it, repairing whatever ONTAP lets it repair rather than starting over. The
+// Flexvol is known to exist and is known not to be a mirror destination.
 //
-//	Caller can check for:
-//	non-nil error, indicates one of the following.
-//	   - Error checking volume existence.
-//	   - Error checking LUN existence.
-//	   - Could not destroy the required volume for an error.
-//	Volume state:true indicating both volume and required LUN exist.
-//	Volume state:false indicating no volume existed or cleaned up now.
-func (d *SANStorageDriver) cleanupIncompleteLUN(
-	ctx context.Context, volConfig *storage.VolumeConfig, poolName string,
-) (bool, error) {
+// A Flexvol ONTAP has not brought online yet is still being built, so it is reported as still creating and
+// left untouched: destroying it would restart a slow create on every retry, and creating its LUN now could
+// fail and take the Flexvol down with it. A Flexvol or LUN that differs from this request in an attribute
+// ONTAP only honors at create time is destroyed, and the returned error asks the caller to retry with a
+// clean create.
+//
+// A nil error means the pair now matches this request. A VolumeExistsError means it already did, a
+// VolumeCreatingError means ONTAP is still working and the core should retry, and any other error asks the
+// caller to retry with a clean create.
+func (d *SANStorageDriver) reconcileLUNCreateState(
+	ctx context.Context, volConfig *storage.VolumeConfig, desiredVolume api.Volume, desiredLUN api.Lun,
+	desiredAttrs lunAttributes, allowedAggregates []string,
+) error {
 	name := volConfig.InternalName
+	poolName := desiredAttrs.poolName
 	fields := LogFields{
-		"Method":   "cleanupIncompleteLUN",
+		"Method":   "reconcileLUNCreateState",
 		"Type":     "SANStorageDriver",
 		"name":     name,
 		"poolName": poolName,
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cleanupIncompleteLUN")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cleanupIncompleteLUN")
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> reconcileLUNCreateState")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< reconcileLUNCreateState")
 
-	volExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return false, fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		// No volume exists, no clean up.
-		return false, nil
-	}
-	if volConfig.IsMirrorDestination {
-		// No clean up required, this is DP volume.
-		return true, nil
+	if err := reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, allowedAggregates); err != nil {
+		return err
 	}
 
 	// Verify if LUN exists.
-	newLUNPath := lunPath(name)
+	newLUNPath := desiredLUN.Name
 	extantLUN, err := d.API.LunGetByName(ctx, newLUNPath)
 	if err != nil && !errors.IsNotFoundError(err) {
 		// Could not verify if LUN exists. Clean up pending.
-		return false, fmt.Errorf("error checking for existing LUN %s: %v", newLUNPath, err)
+		return fmt.Errorf("error checking for existing LUN %s: %v", newLUNPath, err)
 	}
 
-	var destroyReason string
-	var destroyErrorMsg string
+	if extantLUN == nil {
+		// The volume exists without its LUN because an earlier LUN create never finished. Keep the volume,
+		// now that its attributes match, and finish the job here.
+		Logc(ctx).WithFields(LogFields{
+			"volume": name,
+			"LUN":    newLUNPath,
+		}).Debug("Volume exists without its LUN; resuming LUN create on the existing volume.")
 
-	if extantLUN != nil {
-		// Both the volume and LUN exist. Check if the last attribute set on the LUN, i.e., the pool name, matches.
-		lunPoolName, err := d.API.LunGetAttribute(ctx, newLUNPath, "poolName")
-		if err != nil || lunPoolName != poolName {
-			// If there is an error getting pool name or pool name doesn't match
-			Logc(ctx).WithFields(LogFields{
-				"LUN":           newLUNPath,
-				"lunPoolName":   lunPoolName,
-				"inputPoolName": poolName,
-				"error":         err,
-			}).Info("Pool name not found or mismatch detected. Destroying volume.")
-
-			destroyReason = "Destroyed volume with mismatched pool name."
-			destroyErrorMsg = "could not destroy volume with mismatched pool"
-		} else {
-			// Pool name matches or no pool name attribute. No clean up needed.
-			return true, nil
+		if err = d.createLUN(ctx, name, desiredLUN, desiredAttrs); err != nil {
+			if api.IsVolumeCreateJobExistsError(err) {
+				return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
+			}
+			if errors.IsVolumeCreatingError(err) || errors.IsVolumeDeletingError(err) {
+				return err
+			}
+			return fmt.Errorf("ONTAP-SAN pool %s; %v", poolName, err)
 		}
-	} else {
-		// LUN does not exist, but volume does. Initiate clean-up.
-		destroyReason = "Cleaned up volume since LUN create failed."
-		destroyErrorMsg = "could not clean up partial create of vol/lun"
+
+		return nil
 	}
 
-	if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
-		Logc(ctx).WithError(err).WithField("volume", name).Errorf("Could not clean up volume")
-		return true, fmt.Errorf("%s: %v", destroyErrorMsg, err)
+	if err = reconcileExistingLun(ctx, d.API, extantLUN, desiredLUN); err != nil {
+		if isUnusableVolumeError(err) {
+			return destroyUnusableVolume(ctx, d.API, name, err.Error())
+		}
+		return err
 	}
-	Logc(ctx).WithField("volume", name).Debug(destroyReason)
 
-	return false, nil
+	// The pool name is the last attribute LunSetAttribute writes, so a LUN carrying this pool's name also
+	// carries the rest of the set from the same request.
+	lunPoolName, attrErr := d.API.LunGetAttribute(ctx, newLUNPath, "poolName")
+	if attrErr == nil && lunPoolName == poolName {
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	// The attributes are missing or were written for a different pool. They are only read when the LUN is
+	// attached, and a LUN whose create never returned has never been attached, so rewriting them is both
+	// safe and far cheaper than destroying the volume.
+	Logc(ctx).WithFields(LogFields{
+		"LUN":           newLUNPath,
+		"lunPoolName":   lunPoolName,
+		"inputPoolName": poolName,
+		"error":         attrErr,
+	}).Info("Pool name not found or mismatch detected. Restamping LUN attributes.")
+
+	if err = d.setLunAttributes(ctx, newLUNPath, desiredAttrs); err != nil {
+		return fmt.Errorf("ONTAP-SAN pool %s; error saving attributes for LUN %s: %v", poolName, newLUNPath, err)
+	}
+
+	return nil
+}
+
+// createLUN creates the LUN for a Flexvol and stamps the attributes Attach later reads back. Once ONTAP
+// accepts the LUN create, later read-back failures leave both objects in place for the next create retry to
+// reconcile. A hard LunCreate failure removes the Flexvol so the next attempt starts clean.
+func (d *SANStorageDriver) createLUN(
+	ctx context.Context, volumeName string, lun api.Lun, attrs lunAttributes,
+) error {
+	if err := d.API.LunCreate(ctx, lun); err != nil {
+		if api.IsVolumeCreateJobExistsError(err) {
+			return err
+		}
+		return d.cleanupFailedLUN(ctx, volumeName, "",
+			fmt.Sprintf("error creating LUN %s: %v", lun.Name, err))
+	}
+
+	if _, err := api.WaitForLunToExist(ctx, d.API, lun.Name); err != nil {
+		return errors.VolumeCreatingError(
+			"LUN %s is not visible after ONTAP accepted its create; retrying on volume %s: %v",
+			lun.Name, volumeName, err,
+		)
+	}
+
+	if err := d.setLunAttributes(ctx, lun.Name, attrs); err != nil {
+		return d.cleanupFailedLUN(ctx, volumeName, lun.Name,
+			fmt.Sprintf("error saving attributes for LUN %s: %v", lun.Name, err))
+	}
+
+	return nil
+}
+
+// setLunAttributes records the fstype, driver context, LUKS setting, format options and pool name on a LUN.
+// The pool name is written last and marks the set as complete.
+func (d *SANStorageDriver) setLunAttributes(ctx context.Context, lunPath string, attrs lunAttributes) error {
+	return d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, attrs.fsType, attrs.driverContext,
+		attrs.luksEncryption, attrs.formatOptions, attrs.poolName)
+}
+
+// cleanupFailedLUN removes what a failed LUN create left behind and reports whether the Flexvol is gone or
+// still being deleted, so Create does not race a new attempt against asynchronous ONTAP cleanup.
+func (d *SANStorageDriver) cleanupFailedLUN(ctx context.Context, volumeName, lunPath, reason string) error {
+	if lunPath != "" {
+		if err := d.API.LunDestroy(ctx, lunPath); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
+		} else {
+			Logc(ctx).WithField("LUN", lunPath).Debugf("Cleaned up LUN after %s.", reason)
+		}
+	}
+
+	return destroyUnusableVolume(ctx, d.API, volumeName, reason)
 }
 
 // Create a volume+LUN with the specified options
@@ -367,12 +436,15 @@ func (d *SANStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// Early exit if volume+LUN exist. Clean up volume if no LUN exists.
-	volExists, err := d.cleanupIncompleteLUN(ctx, volConfig, storagePool.Name())
+	// An earlier attempt may have left a Flexvol behind. Note it here so the create fails fast if the backend
+	// cannot be reached; its attributes and its LUN are reconciled further down, once this request's own
+	// attributes have been resolved.
+	volExists, err := d.API.VolumeExists(ctx, name)
 	if err != nil {
-		return fmt.Errorf("failure checking for existence of volume and cleaning if any: %v", err)
+		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
-	if volExists {
+	if volExists && volConfig.IsMirrorDestination {
+		// A DP volume's contents arrive by snapmirror, so there is no LUN for Trident to create or check.
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -509,12 +581,65 @@ func (d *SANStorageDriver) Create(
 		"formatOptions":     formatOptions,
 	}).Debug("Creating Flexvol.")
 
+	// Make comment field from labels
+	labels, err := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+		d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+	if err != nil {
+		return err
+	}
+
+	// The Flexvol and LUN this request asks for. The aggregate is filled in per candidate pool below; a
+	// resumed create keeps the aggregate the existing Flexvol already sits on.
+	desiredVolume := api.Volume{
+		AccessType:      "",
+		Comment:         labels,
+		Encrypt:         enableEncryption,
+		ExportPolicy:    exportPolicy,
+		JunctionPath:    "",
+		Name:            name,
+		Qos:             api.QosPolicyGroup{},
+		SecurityStyle:   securityStyle,
+		Size:            volumeSize,
+		SnapshotPolicy:  snapshotPolicy,
+		SnapshotReserve: snapshotReserveInt,
+		SpaceReserve:    spaceReserve,
+		TieringPolicy:   tieringPolicy,
+		UnixPermissions: unixPermissions,
+		UUID:            "",
+		DPVolume:        volConfig.IsMirrorDestination,
+	}
+	desiredLUN := api.Lun{
+		Name:           lunPath(name),
+		Qos:            qosPolicyGroup,
+		Size:           lunSize,
+		OsType:         "linux",
+		SpaceReserved:  convert.ToPtr(false),
+		SpaceAllocated: convert.ToPtr(spaceAllocation),
+	}
+	desiredAttrs := lunAttributes{
+		fsType:         fstype,
+		driverContext:  string(d.Config.DriverContext),
+		luksEncryption: luksEncryption,
+		formatOptions:  formatOptions,
+		poolName:       storagePool.Name(),
+	}
+
+	physicalPoolNames := make([]string, 0, len(physicalPools))
+	for _, physicalPool := range physicalPools {
+		physicalPoolNames = append(physicalPoolNames, physicalPool.Name())
+	}
+
+	// Reconcile whatever the earlier attempt left behind against this request, repairing what ONTAP allows,
+	// so a retry finishes the job instead of starting over.
+	if volExists {
+		return d.reconcileLUNCreateState(ctx, volConfig, desiredVolume, desiredLUN, desiredAttrs,
+			physicalPoolNames)
+	}
+
 	createErrors := make([]error, 0)
-	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name()
-		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, flexvolBufferSize, d.Config, d.GetAPI(),
@@ -527,117 +652,37 @@ func (d *SANStorageDriver) Create(
 			continue
 		}
 
-		// Make comment field from labels
-		labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
-			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
-		if labelErr != nil {
-			return labelErr
-		}
 		// Create the volume
-		volumeUUID, err := d.API.VolumeCreate(
-			ctx, api.Volume{
-				AccessType: "",
-				Aggregates: []string{
-					aggregate,
-				},
-				Comment:         labels,
-				Encrypt:         enableEncryption,
-				ExportPolicy:    exportPolicy,
-				JunctionPath:    "",
-				Name:            name,
-				Qos:             api.QosPolicyGroup{},
-				SecurityStyle:   securityStyle,
-				Size:            volumeSize,
-				SnapshotPolicy:  snapshotPolicy,
-				SnapshotReserve: snapshotReserveInt,
-				SpaceReserve:    spaceReserve,
-				TieringPolicy:   tieringPolicy,
-				UnixPermissions: unixPermissions,
-				UUID:            "",
-				DPVolume:        volConfig.IsMirrorDestination,
-			})
+		desiredVolume.Aggregates = []string{aggregate}
+		volumeUUID, err := d.API.VolumeCreate(ctx, desiredVolume)
 		if err != nil {
-			if !api.IsVolumeCreateJobExistsError(err) {
-				errMessage := fmt.Sprintf(
-					"ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name(),
-					aggregate, name, err,
-				)
-				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, errors.New(errMessage))
-
-				// Move on to the next pool
-				continue
+			if api.IsVolumeCreateJobExistsError(err) {
+				return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
 			}
-			// Log a message. Proceed to create LUN, hoping volume would have been created by the time we send
-			// LUN create request.
-			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
+
+			errMessage := fmt.Sprintf(
+				"ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name(),
+				aggregate, name, err,
+			)
+			Logc(ctx).Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
 		}
 		volConfig.BackendVolumeID = volumeUUID
 
 		// If a DP volume, do not create the LUN, it will be copied over by snapmirror
 		if !volConfig.IsMirrorDestination {
-			lunPath := lunPath(name)
-			osType := "linux"
-			// Create the LUN.  If this fails, clean up and move on to the next pool.
-			// QoS policy is set at the LUN layer
-			err = d.API.LunCreate(
-				ctx, api.Lun{
-					Name:           lunPath,
-					Qos:            qosPolicyGroup,
-					Size:           lunSize,
-					OsType:         osType,
-					SpaceReserved:  convert.ToPtr(false),
-					SpaceAllocated: convert.ToPtr(spaceAllocation),
-				})
-			if err != nil {
-				errMessage := fmt.Sprintf(
-					"ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name(),
-					aggregate, name, err,
-				)
+			if err = d.createLUN(ctx, name, desiredLUN, desiredAttrs); err != nil {
+				if api.IsVolumeCreateJobExistsError(err) {
+					return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
+				}
+				if errors.IsVolumeCreatingError(err) || errors.IsVolumeDeletingError(err) {
+					return err
+				}
+
+				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; %v", storagePool.Name(), aggregate, err)
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, errors.New(errMessage))
-
-				// Don't leave the new Flexvol around.
-				// If VolumeDestroy() fails for any reason, volume must be manually deleted.
-				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
-					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
-				}
-
-				// Move on to the next pool
-				continue
-			}
-
-			// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
-			// move on to the next pool.
-			// Save the context, fstype, LUKS value, and pool name in LUN comment
-			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
-				luksEncryption, formatOptions, storagePool.Name())
-			if err != nil {
-
-				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",
-					storagePool.Name(), aggregate, name, err)
-				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, errors.New(errMessage))
-
-				// Don't leave the new LUN around.
-				// If the following LunDestroy() fails for any reason, LUN and volume must be manually deleted.
-				if err := d.API.LunDestroy(ctx, lunPath); err != nil {
-					Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after set attribute error.")
-				}
-
-				// Don't leave the new Flexvol around.
-				// If the following VolumeDestroy() fails for any reason, volume must be manually deleted.
-				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
-					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after set attribute error.")
-				}
-
-				// Move on to the next pool
 				continue
 			}
 		}

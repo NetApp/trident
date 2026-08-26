@@ -272,8 +272,8 @@ func IsVolumeCreatingError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*volumeCreatingError)
-	return ok
+	var target *volumeCreatingError
+	return errors.As(err, &target)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -297,8 +297,8 @@ func IsVolumeDeletingError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*volumeDeletingError)
-	return ok
+	var target *volumeDeletingError
+	return errors.As(err, &target)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
