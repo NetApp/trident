@@ -4,14 +4,18 @@ package csi
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	tridentconfig "github.com/netapp/trident/config"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
@@ -38,7 +42,8 @@ func TestPlugin_GetTopologyLabels(t *testing.T) {
 			Return(map[string]string{"topology.kubernetes.io/region": "us-east-1"}, nil)
 
 		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
-		labels := plugin.getTopologyLabels(context.Background())
+		labels, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err)
 		assert.Equal(t, "us-east-1", labels["topology.kubernetes.io/region"])
 	})
 
@@ -50,15 +55,121 @@ func TestPlugin_GetTopologyLabels(t *testing.T) {
 			Return(map[string]string{"zone": "z1"}, nil).Times(1)
 
 		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
-		first := plugin.getTopologyLabels(context.Background())
-		second := plugin.getTopologyLabels(context.Background())
+		first, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err)
+		second, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err)
 		assert.Equal(t, first, second)
 	})
 
 	t.Run("no controller helper and no cache returns nil", func(t *testing.T) {
 		topologyLabels = nil
 		plugin := &Plugin{nodeName: "node-a"}
-		assert.Nil(t, plugin.getTopologyLabels(context.Background()))
+		labels, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err) // no topology source to consult is not a failed lookup
+		assert.Nil(t, labels)
+	})
+
+	t.Run("retries transient lookup failures", func(t *testing.T) {
+		topologyLabels = nil
+		stubImmediateTopologyLabelsBackoff(t, 2)
+
+		ctrl := gomock.NewController(t)
+		expected := map[string]string{K8sTopologyRegionLabel: "us-west-2"}
+		mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+		gomock.InOrder(
+			mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+				Return(nil, fmt.Errorf("temporary api error")),
+			mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+				Return(nil, fmt.Errorf("temporary api error")),
+			mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+				Return(expected, nil),
+		)
+
+		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
+		labels, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err)
+		assert.Equal(t, expected, labels)
+	})
+
+	t.Run("exhausted failures report unknown labels and do not initialize the cache", func(t *testing.T) {
+		topologyLabels = nil
+		stubImmediateTopologyLabelsBackoff(t, 2)
+
+		ctrl := gomock.NewController(t)
+		mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+		mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+			Return(nil, fmt.Errorf("temporary api error")).Times(3) // first attempt plus two retries
+
+		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
+		labels, err := plugin.getTopologyLabels(context.Background())
+		assert.Error(t, err)
+		assert.Nil(t, labels)
+		assert.Nil(t, topologyLabels)
+	})
+
+	t.Run("lookup failure falls back to labels another caller already cached", func(t *testing.T) {
+		cached := map[string]string{K8sTopologyRegionLabel: "us-west-2"}
+		topologyLabels = nil
+		stubImmediateTopologyLabelsBackoff(t, 1)
+
+		ctrl := gomock.NewController(t)
+		mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+		// Stands in for a second caller winning the lookup while this one is still retrying.
+		mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+			DoAndReturn(func(context.Context, string) (map[string]string, error) {
+				topologyLabelsLock.Lock()
+				defer topologyLabelsLock.Unlock()
+				topologyLabels = map[string]string{K8sTopologyRegionLabel: "us-west-2"}
+				return nil, fmt.Errorf("temporary api error")
+			}).Times(2) // first attempt plus one retry
+
+		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
+		labels, err := plugin.getTopologyLabels(context.Background())
+		require.NoError(t, err) // the labels are known, so reporting them is correct
+		assert.Equal(t, cached, labels)
+	})
+
+	t.Run("permanent lookup failures are not retried", func(t *testing.T) {
+		permanentErrors := map[string]error{
+			"forbidden":    apierrors.NewForbidden(schema.GroupResource{Resource: "nodes"}, "node-a", fmt.Errorf("no RBAC")),
+			"unauthorized": apierrors.NewUnauthorized("no credentials"),
+			"not found":    apierrors.NewNotFound(schema.GroupResource{Resource: "nodes"}, "node-a"),
+		}
+
+		for name, permanentErr := range permanentErrors {
+			t.Run(name, func(t *testing.T) {
+				topologyLabels = nil
+				stubImmediateTopologyLabelsBackoff(t, 5)
+
+				ctrl := gomock.NewController(t)
+				mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+				mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+					Return(nil, permanentErr).Times(1) // retrying a misconfiguration only delays NodeGetInfo
+
+				plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper}
+				labels, err := plugin.getTopologyLabels(context.Background())
+				assert.Error(t, err)
+				assert.Nil(t, labels)
+				assert.Nil(t, topologyLabels)
+			})
+		}
+	})
+}
+
+// stubImmediateTopologyLabelsBackoff swaps in a zero-interval retry policy capped at maxRetries, so
+// retry-path tests are decided by mocked call counts rather than by how long the backoff sleeps.
+func stubImmediateTopologyLabelsBackoff(t *testing.T, maxRetries uint64) {
+	t.Helper()
+
+	productionBackoff := makeTopologyLabelsBackoff
+	makeTopologyLabelsBackoff = func() backoff.BackOff {
+		return backoff.WithMaxRetries(&backoff.ZeroBackOff{}, maxRetries)
+	}
+
+	t.Cleanup(func() {
+		makeTopologyLabelsBackoff = productionBackoff
+		topologyLabels = nil
 	})
 }
 
@@ -376,9 +487,57 @@ func TestPlugin_NodeGetCapabilities(t *testing.T) {
 }
 
 func TestPlugin_NodeGetInfo(t *testing.T) {
-	plugin := &Plugin{nodeName: "node-a", nodeOrchestrator: newReadyNodeCore(t)}
-	resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
-	require.NoError(t, err)
-	assert.Equal(t, "node-a", resp.NodeId)
-	assert.NotNil(t, resp.AccessibleTopology)
+	t.Run("reports the topology labels read from the node", func(t *testing.T) {
+		topologyLabels = nil
+		t.Cleanup(func() { topologyLabels = nil })
+
+		ctrl := gomock.NewController(t)
+		mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+		mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+			Return(map[string]string{K8sTopologyRegionLabel: "us-east-1"}, nil)
+
+		plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper, nodeOrchestrator: newReadyNodeCore(t)}
+		resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+		require.NoError(t, err)
+		assert.Equal(t, "node-a", resp.NodeId)
+		require.NotNil(t, resp.AccessibleTopology)
+		assert.Equal(t, map[string]string{K8sTopologyRegionLabel: "us-east-1"}, resp.AccessibleTopology.Segments)
+	})
+
+	t.Run("no controller helper reports no topology", func(t *testing.T) {
+		topologyLabels = nil
+		t.Cleanup(func() { topologyLabels = nil })
+
+		plugin := &Plugin{nodeName: "node-a", nodeOrchestrator: newReadyNodeCore(t)}
+		resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+		require.NoError(t, err)
+		assert.Equal(t, "node-a", resp.NodeId)
+		assert.NotNil(t, resp.AccessibleTopology)
+	})
+
+	// The registrar treats an error as retryable but would publish a CSINode with empty topologyKeys
+	// if we answered OK, so an unreadable node must fail the call rather than report no topology.
+	unknownLabelErrors := map[string]error{
+		"exhausted retries": fmt.Errorf("temporary api error"),
+		"forbidden":         apierrors.NewForbidden(schema.GroupResource{Resource: "nodes"}, "node-a", fmt.Errorf("no RBAC")),
+	}
+
+	for name, lookupErr := range unknownLabelErrors {
+		t.Run("unavailable when labels are unknown: "+name, func(t *testing.T) {
+			topologyLabels = nil
+			stubImmediateTopologyLabelsBackoff(t, 1)
+
+			ctrl := gomock.NewController(t)
+			mockHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
+			mockHelper.EXPECT().GetNodeTopologyLabels(gomock.Any(), "node-a").
+				Return(nil, lookupErr).AnyTimes()
+
+			plugin := &Plugin{nodeName: "node-a", controllerHelper: mockHelper, nodeOrchestrator: newReadyNodeCore(t)}
+			resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+			assert.Nil(t, resp)
+			require.Error(t, err)
+			assert.Equal(t, codes.Unavailable, status.Code(err))
+			assert.Nil(t, topologyLabels)
+		})
+	}
 }
