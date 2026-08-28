@@ -2694,6 +2694,12 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		cloneConfig.SMBShareACL = volumeConfig.SMBShareACL
 	}
 	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
+	if volumeConfig.StorageClass != "" {
+		cloneConfig.StorageClass = volumeConfig.StorageClass
+	}
+	if volumeConfig.AccessMode != "" {
+		cloneConfig.AccessMode = volumeConfig.AccessMode
+	}
 	cloneConfig.Namespace = volumeConfig.Namespace
 	cloneConfig.RequestName = volumeConfig.RequestName
 
