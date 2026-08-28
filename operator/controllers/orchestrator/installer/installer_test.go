@@ -485,6 +485,48 @@ func TestSetInstallationParams_Images(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("CR sidecar images override environment and image registry", func(t *testing.T) {
+		for _, image := range images {
+			*image.image = ""
+		}
+		for env, image := range images {
+			t.Setenv(env, image.envval)
+		}
+
+		expectedProvisionerImage := "cr-registry.example.com/sig-storage/csi-provisioner:v9.9.9"
+		expectedAttacherImage := "cr-registry.example.com/sig-storage/csi-attacher:v9.9.9"
+		expectedResizerImage := "cr-registry.example.com/sig-storage/csi-resizer:v9.9.9"
+		expectedSnapshotterImage := "cr-registry.example.com/sig-storage/csi-snapshotter:v9.9.9"
+		expectedRegistrarImage := "cr-registry.example.com/sig-storage/csi-node-driver-registrar:v9.9.9"
+		expectedLivenessProbeImage := "cr-registry.example.com/sig-storage/livenessprobe:v9.9.9"
+
+		to := netappv1.TridentOrchestrator{
+			TypeMeta:   metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{},
+			Spec: netappv1.TridentOrchestratorSpec{
+				ImageRegistry:                      "registry-from-cr.example.com",
+				CSISidecarProvisionerImage:         expectedProvisionerImage,
+				CSISidecarAttacherImage:            expectedAttacherImage,
+				CSISidecarResizerImage:             expectedResizerImage,
+				CSISidecarSnapshotterImage:         expectedSnapshotterImage,
+				CSISidecarNodeDriverRegistrarImage: expectedRegistrarImage,
+				CSISidecarLivenessProbeImage:       expectedLivenessProbeImage,
+			},
+			Status: netappv1.TridentOrchestratorStatus{},
+		}
+		installer := newTestInstaller(mockK8sClient)
+
+		_, _, _, err := installer.setInstallationParams(to, "")
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedProvisionerImage, csiSidecarProvisionerImage)
+		assert.Equal(t, expectedAttacherImage, csiSidecarAttacherImage)
+		assert.Equal(t, expectedResizerImage, csiSidecarResizerImage)
+		assert.Equal(t, expectedSnapshotterImage, csiSidecarSnapshotterImage)
+		assert.Equal(t, expectedRegistrarImage, csiSidecarNodeDriverRegistrarImage)
+		assert.Equal(t, expectedLivenessProbeImage, csiSidecarLivenessProbeImage)
+	})
 }
 
 func TestSetInstallationParams_FSGroupPolicy(t *testing.T) {
