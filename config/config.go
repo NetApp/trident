@@ -348,13 +348,14 @@ var (
 	// ConcurrencyGADrivers is the list of storage drivers for which controller
 	// scalability (concurrent core) is generally available.
 	ConcurrencyGADrivers = []string{
-		OntapSANStorageDriverName,        // ontap-san
-		OntapNASStorageDriverName,        // ontap-nas
-		GCNVNASStorageDriverName,         // google-cloud-netapp-volumes
-		OntapNASQtreeStorageDriverName,   // ontap-nas-economy
-		OntapSANEconomyStorageDriverName, // ontap-san-economy
-		AzureNASStorageDriverName,        // azure-netapp-files
-		SolidfireSANStorageDriverName,    // solidfire-san
+		OntapSANStorageDriverName,          // ontap-san
+		OntapNASStorageDriverName,          // ontap-nas
+		GCNVNASStorageDriverName,           // google-cloud-netapp-volumes
+		OntapNASQtreeStorageDriverName,     // ontap-nas-economy
+		OntapSANEconomyStorageDriverName,   // ontap-san-economy
+		AzureNASStorageDriverName,          // azure-netapp-files
+		SolidfireSANStorageDriverName,      // solidfire-san
+		OntapNASFlexGroupStorageDriverName, // ontap-nas-flexgroup
 	}
 
 	// ConcurrencyTechPreviewDrivers is the list of storage drivers for which
@@ -450,6 +451,7 @@ var (
 		"ontap-san",
 		"fake",
 		"ontap-nas",
+		"ontap-nas-flexgroup",
 		"google-cloud-netapp-volumes",
 		"ontap-nas-economy",
 		"ontap-san-economy",

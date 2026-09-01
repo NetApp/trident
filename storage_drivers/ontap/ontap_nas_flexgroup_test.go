@@ -997,6 +997,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+			mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-dummy").Return(true, nil)
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(test.err)
 			mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -1021,6 +1022,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-dummy").Return(true, nil)
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -4280,17 +4282,25 @@ func TestPublishShare(t *testing.T) {
 		CommonStorageDriverConfig: commonConfig,
 		SVM:                       "testSVM",
 		AutoExportPolicy:          true,
+		AutoExportCIDRs:           []string{"0.0.0.0/0"},
 	}
 
+	nodeIP := "1.1.1.1"
 	publishInfo := &models.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Unmanaged:   false,
+		HostName:    "node1",
+		Nodes: []*models.Node{
+			{Name: "node1", IPs: []string{nodeIP}},
+		},
 	}
 	policyName := "trident-fakeBackendUUID"
 	volumeName := "fakeVolumeName"
 
 	// Test1: Positive flow
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(map[int]string{}, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), policyName, nodeIP, gomock.Any()).Return(nil)
 
 	err := publishFlexgroupShare(ctx, mockAPI, config, publishInfo, volumeName, MockModifyVolumeExportPolicy)
 

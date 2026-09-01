@@ -170,9 +170,12 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
-		if err := d.API.ExportPolicyDestroy(ctx, policyName); err != nil {
+
+		exportPolicyMutex.Lock(policyName)
+		if err := destroyExportPolicy(ctx, policyName, d.API); err != nil {
 			Logc(ctx).Warn(err)
 		}
+		exportPolicyMutex.Unlock(policyName)
 	}
 	if d.telemetry != nil {
 		d.telemetry.Stop()
@@ -900,14 +903,28 @@ func publishFlexgroupShare(
 		return nil
 	}
 
-	if err := ensureNodeAccess(ctx, publishInfo, clientAPI, config); err != nil {
+	var targetNode *models.Node
+	for _, node := range publishInfo.Nodes {
+		if node.Name == publishInfo.HostName {
+			targetNode = node
+			break
+		}
+	}
+	if targetNode == nil {
+		err := fmt.Errorf("node %s has not registered with Trident", publishInfo.HostName)
+		Logc(ctx).Error(err)
 		return err
 	}
 
-	// Update volume to use the correct export policy
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	err := ModifyVolumeExportPolicy(ctx, volumeName, policyName)
-	return err
+	applyPolicy := func() error {
+		return ModifyVolumeExportPolicy(ctx, volumeName, policyName)
+	}
+
+	// Hold the export policy lock through rule creation and FlexGroup assignment, matching the
+	// qtree backend-policy path. This adds the publishing node's IP even when the shared policy
+	// already exists, and prevents reconciliation or termination from changing the policy mid-publish.
+	return ensureNodeAccessForPolicyAndApply(ctx, targetNode, clientAPI, config, policyName, applyPolicy)
 }
 
 // getFlexgroupSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
