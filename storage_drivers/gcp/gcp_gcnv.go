@@ -5,6 +5,7 @@ package gcp
 import (
 	"context"
 	"encoding/json"
+	stdErrors "errors"
 	"fmt"
 	"math"
 	"net"
@@ -17,6 +18,8 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
@@ -181,6 +184,16 @@ func (d *NASStorageDriver) defaultTimeout() time.Duration {
 	default:
 		return api.DefaultTimeout
 	}
+}
+
+// deleteTimeout returns the timeout for delete waits. CSI preserves the provisioner request
+// deadline unless the backend explicitly configures a timeout. Docker has no request deadline,
+// so it uses the driver's create/delete timeout.
+func (d *NASStorageDriver) deleteTimeout() time.Duration {
+	if d.Config.VolumeCreateTimeout != "" || d.Config.DriverContext == tridentconfig.ContextDocker {
+		return d.volumeCreateTimeout
+	}
+	return 0
 }
 
 // Initialize initializes this driver from the provided config.
@@ -1030,6 +1043,16 @@ func (d *NASStorageDriver) Create(
 		// Create the volume
 		volume, createErr := d.API.CreateVolume(ctx, createRequest)
 		if createErr != nil {
+			if isCreateVolumeTimeout(createErr) {
+				Logc(ctx).WithFields(LogFields{
+					"capacityPool":  cPool.Name,
+					"creationToken": name,
+					"volume":        volConfig.Name,
+				}).WithError(createErr).Warn(
+					"CreateVolume timed out; treating request as in-progress and skipping pool failover.")
+				return errors.VolumeCreatingError(createErr.Error())
+			}
+
 			errMessage := fmt.Sprintf("GCNV pool %s; error creating volume %s: %v", cPool.Name, name, createErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = multierr.Combine(createErrors, errors.New(errMessage))
@@ -1044,6 +1067,96 @@ func (d *NASStorageDriver) Create(
 	}
 
 	return createErrors
+}
+
+// isCreateVolumeTimeout identifies timeout-like create failures where a backend operation may still be in flight.
+func isCreateVolumeTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if stdErrors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
+	if s, ok := status.FromError(err); ok && s.Code() == codes.DeadlineExceeded {
+		return true
+	}
+
+	var timeoutErr net.Error
+	if stdErrors.As(err, &timeoutErr) && timeoutErr.Timeout() {
+		return true
+	}
+
+	errMessage := strings.ToLower(err.Error())
+	return strings.Contains(errMessage, "context deadline exceeded")
+}
+
+func isDuplicateResourceError(err error) bool {
+	if err == nil || status.Code(err) != codes.InvalidArgument {
+		return false
+	}
+
+	errMessage := strings.ToLower(err.Error())
+	return strings.Contains(errMessage, "resource_id") && strings.Contains(errMessage, "already exists")
+}
+
+func (d *NASStorageDriver) reconcileDuplicateClone(
+	ctx context.Context, cloneVolConfig *storage.VolumeConfig, request *api.VolumeCreateRequest, createErr error,
+) error {
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return ErrRefreshGCNVResourceCache(err)
+	}
+
+	exists, existing, err := d.API.VolumeExists(ctx, cloneVolConfig)
+	if err != nil {
+		return fmt.Errorf("error checking for existing clone volume %s: %w", cloneVolConfig.InternalName, err)
+	}
+	if !exists || existing == nil {
+		return errors.VolumeCreatingError(createErr.Error())
+	}
+	if existing.CreationToken != request.CreationToken {
+		return fmt.Errorf("existing GCNV resource has creation token %q, expected %q",
+			existing.CreationToken, request.CreationToken)
+	}
+
+	cloneVolConfig.InternalID = existing.FullName
+	Logc(ctx).WithFields(LogFields{
+		"creationToken": request.CreationToken,
+		"volume":        cloneVolConfig.Name,
+		"volumeID":      existing.FullName,
+		"state":         existing.State,
+	}).WithError(createErr).Warn("Clone create reported a duplicate resource; adopting matching GCNV volume.")
+
+	switch existing.State {
+	case api.VolumeStateReady, api.VolumeStateCreating:
+		if err := d.waitForVolumeCreate(ctx, existing); err != nil {
+			return err
+		}
+		// waitForVolumeCreate returns nil both when the volume is Ready and when it
+		// observed Error/Deleting and successfully cleaned the resource up. Only
+		// adopt when the matching volume is still present and Ready.
+		exists, current, err := d.API.VolumeExists(ctx, cloneVolConfig)
+		if err != nil {
+			return fmt.Errorf("error re-checking clone volume %s after wait: %w", cloneVolConfig.InternalName, err)
+		}
+		if !exists || current == nil || current.State != api.VolumeStateReady {
+			state := ""
+			if current != nil {
+				state = current.State
+			}
+			return fmt.Errorf("matching clone volume %s is not ready after reconciliation (exists=%t, state=%s)",
+				cloneVolConfig.InternalName, exists, state)
+		}
+		cloneVolConfig.InternalID = current.FullName
+		// StorageBackend.CloneVolume treats this as idempotent success and continues to CreateFollowup,
+		// without destroying a volume that an earlier attempt created.
+		return drivers.NewVolumeExistsError(cloneVolConfig.InternalName)
+	case api.VolumeStateDeleting:
+		return errors.VolumeCreatingError(fmt.Sprintf("volume %s is still deleting", existing.Name))
+	default:
+		return fmt.Errorf("matching volume %s is in unexpected state %s", existing.Name, existing.State)
+	}
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
@@ -1264,6 +1377,10 @@ func (d *NASStorageDriver) CreateClone(
 	// Clone the volume
 	clone, err := d.API.CreateVolume(ctx, createRequest)
 	if err != nil {
+		if isDuplicateResourceError(err) {
+			return d.reconcileDuplicateClone(ctx, cloneVolConfig, createRequest, err)
+		}
+
 		return err
 	}
 
@@ -1485,7 +1602,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		case api.VolumeStateDeleting:
 			// Wait for deletion to complete
 			_, errDelete := d.API.WaitForVolumeState(
-				ctx, volume, api.VolumeStateDeleted, []string{api.VolumeStateError}, d.defaultTimeout())
+				ctx, volume, api.VolumeStateDeleted, []string{api.VolumeStateError}, d.deleteTimeout())
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
@@ -1494,7 +1611,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 
 		case api.VolumeStateError:
 			// Delete a failed volume
-			errDelete := d.API.DeleteVolume(ctx, volume)
+			errDelete := d.API.DeleteVolume(ctx, volume, d.deleteTimeout())
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
@@ -1555,20 +1672,20 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	} else if extantVolume.State == api.VolumeStateDeleting {
 		// This is a retry, so give it more time before giving up again.
 		_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
-			[]string{api.VolumeStateError}, d.volumeCreateTimeout)
+			[]string{api.VolumeStateError}, d.deleteTimeout())
 		return err
 	}
 
 	// Delete the volume
-	if err = d.API.DeleteVolume(ctx, extantVolume); err != nil {
+	if err = d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout()); err != nil {
 		return err
 	}
 
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
-	// Wait for deletion to complete
+	// Wait for deletion to complete (same timeout as Deleting-state retry above).
 	_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
-		[]string{api.VolumeStateError}, d.defaultTimeout())
+		[]string{api.VolumeStateError}, d.deleteTimeout())
 	return err
 }
 
@@ -1637,7 +1754,7 @@ func (d *NASStorageDriver) deleteAutomaticSnapshot(
 	}
 
 	// Delete the snapshot
-	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, api.DefaultTimeout); err != nil {
+	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, d.deleteTimeout()); err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
 			"cleaned up and must be manually deleted.")
 	}
@@ -2008,13 +2125,37 @@ func (d *NASStorageDriver) DeleteSnapshot(
 		if errors.IsNotFoundError(err) {
 			return nil
 		}
+
+		// Under load, backend pre-check can fail transiently. Return a retryable status
+		// so external-snapshotter retries DeleteSnapshot and finalizers can clear.
+		if s, ok := status.FromError(err); ok {
+			switch s.Code() {
+			case codes.Internal, codes.Unavailable, codes.Unknown, codes.Aborted, codes.DeadlineExceeded:
+				return status.Error(codes.Unavailable,
+					fmt.Sprintf("transient backend error checking snapshot %s: %s", internalSnapName, s.Message()))
+			case codes.ResourceExhausted:
+				// GCP also returns ResourceExhausted for capacity-quota exhaustion (e.g. FlexVolumesPerRegion),
+				// which is terminal, not retryable. Only treat it as transient when it's actual API throttling.
+				if api.IsGCNVTooManyRequestsError(err) {
+					return status.Error(codes.Unavailable,
+						fmt.Sprintf("transient backend error checking snapshot %s: %s", internalSnapName, s.Message()))
+				}
+			}
+		}
+
 		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)
 	} else {
 		switch snapshot.State {
 		case api.SnapshotStateError:
 			fallthrough
 		case api.SnapshotStateReady:
-			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.DefaultTimeout)
+			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.SnapshotTimeout)
+		case api.SnapshotStateDeleting:
+			Logc(ctx).WithFields(LogFields{
+				"snapshotName": internalSnapName,
+				"volumeName":   internalVolName,
+			}).Debug("Snapshot already deleting; treating delete as idempotent in-progress success.")
+			return nil
 		default:
 			fields["state"] = snapshot.State
 			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")

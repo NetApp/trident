@@ -23,6 +23,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core/cache"
@@ -9666,6 +9668,52 @@ func TestDeleteMountedSnapshot(t *testing.T) {
 	err := o.DeleteSnapshot(ctx(), volName, snapName)
 	assert.Error(t, err, "An error is expected")
 	assert.Equal(t, err.Error(), "unable to delete snapshot snap as it is a source for read-only clone vol")
+}
+
+// TestDeleteSnapshot_SequentialCleanupPreservesGRPCStatus is the regression for
+// sequential DeleteSnapshot txn cleanup rewriting a backend gRPC status with
+// errors.New. When txn delete succeeds, Unavailable must survive so CSI can
+// return a retryable code to external-snapshotter.
+func TestDeleteSnapshot_SequentialCleanupPreservesGRPCStatus(t *testing.T) {
+	backendUUID := "backend-uuid"
+	volName := "vol"
+	snapName := "snap"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	backendErr := status.Error(codes.Unavailable, "transient backend error locating snapshot")
+
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return("backend").AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("driver").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(backendErr)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil)
+	// Successful txn cleanup is the path that used to wrap err with errors.New.
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil)
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.backends[backendUUID] = mockBackend
+	o.volumes[volName] = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volName},
+		BackendUUID: backendUUID,
+	}
+	o.snapshots[snapID] = &storage.Snapshot{
+		Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName},
+		State:  storage.SnapshotStateOnline,
+	}
+
+	err := o.DeleteSnapshot(ctx(), volName, snapName)
+	require.Error(t, err)
+
+	s, ok := status.FromError(err)
+	require.True(t, ok, "sequential cleanup must preserve the backend gRPC status, got %v", err)
+	assert.Equal(t, codes.Unavailable, s.Code())
+	assert.Contains(t, s.Message(), "transient backend error locating snapshot")
 }
 
 func TestDeleteCloneSnapshots(t *testing.T) {

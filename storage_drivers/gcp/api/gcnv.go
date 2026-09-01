@@ -27,6 +27,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/ratelimit"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils/errors"
@@ -106,6 +107,13 @@ type GCNVClient struct {
 type Client struct {
 	config    *ClientConfig
 	sdkClient *GCNVClient
+}
+
+func withOptionalTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+	if timeout <= 0 {
+		return context.WithCancel(ctx)
+	}
+	return context.WithTimeout(ctx, timeout)
 }
 
 // NewDriver is a factory method for creating a new SDK interface.
@@ -672,16 +680,21 @@ func (c Client) Volumes(ctx context.Context) (*[]*Volume, error) {
 	return &volumes, nil
 }
 
-// Volume uses a volume config record to fetch a volume by the most efficient means.
+// gcnvVolumeFallbackNames returns the preferred internal name and legacy normalized volume name
+// used when looking up a volume without its internal ID.
 func gcnvVolumeFallbackNames(volConfig *storage.VolumeConfig) (string, string) {
 	primary := volConfig.InternalName
 	secondary := strings.ReplaceAll(volConfig.Name, "-", "_")
+	if primary == "" {
+		primary = secondary
+	}
 	if secondary == primary {
 		secondary = ""
 	}
 	return primary, secondary
 }
 
+// Volume uses a volume config record to fetch a volume by the most efficient means.
 func (c Client) Volume(ctx context.Context, volConfig *storage.VolumeConfig) (*Volume, error) {
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
@@ -845,6 +858,7 @@ func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *Volume,
 }
 
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved.
+// A positive maxElapsedTime limits retries; otherwise the caller's context controls cancellation.
 func (c Client) WaitForVolumeState(
 	ctx context.Context, volume *Volume, desiredState string, abortStates []string,
 	maxElapsedTime time.Duration,
@@ -908,12 +922,11 @@ func (c Client) WaitForVolumeState(
 
 	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for volume state.")
 
-	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
+	if err := backoff.RetryNotify(checkVolumeState, backoff.WithContext(stateBackoff, ctx), stateNotify); err != nil {
 		if IsTerminalStateError(err) {
 			Logc(ctx).WithError(err).Error("Volume reached terminal state.")
 		} else {
-			Logc(ctx).Warningf("Volume state was not %s after %3.2f seconds.",
-				desiredState, stateBackoff.MaxElapsedTime.Seconds())
+			Logc(ctx).WithError(err).Warningf("Volume state did not reach %s.", desiredState)
 		}
 		return volumeState, err
 	}
@@ -1142,8 +1155,9 @@ func (c Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes i
 	return nil
 }
 
-// DeleteVolume deletes a volume.
-func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
+// DeleteVolume deletes a volume. A positive waitDuration adds a caller-configured deadline to the
+// delete LRO poll; an unset duration preserves the caller's context deadline.
+func (c Client) DeleteVolume(ctx context.Context, volume *Volume, waitDuration time.Duration) error {
 	name := volume.Name
 	logFields := LogFields{
 		"API":    "GCNV.DeleteVolume",
@@ -1170,7 +1184,7 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 
 	Logc(ctx).WithFields(logFields).Debug("Volume delete request issued.")
 
-	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
+	waitCtx, waitCancel := withOptionalTimeout(ctx, waitDuration)
 	defer waitCancel()
 	if pollErr := poller.Wait(waitCtx); pollErr != nil {
 		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error waiting for volume delete operation to complete.")
@@ -1377,7 +1391,8 @@ func (c Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *S
 	return nil
 }
 
-// DeleteSnapshot deletes a snapshot.
+// DeleteSnapshot deletes a snapshot. A positive waitDuration adds a caller-configured deadline to
+// the delete LRO poll; an unset duration preserves the caller's context deadline.
 func (c Client) DeleteSnapshot(
 	ctx context.Context, volume *Volume, snapshot *Snapshot, waitDuration time.Duration,
 ) error {
@@ -1405,7 +1420,7 @@ func (c Client) DeleteSnapshot(
 
 	Logc(ctx).WithFields(logFields).Debug("Snapshot delete request issued.")
 
-	waitCtx, waitCancel := context.WithTimeout(ctx, waitDuration)
+	waitCtx, waitCancel := withOptionalTimeout(ctx, waitDuration)
 	defer waitCancel()
 	if pollErr := poller.Wait(waitCtx); pollErr != nil {
 		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error waiting for delete snapshot result.")
@@ -1806,7 +1821,8 @@ func (c Client) AddHostGroupToVolume(ctx context.Context, volumeID, hostGroupID 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error adding host group to volume.")
 		return err
 	}
-	// Use a detached context for waiting - the operation should complete regardless of caller timeout
+	// The update context bounds request submission. Use a separately bounded context while waiting
+	// for the accepted LRO to complete.
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer waitCancel()
 	if _, err := op.Wait(waitCtx); err != nil {
@@ -1884,7 +1900,8 @@ func (c Client) RemoveHostGroupFromVolume(ctx context.Context, volumeID, hostGro
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error removing host group from volume.")
 		return err
 	}
-	// Use a detached context for waiting - the operation should complete regardless of caller timeout
+	// The update context bounds request submission. Use a separately bounded context while waiting
+	// for the accepted LRO to complete.
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer waitCancel()
 	if _, err := op.Wait(waitCtx); err != nil {
@@ -2273,17 +2290,30 @@ func IsGCNVNotFoundError(err error) bool {
 	return false
 }
 
-// IsGCNVTooManyRequestsError checks whether an error returned from the GCNV SDK contains a 429 (Too Many Requests) error.
+// GCNV API throttling is classified by substring match on ResourceExhausted
+// messages. Capacity quotas such as FlexVolumesPerRegion use the same gRPC code
+// and must be excluded.
+var (
+	gcnvAPIRateLimitIncludeSubstrings = []string{
+		"rate_limit_exceeded",
+		"api-requests",
+		"api requests",
+	}
+	gcnvAPIRateLimitExcludeSubstrings = []string{
+		"flexvolumesperregion",
+	}
+	gcnvAPIRateLimitDecreaseOnError = ratelimit.MessageSubstringDecreaseOnError(
+		gcnvAPIRateLimitIncludeSubstrings,
+		gcnvAPIRateLimitExcludeSubstrings,
+	)
+)
+
+// IsGCNVTooManyRequestsError checks whether an error returned from the GCNV SDK
+// reflects API request throttling (HTTP 429 / RATE_LIMIT_EXCEEDED). GCP also
+// returns ResourceExhausted for capacity quotas such as FlexVolumesPerRegion;
+// those must not be treated as API rate limits.
 func IsGCNVTooManyRequestsError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	if s, ok := status.FromError(err); ok && s.Code() == codes.ResourceExhausted {
-		return true
-	}
-
-	return false
+	return gcnvAPIRateLimitDecreaseOnError(err)
 }
 
 // IsGCNVDeadlineExceededError checks whether an error returned from the GCNV indicates the deadline was exceeded.

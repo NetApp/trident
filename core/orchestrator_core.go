@@ -5733,20 +5733,21 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 			}).Warnf("Unable to delete snapshot transaction. Repeat deletion using %s or restart %v.",
 				config.OrchestratorClientName, config.OrchestratorName)
 		}
-		if err != nil || errTxn != nil {
-			errList := make([]string, 0, 2)
-			for _, e := range []error{err, errTxn} {
-				if e != nil {
-					errList = append(errList, e.Error())
-				}
-			}
-			err = errors.New(strings.Join(errList, ", "))
+		if err != nil && errTxn != nil {
+			// errors.Join preserves each error's Unwrap chain, so status.FromError (which
+			// uses errors.As) can still recover a gRPC status code from either one.
+			err = errors.Join(err, errTxn)
+		} else if errTxn != nil {
+			err = errTxn
 		}
+		// If only err is set, leave it untouched so callers like getCSIErrorForOrchestratorError
+		// can still recover a gRPC status code (e.g. Unavailable) via status.FromError.
 	}()
 
-	// Delete the snapshot
+	// Delete the snapshot. Assign to the named return so the deferred txn
+	// cleanup can see the backend error (including any gRPC status code).
 	internalSnapName := snapshot.Config.InternalName
-	if err := o.deleteSnapshot(ctx, snapshot.Config); err != nil {
+	if err = o.deleteSnapshot(ctx, snapshot.Config); err != nil {
 		return err
 	}
 

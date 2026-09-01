@@ -73,7 +73,8 @@ func (h *fakeUnaryHandler) handle(_ any, stream grpc.ServerStream) error {
 	}
 
 	if n <= h.failUntil {
-		return status.Error(codes.ResourceExhausted, "fake quota exhausted")
+		return status.Error(codes.ResourceExhausted,
+			"Quota exceeded for quota metric 'API requests'. reason = RATE_LIMIT_EXCEEDED")
 	}
 	return stream.SendMsg([]byte{})
 }
@@ -128,6 +129,7 @@ func TestInterceptor_DecreasesOnceForBurstOf429s(t *testing.T) {
 		DecreaseDebounce: time.Hour,
 		ProbeInterval:    time.Hour,
 		ProbeStep:        rate.Limit(1),
+		DecreaseOnError:  testAPIDecreaseOnError,
 	}
 	limiter := NewAdaptiveRateLimiter("integration-test", cfg, nil)
 
@@ -168,6 +170,7 @@ func TestInterceptor_RecoversAfterUpstreamHeals(t *testing.T) {
 		DecreaseDebounce: 10 * time.Millisecond,
 		ProbeInterval:    1 * time.Millisecond, // intentionally tight so the test runs in <1s
 		ProbeStep:        rate.Limit(50),
+		DecreaseOnError:  testAPIDecreaseOnError,
 	}
 	limiter := NewAdaptiveRateLimiter("integration-recovery", cfg, nil)
 

@@ -11,6 +11,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/ratelimit"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/gcp/api"
 )
 
 // GCNV's per-project quota is enforced server-side, so all GCNV backends in
@@ -77,5 +78,6 @@ func gcnvLimiterFor(
 		Logc(ctx).WithError(err).Error("Invalid GCNV rate limit configuration.")
 		return nil, err
 	}
+	cfg.DecreaseOnError = api.IsGCNVTooManyRequestsError
 	return gcnvLimiterRegistry.GetOrCreate(config.ProjectNumber, cfg), nil
 }

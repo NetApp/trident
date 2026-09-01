@@ -63,6 +63,8 @@ type AdaptiveRateLimiter struct {
 
 	// now allows tests to inject a fake clock. If nil, time.Now is used.
 	now func() time.Time
+
+	decreaseOnError DecreaseOnError
 }
 
 // LimiterConfig holds tunables for AdaptiveRateLimiter. The package itself has
@@ -107,6 +109,11 @@ type LimiterConfig struct {
 	// each probe when there has been no recent decrease. If <= 0, normalize
 	// treats it as unset and auto-derives it as Ceiling/20.
 	ProbeStep rate.Limit
+
+	// DecreaseOnError decides whether an upstream error should trigger a
+	// multiplicative decrease. When nil, ResourceExhausted is never treated as
+	// API throttling.
+	DecreaseOnError DecreaseOnError
 }
 
 // normalize performs shape-only fixes that are independent of any backend's
@@ -179,12 +186,15 @@ func (c LimiterConfig) Validate() error {
 func NewAdaptiveRateLimiter(key string, cfg LimiterConfig, metrics *Metrics) *AdaptiveRateLimiter {
 	cfg.normalize()
 	l := &AdaptiveRateLimiter{
-		key:     key,
-		cfg:     cfg,
-		metrics: metrics,
-		limiter: rate.NewLimiter(cfg.Ceiling, cfg.Burst),
+		key:             key,
+		cfg:             cfg,
+		metrics:         metrics,
+		limiter:         rate.NewLimiter(cfg.Ceiling, cfg.Burst),
+		decreaseOnError: cfg.DecreaseOnError,
 	}
-	metrics.SetCurrentPerSecond(l.metricKey(), float64(cfg.Ceiling))
+	if metrics != nil {
+		metrics.SetCurrentPerSecond(l.metricKey(), float64(cfg.Ceiling))
+	}
 	return l
 }
 
@@ -259,8 +269,8 @@ func (l *AdaptiveRateLimiter) OnRateLimited(ctx context.Context) {
 
 	if l.metrics != nil {
 		l.metrics.DecreasesTotal.WithLabelValues(l.metricKey()).Inc()
+		l.metrics.SetCurrentPerSecond(l.metricKey(), float64(newLimit))
 	}
-	l.metrics.SetCurrentPerSecond(l.metricKey(), float64(newLimit))
 
 	// Log per-minute so the numbers match the GCP-quota wording customers see
 	// in their dashboards (e.g. "1200/min"). The native rate.Limit is per-sec.
@@ -310,8 +320,8 @@ func (l *AdaptiveRateLimiter) OnSuccess(ctx context.Context) {
 
 	if l.metrics != nil {
 		l.metrics.IncreasesTotal.WithLabelValues(l.metricKey()).Inc()
+		l.metrics.SetCurrentPerSecond(l.metricKey(), float64(newLimit))
 	}
-	l.metrics.SetCurrentPerSecond(l.metricKey(), float64(newLimit))
 
 	Logc(ctx).WithFields(LogFields{
 		"key":            l.key,
@@ -354,6 +364,13 @@ func ParseLimiterConfig(baseline LimiterConfig, in LimiterConfigInput) (LimiterC
 	return cfg, nil
 }
 
+func (l *AdaptiveRateLimiter) shouldDecreaseForError(err error) bool {
+	if l.decreaseOnError == nil {
+		return false
+	}
+	return l.decreaseOnError(err)
+}
+
 // isTransportError reports whether the gRPC status code indicates a
 // transport-level or server-health failure that does NOT prove the upstream had
 // capacity to process the request. These are excluded from the "success" signal
@@ -387,12 +404,18 @@ func (l *AdaptiveRateLimiter) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		err := invoker(ctx, method, req, reply, cc, opts...)
 		code := status.Code(err)
 		switch {
-		case code == codes.ResourceExhausted:
+		case l.shouldDecreaseForError(err):
+			// Upstream API throttling (e.g. HTTP 429 / RATE_LIMIT_EXCEEDED): slow down
 			l.OnRateLimited(ctx)
+		case code == codes.ResourceExhausted:
+			// Non-rate-limit ResourceExhausted (e.g. capacity quota):
+			// terminal condition, do NOT slow down and do NOT count as success.
+			// Leave limiter unchanged to surface the error quickly.
 		case isTransportError(code):
-			// Ambiguous — don't count as success or throttle.
+			// Ambiguous transport/server-health failure — don't count as success or throttle.
 		default:
-			// Server processed the request (success or app-level error like NotFound).
+			// Application-level errors (NotFound, InvalidArgument, etc.):
+			// prove server had capacity and processed the request.
 			l.OnSuccess(ctx)
 		}
 		return err

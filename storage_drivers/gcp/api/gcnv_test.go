@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/netapp/apiv1/netapppb"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,40 @@ import (
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
+
+func TestWithOptionalTimeout(t *testing.T) {
+	t.Run("preserves caller context when unset", func(t *testing.T) {
+		parent := context.Background()
+		got, cancel := withOptionalTimeout(parent, 0)
+		defer cancel()
+
+		_, hasDeadline := got.Deadline()
+		assert.False(t, hasDeadline)
+	})
+
+	for _, timeout := range []time.Duration{time.Second, time.Hour} {
+		t.Run("preserves caller deadline when unset/"+timeout.String(), func(t *testing.T) {
+			parent, parentCancel := context.WithTimeout(context.Background(), timeout)
+			defer parentCancel()
+			parentDeadline, _ := parent.Deadline()
+
+			got, cancel := withOptionalTimeout(parent, 0)
+			defer cancel()
+			gotDeadline, hasDeadline := got.Deadline()
+
+			assert.True(t, hasDeadline)
+			assert.Equal(t, parentDeadline, gotDeadline)
+		})
+	}
+
+	t.Run("adds deadline when configured", func(t *testing.T) {
+		got, cancel := withOptionalTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		_, ok := got.Deadline()
+		assert.True(t, ok)
+	})
+}
 
 func TestRegisterStoragePools(t *testing.T) {
 	storagePoolMap := make(map[string]storage.Pool)
@@ -842,16 +877,25 @@ func TestIsGCNVNotFoundError(t *testing.T) {
 }
 
 func TestIsGCNVTooManyRequestsError(t *testing.T) {
-	result := IsGCNVTooManyRequestsError(nil)
-	assert.False(t, result)
-
-	err := status.Error(codes.ResourceExhausted, "This is a test error")
-	result = IsGCNVTooManyRequestsError(err)
-	assert.True(t, result)
-
-	err = errors.New("This is a non status code  error")
-	result = IsGCNVTooManyRequestsError(err)
-	assert.False(t, result)
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{name: "nil", err: nil, expected: false},
+		{name: "non-status error", err: errors.New("plain error"), expected: false},
+		{name: "unknown ResourceExhausted", err: status.Error(codes.ResourceExhausted, "This is a test error"), expected: false},
+		{name: "RATE_LIMIT_EXCEEDED message", err: status.Error(codes.ResourceExhausted, "Quota exceeded for quota metric 'API requests' and limit 'API requests per minute'. reason = RATE_LIMIT_EXCEEDED"), expected: true},
+		{name: "api-requests hyphen", err: status.Error(codes.ResourceExhausted, "quota: api-requests per minute exceeded"), expected: true},
+		{name: "FlexVolumesPerRegion message", err: status.Error(codes.ResourceExhausted, "Quota limit 'FlexVolumesPerRegion' has been exceeded. Limit: 100 in region us-east4"), expected: false},
+		{name: "N2_CPUS quota message", err: status.Error(codes.ResourceExhausted, "Quota 'N2_CPUS' exceeded in region us-west2"), expected: false},
+		{name: "regional storage quota message", err: status.Error(codes.ResourceExhausted, "quota metric 'Total regional capacity' exceeded"), expected: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, IsGCNVTooManyRequestsError(test.err))
+		})
+	}
 }
 
 func TestIsGCNVDeadlineExceededError(t *testing.T) {
@@ -2058,6 +2102,15 @@ func TestGCNVVolumeFallbackNames(t *testing.T) {
 				Name:         "",
 			},
 			expectedFirst: "token-1",
+			expectedNext:  "",
+		},
+		{
+			name: "empty internal name uses underscore display name",
+			volConfig: &storage.VolumeConfig{
+				InternalName: "",
+				Name:         "pvc-0fc0d8df-1bc1-4f3e-a60d-c4bd287f5139",
+			},
+			expectedFirst: "pvc_0fc0d8df_1bc1_4f3e_a60d_c4bd287f5139",
 			expectedNext:  "",
 		},
 	}

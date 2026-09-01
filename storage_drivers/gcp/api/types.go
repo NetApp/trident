@@ -36,7 +36,7 @@ type GCNV interface {
 	CreateVolume(context.Context, *VolumeCreateRequest) (*Volume, error)
 	UpdateNASVolume(context.Context, *Volume, map[string]string, *string, *bool, *ExportRule) error
 	ResizeVolume(context.Context, *Volume, int64) error
-	DeleteVolume(context.Context, *Volume) error
+	DeleteVolume(context.Context, *Volume, time.Duration) error
 
 	SnapshotsForVolume(context.Context, *Volume) (*[]*Snapshot, error)
 	SnapshotForVolume(context.Context, *Volume, string) (*Snapshot, error)

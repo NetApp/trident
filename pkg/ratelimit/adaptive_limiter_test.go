@@ -60,6 +60,7 @@ func testLimiterConfig() LimiterConfig {
 		DecreaseDebounce: 10 * time.Second,
 		ProbeInterval:    30 * time.Second,
 		ProbeStep:        rate.Limit(1),
+		DecreaseOnError:  testAPIDecreaseOnError,
 	}
 }
 
@@ -326,7 +327,8 @@ func TestUnaryInterceptor_DecreasesOnResourceExhausted(t *testing.T) {
 	interceptor := l.UnaryInterceptor()
 
 	invoker := func(_ context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
-		return status.Error(codes.ResourceExhausted, "boom")
+		return status.Error(codes.ResourceExhausted,
+			"Quota exceeded for quota metric 'API requests' and limit 'API requests per minute per region'. reason = RATE_LIMIT_EXCEEDED")
 	}
 
 	err := interceptor(context.Background(), "/test/Method", nil, nil, nil, invoker)
@@ -336,6 +338,51 @@ func TestUnaryInterceptor_DecreasesOnResourceExhausted(t *testing.T) {
 
 	dec, _ := l.Stats()
 	assert.Equal(t, uint64(1), dec)
+}
+
+func TestUnaryInterceptor_ResourceExhaustedBehavior(t *testing.T) {
+	tests := []struct {
+		name    string
+		msg     string
+		wantDec uint64
+	}{
+		{"API throttle decreases limiter", "reason = RATE_LIMIT_EXCEEDED for API requests", 1},
+		{"FlexVolumesPerRegion is neutral", "Quota limit 'FlexVolumesPerRegion' has been exceeded. Limit: 100 in region us-east4", 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l, _, cfg := newTestLimiter(t)
+			interceptor := l.UnaryInterceptor()
+			invoker := func(_ context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+				return status.Error(codes.ResourceExhausted, tt.msg)
+			}
+			err := interceptor(context.Background(), "/test/Method", nil, nil, nil, invoker)
+			assert.Error(t, err)
+			dec, inc := l.Stats()
+			assert.Equal(t, tt.wantDec, dec)
+			assert.Equal(t, uint64(0), inc)
+			if tt.wantDec == 0 {
+				assert.Equal(t, cfg.Ceiling, l.Limit(), "non-rate quota must leave limit unchanged")
+			}
+		})
+	}
+}
+
+func TestUnaryInterceptor_UnknownResourceExhaustedWithoutClassifier(t *testing.T) {
+	cfg := testLimiterConfig()
+	cfg.DecreaseOnError = nil
+	l := NewAdaptiveRateLimiter("test-no-classifier", cfg, testMetricsInstance)
+	interceptor := l.UnaryInterceptor()
+	invoker := func(_ context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+		return status.Error(codes.ResourceExhausted, "reason = RATE_LIMIT_EXCEEDED")
+	}
+
+	err := interceptor(context.Background(), "/test/Method", nil, nil, nil, invoker)
+	assert.Error(t, err)
+	dec, inc := l.Stats()
+	assert.Equal(t, uint64(0), dec)
+	assert.Equal(t, uint64(0), inc)
+	assert.Equal(t, cfg.Ceiling, l.Limit())
 }
 
 func TestUnaryInterceptor_AppLevelErrorCountsAsSuccess(t *testing.T) {
@@ -460,7 +507,14 @@ func TestParseLimiterConfig_AllEmptyReturnsBaseline(t *testing.T) {
 	baseline := testLimiterConfig()
 	cfg, err := ParseLimiterConfig(baseline, LimiterConfigInput{})
 	assert.NoError(t, err)
-	assert.Equal(t, baseline, cfg)
+	assert.InDelta(t, float64(baseline.Ceiling), float64(cfg.Ceiling), 1e-6)
+	assert.InDelta(t, float64(baseline.Floor), float64(cfg.Floor), 1e-6)
+	assert.Equal(t, baseline.Burst, cfg.Burst)
+	assert.Equal(t, baseline.DecreaseFactor, cfg.DecreaseFactor)
+	assert.Equal(t, baseline.DecreaseDebounce, cfg.DecreaseDebounce)
+	assert.Equal(t, baseline.ProbeInterval, cfg.ProbeInterval)
+	assert.InDelta(t, float64(baseline.ProbeStep), float64(cfg.ProbeStep), 1e-6)
+	assert.NotNil(t, cfg.DecreaseOnError)
 }
 
 func TestParseLimiterConfig_RejectsInvalidBaseline(t *testing.T) {

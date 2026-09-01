@@ -18,6 +18,8 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
@@ -130,6 +132,15 @@ func (d *SANStorageDriver) defaultCreateTimeout() time.Duration {
 // defaultTimeout controls the driver timeout for most workflows.
 func (d *SANStorageDriver) defaultTimeout() time.Duration {
 	return api.DefaultTimeout
+}
+
+// deleteTimeout returns the configured timeout for delete waits. When it is unset, delete
+// operations preserve the deadline on the provisioner request context.
+func (d *SANStorageDriver) deleteTimeout() time.Duration {
+	if d.Config.VolumeCreateTimeout != "" {
+		return d.volumeCreateTimeout
+	}
+	return 0
 }
 
 // Initialize initializes this driver from the provided config.
@@ -778,6 +789,16 @@ func (d *SANStorageDriver) Create(
 
 		volume, err := d.API.CreateVolume(ctx, createReq)
 		if err != nil {
+			if isCreateVolumeTimeout(err) {
+				Logc(ctx).WithFields(LogFields{
+					"capacityPool":  cPool.Name,
+					"creationToken": name,
+					"volume":        volConfig.Name,
+				}).WithError(err).Warn(
+					"CreateVolume timed out; treating request as in-progress and skipping pool failover.")
+				return errors.VolumeCreatingError(err.Error())
+			}
+
 			errMessage := fmt.Sprintf("GCNV pool %s; error creating LUN %s: %v", cPool.Name, name, err)
 			Logc(ctx).Error(errMessage)
 			createErr = multierr.Append(createErr, errors.New(errMessage))
@@ -910,7 +931,7 @@ func (d *SANStorageDriver) CreateClone(
 
 		// Defer cleanup of intermediate snapshot - runs on success or failure
 		defer func() {
-			if delErr := d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, api.DefaultTimeout); delErr != nil {
+			if delErr := d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, d.deleteTimeout()); delErr != nil {
 				Logc(ctx).WithFields(LogFields{
 					"snapshot": sourceSnapshot.Name,
 					"source":   sourceVolume.Name,
@@ -1162,7 +1183,7 @@ func (d *SANStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		case api.VolumeStateDeleting:
 			// Wait for deletion to complete
 			_, errDelete := d.API.WaitForVolumeState(
-				ctx, volume, api.VolumeStateDeleted, []string{api.VolumeStateError}, d.volumeCreateTimeout)
+				ctx, volume, api.VolumeStateDeleted, []string{api.VolumeStateError}, d.deleteTimeout())
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
@@ -1171,7 +1192,7 @@ func (d *SANStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 
 		case api.VolumeStateError:
 			// Delete a failed volume
-			errDelete := d.API.DeleteVolume(ctx, volume)
+			errDelete := d.API.DeleteVolume(ctx, volume, d.deleteTimeout())
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
@@ -1221,20 +1242,20 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	} else if extantVolume.State == api.VolumeStateDeleting {
 		// This is a retry, so give it more time before giving up again.
 		_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
-			[]string{api.VolumeStateError}, d.volumeCreateTimeout)
+			[]string{api.VolumeStateError}, d.deleteTimeout())
 		return err
 	}
 
 	// Delete the volume
-	if err = d.API.DeleteVolume(ctx, extantVolume); err != nil {
+	if err = d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout()); err != nil {
 		return err
 	}
 
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
-	// Wait for deletion to complete
+	// Wait for deletion to complete (same timeout as Deleting-state retry above).
 	_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
-		[]string{api.VolumeStateError}, d.defaultTimeout())
+		[]string{api.VolumeStateError}, d.deleteTimeout())
 	return err
 }
 
@@ -1303,7 +1324,7 @@ func (d *SANStorageDriver) deleteAutomaticSnapshot(
 	}
 
 	// Delete the snapshot
-	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, api.DefaultTimeout); err != nil {
+	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, d.deleteTimeout()); err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
 			"cleaned up and must be manually deleted.")
 	}
@@ -1787,13 +1808,34 @@ func (d *SANStorageDriver) DeleteSnapshot(
 		if errors.IsNotFoundError(err) {
 			return nil
 		}
+		if s, ok := status.FromError(err); ok {
+			switch s.Code() {
+			case codes.Internal, codes.Unavailable, codes.Unknown, codes.Aborted, codes.DeadlineExceeded:
+				return status.Error(codes.Unavailable,
+					fmt.Sprintf("transient backend error checking snapshot %s: %s", internalSnapName, s.Message()))
+			case codes.ResourceExhausted:
+				// GCP also returns ResourceExhausted for capacity-quota exhaustion (e.g. FlexVolumesPerRegion),
+				// which is terminal, not retryable. Only treat it as transient when it's actual API throttling.
+				if api.IsGCNVTooManyRequestsError(err) {
+					return status.Error(codes.Unavailable,
+						fmt.Sprintf("transient backend error checking snapshot %s: %s", internalSnapName, s.Message()))
+				}
+			}
+		}
+
 		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)
 	} else {
 		switch snapshot.State {
 		case api.SnapshotStateError:
 			fallthrough
 		case api.SnapshotStateReady:
-			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.DefaultTimeout)
+			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.SnapshotTimeout)
+		case api.SnapshotStateDeleting:
+			Logc(ctx).WithFields(LogFields{
+				"snapshotName": internalSnapName,
+				"volumeName":   internalVolName,
+			}).Debug("Snapshot already deleting; treating delete as idempotent in-progress success.")
+			return nil
 		default:
 			fields["state"] = snapshot.State
 			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")

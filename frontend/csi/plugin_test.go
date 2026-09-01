@@ -472,6 +472,18 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 	}
 }
 
+func TestPlugin_GetCSIErrorForOrchestratorError_PreservesGRPCStatus(t *testing.T) {
+	plugin := &Plugin{}
+	input := status.Error(codes.Unavailable, "transient backend error")
+
+	result := plugin.getCSIErrorForOrchestratorError(input)
+
+	s, ok := status.FromError(result)
+	require.True(t, ok)
+	assert.Equal(t, codes.Unavailable, s.Code())
+	assert.Equal(t, "transient backend error", s.Message())
+}
+
 func TestReadAESKey(t *testing.T) {
 	testCases := []struct {
 		name          string

@@ -2183,6 +2183,16 @@ func TestDeleteSnapshot(t *testing.T) {
 			expErrCode:          codes.Unknown,
 			deleteSnapshotError: errors.New("some error"),
 		},
+		{
+			name: "Error - Transient Unavailable from sequential core is preserved",
+			req: &csi.DeleteSnapshotRequest{
+				SnapshotId: "volume-1/snapshot-1",
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Unavailable,
+			deleteSnapshotError: status.Error(codes.Unavailable,
+				"transient backend error locating snapshot"),
+		},
 	}
 
 	for _, tc := range testCases {

@@ -187,17 +187,17 @@ func (mr *MockGCNVMockRecorder) DeleteSnapshot(arg0, arg1, arg2, arg3 any) *gomo
 }
 
 // DeleteVolume mocks base method.
-func (m *MockGCNV) DeleteVolume(arg0 context.Context, arg1 *api.Volume) error {
+func (m *MockGCNV) DeleteVolume(arg0 context.Context, arg1 *api.Volume, arg2 time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolume indicates an expected call of DeleteVolume.
-func (mr *MockGCNVMockRecorder) DeleteVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCNVMockRecorder) DeleteVolume(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockGCNV)(nil).DeleteVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockGCNV)(nil).DeleteVolume), arg0, arg1, arg2)
 }
 
 // DiscoverGCNVResources mocks base method.
