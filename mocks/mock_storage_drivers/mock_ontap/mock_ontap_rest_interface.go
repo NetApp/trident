@@ -1074,17 +1074,17 @@ func (mr *MockRestClientInterfaceMockRecorder) LunMap(ctx, initiatorGroupName, l
 }
 
 // LunMapAddReportingNode mocks base method.
-func (m *MockRestClientInterface) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+func (m *MockRestClientInterface) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LunMapAddReportingNode indicates an expected call of LunMapAddReportingNode.
-func (mr *MockRestClientInterfaceMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeName)
 }
 
 // LunMapGetReportingNodes mocks base method.
@@ -1133,17 +1133,17 @@ func (mr *MockRestClientInterfaceMockRecorder) LunMapList(ctx, initiatorGroupNam
 }
 
 // LunMapRemoveReportingNode mocks base method.
-func (m *MockRestClientInterface) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+func (m *MockRestClientInterface) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LunMapRemoveReportingNode indicates an expected call of LunMapRemoveReportingNode.
-func (mr *MockRestClientInterfaceMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeName)
 }
 
 // LunRename mocks base method.
@@ -1447,21 +1447,6 @@ func (m *MockRestClientInterface) NVMeNamespaceSetSize(ctx context.Context, nsUU
 func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceSetSize(ctx, nsUUID, newSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceSetSize", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceSetSize), ctx, nsUUID, newSize)
-}
-
-// NVMeNamespaceSize mocks base method.
-func (m *MockRestClientInterface) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeNamespaceSize", ctx, namespacePath)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NVMeNamespaceSize indicates an expected call of NVMeNamespaceSize.
-func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceSize(ctx, namespacePath any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceSize", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceSize), ctx, namespacePath)
 }
 
 // NVMeRemoveHostFromSubsystem mocks base method.

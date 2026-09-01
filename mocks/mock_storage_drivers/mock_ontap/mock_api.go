@@ -1014,17 +1014,17 @@ func (mr *MockOntapAPIMockRecorder) LunListIgroupsMapped(ctx, lunPath any) *gomo
 }
 
 // LunMapAddReportingNode mocks base method.
-func (m *MockOntapAPI) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+func (m *MockOntapAPI) LunMapAddReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret := m.ctrl.Call(m, "LunMapAddReportingNode", ctx, initiatorGroupName, lunPath, nodeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LunMapAddReportingNode indicates an expected call of LunMapAddReportingNode.
-func (mr *MockOntapAPIMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) LunMapAddReportingNode(ctx, initiatorGroupName, lunPath, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAddReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapAddReportingNode), ctx, initiatorGroupName, lunPath, nodeName)
 }
 
 // LunMapGetReportingNodes mocks base method.
@@ -1058,17 +1058,17 @@ func (mr *MockOntapAPIMockRecorder) LunMapInfo(ctx, initiatorGroupName, lunPath 
 }
 
 // LunMapRemoveReportingNode mocks base method.
-func (m *MockOntapAPI) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeUUID string) error {
+func (m *MockOntapAPI) LunMapRemoveReportingNode(ctx context.Context, initiatorGroupName, lunPath, nodeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeUUID)
+	ret := m.ctrl.Call(m, "LunMapRemoveReportingNode", ctx, initiatorGroupName, lunPath, nodeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LunMapRemoveReportingNode indicates an expected call of LunMapRemoveReportingNode.
-func (mr *MockOntapAPIMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeUUID any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) LunMapRemoveReportingNode(ctx, initiatorGroupName, lunPath, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapRemoveReportingNode", reflect.TypeOf((*MockOntapAPI)(nil).LunMapRemoveReportingNode), ctx, initiatorGroupName, lunPath, nodeName)
 }
 
 // LunRename mocks base method.
