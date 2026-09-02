@@ -419,6 +419,34 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 	}
 }
 
+func TestFilterCapacityPoolsOnTopology_RegionalUnifiedPool(t *testing.T) {
+	sdk := getFakeSDK(true)
+	regionalUnifiedPool := &CapacityPool{
+		Name:     "regional-unified",
+		FullName: "projects/123/locations/us-central1/storagePools/regional-unified",
+		Location: "us-central1",
+		PoolType: StoragePoolTypeUnified,
+		Zone:     "us-central1-a",
+	}
+	zonalPool := &CapacityPool{
+		Name:     "zonal",
+		FullName: "projects/123/locations/us-central1-a/storagePools/zonal",
+		Location: "us-central1-a",
+		PoolType: StoragePoolTypeUnified,
+		Zone:     "us-central1-a",
+	}
+	requisiteTopologies := []map[string]string{
+		{"topology.kubernetes.io/region": "us-central1", "topology.kubernetes.io/zone": "us-central1-b"},
+		{"topology.kubernetes.io/region": "us-central1", "topology.kubernetes.io/zone": "us-central1-c"},
+		{"topology.kubernetes.io/region": "us-central1", "topology.kubernetes.io/zone": "us-central1-f"},
+	}
+
+	actual := sdk.FilterCapacityPoolsOnTopology(ctx, []*CapacityPool{regionalUnifiedPool, zonalPool}, requisiteTopologies, nil)
+
+	assert.Contains(t, actual, regionalUnifiedPool)
+	assert.NotContains(t, actual, zonalPool)
+}
+
 func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))

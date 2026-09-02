@@ -483,7 +483,8 @@ func (c Client) FilterCapacityPoolsOnTopology(
 	filteredCPools := make([]*CapacityPool, 0)
 	// Filtering pools on requisite topology
 	for _, cPool := range cPools {
-		if cPool.Zone != "" {
+		// Zonal pools use their zone as the location; a regional pool's Zone is its primary HA zone.
+		if cPool.Zone != "" && strings.EqualFold(cPool.Location, cPool.Zone) {
 			for _, topology := range requisiteTopologies {
 				// If region and zone are not specified in the topology, we assume that the capacity pool
 				// is a regional capacity pool and is always assumed to match the requisite topology.
@@ -498,8 +499,7 @@ func (c Client) FilterCapacityPoolsOnTopology(
 				}
 			}
 		} else {
-			// A capacity pool without a zone is considered to be a regional capacity pool, and is always
-			// assumed to match the requisite topology.
+			// A pool without a zonal location is regional and is always assumed to match the requisite topology.
 			filteredCPools = append(filteredCPools, cPool)
 		}
 	}
