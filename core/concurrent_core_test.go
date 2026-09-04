@@ -4213,6 +4213,35 @@ func TestAddBackendConcurrentCore(t *testing.T) {
 	}
 }
 
+// AddBackend on an existing backend name replaces the backend object without ever calling
+// updateBackendVolumes, so the volumes it hosts must survive the replacement on their own.
+func TestAddBackendConcurrentCore_ExistingBackendKeepsVolumes(t *testing.T) {
+	db.Initialize()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	existing := getFakeBackend("existingBackend", "uuid1", nil)
+	vol := getFakeVolume("vol1", "uuid1")
+	existing.Volumes().Store(vol.Config.Name, vol)
+	addBackendsToCache(t, existing)
+	mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+
+	configJSON := `{"backendName": "existingBackend", "storageDriverName": "fake", "version": 1, "protocol": "file", "volumeAccess": "1.0.0.1"}`
+	_, err := o.AddBackend(context.TODO(), configJSON, "")
+	require.NoError(t, err)
+
+	replaced := getBackendByNameFromCache(t, "existingBackend")
+	require.NotNil(t, replaced)
+	assert.NotSame(t, existing, replaced, "AddBackend on an existing name must build a new backend object")
+	_, found := replaced.Volumes().Load("vol1")
+	assert.True(t, found, "volumes must be carried forward into the replacement backend object")
+}
+
 // TestUpdateBackendStateConcurrentCore covers public UpdateBackendState API.
 func TestUpdateBackendStateConcurrentCore(t *testing.T) {
 	tests := []struct {
@@ -14197,6 +14226,196 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestPublishedNodesForBackendConcurrentCore(t *testing.T) {
+	nodeA, nodeB := getFakeNode("nodeA"), getFakeNode("nodeB")
+	allNodes := []*models.Node{nodeA, nodeB}
+	subordinate := &storage.Volume{Config: &storage.VolumeConfig{Name: "sub1", ShareSourceVolume: "vol1"}}
+
+	tests := []struct {
+		name          string
+		publications  []*models.VolumePublication
+		subordinates  []*storage.Volume
+		expectedNodes []*models.Node
+	}{
+		{
+			name:          "PublicationForHostedVolume",
+			publications:  []*models.VolumePublication{getFakeVolumePublication("vol1", "nodeA")},
+			expectedNodes: []*models.Node{nodeA},
+		},
+		{
+			name:          "PublicationForVolumeOnAnotherBackend",
+			publications:  []*models.VolumePublication{getFakeVolumePublication("vol9", "nodeA")},
+			expectedNodes: []*models.Node{},
+		},
+		{
+			// Recorded under the subordinate's name, which the backend's volume map never holds.
+			name:          "SubordinatePublicationCountsForSourceVolume",
+			publications:  []*models.VolumePublication{getFakeVolumePublication("sub1", "nodeB")},
+			subordinates:  []*storage.Volume{subordinate},
+			expectedNodes: []*models.Node{nodeB},
+		},
+		{
+			name: "MixedPublicationsDeduplicateNodes",
+			publications: []*models.VolumePublication{
+				getFakeVolumePublication("vol1", "nodeA"),
+				getFakeVolumePublication("sub1", "nodeA"),
+				getFakeVolumePublication("sub1", "nodeB"),
+			},
+			subordinates:  []*storage.Volume{subordinate},
+			expectedNodes: []*models.Node{nodeA, nodeB},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			backend := getFakeBackend("backend1", "uuid1", nil)
+			backend.Volumes().Store("vol1", getFakeVolume("vol1", "uuid1"))
+
+			nodes, unregistered := publishedNodesForBackend(backend, tt.publications, allNodes, tt.subordinates)
+
+			assert.ElementsMatch(t, tt.expectedNodes, nodes)
+			assert.Empty(t, unregistered)
+		})
+	}
+}
+
+// A publication may outlive its node's registration. The driver dereferences every node it is
+// handed, so such a node must be reported and left out rather than passed through as nil.
+func TestPublishedNodesForBackendConcurrentCore_UnregisteredNode(t *testing.T) {
+	backend := getFakeBackend("backend1", "uuid1", nil)
+	backend.Volumes().Store("vol1", getFakeVolume("vol1", "uuid1"))
+	nodeA := getFakeNode("nodeA")
+	publications := []*models.VolumePublication{
+		getFakeVolumePublication("vol1", "nodeA"),
+		getFakeVolumePublication("vol1", "goneNode"),
+		getFakeVolumePublication("vol1", "goneNode"),
+	}
+
+	nodes, unregistered := publishedNodesForBackend(backend, publications, []*models.Node{nodeA}, nil)
+
+	assert.Equal(t, []*models.Node{nodeA}, nodes)
+	assert.Equal(t, []string{"goneNode"}, unregistered)
+}
+
+// If the computed node set is empty while publications still exist for the backend, the driver
+// would be told to remove every export rule from an in-use policy; reconciliation must be deferred
+// and the backend left marked for retry instead.
+func TestReconcileNodeAccessOnBackendConcurrentCore_EmptyNodeSet(t *testing.T) {
+	const backendUUID = "uuid1"
+	vol1 := getFakeVolume("vol1", backendUUID)
+	nodeA := getFakeNode("nodeA")
+
+	tests := []struct {
+		name              string
+		enforcement       bool
+		backendVolumes    map[string]*storage.Volume
+		nodes             []*models.Node
+		publications      []*models.VolumePublication
+		expectReconcile   bool
+		expectedNodeNames []string
+	}{
+		{
+			name:           "EnforcedVolumeMissingFromBackendMap",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{},
+			nodes:          []*models.Node{nodeA},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile: false,
+		},
+		{
+			name:           "EnforcedPublishedNodeUnregistered",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          nil,
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile: false,
+		},
+		{
+			// Only another backend's volume is published: this backend legitimately has no
+			// consumers, so reconciling to an empty set (stripping its rules) must still happen.
+			name:           "EnforcedNoPublicationsStripsRules",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          []*models.Node{nodeA},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol9", NodeName: "nodeA", BackendUUID: "some-other-backend"},
+			},
+			expectReconcile:   true,
+			expectedNodeNames: []string{},
+		},
+		{
+			name:           "EnforcedConsistentView",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          []*models.Node{nodeA},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile:   true,
+			expectedNodeNames: []string{"nodeA"},
+		},
+		{
+			name:           "UnenforcedNoNodesWhilePublished",
+			enforcement:    false,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          nil,
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile: false,
+		},
+		{
+			name:              "UnenforcedNoNodesNoPublications",
+			enforcement:       false,
+			backendVolumes:    map[string]*storage.Volume{"vol1": vol1},
+			nodes:             nil,
+			publications:      nil,
+			expectReconcile:   true,
+			expectedNodeNames: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			savedContext := config.CurrentDriverContext
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = savedContext }()
+
+			mockCtrl := gomock.NewController(t)
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().CanEnablePublishEnforcement().Return(tt.enforcement).AnyTimes()
+			mockBackend.EXPECT().Volumes().Return(makeSyncMapFromMap(tt.backendVolumes)).AnyTimes()
+
+			if tt.expectReconcile {
+				mockBackend.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, nodes []*models.Node, _ string) error {
+						names := make([]string, 0, len(nodes))
+						for _, n := range nodes {
+							names = append(names, n.Name)
+						}
+						assert.ElementsMatch(t, tt.expectedNodeNames, names)
+						return nil
+					})
+				mockBackend.EXPECT().SetNodeAccessUpToDate()
+			} else {
+				mockBackend.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				mockBackend.EXPECT().SetNodeAccessUpToDate().Times(0)
+			}
+
+			o := getConcurrentOrchestrator()
+			err := o.reconcileNodeAccessOnBackend(context.Background(), mockBackend, tt.publications, tt.nodes, nil)
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestPeriodicallyReconcileNodeAccessOnBackendsConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name                           string
@@ -14609,6 +14828,7 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
 				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).AnyTimes()
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 				// Add backend to cache
