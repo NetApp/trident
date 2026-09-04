@@ -30,6 +30,7 @@
 - **Kubernetes:** Improved slow Qtree provisioning on large SVMs (Issue [#1142](https://github.com/NetApp/trident/issues/1142)).
 - **Kubernetes:** Fixed ControllerPublish to use volume config file system type to avoid using incorrect default file system type.
 - **Kubernetes:** Fixed an issue where orphan dm devices might cause repeated CSI NodeUnstageVolume failures.
+- **Kubernetes:** Fixed NodeUnpublishVolume failing indefinitely when the target path could not be inspected, such as an NFS mount whose export policy no longer admits the node (Issue [#1184](https://github.com/NetApp/trident/issues/1184)).
 
 **Enhancements:**
 
