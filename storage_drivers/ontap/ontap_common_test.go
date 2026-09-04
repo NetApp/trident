@@ -5043,6 +5043,235 @@ func TestEnsureNodeAccessForPolicyAndApply_PolicyCreatedAndApplied(t *testing.T)
 	assert.True(t, applyPolicyCalled, "applyPolicy callback should have been called after policy creation")
 }
 
+func TestEnsureNodeAccessRulesForPolicy_MultiNodeUnionDedupe(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	// 10.0.0.2 appears on both nodes and must only be created once.
+	nodes := []*tridentmodels.Node{
+		{Name: "node1", IPs: []string{"10.0.0.1", "10.0.0.2"}},
+		{Name: "node2", IPs: []string{"10.0.0.2", "10.0.0.3"}},
+	}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	// Rules must be created in ascending IP order, which only holds if the desired rules are sorted after
+	// getDesiredExportPolicyRules unions them (its map-based iteration order is otherwise random). InOrder
+	// pins this so removing the sort in the helper fails this test.
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.1", gomock.Any()).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.2", gomock.Any()).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.3", gomock.Any()).Times(1).Return(nil),
+	)
+	// This helper only adds rules; it must never destroy one.
+	mockAPI.EXPECT().ExportRuleDestroy(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_CIDRFiltering(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{
+		{Name: "node1", IPs: []string{"10.0.0.1", "192.168.1.1"}},
+	}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	// 192.168.1.1 is outside AutoExportCIDRs and is filtered out before it ever reaches ExportRuleCreate, so no
+	// expectation is registered for it; an unexpected call for it would fail the test.
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.1", gomock.Any()).Times(1).Return(nil)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_PolicyMissingCreatesThenAddsRules(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "10.0.0.1"
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{nodeIP}}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).After(ruleListCall).Times(1).Return(nil)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_ExistingCommaFormatRuleNotRecreated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{
+		{Name: "node1", IPs: []string{"10.1.1.26"}},
+		{Name: "node2", IPs: []string{"10.1.1.27"}},
+	}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"0.0.0.0/0"}}
+
+	// Existing ZAPI-style rule combines both IPs into a single comma-separated entry.
+	zapiExportRule := map[int]string{1: "10.1.1.26, 10.1.1.27"}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(zapiExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_ExportPolicyExistsErrorPropagated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{"10.0.0.1"}}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	expectedErr := errors.New("API error checking export policy existence")
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, expectedErr)
+	mockAPI.EXPECT().ExportPolicyCreate(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_ExportRuleCreateErrorPropagated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "10.0.0.1"
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{nodeIP}}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	expectedErr := errors.New("generic export rule create failure")
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(expectedErr)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_ExportRuleCreateAlreadyExistsTolerated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	// Rules are created in sorted order, so "10.0.0.1" is attempted before "10.0.0.2".
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{"10.0.0.1", "10.0.0.2"}}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.1", gomock.Any()).Times(1).
+			Return(errors.AlreadyExistsError("rule already exists")),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.2", gomock.Any()).Times(1).Return(nil),
+	)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_ExportRuleListErrorTolerated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{"10.0.0.1", "10.0.0.2"}}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(nil, errors.New("ontap error"))
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.1", gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.2", gomock.Any()).Times(1).Return(nil)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_EmptyNodesSlice(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_EmptyNodesPolicyMissing(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"10.0.0.0/24"}}
+
+	// Even with no nodes, a missing policy must still be created (deny-all until rules are added).
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessRulesForPolicy_DesiredRulesErrorPropagated(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodes := []*tridentmodels.Node{{Name: "node1", IPs: []string{"192.168.1.1"}}}
+	// /35 is not a valid IPv4 prefix length, so getDesiredExportPolicyRules (via network.FilterIPs) fails
+	// before any rule listing or creation is attempted.
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/35"}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessRulesForPolicy(ctx, nodes, mockAPI, config, policyName)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unable to determine desired export policy rules")
+}
+
 func TestIsDefaultAuthTypeOfType(t *testing.T) {
 	response := api.IscsiInitiatorAuth{
 		AuthType: "fakeAuthType",

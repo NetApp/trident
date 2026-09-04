@@ -13687,6 +13687,9 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			o := getConcurrentOrchestrator()
 			o.storeClient = mockStoreClient
 			o.lastNodeRegistrationTime = time.Time{}
+			// AddNode launches a background repair that reads the cache; stop it before the next
+			// case reinitializes the cache underneath it.
+			defer o.bgTasks.stop()
 
 			err := o.AddNode(testCtx, tt.newNode, func(_, _, _ string) {})
 
@@ -13701,6 +13704,153 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			assert.NotNil(t, results)
 			assert.Equal(t, results[0].Node.Read, tt.expectedNode)
 		})
+	}
+}
+
+func TestNodeAccessRepairsForNodeConcurrentCore(t *testing.T) {
+	const enforcingUUID, plainUUID = "uuid-enforcing", "uuid-plain"
+
+	tests := []struct {
+		name          string
+		node          string
+		publications  []*models.VolumePublication
+		expectVolumes []string
+		expectNodes   []string
+	}{
+		{
+			name: "RepairCarriesEveryNodePublishedToTheVolume",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				getFakeVolumePublication("vol1", "nodeA"),
+				getFakeVolumePublication("vol1", "nodeB"),
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA", "nodeB"},
+		},
+		{
+			name: "SubordinatePublicationResolvesToTheSourceVolume",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				getFakeVolumePublication("sub1", "nodeA"),
+				getFakeVolumePublication("vol1", "nodeB"),
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA", "nodeB"},
+		},
+		{
+			name: "SourceAndSubordinateProduceOneRepair",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				getFakeVolumePublication("vol1", "nodeA"),
+				getFakeVolumePublication("sub1", "nodeA"),
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA"},
+		},
+		{
+			name: "UnregisteredNodeIsLeftOut",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				getFakeVolumePublication("vol1", "nodeA"),
+				getFakeVolumePublication("vol1", "ghost"),
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA"},
+		},
+		{
+			name:          "BackendWithoutPublishEnforcementIsSkipped",
+			node:          "nodeA",
+			publications:  []*models.VolumePublication{getFakeVolumePublication("vol2", "nodeA")},
+			expectVolumes: []string{},
+		},
+		{
+			name:          "OtherNodesPublicationsAreNotRepaired",
+			node:          "nodeA",
+			publications:  []*models.VolumePublication{getFakeVolumePublication("vol1", "nodeB")},
+			expectVolumes: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			mockCtrl := gomock.NewController(t)
+			enforcing := getMockBackend(mockCtrl, "enforcing", enforcingUUID)
+			enforcing.EXPECT().CanEnablePublishEnforcement().Return(true).AnyTimes()
+			plain := getMockBackend(mockCtrl, "plain", plainUUID)
+			plain.EXPECT().CanEnablePublishEnforcement().Return(false).AnyTimes()
+			addBackendsToCache(t, enforcing, plain)
+
+			source := getFakeVolume("vol1", enforcingUUID)
+			source.Config.ExportPolicy = "vol1"
+			addVolumesToCache(t, source, getFakeVolume("vol2", plainUUID))
+			addSubordinateVolumesToCache(t, &storage.Volume{
+				Config: &storage.VolumeConfig{Name: "sub1", ShareSourceVolume: "vol1"},
+				State:  storage.VolumeStateSubordinate,
+			})
+			addNodesToCache(t, getFakeNode("nodeA"), getFakeNode("nodeB"))
+			addVolumePublicationsToCache(t, tt.publications...)
+
+			repairs, err := getConcurrentOrchestrator().nodeAccessRepairsForNode(testCtx, tt.node)
+			require.NoError(t, err)
+
+			volumes := make([]string, 0, len(repairs))
+			for _, r := range repairs {
+				volumes = append(volumes, r.volConfig.Name)
+			}
+			assert.ElementsMatch(t, tt.expectVolumes, volumes)
+			if len(tt.expectVolumes) == 1 {
+				assert.Same(t, enforcing, repairs[0].backend)
+				assert.ElementsMatch(t, tt.expectNodes, nodeNamesOf(repairs[0].nodes))
+				assert.Equal(t, source.Config, repairs[0].volConfig)
+				assert.NotSame(t, source.Config, repairs[0].volConfig, "the driver must get a private copy")
+			}
+		})
+	}
+}
+
+// Registering a node must repair the export rules of the volumes it is published to, for every
+// node published to them, without holding any cache lock while the driver talks to ONTAP.
+func TestAddNodeConcurrentCore_RepairsExportRulesOfPublishedVolumes(t *testing.T) {
+	const backendUUID = "uuid1"
+	db.Initialize()
+	mockCtrl := gomock.NewController(t)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil)
+
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	backend := getMockBackend(mockCtrl, "backend1", backendUUID)
+	backend.EXPECT().CanEnablePublishEnforcement().Return(true).AnyTimes()
+	backend.EXPECT().Driver().Return(driver).AnyTimes()
+	backend.EXPECT().InvalidateNodeAccess().AnyTimes()
+	addBackendsToCache(t, backend)
+
+	volume := getFakeVolume("vol1", backendUUID)
+	volume.Config.ExportPolicy = "vol1"
+	addVolumesToCache(t, volume)
+	addNodesToCache(t, getFakeNode("nodeB"))
+	addVolumePublicationsToCache(t,
+		getFakeVolumePublication("vol1", "nodeA"), getFakeVolumePublication("vol1", "nodeB"))
+
+	repaired := make(chan []*models.Node, 1)
+	driver.EXPECT().ReconcileVolumeNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node) error {
+			assert.Equal(t, "vol1", volConfig.Name)
+			repaired <- nodes
+			return nil
+		})
+
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+	require.NoError(t, o.AddNode(testCtx, &models.Node{Name: "nodeA", IPs: []string{"10.0.0.5"}}, func(_, _, _ string) {}))
+	defer o.bgTasks.stop()
+
+	select {
+	case nodes := <-repaired:
+		assert.ElementsMatch(t, []string{"nodeA", "nodeB"}, nodeNamesOf(nodes))
+	case <-time.After(5 * time.Second):
+		t.Fatal("registering the node did not repair its published volume")
 	}
 }
 
