@@ -7381,7 +7381,145 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 	if invalidateErr := o.invalidateAllBackendNodeAccess(ctx); invalidateErr != nil {
 		Logc(ctx).WithError(invalidateErr).Error("Could not invalidate backend node access.")
 	}
+
+	// A node's per-volume export rules are otherwise written only by its own ControllerPublishVolume,
+	// which Kubernetes never repeats while a VolumeAttachment exists. Registration is the event a
+	// rebooted or re-addressed node always produces, so repair its volumes' rules here, off the
+	// request path and detached from the request's cancellation.
+	nodeName := node.Name
+	o.bgTasks.launch(context.WithoutCancel(ctx), func(ctx context.Context) {
+		o.repairNodeAccessForNode(ctx, nodeName)
+	})
 	return
+}
+
+// repairNodeAccessForNode adds any missing export rules, for every node concerned, on every volume
+// that nodeName is published to. It reads what it needs from the cache and calls the drivers with
+// no cache lock held.
+func (o *ConcurrentTridentOrchestrator) repairNodeAccessForNode(ctx context.Context, nodeName string) {
+	repairs, err := o.nodeAccessRepairsForNode(ctx, nodeName)
+	if err != nil {
+		Logc(ctx).WithError(err).WithField("node", nodeName).Warn(
+			"Could not collect the volumes published to the node for export rule repair.")
+		return
+	}
+	if len(repairs) == 0 {
+		return
+	}
+	Logc(ctx).WithFields(LogFields{
+		"node":    nodeName,
+		"volumes": len(repairs),
+	}).Debug("Repairing export rules for volumes published to the node.")
+	applyNodeAccessRepairs(ctx, nodeName, repairs)
+}
+
+// nodeAccessRepairsForNode collects one repair per volume that nodeName is published to. A
+// subordinate publication resolves to the share-source volume whose policy grants the access, and
+// each repair carries every node published to that volume, so a shared volume is repaired for all
+// of its nodes at once. Only backends that enforce publications take part.
+func (o *ConcurrentTridentOrchestrator) nodeAccessRepairsForNode(
+	ctx context.Context, nodeName string,
+) ([]volumeNodeAccessRepair, error) {
+	_, results, unlocker, err := db.Lock(ctx, db.Query(
+		db.ListVolumePublications(), db.ListNodes(), db.ListSubordinateVolumes()))
+	if err != nil {
+		unlocker()
+		return nil, err
+	}
+	publications, allNodes, subordinates := results[0].VolumePublications, results[0].Nodes,
+		results[0].SubordinateVolumes
+	unlocker()
+
+	shareSourceByName := make(map[string]string, len(subordinates))
+	for _, subordinate := range subordinates {
+		shareSourceByName[subordinate.Config.Name] = subordinate.Config.ShareSourceVolume
+	}
+	nodesByName := make(map[string]*models.Node, len(allNodes))
+	for _, n := range allNodes {
+		nodesByName[n.Name] = n
+	}
+
+	// Every node published to each hosting volume, and the hosting volumes this node is published to.
+	nodeNamesByVolume := make(map[string]map[string]struct{})
+	targetVolumes := make(map[string]struct{})
+	for _, pub := range publications {
+		hosting := pub.VolumeName
+		if source, ok := shareSourceByName[hosting]; ok {
+			hosting = source
+		}
+		if nodeNamesByVolume[hosting] == nil {
+			nodeNamesByVolume[hosting] = make(map[string]struct{})
+		}
+		nodeNamesByVolume[hosting][pub.NodeName] = struct{}{}
+		if pub.NodeName == nodeName {
+			targetVolumes[hosting] = struct{}{}
+		}
+	}
+	if len(targetVolumes) == 0 {
+		return nil, nil
+	}
+
+	volumeQueries := make([][]db.Subquery, 0, len(targetVolumes))
+	for name := range targetVolumes {
+		volumeQueries = append(volumeQueries, db.Query(db.ReadVolume(name)))
+	}
+	_, results, unlocker, err = db.Lock(ctx, volumeQueries...)
+	if err != nil {
+		unlocker()
+		return nil, err
+	}
+	volumes := make([]*storage.Volume, 0, len(results))
+	backendUUIDs := make(map[string]struct{})
+	for _, result := range results {
+		if volume := result.Volume.Read; volume != nil {
+			volumes = append(volumes, volume)
+			backendUUIDs[volume.BackendUUID] = struct{}{}
+		}
+	}
+	unlocker()
+	if len(volumes) == 0 {
+		return nil, nil
+	}
+
+	backendQueries := make([][]db.Subquery, 0, len(backendUUIDs))
+	for backendUUID := range backendUUIDs {
+		backendQueries = append(backendQueries, db.Query(db.ReadBackend(backendUUID)))
+	}
+	_, results, unlocker, err = db.Lock(ctx, backendQueries...)
+	if err != nil {
+		unlocker()
+		return nil, err
+	}
+	backendsByUUID := make(map[string]storage.Backend, len(results))
+	for _, result := range results {
+		if backend := result.Backend.Read; backend != nil {
+			backendsByUUID[backend.BackendUUID()] = backend
+		}
+	}
+	unlocker()
+
+	sort.Slice(volumes, func(i, j int) bool { return volumes[i].Config.Name < volumes[j].Config.Name })
+	repairs := make([]volumeNodeAccessRepair, 0, len(volumes))
+	for _, volume := range volumes {
+		backend, ok := backendsByUUID[volume.BackendUUID]
+		if !ok || !backendCanRepairNodeAccess(backend) {
+			continue
+		}
+		nodeNames := make([]string, 0, len(nodeNamesByVolume[volume.Config.Name]))
+		for name := range nodeNamesByVolume[volume.Config.Name] {
+			nodeNames = append(nodeNames, name)
+		}
+		sort.Strings(nodeNames)
+		nodes := make([]*models.Node, 0, len(nodeNames))
+		for _, name := range nodeNames {
+			if node := nodesByName[name]; node != nil {
+				nodes = append(nodes, node)
+			}
+		}
+		// ReadVolume hands back a deep copy, so the config is already private to this repair.
+		repairs = append(repairs, volumeNodeAccessRepair{backend: backend, volConfig: volume.Config, nodes: nodes})
+	}
+	return repairs, nil
 }
 
 // UpdateNode updates the publication state of a node. It does not create a new node if it does not exist.

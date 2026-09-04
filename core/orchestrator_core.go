@@ -6609,38 +6609,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 	var nodes []*models.Node
 
 	if b.CanEnablePublishEnforcement() {
-
 		nodes = o.publishedNodesForBackend(b)
-		volToNodePublications := o.volumePublicationsForBackend(b)
-
-		nodeMap := make(map[string]*models.Node)
-		for _, n := range nodes {
-			nodeMap[n.Name] = n
-		}
-
-		// reconcile every volume if publish enforcement is enabled for the backend
-		for volName, volPublications := range volToNodePublications {
-			volume, ok := o.volumes[volName]
-			if !ok {
-				continue
-			}
-
-			volNodes := make([]*models.Node, 0)
-			for _, pub := range volPublications {
-				if node, found := nodeMap[pub.NodeName]; found {
-					volNodes = append(volNodes, node)
-				}
-			}
-
-			if err := b.ReconcileVolumeNodeAccess(ctx, volume.Config, volNodes); err != nil {
-				Logc(ctx).WithError(err).WithFields(LogFields{
-					"volume": volume.Config.Name,
-					"nodes":  volNodes,
-				}).Error("Unable to reconcile node access for volume.")
-				return err
-			}
-		}
-
 	} else {
 		nodes = o.nodes.List()
 	}
@@ -6673,18 +6642,6 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*mod
 	}
 
 	return nodes
-}
-
-func (o *TridentOrchestrator) volumePublicationsForBackend(b storage.Backend) map[string][]*models.VolumePublication {
-	volumes := b.Volumes()
-	volumeToNodePublications := make(map[string][]*models.VolumePublication)
-
-	volumes.Range(func(k, _ interface{}) bool {
-		volName := k.(string)
-		volumeToNodePublications[volName] = o.volumePublications.ListPublicationsForVolume(volName)
-		return true
-	})
-	return volumeToNodePublications
 }
 
 func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b storage.Backend) error {
@@ -6900,6 +6857,90 @@ func (o *TridentOrchestrator) AddNode(
 
 	o.lastNodeRegistration = time.Now()
 	o.invalidateAllBackendNodeAccess()
+
+	// A node's per-volume export rules are otherwise written only by its own ControllerPublishVolume,
+	// which Kubernetes never repeats while a VolumeAttachment exists. Registration is the event a
+	// rebooted or re-addressed node always produces, so repair its volumes' rules here, off the
+	// request path and detached from the request's cancellation.
+	nodeName := node.Name
+	o.bgTasks.launch(context.WithoutCancel(ctx), func(ctx context.Context) {
+		o.repairNodeAccessForNode(ctx, nodeName)
+	})
+	return nil
+}
+
+// repairNodeAccessForNode adds any missing export rules, for every node concerned, on every volume
+// that nodeName is published to. It snapshots what it needs under the orchestrator lock and calls
+// the drivers with the lock released.
+func (o *TridentOrchestrator) repairNodeAccessForNode(ctx context.Context, nodeName string) {
+	repairs := o.nodeAccessRepairsForNode(ctx, nodeName)
+	if len(repairs) == 0 {
+		return
+	}
+	Logc(ctx).WithFields(LogFields{
+		"node":    nodeName,
+		"volumes": len(repairs),
+	}).Debug("Repairing export rules for volumes published to the node.")
+	applyNodeAccessRepairs(ctx, nodeName, repairs)
+}
+
+// nodeAccessRepairsForNode collects one repair per volume that nodeName is published to. A
+// subordinate publication resolves to the share-source volume whose policy grants the access, and
+// each repair carries every node published to that volume, so a shared volume is repaired for all
+// of its nodes at once. Only backends that enforce publications take part.
+func (o *TridentOrchestrator) nodeAccessRepairsForNode(ctx context.Context, nodeName string) []volumeNodeAccessRepair {
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	repairs := make([]volumeNodeAccessRepair, 0)
+	seenVolumes := make(map[string]struct{})
+	for _, pub := range o.volumePublications.ListPublicationsForNode(nodeName) {
+		volume := o.hostingVolume(pub.VolumeName)
+		if volume == nil {
+			continue
+		}
+		if _, done := seenVolumes[volume.Config.Name]; done {
+			continue
+		}
+		seenVolumes[volume.Config.Name] = struct{}{}
+
+		backend, ok := o.backends[volume.BackendUUID]
+		if !ok || !backendCanRepairNodeAccess(backend) {
+			continue
+		}
+
+		nodes := make([]*models.Node, 0)
+		seenNodes := make(map[string]struct{})
+		for _, volPub := range o.listVolumePublicationsForVolumeAndSubordinates(ctx, volume.Config.Name) {
+			if _, done := seenNodes[volPub.NodeName]; done {
+				continue
+			}
+			seenNodes[volPub.NodeName] = struct{}{}
+			if node := o.nodes.Get(volPub.NodeName); node != nil {
+				nodes = append(nodes, node)
+			}
+		}
+
+		repairs = append(repairs, volumeNodeAccessRepair{
+			backend:   backend,
+			volConfig: volume.Config.ConstructClone(),
+			nodes:     nodes,
+		})
+	}
+	return repairs
+}
+
+// hostingVolume returns the volume whose storage backs volumeName: the volume itself, or the share
+// source of a subordinate volume. Nil when neither is known.
+func (o *TridentOrchestrator) hostingVolume(volumeName string) *storage.Volume {
+	if volume, ok := o.volumes[volumeName]; ok {
+		return volume
+	}
+	if subordinate, ok := o.subordinateVolumes[volumeName]; ok {
+		if source, ok := o.volumes[subordinate.Config.ShareSourceVolume]; ok {
+			return source
+		}
+	}
 	return nil
 }
 

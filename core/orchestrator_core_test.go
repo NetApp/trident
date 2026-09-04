@@ -4667,6 +4667,210 @@ func TestAddNode(t *testing.T) {
 	}
 }
 
+func nodeNamesOf(nodes []*models.Node) []string {
+	names := make([]string, 0, len(nodes))
+	for _, n := range nodes {
+		names = append(names, n.Name)
+	}
+	return names
+}
+
+func TestNodeAccessRepairsForNode(t *testing.T) {
+	const enforcingUUID, plainUUID = "uuid-enforcing", "uuid-plain"
+	newVolumes := func() (source, plain, subordinate *storage.Volume) {
+		source = &storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1", ExportPolicy: "vol1"},
+			BackendUUID: enforcingUUID,
+		}
+		source.Config.SubordinateVolumes = map[string]interface{}{"sub1": nil}
+		plain = &storage.Volume{Config: &storage.VolumeConfig{Name: "vol2"}, BackendUUID: plainUUID}
+		subordinate = &storage.Volume{
+			Config: &storage.VolumeConfig{Name: "sub1", ShareSourceVolume: "vol1"},
+			State:  storage.VolumeStateSubordinate,
+		}
+		return
+	}
+
+	tests := []struct {
+		name          string
+		node          string
+		publications  []*models.VolumePublication
+		expectVolumes []string
+		expectNodes   []string
+	}{
+		{
+			name: "RepairCarriesEveryNodePublishedToTheVolume",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA"},
+				{VolumeName: "vol1", NodeName: "nodeB"},
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA", "nodeB"},
+		},
+		{
+			name: "SubordinatePublicationResolvesToTheSourceVolume",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				{VolumeName: "sub1", NodeName: "nodeA"},
+				{VolumeName: "vol1", NodeName: "nodeB"},
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA", "nodeB"},
+		},
+		{
+			name: "SourceAndSubordinateProduceOneRepair",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA"},
+				{VolumeName: "sub1", NodeName: "nodeA"},
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA"},
+		},
+		{
+			name: "UnregisteredNodeIsLeftOut",
+			node: "nodeA",
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA"},
+				{VolumeName: "vol1", NodeName: "ghost"},
+			},
+			expectVolumes: []string{"vol1"},
+			expectNodes:   []string{"nodeA"},
+		},
+		{
+			name:          "BackendWithoutPublishEnforcementIsSkipped",
+			node:          "nodeA",
+			publications:  []*models.VolumePublication{{VolumeName: "vol2", NodeName: "nodeA"}},
+			expectVolumes: []string{},
+		},
+		{
+			name:          "UnknownVolumeIsSkipped",
+			node:          "nodeA",
+			publications:  []*models.VolumePublication{{VolumeName: "vol9", NodeName: "nodeA"}},
+			expectVolumes: []string{},
+		},
+		{
+			name:          "OtherNodesPublicationsAreNotRepaired",
+			node:          "nodeA",
+			publications:  []*models.VolumePublication{{VolumeName: "vol1", NodeName: "nodeB"}},
+			expectVolumes: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			enforcing := mockstorage.NewMockBackend(mockCtrl)
+			enforcing.EXPECT().CanEnablePublishEnforcement().Return(true).AnyTimes()
+			enforcing.EXPECT().State().Return(storage.Online).AnyTimes()
+			plainBackend := mockstorage.NewMockBackend(mockCtrl)
+			plainBackend.EXPECT().CanEnablePublishEnforcement().Return(false).AnyTimes()
+
+			source, plain, subordinate := newVolumes()
+			o := getOrchestrator(t, false)
+			o.backends[enforcingUUID] = enforcing
+			o.backends[plainUUID] = plainBackend
+			o.volumes = map[string]*storage.Volume{"vol1": source, "vol2": plain}
+			o.subordinateVolumes = map[string]*storage.Volume{"sub1": subordinate}
+			o.nodes.Set("nodeA", &models.Node{Name: "nodeA"})
+			o.nodes.Set("nodeB", &models.Node{Name: "nodeB"})
+			for _, pub := range tt.publications {
+				o.volumePublications.Set(pub.VolumeName, pub.NodeName, pub)
+			}
+
+			repairs := o.nodeAccessRepairsForNode(coreCtx, tt.node)
+
+			volumes := make([]string, 0, len(repairs))
+			for _, r := range repairs {
+				volumes = append(volumes, r.volConfig.Name)
+			}
+			assert.ElementsMatch(t, tt.expectVolumes, volumes)
+			if len(tt.expectVolumes) == 1 {
+				assert.Same(t, enforcing, repairs[0].backend)
+				assert.ElementsMatch(t, tt.expectNodes, nodeNamesOf(repairs[0].nodes))
+				assert.Equal(t, source.Config, repairs[0].volConfig)
+				assert.NotSame(t, source.Config, repairs[0].volConfig, "the driver must get a private copy")
+			}
+		})
+	}
+}
+
+func TestApplyNodeAccessRepairs(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	backend := mockstorage.NewMockBackend(mockCtrl)
+	backend.EXPECT().Driver().Return(driver).AnyTimes()
+	backend.EXPECT().Name().Return("backend1").AnyTimes()
+
+	nodes := []*models.Node{{Name: "nodeA"}}
+	first := &storage.VolumeConfig{Name: "vol1"}
+	second := &storage.VolumeConfig{Name: "vol2"}
+	repairs := []volumeNodeAccessRepair{
+		{backend: backend, volConfig: first, nodes: nodes},
+		{backend: backend, volConfig: second, nodes: nodes},
+	}
+
+	t.Run("EveryRepairReachesTheDriverEvenAfterAFailure", func(t *testing.T) {
+		driver.EXPECT().ReconcileVolumeNodeAccess(gomock.Any(), first, nodes).Return(errors.New("ontap down"))
+		driver.EXPECT().ReconcileVolumeNodeAccess(gomock.Any(), second, nodes).Return(nil)
+
+		applyNodeAccessRepairs(coreCtx, "nodeA", repairs)
+	})
+
+	t.Run("CancelledContextStopsBeforeCallingTheDriver", func(t *testing.T) {
+		cancelled, cancel := context.WithCancel(coreCtx)
+		cancel()
+
+		applyNodeAccessRepairs(cancelled, "nodeA", repairs)
+	})
+}
+
+// Registering a node must repair the export rules of the volumes it is published to, for every
+// node published to them, without holding the orchestrator lock while the driver talks to ONTAP.
+func TestAddNode_RepairsExportRulesOfPublishedVolumes(t *testing.T) {
+	const backendUUID = "uuid1"
+	mockCtrl := gomock.NewController(t)
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	backend := mockstorage.NewMockBackend(mockCtrl)
+	backend.EXPECT().Driver().Return(driver).AnyTimes()
+	backend.EXPECT().Name().Return("backend1").AnyTimes()
+	backend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	backend.EXPECT().GetDriverName().Return("ontap-nas-economy").AnyTimes()
+	backend.EXPECT().State().Return(storage.Online).AnyTimes()
+	backend.EXPECT().CanEnablePublishEnforcement().Return(true).AnyTimes()
+	backend.EXPECT().InvalidateNodeAccess().AnyTimes()
+
+	volume := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1", ExportPolicy: "vol1"},
+		BackendUUID: backendUUID,
+	}
+	o := getOrchestrator(t, false)
+	o.backends[backendUUID] = backend
+	o.volumes["vol1"] = volume
+	o.nodes.Set("nodeB", &models.Node{Name: "nodeB"})
+	o.volumePublications.Set("vol1", "nodeA", &models.VolumePublication{VolumeName: "vol1", NodeName: "nodeA"})
+	o.volumePublications.Set("vol1", "nodeB", &models.VolumePublication{VolumeName: "vol1", NodeName: "nodeB"})
+
+	repaired := make(chan []*models.Node, 1)
+	driver.EXPECT().ReconcileVolumeNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node) error {
+			assert.Equal(t, "vol1", volConfig.Name)
+			repaired <- nodes
+			return nil
+		})
+
+	require.NoError(t, o.AddNode(ctx(), &models.Node{Name: "nodeA", IPs: []string{"10.0.0.5"}}, nil))
+	defer o.bgTasks.stop()
+
+	select {
+	case nodes := <-repaired:
+		assert.ElementsMatch(t, []string{"nodeA", "nodeB"}, nodeNamesOf(nodes))
+	case <-time.After(5 * time.Second):
+		t.Fatal("registering the node did not repair its published volume")
+	}
+}
+
 func TestUpdateNode(t *testing.T) {
 	nodeName := "FakeNode"
 
@@ -6010,10 +6214,9 @@ func TestPublishVolume(t *testing.T) {
 						return nil
 					})
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6036,10 +6239,9 @@ func TestPublishVolume(t *testing.T) {
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6062,10 +6264,9 @@ func TestPublishVolume(t *testing.T) {
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6088,10 +6289,9 @@ func TestPublishVolume(t *testing.T) {
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6170,10 +6370,9 @@ func TestPublishVolume(t *testing.T) {
 				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(
 					errors.UnsupportedError("unsupported error"))
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
@@ -6222,9 +6421,8 @@ func TestPublishVolume(t *testing.T) {
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("some error"))
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().Name().Return("").AnyTimes()
 			},
 			wantErr:     assert.Error,
@@ -6250,10 +6448,9 @@ func TestPublishVolume(t *testing.T) {
 						return nil
 					})
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 			},
@@ -6280,10 +6477,9 @@ func TestPublishVolume(t *testing.T) {
 						return nil
 					})
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(fmt.Errorf("some error"))
@@ -6309,10 +6505,9 @@ func TestPublishVolume(t *testing.T) {
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().SetNodeAccessUpToDate()
 				mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).
-					Times(2)
+					Times(1)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6475,9 +6670,8 @@ func TestPublishVolume_UpdateExistingVP(t *testing.T) {
 			return nil
 		})
 	mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-	mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 	mockBackend.EXPECT().SetNodeAccessUpToDate()
-	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(2)
+	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(1)
 	mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 	mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 	mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -6498,9 +6692,8 @@ func TestPublishVolume_UpdateExistingVP(t *testing.T) {
 	// Second publish - should sync fields from volume to VP
 	mockStoreClient.EXPECT().UpdateVolumePublication(coreCtx, gomock.Any()).Return(nil) // This is the key call we're testing
 	mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-	mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 	mockBackend.EXPECT().SetNodeAccessUpToDate()
-	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(2)
+	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(1)
 	mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 	mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 	mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -10858,41 +11051,6 @@ func TestPublishedNodesForBackend(t *testing.T) {
 
 	actualNodes := o.publishedNodesForBackend(mockBackend)
 	assert.Equal(t, expectedNodes, actualNodes)
-}
-
-func TestVolumePublicationsForBackend(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	mockBackend := mockstorage.NewMockBackend(mockCtrl)
-	o := getOrchestrator(t, false)
-
-	// orchestrator has nodeA and nodeB, backend has published to nodeA
-	o.nodes.Set("nodeA", &models.Node{Name: "nodeA"})
-	o.nodes.Set("nodeB", &models.Node{Name: "nodeB"})
-	o.volumePublications.Set("vol1", "nodeA", &models.VolumePublication{
-		NodeName:   "nodeA",
-		VolumeName: "vol1",
-	})
-	o.volumePublications.Set("vol3", "nodeB", &models.VolumePublication{
-		NodeName:   "nodeB",
-		VolumeName: "vol3",
-	})
-	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{
-		"vol1": {Config: &storage.VolumeConfig{Name: "vol1", ExportPolicy: "pol1"}},
-		"vol2": {Config: &storage.VolumeConfig{Name: "vol2", ExportPolicy: "pol2"}},
-	}))
-
-	expectedVolToPubs := map[string][]*models.VolumePublication{
-		"vol1": {
-			{
-				NodeName:   "nodeA",
-				VolumeName: "vol1",
-			},
-		},
-		"vol2": {},
-	}
-
-	actualVolToPubs := o.volumePublicationsForBackend(mockBackend)
-	assert.Equal(t, expectedVolToPubs, actualVolToPubs)
 }
 
 func TestReconcileBackendState(t *testing.T) {
