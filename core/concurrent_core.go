@@ -1185,7 +1185,8 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 			// just log it and continue.
 			err = func() error {
 				_, results, unlocker, dbErr := db.Lock(ctx, db.Query(
-					db.ListVolumePublications(), db.ListNodes(), db.UpsertBackend(backend.BackendUUID(), "", "")))
+					db.ListVolumePublications(), db.ListNodes(), db.ListSubordinateVolumes(),
+					db.UpsertBackend(backend.BackendUUID(), "", "")))
 				defer unlocker()
 				if dbErr != nil {
 					return dbErr
@@ -1196,8 +1197,8 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 					return errors.NotFoundError("backend %s not found for reconcile", backend.BackendUUID())
 				}
 
-				if reconcileErr := o.reconcileNodeAccessOnBackend(
-					ctx, upsertBackend, results[0].VolumePublications, results[0].Nodes); reconcileErr != nil {
+				if reconcileErr := o.reconcileNodeAccessOnBackend(ctx, upsertBackend,
+					results[0].VolumePublications, results[0].Nodes, results[0].SubordinateVolumes); reconcileErr != nil {
 					return reconcileErr
 				}
 				results[0].Backend.Upsert(upsertBackend)
@@ -1217,7 +1218,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 }
 
 func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend,
-	allVolumePublications []*models.VolumePublication, allNodes []*models.Node,
+	allVolumePublications []*models.VolumePublication, allNodes []*models.Node, subordinateVolumes []*storage.Volume,
 ) error {
 	if config.CurrentDriverContext != config.ContextCSI {
 		return nil
@@ -1226,9 +1227,21 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context
 	var nodes []*models.Node
 
 	if b.CanEnablePublishEnforcement() {
-		nodes = publishedNodesForBackend(b, allVolumePublications, allNodes)
+		var unregisteredNodes []string
+		nodes, unregisteredNodes = publishedNodesForBackend(b, allVolumePublications, allNodes, subordinateVolumes)
+		if len(unregisteredNodes) > 0 {
+			Logc(ctx).WithFields(LogFields{
+				"backend":           b.Name(),
+				"unregisteredNodes": unregisteredNodes,
+			}).Warn("Some publications name nodes that are not registered; reconciling node access without them.")
+		}
 	} else {
 		nodes = allNodes
+	}
+
+	if len(nodes) == 0 && hasPublicationsForBackend(b, allVolumePublications) {
+		logSkippedNodeAccessReconcile(ctx, b)
+		return nil
 	}
 
 	if err := b.ReconcileNodeAccess(ctx, nodes, o.uuid); err != nil {
@@ -1289,28 +1302,48 @@ func (o *ConcurrentTridentOrchestrator) updateLastNodeRegistrationTime() {
 	o.lastNodeRegistrationTime = time.Now()
 }
 
-// publishedNodesForBackend returns the nodes that a backend has published volumes to
+// publishedNodesForBackend returns the nodes that a backend has published volumes to, plus the
+// names of published nodes that are absent from allNodes and therefore left out. Publications for
+// subordinate volumes count toward the share-source volume that hosts them, since a backend's
+// volume map only tracks the source.
 func publishedNodesForBackend(b storage.Backend, allVolumePublications []*models.VolumePublication,
-	allNodes []*models.Node,
-) []*models.Node {
+	allNodes []*models.Node, subordinateVolumes []*storage.Volume,
+) (nodes []*models.Node, unregisteredNodes []string) {
 	nodesByName := make(map[string]*models.Node, len(allNodes))
 	for _, n := range allNodes {
 		nodesByName[n.Name] = n
 	}
 
-	volumes := b.Volumes()
-	m := make(map[string]*models.Node)
-	for _, pub := range allVolumePublications {
-		if _, ok := volumes.Load(pub.VolumeName); ok {
-			m[pub.NodeName] = nodesByName[pub.NodeName]
-		}
+	shareSourceByName := make(map[string]string, len(subordinateVolumes))
+	for _, subordinate := range subordinateVolumes {
+		shareSourceByName[subordinate.Config.Name] = subordinate.Config.ShareSourceVolume
 	}
 
-	nodes := make([]*models.Node, 0, len(m))
-	for _, n := range m {
-		nodes = append(nodes, n)
+	volumes := b.Volumes()
+	seen := make(map[string]struct{})
+	for _, pub := range allVolumePublications {
+		hostingVolume := pub.VolumeName
+		if source, ok := shareSourceByName[hostingVolume]; ok {
+			hostingVolume = source
+		}
+		if _, ok := volumes.Load(hostingVolume); !ok {
+			continue
+		}
+		if _, done := seen[pub.NodeName]; done {
+			continue
+		}
+		seen[pub.NodeName] = struct{}{}
+
+		// Drivers dereference every node they are given, so a publication whose node is not
+		// registered must be reported rather than passed through as a nil entry.
+		if node := nodesByName[pub.NodeName]; node != nil {
+			nodes = append(nodes, node)
+		} else {
+			unregisteredNodes = append(unregisteredNodes, pub.NodeName)
+		}
 	}
-	return nodes
+	sort.Strings(unregisteredNodes)
+	return nodes, unregisteredNodes
 }
 
 func (o *ConcurrentTridentOrchestrator) AddFrontend(ctx context.Context, f frontend.Plugin) {
@@ -1752,7 +1785,8 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 	Logc(ctx).Debug(">>>>>> upsertBackend")
 	defer Logc(ctx).Debug("<<<<<< upsertBackend")
 
-	_, results, unlocker, err := db.NestedLock(ctx, db.Query(db.ListVolumePublications(), db.ListNodes()))
+	_, results, unlocker, err := db.NestedLock(ctx, db.Query(
+		db.ListVolumePublications(), db.ListNodes(), db.ListSubordinateVolumes()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -1777,7 +1811,8 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 
 	// Node access rules may have changed in the backend config
 	backend.InvalidateNodeAccess()
-	err = o.reconcileNodeAccessOnBackend(ctx, backend, results[0].VolumePublications, results[0].Nodes)
+	err = o.reconcileNodeAccessOnBackend(ctx, backend, results[0].VolumePublications, results[0].Nodes,
+		results[0].SubordinateVolumes)
 	if err != nil {
 		return nil, err
 	}
@@ -1972,6 +2007,12 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 			return nil, err
 		}
 	}
+
+	// upsertBackend reconciles node access against this new object before updateBackendVolumes
+	// refreshes its volume map, and the AddBackend-on-existing-name path never refreshes it at
+	// all. Carry the volumes forward so reconciliation sees the backend's real consumers rather
+	// than an empty set, which the NAS drivers turn into "remove every export policy rule".
+	backend.SetVolumes(originalBackend.Volumes())
 
 	// The fake driver needs volumes copied forward
 	if originalFakeDriver, ok := originalBackend.Driver().(*fake.StorageDriver); ok {

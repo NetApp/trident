@@ -307,6 +307,41 @@ func generateVolumePublication(volName string, publishInfo *models.VolumePublish
 	return vp
 }
 
+// hasPublicationsForBackend reports whether any publication belongs to backend b. A publication
+// records the UUID of the backend hosting its volume; records that predate that field are
+// attributed by checking whether their volume is in b's volume map.
+func hasPublicationsForBackend(b storage.Backend, publications []*models.VolumePublication) bool {
+	backendUUID := b.BackendUUID()
+	var volumes *sync.Map
+	for _, pub := range publications {
+		if pub.BackendUUID != "" {
+			if pub.BackendUUID == backendUUID {
+				return true
+			}
+			continue
+		}
+		if volumes == nil {
+			volumes = b.Volumes()
+		}
+		if _, ok := volumes.Load(pub.VolumeName); ok {
+			return true
+		}
+	}
+	return false
+}
+
+// logSkippedNodeAccessReconcile records that node-access reconciliation for b was deferred: its
+// computed node set was empty while publications still exist, so proceeding would remove every
+// export rule from a policy that is still in use. The backend stays marked as needing
+// reconciliation and the periodic loop retries once the caches agree.
+func logSkippedNodeAccessReconcile(ctx context.Context, b storage.Backend) {
+	Logc(ctx).WithFields(LogFields{
+		"backend":     b.Name(),
+		"backendUUID": b.BackendUUID(),
+	}).Warn("Publications exist for this backend but none of their nodes could be resolved; " +
+		"skipping node access reconciliation instead of removing every export rule.")
+}
+
 // isDockerPluginMode returns true if the ENV variable config.DockerPluginModeEnvVariable is set
 func isDockerPluginMode() bool {
 	return os.Getenv(config.DockerPluginModeEnvVariable) != ""

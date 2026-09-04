@@ -6611,6 +6611,10 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 	if b.CanEnablePublishEnforcement() {
 
 		nodes = o.publishedNodesForBackend(b)
+		if len(nodes) == 0 && hasPublicationsForBackend(b, o.volumePublications.ListPublications()) {
+			logSkippedNodeAccessReconcile(ctx, b)
+			return nil
+		}
 		volToNodePublications := o.volumePublicationsForBackend(b)
 
 		nodeMap := make(map[string]*models.Node)
@@ -6643,6 +6647,10 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 
 	} else {
 		nodes = o.nodes.List()
+		if len(nodes) == 0 && hasPublicationsForBackend(b, o.volumePublications.ListPublications()) {
+			logSkippedNodeAccessReconcile(ctx, b)
+			return nil
+		}
 	}
 
 	if err := b.ReconcileNodeAccess(ctx, nodes, o.uuid); err != nil {
@@ -6653,14 +6661,15 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 	return nil
 }
 
-// publishedNodesForBackend returns the nodes that a backend has published volumes to
+// publishedNodesForBackend returns the nodes that a backend has published volumes to. Publications
+// for subordinate volumes count toward the share-source volume that hosts them.
 func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*models.Node {
 	pubs := o.volumePublications.ListPublications()
 	volumes := b.Volumes()
 	m := make(map[string]struct{})
 
 	for _, pub := range pubs {
-		if _, ok := volumes.Load(pub.VolumeName); ok {
+		if _, ok := volumes.Load(o.hostingVolumeName(pub.VolumeName)); ok {
 			m[pub.NodeName] = struct{}{}
 		}
 	}
@@ -6673,6 +6682,15 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*mod
 	}
 
 	return nodes
+}
+
+// hostingVolumeName maps a subordinate volume to the share-source volume whose storage it uses;
+// a backend's volume map only tracks the source. Any other name maps to itself.
+func (o *TridentOrchestrator) hostingVolumeName(volumeName string) string {
+	if subordinate, ok := o.subordinateVolumes[volumeName]; ok {
+		return subordinate.Config.ShareSourceVolume
+	}
+	return volumeName
 }
 
 func (o *TridentOrchestrator) volumePublicationsForBackend(b storage.Backend) map[string][]*models.VolumePublication {

@@ -10860,6 +10860,161 @@ func TestPublishedNodesForBackend(t *testing.T) {
 	assert.Equal(t, expectedNodes, actualNodes)
 }
 
+// A subordinate volume's publication is recorded under the subordinate's name, which a backend's
+// volume map never contains; the node must still count toward the share-source volume's backend.
+func TestPublishedNodesForBackend_SubordinatePublication(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	o := getOrchestrator(t, false)
+
+	o.nodes.Set("nodeA", &models.Node{Name: "nodeA"})
+	o.nodes.Set("nodeB", &models.Node{Name: "nodeB"})
+	o.subordinateVolumes["sub1"] = &storage.Volume{
+		Config: &storage.VolumeConfig{Name: "sub1", ShareSourceVolume: "vol1"},
+	}
+	o.volumePublications.Set("sub1", "nodeB", &models.VolumePublication{NodeName: "nodeB", VolumeName: "sub1"})
+	o.volumePublications.Set("sub9", "nodeA", &models.VolumePublication{NodeName: "nodeA", VolumeName: "sub9"})
+	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{
+		"vol1": {Config: &storage.VolumeConfig{Name: "vol1"}},
+	}))
+
+	actualNodes := o.publishedNodesForBackend(mockBackend)
+
+	assert.Equal(t, []*models.Node{o.nodes.Get("nodeB")}, actualNodes,
+		"the subordinate's node counts for the source's backend; an unknown subordinate does not")
+}
+
+// A publish-enforcement backend derives its node set from publications intersected with its own
+// volume map and the node cache. If that intersection is empty while publications still exist,
+// the driver would be told to remove every export rule from an in-use policy, so reconciliation
+// must be deferred instead and the backend left marked for retry.
+func TestReconcileNodeAccessOnBackend_EmptyNodeSet(t *testing.T) {
+	const backendUUID = "uuid1"
+	vol1 := &storage.Volume{Config: &storage.VolumeConfig{Name: "vol1"}, BackendUUID: backendUUID}
+
+	tests := []struct {
+		name               string
+		enforcement        bool
+		backendVolumes     map[string]*storage.Volume
+		nodes              []string
+		publications       []*models.VolumePublication
+		expectReconcile    bool
+		expectedNodeNames  []string
+		expectVolumeRecons int
+	}{
+		{
+			name:           "EnforcedVolumeMissingFromBackendMap",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{},
+			nodes:          []string{"nodeA"},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile: false,
+		},
+		{
+			name:           "EnforcedLegacyPublicationNodeMissingFromCache",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          nil,
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA"},
+			},
+			expectReconcile: false,
+		},
+		{
+			// Only another backend's volume is published: this backend legitimately has no
+			// consumers, so reconciling to an empty set (stripping its rules) must still happen.
+			name:           "EnforcedNoPublicationsStripsRules",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          []string{"nodeA"},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol9", NodeName: "nodeA", BackendUUID: "some-other-backend"},
+			},
+			expectReconcile:    true,
+			expectedNodeNames:  []string{},
+			expectVolumeRecons: 1,
+		},
+		{
+			name:           "EnforcedConsistentView",
+			enforcement:    true,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          []string{"nodeA"},
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile:    true,
+			expectedNodeNames:  []string{"nodeA"},
+			expectVolumeRecons: 1,
+		},
+		{
+			name:           "UnenforcedNodeCacheEmptyWhilePublished",
+			enforcement:    false,
+			backendVolumes: map[string]*storage.Volume{"vol1": vol1},
+			nodes:          nil,
+			publications: []*models.VolumePublication{
+				{VolumeName: "vol1", NodeName: "nodeA", BackendUUID: backendUUID},
+			},
+			expectReconcile: false,
+		},
+		{
+			name:              "UnenforcedNodeCacheEmptyNoPublications",
+			enforcement:       false,
+			backendVolumes:    map[string]*storage.Volume{"vol1": vol1},
+			nodes:             nil,
+			publications:      nil,
+			expectReconcile:   true,
+			expectedNodeNames: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			savedContext := config.CurrentDriverContext
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = savedContext }()
+
+			mockCtrl := gomock.NewController(t)
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().CanEnablePublishEnforcement().Return(tt.enforcement).AnyTimes()
+			mockBackend.EXPECT().Volumes().Return(makeSyncMap(tt.backendVolumes)).AnyTimes()
+
+			o := getOrchestrator(t, false)
+			o.volumes["vol1"] = vol1
+			for _, n := range tt.nodes {
+				o.nodes.Set(n, &models.Node{Name: n})
+			}
+			for _, pub := range tt.publications {
+				o.volumePublications.Set(pub.VolumeName, pub.NodeName, pub)
+			}
+
+			if tt.expectReconcile {
+				mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).
+					Return(nil).Times(tt.expectVolumeRecons)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, nodes []*models.Node, _ string) error {
+						names := make([]string, 0, len(nodes))
+						for _, n := range nodes {
+							names = append(names, n.Name)
+						}
+						assert.ElementsMatch(t, tt.expectedNodeNames, names)
+						return nil
+					})
+				mockBackend.EXPECT().SetNodeAccessUpToDate()
+			} else {
+				mockBackend.EXPECT().ReconcileVolumeNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				mockBackend.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				mockBackend.EXPECT().SetNodeAccessUpToDate().Times(0)
+			}
+
+			assert.NoError(t, o.reconcileNodeAccessOnBackend(coreCtx, mockBackend))
+		})
+	}
+}
+
 func TestVolumePublicationsForBackend(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
