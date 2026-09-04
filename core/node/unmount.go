@@ -69,7 +69,13 @@ func (c *Core) unmountGeneric(ctx context.Context, volume, targetPath string) er
 				"target path (%s) not found; volume is not mounted.", targetPath)
 			return nil
 		}
-		return errors.InternalError("could not check if the target path (%s) is a directory; %v", targetPath, err)
+		// stat can fail on a path that is still mounted: EACCES when an NFS export rule no longer
+		// admits this node, ESTALE or EIO when the share has gone stale. None of these prevent
+		// umount(2). Consult the mount table, which does not touch the filesystem behind the
+		// target path, instead of failing the unpublish before it is attempted.
+		Logc(ctx).WithFields(LogFields{"targetPath": targetPath, "error": err}).Warning(
+			"Could not stat target path; checking the mount table instead.")
+		isDir = false
 	}
 
 	var notMountPoint bool
