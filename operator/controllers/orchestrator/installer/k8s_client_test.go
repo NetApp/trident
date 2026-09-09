@@ -15,6 +15,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -3957,6 +3958,155 @@ func TestPutDeployment(t *testing.T) {
 			},
 		)
 	}
+}
+
+// affinityWithExpressions builds a node affinity with a single node selector term composed of the
+// given match expressions, for exercising order-insensitive patch handling.
+func affinityWithExpressions(expressions ...corev1.NodeSelectorRequirement) *corev1.Affinity {
+	return &corev1.Affinity{
+		NodeAffinity: &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+				NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchExpressions: expressions}},
+			},
+		},
+	}
+}
+
+func inRequirement(key string, values ...string) corev1.NodeSelectorRequirement {
+	return corev1.NodeSelectorRequirement{Key: key, Operator: corev1.NodeSelectorOpIn, Values: values}
+}
+
+func TestPreserveMatchExpressionOrdering(t *testing.T) {
+	current := affinityWithExpressions(
+		inRequirement("tier", "storage"),
+		inRequirement("nodetype", "worker"),
+	)
+	reordered := affinityWithExpressions(
+		inRequirement("nodetype", "worker"),
+		inRequirement("tier", "storage"),
+	)
+	changed := affinityWithExpressions(
+		inRequirement("tier", "compute"),
+		inRequirement("nodetype", "worker"),
+	)
+
+	patch := func(affinity *corev1.Affinity, labels map[string]string) []byte {
+		workload := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Labels: labels}}
+		workload.Spec.Template.Spec.Affinity = affinity
+		patchBytes, err := json.Marshal(workload)
+		require.NoError(t, err)
+		return patchBytes
+	}
+
+	tests := map[string]struct {
+		patch        []byte
+		wantAffinity *corev1.Affinity
+		wantLabels   map[string]string
+		wantErr      bool
+	}{
+		"identical affinity is unchanged": {
+			patch: patch(current, nil), wantAffinity: current,
+		},
+		"order-only change preserves current affinity": {
+			patch: patch(reordered, nil), wantAffinity: current,
+		},
+		"unrelated change is retained while preserving affinity": {
+			patch:        patch(reordered, map[string]string{"updated": "true"}),
+			wantAffinity: current,
+			wantLabels:   map[string]string{"updated": "true"},
+		},
+		"genuine affinity change is retained": {
+			patch: patch(changed, nil), wantAffinity: changed,
+		},
+		"invalid workload returns an error": {
+			patch: []byte("{"), wantErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			adjusted, err := preserveMatchExpressionOrdering(current, tc.patch)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			actual := &appsv1.Deployment{}
+			require.NoError(t, json.Unmarshal(adjusted, actual))
+			assert.Equal(t, tc.wantAffinity, actual.Spec.Template.Spec.Affinity)
+			assert.Equal(t, tc.wantLabels, actual.Labels)
+		})
+	}
+}
+
+func TestPutWorkloadPreservesMatchExpressionOrdering(t *testing.T) {
+	currentAffinity := affinityWithExpressions(
+		inRequirement("tier", "storage"),
+		inRequirement("nodetype", "worker"),
+	)
+	reorderedAffinity := affinityWithExpressions(
+		inRequirement("nodetype", "worker"),
+		inRequirement("tier", "storage"),
+	)
+	assertCurrentOrder := func(t *testing.T, patchBytes []byte) {
+		t.Helper()
+		workload := struct {
+			Spec struct {
+				Template corev1.PodTemplateSpec `json:"template"`
+			} `json:"spec"`
+		}{}
+		require.NoError(t, json.Unmarshal(patchBytes, &workload))
+		assert.Equal(t, currentAffinity, workload.Spec.Template.Spec.Affinity)
+	}
+
+	t.Run("Deployment", func(t *testing.T) {
+		name := getDeploymentName()
+		current := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: name}}
+		current.Spec.Template.Spec.Affinity = currentAffinity
+		prospective := current.DeepCopy()
+		prospective.Spec.Template.Spec.Affinity = reorderedAffinity
+		prospectiveYAML, err := yaml.Marshal(prospective)
+		require.NoError(t, err)
+
+		mockCtrl := gomock.NewController(t)
+		mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+		mockKubeClient.EXPECT().Namespace().AnyTimes()
+		mockKubeClient.EXPECT().PatchDeploymentByLabel(TridentCSILabel, gomock.Any(), types.MergePatchType).
+			DoAndReturn(func(_ string, patchBytes []byte, _ types.PatchType) error {
+				assertCurrentOrder(t, patchBytes)
+				return nil
+			})
+
+		require.NoError(t, (&K8sClient{mockKubeClient}).PutDeployment(
+			current, false, string(prospectiveYAML), TridentCSILabel,
+		))
+	})
+
+	t.Run("DaemonSet", func(t *testing.T) {
+		name := getDaemonSetName(false)
+		nodeLabel := "app=node.csi.trident.netapp.io"
+		current := &appsv1.DaemonSet{ObjectMeta: metav1.ObjectMeta{Name: name}}
+		current.Spec.Template.Spec.Affinity = currentAffinity
+		prospective := current.DeepCopy()
+		prospective.Spec.Template.Spec.Affinity = reorderedAffinity
+		prospectiveYAML, err := yaml.Marshal(prospective)
+		require.NoError(t, err)
+
+		mockCtrl := gomock.NewController(t)
+		mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+		mockKubeClient.EXPECT().Namespace().AnyTimes()
+		mockKubeClient.EXPECT().PatchDaemonSetByLabelAndName(
+			nodeLabel, name, gomock.Any(), types.MergePatchType,
+		).DoAndReturn(func(_, _ string, patchBytes []byte, _ types.PatchType) error {
+			assertCurrentOrder(t, patchBytes)
+			return nil
+		})
+
+		require.NoError(t, (&K8sClient{mockKubeClient}).PutDaemonSet(
+			current, false, string(prospectiveYAML), nodeLabel, name,
+		))
+	})
 }
 
 func TestDeleteTridentDeployment(t *testing.T) {

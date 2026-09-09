@@ -5162,3 +5162,93 @@ func TestDiscoverKubernetesCLI(t *testing.T) {
 		}
 	})
 }
+
+func nodeAffinity(terms ...v1.NodeSelectorTerm) *v1.Affinity {
+	return &v1.Affinity{
+		NodeAffinity: &v1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+				NodeSelectorTerms: terms,
+			},
+		},
+	}
+}
+
+func term(expressions ...v1.NodeSelectorRequirement) v1.NodeSelectorTerm {
+	return v1.NodeSelectorTerm{MatchExpressions: expressions}
+}
+
+func requirement(key string, values ...string) v1.NodeSelectorRequirement {
+	return v1.NodeSelectorRequirement{Key: key, Operator: v1.NodeSelectorOpIn, Values: values}
+}
+
+func TestAffinityEqualIgnoringMatchExpressionOrder(t *testing.T) {
+	tests := map[string]struct {
+		a, b *v1.Affinity
+		want bool
+	}{
+		"both nil": {
+			a: nil, b: nil, want: true,
+		},
+		"one nil": {
+			a:    nodeAffinity(term(requirement("tier", "storage"))),
+			b:    nil,
+			want: false,
+		},
+		"reordered match expressions are equal": {
+			a:    nodeAffinity(term(requirement("tier", "storage"), requirement("nodetype", "worker"))),
+			b:    nodeAffinity(term(requirement("nodetype", "worker"), requirement("tier", "storage"))),
+			want: true,
+		},
+		"reordered values are not equal": {
+			a:    nodeAffinity(term(requirement("tier", "storage", "compute"))),
+			b:    nodeAffinity(term(requirement("tier", "compute", "storage"))),
+			want: false,
+		},
+		"reordered requirements with matching key and operator are equal": {
+			a: nodeAffinity(term(
+				requirement("tier", "storage"),
+				requirement("tier", "compute"),
+			)),
+			b: nodeAffinity(term(
+				requirement("tier", "compute"),
+				requirement("tier", "storage"),
+			)),
+			want: true,
+		},
+		"reordered node selector terms are not equal": {
+			a: nodeAffinity(
+				term(requirement("tier", "storage")),
+				term(requirement("nodetype", "worker")),
+			),
+			b: nodeAffinity(
+				term(requirement("nodetype", "worker")),
+				term(requirement("tier", "storage")),
+			),
+			want: false,
+		},
+		"different value is not equal": {
+			a:    nodeAffinity(term(requirement("tier", "storage"))),
+			b:    nodeAffinity(term(requirement("tier", "compute"))),
+			want: false,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.want, AffinityEqualIgnoringMatchExpressionOrder(tc.a, tc.b))
+			assert.Equal(t, tc.want, AffinityEqualIgnoringMatchExpressionOrder(tc.b, tc.a))
+		})
+	}
+}
+
+func TestAffinityEqualIgnoringMatchExpressionOrder_DoesNotMutateInput(t *testing.T) {
+	a := nodeAffinity(term(requirement("tier", "storage", "compute"), requirement("nodetype", "worker")))
+	b := nodeAffinity(term(requirement("nodetype", "worker"), requirement("tier", "storage", "compute")))
+	aBefore := a.DeepCopy()
+	bBefore := b.DeepCopy()
+
+	assert.True(t, AffinityEqualIgnoringMatchExpressionOrder(a, b))
+
+	assert.Equal(t, aBefore, a)
+	assert.Equal(t, bBefore, b)
+}

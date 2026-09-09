@@ -5,11 +5,14 @@ package k8sclient
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -3050,4 +3053,40 @@ func GenericPatch(original interface{}, modifiedYAML []byte) ([]byte, error) {
 
 	// JSON Merge patch
 	return jsonMergePatch(originalJSON, modifiedJSON)
+}
+
+// AffinityEqualIgnoringMatchExpressionOrder reports whether two affinities differ only in the order
+// of required node affinity match expressions. Trident generates those expressions from an
+// unordered map; all other affinity fields remain order-sensitive.
+func AffinityEqualIgnoringMatchExpressionOrder(a, b *v1.Affinity) bool {
+	return reflect.DeepEqual(normalizeMatchExpressionOrder(a), normalizeMatchExpressionOrder(b))
+}
+
+func normalizeMatchExpressionOrder(affinity *v1.Affinity) *v1.Affinity {
+	if affinity == nil {
+		return nil
+	}
+
+	normalized := affinity.DeepCopy()
+	if nodeAffinity := normalized.NodeAffinity; nodeAffinity != nil {
+		required := nodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution
+		if required == nil {
+			return normalized
+		}
+		for i := range required.NodeSelectorTerms {
+			slices.SortFunc(required.NodeSelectorTerms[i].MatchExpressions, compareNodeSelectorRequirements)
+		}
+	}
+
+	return normalized
+}
+
+func compareNodeSelectorRequirements(a, b v1.NodeSelectorRequirement) int {
+	if result := cmp.Compare(a.Key, b.Key); result != 0 {
+		return result
+	}
+	if result := cmp.Compare(a.Operator, b.Operator); result != 0 {
+		return result
+	}
+	return slices.Compare(a.Values, b.Values)
 }

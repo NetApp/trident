@@ -504,6 +504,18 @@ func (c *Controller) deploymentUpdated(oldObj, newObj interface{}) {
 	newDeplCopy.Status.ObservedGeneration = oldDeplCopy.Status.ObservedGeneration
 	newDeplCopy.Annotations = oldDeplCopy.Annotations
 
+	// Required match expressions are generated from an unordered map, so their order is not meaningful.
+	// Align them before comparing so an order-only update does not enqueue a reconcile.
+	if !reflect.DeepEqual(
+		oldDeplCopy.Spec.Template.Spec.Affinity,
+		newDeplCopy.Spec.Template.Spec.Affinity,
+	) && k8sclient.AffinityEqualIgnoringMatchExpressionOrder(
+		oldDeplCopy.Spec.Template.Spec.Affinity,
+		newDeplCopy.Spec.Template.Spec.Affinity,
+	) {
+		newDeplCopy.Spec.Template.Spec.Affinity = oldDeplCopy.Spec.Template.Spec.Affinity
+	}
+
 	if reflect.DeepEqual(newDeplCopy, oldDeplCopy) {
 		Log().Debugf("Ignoring deployment resource event handler updates due to reconcile no-ops patch.")
 		return
@@ -553,7 +565,7 @@ func (c *Controller) daemonsetAddedOrDeleted(obj interface{}) {
 }
 
 // daemonsetUpdated is the handler for the trident-csi daemonset watcher.
-func (c *Controller) daemonsetUpdated(_, newObj interface{}) {
+func (c *Controller) daemonsetUpdated(oldObj, newObj interface{}) {
 	var key string
 	var err error
 
@@ -566,6 +578,40 @@ func (c *Controller) daemonsetUpdated(_, newObj interface{}) {
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		Log().Errorf("invalid resource key: '%s'", key)
+		return
+	}
+
+	newDS := newObj.(*appsv1.DaemonSet)
+	oldDS := oldObj.(*appsv1.DaemonSet)
+
+	// Periodic resync will send update events for all known DaemonSets.
+	// Two different versions of the same DaemonSet will always have different RVs.
+	if newDS.ResourceVersion == oldDS.ResourceVersion {
+		Log().Debugf("DaemonSet new and old resource version are same")
+		return
+	}
+
+	newDSCopy := newDS.DeepCopy()
+	oldDSCopy := oldDS.DeepCopy()
+
+	// Ignore a patch that changed only the resource version.
+	newDSCopy.ResourceVersion = oldDSCopy.ResourceVersion
+
+	// Required match expressions are generated from an unordered map, so their order is not meaningful.
+	// Align them before comparing so an order-only update does not enqueue a reconcile.
+	if !reflect.DeepEqual(
+		oldDSCopy.Spec.Template.Spec.Affinity,
+		newDSCopy.Spec.Template.Spec.Affinity,
+	) && k8sclient.AffinityEqualIgnoringMatchExpressionOrder(
+		oldDSCopy.Spec.Template.Spec.Affinity,
+		newDSCopy.Spec.Template.Spec.Affinity,
+	) {
+		newDSCopy.Spec.Template.Spec.Affinity = oldDSCopy.Spec.Template.Spec.Affinity
+		newDSCopy.Generation = oldDSCopy.Generation
+	}
+
+	if reflect.DeepEqual(newDSCopy, oldDSCopy) {
+		Log().Debugf("Ignoring daemonset resource event handler updates due to reconcile no-ops patch.")
 		return
 	}
 

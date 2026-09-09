@@ -3,7 +3,9 @@
 package installer
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"slices"
 	"time"
 
@@ -1341,6 +1343,12 @@ func (k *K8sClient) PutDaemonSet(
 				daemonSetName, err)
 		}
 
+		// Preserve live match expression order when only its ordering changed so the patch does not roll pods.
+		patchBytes, err = preserveMatchExpressionOrdering(currentDaemonSet.Spec.Template.Spec.Affinity, patchBytes)
+		if err != nil {
+			return fmt.Errorf("could not preserve match expression ordering for DaemonSet %q: %w", daemonSetName, err)
+		}
+
 		// Apply the patch to the current DaemonSet
 		patchType := types.MergePatchType
 		if err = k.PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytes, patchType); err != nil {
@@ -1507,6 +1515,12 @@ func (k *K8sClient) PutDeployment(
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current Deployment %q: %v",
 				deploymentName, err)
+		}
+
+		// Preserve live match expression order when only its ordering changed so the patch does not roll pods.
+		patchBytes, err = preserveMatchExpressionOrdering(currentDeployment.Spec.Template.Spec.Affinity, patchBytes)
+		if err != nil {
+			return fmt.Errorf("could not preserve match expression ordering for Deployment %q: %w", deploymentName, err)
 		}
 
 		// Apply the patch to the current deployment
@@ -2458,4 +2472,36 @@ func mergeAnnotationMaps(existing, target map[string]string) map[string]string {
 		}
 	}
 	return target
+}
+
+// preserveMatchExpressionOrdering rewrites a prospective workload document to retain the live
+// required match expression ordering when only that ordering differs. Other prospective values remain
+// unchanged, and genuine affinity changes pass through untouched.
+func preserveMatchExpressionOrdering(currentAffinity *corev1.Affinity, patchBytes []byte) ([]byte, error) {
+	prospective := struct {
+		Spec struct {
+			Template corev1.PodTemplateSpec `json:"template"`
+		} `json:"spec"`
+	}{}
+	if err := json.Unmarshal(patchBytes, &prospective); err != nil {
+		return nil, fmt.Errorf("could not unmarshal prospective workload: %w", err)
+	}
+	prospectiveAffinity := prospective.Spec.Template.Spec.Affinity
+
+	if reflect.DeepEqual(currentAffinity, prospectiveAffinity) ||
+		!k8sclient.AffinityEqualIgnoringMatchExpressionOrder(currentAffinity, prospectiveAffinity) {
+		return patchBytes, nil
+	}
+
+	affinityJSON, err := json.Marshal(currentAffinity)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal current affinity: %w", err)
+	}
+
+	overlay := fmt.Appendf(nil, `{"spec":{"template":{"spec":{"affinity":%s}}}}`, affinityJSON)
+	adjusted, err := jsonpatch.MergePatch(patchBytes, overlay)
+	if err != nil {
+		return nil, fmt.Errorf("could not preserve current affinity ordering: %w", err)
+	}
+	return adjusted, nil
 }

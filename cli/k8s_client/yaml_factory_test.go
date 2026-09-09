@@ -1274,30 +1274,19 @@ func TestGetCSIDaemonSetYAMLWindows_Tolerations(t *testing.T) {
 }
 
 func TestConstructNodeSelector(t *testing.T) {
-	nodeSelMap := map[string]string{
+	nodeSelector := map[string]string{
 		"node-label-name":     "master",
 		"node-label-number":   "20",
 		"node-label-bool":     "true",
 		"node-label-alphanum": "alph20",
 	}
 
-	expectedNodeSelStrings := []string{
-		"- key: node-label-name\n  operator: In\n  values:\n  - 'master'\n",
-		"- key: node-label-number\n  operator: In\n  values:\n  - '20'\n",
-		"- key: node-label-bool\n  operator: In\n  values:\n  - 'true'\n",
-		"- key: node-label-alphanum\n  operator: In\n  values:\n  - 'alph20'\n",
-	}
+	expected := "- key: node-label-alphanum\n  operator: In\n  values:\n  - 'alph20'\n" +
+		"- key: node-label-bool\n  operator: In\n  values:\n  - 'true'\n" +
+		"- key: node-label-name\n  operator: In\n  values:\n  - 'master'\n" +
+		"- key: node-label-number\n  operator: In\n  values:\n  - '20'\n"
 
-	result := constructNodeSelector(nodeSelMap)
-	// verify all the expected strings are present in the result
-	for _, expectedString := range expectedNodeSelStrings {
-		assert.Contains(t, result, expectedString)
-		before, after, _ := strings.Cut(result, expectedString)
-		result = before + after
-	}
-
-	// verify that the result does not contain anything else other than what is expected.
-	assert.Empty(t, result)
+	require.Equal(t, expected, constructNodeSelector(nodeSelector))
 }
 
 func TestGetNamespaceYAML(t *testing.T) {

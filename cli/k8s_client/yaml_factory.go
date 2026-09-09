@@ -5,6 +5,7 @@ package k8sclient
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -3618,8 +3619,15 @@ spec:
 func constructNodeSelector(nodeLabels map[string]string) string {
 	var nodeSelector string
 
-	for key, value := range nodeLabels {
-		nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - '%s'\n", key, value)
+	// Keep matchExpressions stable across reconciles; Go map iteration order is nondeterministic.
+	keys := make([]string, 0, len(nodeLabels))
+	for key := range nodeLabels {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - '%s'\n", key, nodeLabels[key])
 	}
 	return nodeSelector
 }

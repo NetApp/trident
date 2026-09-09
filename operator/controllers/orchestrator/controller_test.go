@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
@@ -402,6 +403,29 @@ func TestController_DeploymentUpdated(t *testing.T) {
 		// Should be ignored due to no meaningful changes after normalization
 		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for no meaningful differences")
 	})
+
+	t.Run("DeploymentUpdatedMatchExpressionReorderOnly", func(t *testing.T) {
+		controller := createTestController()
+		initialQueueLength := controller.workqueue.Len()
+
+		oldDeployment := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{
+			Name: TestTridentCSIName, Namespace: TestNamespace, ResourceVersion: "1",
+		}}
+		oldDeployment.Spec.Template.Spec.Affinity = testNodeAffinity(
+			nodeSelectorRequirement("tier", "storage"),
+			nodeSelectorRequirement("nodetype", "worker"),
+		)
+		newDeployment := oldDeployment.DeepCopy()
+		newDeployment.ResourceVersion = "2"
+		newDeployment.Spec.Template.Spec.Affinity = testNodeAffinity(
+			nodeSelectorRequirement("nodetype", "worker"),
+			nodeSelectorRequirement("tier", "storage"),
+		)
+
+		controller.deploymentUpdated(oldDeployment, newDeployment)
+
+		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for order-only node affinity update")
+	})
 }
 
 // Phase 5: Test daemonset event handlers
@@ -446,14 +470,18 @@ func TestController_DaemonsetAddedOrDeleted(t *testing.T) {
 }
 
 func TestController_DaemonsetUpdated(t *testing.T) {
-	// Create daemonsets
+	// Create daemonsets with different resource versions AND a meaningful difference
 	oldDaemonset := &appsv1.DaemonSet{}
 	oldDaemonset.Name = TestTridentCSIName
 	oldDaemonset.Namespace = TestNamespace
+	oldDaemonset.ResourceVersion = "1"
+	oldDaemonset.Spec.Template.Labels = map[string]string{"app": "old"}
 
 	newDaemonset := &appsv1.DaemonSet{}
 	newDaemonset.Name = TestTridentCSIName
 	newDaemonset.Namespace = TestNamespace
+	newDaemonset.ResourceVersion = "2"
+	newDaemonset.Spec.Template.Labels = map[string]string{"app": "new"}
 
 	t.Run("DaemonsetUpdatedValidDaemonsets", func(t *testing.T) {
 		controller := createTestController()
@@ -477,6 +505,68 @@ func TestController_DaemonsetUpdated(t *testing.T) {
 		}
 	})
 
+	t.Run("DaemonsetUpdatedSameResourceVersion", func(t *testing.T) {
+		controller := createTestController()
+		initialQueueLength := controller.workqueue.Len()
+
+		sameDSOld := &appsv1.DaemonSet{}
+		sameDSOld.Name = TestTridentCSIName
+		sameDSOld.Namespace = TestNamespace
+		sameDSOld.ResourceVersion = "1"
+
+		sameDSNew := &appsv1.DaemonSet{}
+		sameDSNew.Name = TestTridentCSIName
+		sameDSNew.Namespace = TestNamespace
+		sameDSNew.ResourceVersion = "1" // Same resource version should be ignored
+
+		controller.daemonsetUpdated(sameDSOld, sameDSNew)
+
+		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for same resource version")
+	})
+
+	t.Run("DaemonsetUpdatedNoMeaningfulChange", func(t *testing.T) {
+		controller := createTestController()
+		initialQueueLength := controller.workqueue.Len()
+
+		noDiffOld := &appsv1.DaemonSet{}
+		noDiffOld.Name = TestTridentCSIName
+		noDiffOld.Namespace = TestNamespace
+		noDiffOld.ResourceVersion = "1"
+
+		noDiffNew := &appsv1.DaemonSet{}
+		noDiffNew.Name = TestTridentCSIName
+		noDiffNew.Namespace = TestNamespace
+		noDiffNew.ResourceVersion = "2" // Different RV but otherwise identical
+
+		controller.daemonsetUpdated(noDiffOld, noDiffNew)
+
+		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for no meaningful differences")
+	})
+
+	t.Run("DaemonsetUpdatedMatchExpressionReorderOnly", func(t *testing.T) {
+		controller := createTestController()
+		initialQueueLength := controller.workqueue.Len()
+
+		oldDaemonSet := &appsv1.DaemonSet{ObjectMeta: metav1.ObjectMeta{
+			Name: TestTridentCSIName, Namespace: TestNamespace, ResourceVersion: "1", Generation: 1,
+		}}
+		oldDaemonSet.Spec.Template.Spec.Affinity = testNodeAffinity(
+			nodeSelectorRequirement("tier", "storage"),
+			nodeSelectorRequirement("nodetype", "worker"),
+		)
+		newDaemonSet := oldDaemonSet.DeepCopy()
+		newDaemonSet.ResourceVersion = "2"
+		newDaemonSet.Generation = 2
+		newDaemonSet.Spec.Template.Spec.Affinity = testNodeAffinity(
+			nodeSelectorRequirement("nodetype", "worker"),
+			nodeSelectorRequirement("tier", "storage"),
+		)
+
+		controller.daemonsetUpdated(oldDaemonSet, newDaemonSet)
+
+		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for order-only node affinity update")
+	})
+
 	t.Run("DaemonsetUpdatedInvalidNewDaemonset", func(t *testing.T) {
 		controller := createTestController()
 		initialQueueLength := controller.workqueue.Len()
@@ -487,6 +577,22 @@ func TestController_DaemonsetUpdated(t *testing.T) {
 		// Workqueue should remain unchanged since invalid object causes error
 		assert.Equal(t, initialQueueLength, controller.workqueue.Len(), "Workqueue should not change for invalid new object")
 	})
+}
+
+// testNodeAffinity builds a node affinity with a single node selector term made of the given
+// requirements, for exercising order-insensitive comparison in the informer update handlers.
+func testNodeAffinity(requirements ...corev1.NodeSelectorRequirement) *corev1.Affinity {
+	return &corev1.Affinity{
+		NodeAffinity: &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+				NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchExpressions: requirements}},
+			},
+		},
+	}
+}
+
+func nodeSelectorRequirement(key string, values ...string) corev1.NodeSelectorRequirement {
+	return corev1.NodeSelectorRequirement{Key: key, Operator: corev1.NodeSelectorOpIn, Values: values}
 }
 
 // createMockController creates a fully mocked controller for testing complex functions
