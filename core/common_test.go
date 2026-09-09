@@ -1305,3 +1305,33 @@ func TestIsBackendBootstrapTimeout(t *testing.T) {
 		})
 	}
 }
+
+func TestHasPublicationsForBackend(t *testing.T) {
+	backend := getFakeBackend("backend1", "uuid1", nil)
+	backend.Volumes().Store("vol1", getFakeVolume("vol1", "uuid1"))
+
+	tests := []struct {
+		name         string
+		publications []*models.VolumePublication
+		want         bool
+	}{
+		{"NoPublications", nil, false},
+		{"PublicationForThisBackend", []*models.VolumePublication{
+			{VolumeName: "other", NodeName: "n1", BackendUUID: "uuid1"},
+		}, true},
+		{"PublicationForAnotherBackend", []*models.VolumePublication{
+			{VolumeName: "vol1", NodeName: "n1", BackendUUID: "uuid2"},
+		}, false},
+		{"LegacyPublicationForHostedVolume", []*models.VolumePublication{
+			{VolumeName: "vol1", NodeName: "n1"},
+		}, true},
+		{"LegacyPublicationForUnknownVolume", []*models.VolumePublication{
+			{VolumeName: "vol9", NodeName: "n1"},
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, hasPublicationsForBackend(backend, tt.publications))
+		})
+	}
+}
