@@ -3120,6 +3120,125 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 	}
 }
 
+// TestUpsertBackend_NodeAccessReconciledBeforeVolumesRestored is a regression test for a bug where,
+// during a backend update, node access (e.g. ONTAP export policy rules) is reconciled against a
+// brand-new backend object whose Volumes() map is still empty. updateBackend() unconditionally
+// constructs a fresh storage.Backend from the incoming config; the volumes that were attached to the
+// original backend are only copied onto the new object afterward, by updateBackendVolumes(). But
+// upsertBackend() calls reconcileNodeAccessOnBackend() on the new object *before* updateBackendVolumes()
+// ever runs (that call happens one level up, in UpdateBackendByBackendUUID(), after upsertBackend()
+// has already returned). So any node that only has access via a VolumePublication -- as opposed to
+// being a brand-new node with no volumes yet -- is (incorrectly) treated as unpublished and dropped,
+// until some later reconcile fixes it back up.
+//
+// This is not a race: updateBackend() always builds a new object, on every single update, so this
+// reconcile-before-volumes-restored gap is hit deterministically every time -- e.g. every controller
+// restart replays an "add" event for each existing TridentBackendConfig, which flows through this exact
+// path. No timing, goroutines, or live backend are needed to reproduce it.
+func TestUpsertBackend_NodeAccessReconciledBeforeVolumesRestored(t *testing.T) {
+	prevDriverContext := config.CurrentDriverContext
+	config.CurrentDriverContext = config.ContextCSI
+	t.Cleanup(func() { config.CurrentDriverContext = prevDriverContext })
+
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	const (
+		backendName = "fake-backend"
+		backendUUID = "fake-backend-uuid"
+		volName     = "vol1"
+		nodeName    = "node1"
+	)
+
+	// Set up a backend that, as would be true after a normal bootstrap, already has a volume
+	// attached to it in its Volumes() map.
+	originalBackend := getFakeBackend(backendName, backendUUID, nil)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volName, InternalName: volName},
+		BackendUUID: backendUUID,
+	}
+	originalBackend.Volumes().Store(volName, vol)
+
+	addBackendsToCache(t, originalBackend)
+	addBackendsToPersistence(t, o, originalBackend)
+	addVolumesToCache(t, vol)
+	addVolumesToPersistence(t, o, vol)
+
+	node := getFakeNode(nodeName)
+	addNodesToCache(t, node)
+
+	pub := &models.VolumePublication{
+		Name: fmt.Sprintf("%s-%s", volName, nodeName), VolumeName: volName, NodeName: nodeName,
+	}
+	addVolumePublicationsToCache(t, pub)
+
+	// Sanity check on the test setup: the node is genuinely published to a volume on this backend, so
+	// a correct reconcile must preserve its node/export access.
+	require.Len(t,
+		publishedNodesForBackend(originalBackend, []*models.VolumePublication{pub}, []*models.Node{node}), 1,
+		"test setup sanity check: node should be published")
+
+	newBackendConfig := map[string]interface{}{
+		"version":           1,
+		"storageDriverName": "fake",
+		"backendName":       backendName,
+		"protocol":          config.File,
+		"volumeAccess":      "1.0.0.1",
+	}
+	newBackendConfigJSON, err := json.Marshal(newBackendConfig)
+	require.NoError(t, err)
+
+	// Drive the exact same lock + upsertBackend() call that UpdateBackendByBackendUUID() makes. The
+	// backend lock acquired here is kept held across both upsertBackend() and updateBackendVolumes()
+	// below, exactly as UpdateBackendByBackendUUID() does (updateBackendVolumes() nests its own locks
+	// inside this one).
+	lockCtx, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(backendUUID, "", "")))
+	defer unlocker()
+	require.NoError(t, err)
+
+	newBackend, err := o.upsertBackend(lockCtx, string(newBackendConfigJSON), results[0], "")
+	require.NoError(t, err)
+	require.NotSame(t, originalBackend, newBackend, "updateBackend() should have built a brand-new backend object")
+
+	// Regression guard: reconcileNodeAccessOnBackend() runs inside upsertBackend(), before the
+	// caller gets a chance to call updateBackendVolumes(). For that reconcile to preserve real node
+	// access, the new backend's Volumes() map must already be populated by the time upsertBackend()
+	// returns -- not left empty for a later, separate call to repopulate.
+	volCountAfterUpsert := 0
+	newBackend.Volumes().Range(func(_, _ interface{}) bool { volCountAfterUpsert++; return true })
+	assert.Equal(t, 1, volCountAfterUpsert,
+		"new backend's Volumes() must already be repopulated by the time upsertBackend() returns")
+
+	// Assert on the actual nodes the fake driver's ReconcileNodeAccess() received during
+	// upsertBackend(), rather than recomputing the expected set after the fact -- otherwise this
+	// test would keep passing even if a future change reordered things so the reconcile call itself
+	// used a stale/empty node list, as long as Volumes() ended up correct by the time we check it.
+	fakeDriver, ok := newBackend.Driver().(*fakedriver.StorageDriver)
+	require.True(t, ok, "new backend should be using the fake driver")
+	require.Len(t, fakeDriver.ReconcileNodeAccessCalls, 1,
+		"ReconcileNodeAccess() should have been called exactly once during upsertBackend()")
+
+	reconciledNodeNames := make([]string, 0, len(fakeDriver.ReconcileNodeAccessCalls[0]))
+	for _, n := range fakeDriver.ReconcileNodeAccessCalls[0] {
+		reconciledNodeNames = append(reconciledNodeNames, n.Name)
+	}
+	assert.Contains(t, reconciledNodeNames, nodeName,
+		"the genuinely-published node must have been included in the actual ReconcileNodeAccess() "+
+			"call made during upsertBackend(), not excluded due to an empty Volumes() cache")
+
+	// The caller (UpdateBackendByBackendUUID) still calls updateBackendVolumes() after
+	// upsertBackend() returns; once Volumes() is already correct, this call must be a harmless no-op.
+	err = o.updateBackendVolumes(lockCtx, newBackend)
+	require.NoError(t, err)
+
+	volCountAfterUpdateVolumes := 0
+	newBackend.Volumes().Range(func(_, _ interface{}) bool { volCountAfterUpdateVolumes++; return true })
+	assert.Equal(t, 1, volCountAfterUpdateVolumes,
+		"updateBackendVolumes() should remain idempotent once Volumes() is already correct")
+
+	persistenceCleanup(t, o)
+}
+
 func TestImportVolumeConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -14609,6 +14728,8 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
 				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+				// Carried forward onto the new backend object by updateBackend().
+				mockBackend.EXPECT().Volumes().Return(new(sync.Map)).AnyTimes()
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 				// Add backend to cache

@@ -1982,6 +1982,16 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 		}
 	}
 
+	// The new backend object starts with an empty Volumes() cache, but upsertBackend() reconciles
+	// node access on it before updateBackendVolumes() gets a chance to repopulate that cache. Carry
+	// the volumes forward now so that reconcile doesn't see an empty map. Copy entries individually
+	// instead of aliasing the map so the two backends don't share mutable state once originalBackend
+	// is terminated below.
+	originalBackend.Volumes().Range(func(key, value any) bool {
+		backend.Volumes().Store(key, value)
+		return true
+	})
+
 	return backend, nil
 }
 

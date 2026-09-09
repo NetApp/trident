@@ -81,6 +81,10 @@ type StorageDriver struct {
 	DestroyedGroupSnapshots map[string]bool
 
 	Secret string
+
+	// ReconcileNodeAccessCalls records the nodes argument passed to each ReconcileNodeAccess call, in
+	// call order, so tests can assert on what the driver actually received instead of recomputing it.
+	ReconcileNodeAccessCalls [][]*models.Node
 }
 
 // String implements Stringer interface for the FakeStorageDriver driver
@@ -1479,6 +1483,8 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 func (d *StorageDriver) ReconcileNodeAccess(
 	ctx context.Context, nodes []*models.Node, _, _ string,
 ) error {
+	d.ReconcileNodeAccessCalls = append(d.ReconcileNodeAccessCalls, nodes)
+
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
