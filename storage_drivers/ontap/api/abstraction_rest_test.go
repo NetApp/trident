@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
@@ -144,6 +145,58 @@ func TestEnsureLunMapped(t *testing.T) {
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
 	assert.Equal(t, int(*number), resultLun, "lun count does not match")
+}
+
+func TestEnsureLunMappedByUUID(t *testing.T) {
+	const (
+		initiatorGroup = "initiatorGroup"
+		lunPath        = "/vol/volume/lun0"
+		lunUUID        = "lun-uuid"
+		lunID          = int64(7)
+	)
+
+	tests := []struct {
+		name          string
+		alreadyMapped bool
+	}{
+		{name: "maps by UUID", alreadyMapped: false},
+		{name: "returns existing UUID map", alreadyMapped: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			client := mockapi.NewMockRestClientInterface(ctrl)
+			oapi, err := api.NewOntapAPIRESTFromRestClientInterface(client)
+			require.NoError(t, err)
+
+			mapResponse := &models.LunMapResponse{NumRecords: convert.ToPtr(int64(0))}
+			if test.alreadyMapped {
+				mapResponse.NumRecords = convert.ToPtr(int64(1))
+				mapResponse.LunMapResponseInlineRecords = []*models.LunMap{{
+					Igroup:            &models.LunMapInlineIgroup{Name: convert.ToPtr(initiatorGroup)},
+					LogicalUnitNumber: convert.ToPtr(lunID),
+				}}
+			}
+			client.EXPECT().LunMapInfoByUUID(ctx, "", lunUUID).Return(
+				&s_a_n.LunMapCollectionGetOK{Payload: mapResponse}, nil,
+			)
+			if !test.alreadyMapped {
+				created := &s_a_n.LunMapCreateCreated{Payload: &models.LunMapResponse{
+					NumRecords: convert.ToPtr(int64(1)),
+					LunMapResponseInlineRecords: []*models.LunMap{{
+						LogicalUnitNumber: convert.ToPtr(lunID),
+					}},
+				}}
+				client.EXPECT().LunMapByUUID(ctx, initiatorGroup, lunPath, lunUUID, -1).Return(created, nil)
+			}
+
+			result, err := oapi.EnsureLunMappedByUUID(ctx, initiatorGroup, lunPath, lunUUID)
+
+			require.NoError(t, err)
+			assert.Equal(t, int(lunID), result)
+		})
+	}
 }
 
 func TestOntapAPIREST_LunGetFSType(t *testing.T) {
@@ -1078,6 +1131,108 @@ func newMockOntapAPIREST(t *testing.T) (api.OntapAPIREST, *mockapi.MockRestClien
 	return ontapAPIREST, rsi
 }
 
+func TestOntapAPIREST_LunGetByNameRequestsAndCopiesUUID(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+	lunPath := "/vol/volume/lun0"
+	lunUUID := "lun-uuid"
+	fields := []string{
+		"uuid",
+		"lun_maps.igroup.name",
+		"lun_maps.logical_unit_number",
+		"space.size",
+		"space.guarantee.requested",
+		"space.scsi_thin_provisioning_support_enabled",
+		"comment",
+		"qos_policy.name",
+		"status.mapped",
+		"location.volume.name",
+		"create_time",
+		"enabled",
+		"serial_number",
+		"status.state",
+		"os_type",
+	}
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	rsi.EXPECT().LunGetByName(ctx, lunPath, fields).Return(&models.Lun{UUID: &lunUUID}, nil)
+
+	lun, err := oapi.LunGetByName(ctx, lunPath)
+
+	assert.NoError(t, err)
+	assert.Equal(t, lunUUID, lun.UUID)
+}
+
+func TestOntapAPIREST_LunUUIDOperationsRequireUUID(t *testing.T) {
+	oapi, _ := newMockOntapAPIREST(t)
+
+	assert.True(t, errors.IsInvalidInputError(oapi.LunDestroyByUUID(ctx, "/vol/volume/lun0", "")))
+	assert.True(t, errors.IsInvalidInputError(oapi.LunSetAttributeByUUID(
+		ctx, "/vol/volume/lun0", "", "attribute", "xfs", "", "", "", "pool",
+	)))
+
+	_, err := oapi.LunGetAttributeByUUID(ctx, "/vol/volume/lun0", "", "poolName")
+	assert.True(t, errors.IsInvalidInputError(err))
+}
+
+func TestOntapAPIREST_LunGetAttributeByUUID(t *testing.T) {
+	lunPath := "/vol/volume/lun0"
+	lunUUID := "lun-uuid"
+
+	t.Run("ReturnsAttributeValue", func(t *testing.T) {
+		oapi, rsi := newMockOntapAPIREST(t)
+		rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+		rsi.EXPECT().LunGetAttributeByUUID(ctx, lunUUID, "poolName").Return("testPool", nil)
+
+		value, err := oapi.LunGetAttributeByUUID(ctx, lunPath, lunUUID, "poolName")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "testPool", value)
+	})
+
+	t.Run("WrapsClientError", func(t *testing.T) {
+		oapi, rsi := newMockOntapAPIREST(t)
+		notFound := errors.NotFoundError("no such LUN")
+		rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+		rsi.EXPECT().LunGetAttributeByUUID(ctx, lunUUID, "poolName").Return("", notFound)
+
+		_, err := oapi.LunGetAttributeByUUID(ctx, lunPath, lunUUID, "poolName")
+
+		assert.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err), "error chain should survive wrapping")
+	})
+}
+
+func TestOntapAPIREST_LunSetAttributeByUUID(t *testing.T) {
+	lunUUID := "lun-uuid"
+
+	t.Run("SetsAttributesByUUID", func(t *testing.T) {
+		oapi, rsi := newMockOntapAPIREST(t)
+		rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+		rsi.EXPECT().LunSetAttributeByUUID(ctx, lunUUID, "filesystem", "xfs").Return(nil)
+		rsi.EXPECT().LunSetAttributeByUUID(ctx, lunUUID, "context", "csi").Return(nil)
+		rsi.EXPECT().LunSetAttributeByUUID(ctx, lunUUID, "poolName", "testPool").Return(nil)
+
+		err := oapi.LunSetAttributeByUUID(
+			ctx, "/vol/volume/lun0", lunUUID, "filesystem", "xfs", "csi", "", "", "testPool",
+		)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("HonorsFaultInjectionOnLunPath", func(t *testing.T) {
+		// No LunSetAttributeByUUID expectation: the injected failure must short-circuit before the
+		// REST client is reached, matching the name-based set-attribute path.
+		oapi, rsi := newMockOntapAPIREST(t)
+		rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+
+		err := oapi.LunSetAttributeByUUID(
+			ctx, "/vol/trident_failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b/lun0", lunUUID,
+			"filesystem", "xfs", "csi", "", "", "testPool",
+		)
+
+		assert.Error(t, err)
+	})
+}
+
 func newMockOntapAPIRESTWithController(t *testing.T) (*api.OntapAPIREST, *mockapi.MockRestClientInterface, *gomock.Controller) {
 	ctrl := gomock.NewController(t)
 	rsi := mockapi.NewMockRestClientInterface(ctrl)
@@ -1887,6 +2042,23 @@ func getVolumeInfo() *models.Volume {
 		Quota:                          &volumeQuota,
 	}
 	return &volume
+}
+
+func TestVolumeInfoRequestsAndCopiesUUID(t *testing.T) {
+	volume := getVolumeInfo()
+	oapi, rsi := newMockOntapAPIREST(t)
+	fields := []string{
+		"uuid", "type", "size", "comment", "aggregates", "nas", "guarantee",
+		"snapshot_policy", "snapshot_directory_access_enabled",
+		"space.snapshot.used", "space.snapshot.reserve_percent",
+		"nas.export_policy.name", "encryption.enabled", "tiering.policy", "qos.policy.name",
+	}
+	rsi.EXPECT().VolumeGetByName(ctx, "fakeVolume", fields).Return(volume, nil)
+
+	volumeInfo, err := oapi.VolumeInfo(ctx, "fakeVolume")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "fakeUUID", volumeInfo.UUID)
 }
 
 func TestFlexgroupSnapshotCreate(t *testing.T) {
@@ -3129,6 +3301,20 @@ func TestVolumeCloneCreate(t *testing.T) {
 		errors.New("error creating clone"))
 	err = oapi.VolumeCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", true)
 	assert.Error(t, err, "no error returned while creating a clone")
+
+	rsi.EXPECT().VolumeCloneCreateAsyncWithUUID(
+		ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot",
+	).Return("clone-uuid", nil)
+	cloneUUID, err := oapi.VolumeCloneCreateWithUUID(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot")
+	assert.NoError(t, err)
+	assert.Equal(t, "clone-uuid", cloneUUID)
+
+	rsi.EXPECT().VolumeCloneCreateAsyncWithUUID(
+		ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot",
+	).Return("clone-uuid", errors.New("clone job failed"))
+	cloneUUID, err = oapi.VolumeCloneCreateWithUUID(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot")
+	assert.Error(t, err)
+	assert.Equal(t, "clone-uuid", cloneUUID)
 }
 
 func TestVolumeSnapshotList(t *testing.T) {
@@ -3776,6 +3962,115 @@ func TestLunList(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a LUN info")
 }
 
+// TestOntapAPIREST_LunGetByVolumeUUID_DecodesSpaceSettings covers the space settings a resumed create
+// compares an existing LUN against. Leaving them nil made the reuse check silently pass on REST.
+func TestOntapAPIREST_LunGetByVolumeUUID_DecodesSpaceSettings(t *testing.T) {
+	const volumeUUID = "volume-uuid"
+	lun := getLunInfo()
+	lun.Space = &models.LunInlineSpace{
+		Size:                               convert.ToPtr(int64(2147483648)),
+		Guarantee:                          &models.LunInlineSpaceInlineGuarantee{Requested: convert.ToPtr(true)},
+		ScsiThinProvisioningSupportEnabled: convert.ToPtr(true),
+	}
+	oapi, rsi := newMockOntapAPIREST(t)
+	response := s_a_n.LunCollectionGetOK{
+		Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{lun}},
+	}
+	rsi.EXPECT().LunListByVolumeUUID(ctx, volumeUUID, gomock.Any()).Return(&response, nil)
+
+	result, err := oapi.LunGetByVolumeUUID(ctx, volumeUUID, *lun.Name)
+
+	require.NoError(t, err)
+	require.NotNil(t, result.SpaceReserved)
+	require.NotNil(t, result.SpaceAllocated)
+	assert.True(t, *result.SpaceReserved)
+	assert.True(t, *result.SpaceAllocated)
+}
+
+func TestOntapAPIREST_LunGetByVolumeUUID(t *testing.T) {
+	const volumeUUID = "volume-uuid"
+	lun := getLunInfo()
+	oapi, rsi := newMockOntapAPIREST(t)
+	response := s_a_n.LunCollectionGetOK{
+		Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{lun}},
+	}
+	rsi.EXPECT().LunListByVolumeUUID(ctx, volumeUUID, gomock.Any()).Return(&response, nil)
+
+	result, err := oapi.LunGetByVolumeUUID(ctx, volumeUUID, *lun.Name)
+
+	require.NoError(t, err)
+	assert.Equal(t, *lun.UUID, result.UUID)
+	assert.Equal(t, *lun.SerialNumber, result.SerialNumber)
+}
+
+// TestOntapAPIREST_LunGetByVolumeUUID_SelectsRequestedLun proves the volume's LUNs are matched against the
+// path the caller asked for, so a LUN the driver did not create is never returned in its place.
+func TestOntapAPIREST_LunGetByVolumeUUID_SelectsRequestedLun(t *testing.T) {
+	const volumeUUID = "volume-uuid"
+
+	otherLUN := getLunInfo()
+	otherLUN.Name = convert.ToPtr("/vol/volume/someone-elses-lun")
+	otherLUN.UUID = convert.ToPtr("other-lun-uuid")
+	wantedLUN := getLunInfo()
+	wantedLUN.Name = convert.ToPtr("/vol/volume/lun0")
+	wantedLUN.UUID = convert.ToPtr("wanted-lun-uuid")
+
+	t.Run("picks the requested LUN", func(t *testing.T) {
+		oapi, rsi := newMockOntapAPIREST(t)
+		response := s_a_n.LunCollectionGetOK{
+			Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{otherLUN, wantedLUN}},
+		}
+		rsi.EXPECT().LunListByVolumeUUID(ctx, volumeUUID, gomock.Any()).Return(&response, nil)
+
+		result, err := oapi.LunGetByVolumeUUID(ctx, volumeUUID, "/vol/volume/lun0")
+
+		require.NoError(t, err)
+		assert.Equal(t, "wanted-lun-uuid", result.UUID)
+	})
+
+	t.Run("reports the requested LUN missing", func(t *testing.T) {
+		oapi, rsi := newMockOntapAPIREST(t)
+		response := s_a_n.LunCollectionGetOK{
+			Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{otherLUN}},
+		}
+		rsi.EXPECT().LunListByVolumeUUID(ctx, volumeUUID, gomock.Any()).Return(&response, nil)
+
+		result, err := oapi.LunGetByVolumeUUID(ctx, volumeUUID, "/vol/volume/lun0")
+
+		assert.Nil(t, result)
+		assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError, got %v", err)
+	})
+}
+
+func TestOntapAPIREST_LunGetByVolumeUUID_RequiresLunUUID(t *testing.T) {
+	const volumeUUID = "volume-uuid"
+
+	tests := []struct {
+		name string
+		uuid *string
+	}{
+		{name: "missing UUID"},
+		{name: "empty UUID", uuid: convert.ToPtr("")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lun := getLunInfo()
+			lun.UUID = test.uuid
+			oapi, rsi := newMockOntapAPIREST(t)
+			response := s_a_n.LunCollectionGetOK{
+				Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{lun}},
+			}
+			rsi.EXPECT().LunListByVolumeUUID(ctx, volumeUUID, gomock.Any()).Return(&response, nil)
+
+			result, err := oapi.LunGetByVolumeUUID(ctx, volumeUUID, *lun.Name)
+
+			assert.Nil(t, result)
+			assert.EqualError(t, err, "LUN fake-lunName for volume UUID volume-uuid has no UUID")
+		})
+	}
+}
+
 func TestLunCreate(t *testing.T) {
 	boolValue := true
 	lun := api.Lun{
@@ -3830,6 +4125,18 @@ func TestLunCreate(t *testing.T) {
 	err = oapi.LunCreate(ctx, lun)
 	assert.True(t, api.IsVolumeCreateJobExistsError(err))
 	assert.Equal(t, typedBusy, err)
+
+	for _, code := range []string{"5374242", "5702832"} {
+		createConflict := fmt.Errorf("API State: failure, Message: LUN create conflict, Code: %s", code)
+		rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+			lun.SpaceAllocated).Return(createConflict)
+
+		err = oapi.LunCreate(ctx, lun)
+
+		assert.True(t, api.IsVolumeCreateJobExistsError(err),
+			"expected LUN create conflict %s to remain retryable, got %v", code, err)
+		assert.ErrorContains(t, err, "already exists or is being created")
+	}
 }
 
 func TestLunDestroy(t *testing.T) {
@@ -3952,6 +4259,19 @@ func TestLunSetQosPolicy(t *testing.T) {
 	rsi.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	err := oapi.LunSetQosPolicyGroup(ctx, "/vol/lun0", api.QosPolicyGroup{})
 	assert.NoError(t, err, "error returned while modifying a qos policy on LUN")
+
+	rsi.EXPECT().LunSetQosPolicyGroupByUUID(ctx, "lun-uuid", "qos-policy").Return(nil)
+	err = oapi.LunSetQosPolicyGroupByUUID(
+		ctx, "/vol/clone/lun0", "lun-uuid",
+		api.QosPolicyGroup{Name: "qos-policy", Kind: api.QosPolicyGroupKind},
+	)
+	assert.NoError(t, err)
+
+	err = oapi.LunSetQosPolicyGroupByUUID(
+		ctx, "/vol/failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b/lun0", "lun-uuid",
+		api.QosPolicyGroup{Name: "qos-policy", Kind: api.QosPolicyGroupKind},
+	)
+	assert.ErrorContains(t, err, "injected error")
 }
 
 func TestLunGetByName(t *testing.T) {
@@ -4154,6 +4474,11 @@ func TestLunMapGetReportingNodes(t *testing.T) {
 	nodes, err := oapi.LunMapGetReportingNodes(ctx, "igroup", "/vol/lun0")
 	assert.NoError(t, err, "error returned while getting lun map reporting node")
 	assert.Equal(t, "node1", nodes[0], "node name does not match")
+
+	rsi.EXPECT().LunMapGetReportingNodesByUUID(ctx, "igroup", "lun-uuid").Return([]string{"node1", "node2"}, nil)
+	nodes, err = oapi.LunMapGetReportingNodesByUUID(ctx, "igroup", "lun-uuid")
+	assert.NoError(t, err)
+	assert.Equal(t, "node1", nodes[0])
 
 	// case 2: Negative test: get the lun reporting node.
 	rsi.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Return(nil,
@@ -5137,7 +5462,7 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 			// Mock VolumeGetByName call - this is what VolumeInfo calls internally
 			// VolumeInfo calls with specific fields
 			expectedFields := []string{
-				"type", "size", "comment", "aggregates", "nas", "guarantee",
+				"uuid", "type", "size", "comment", "aggregates", "nas", "guarantee",
 				"snapshot_policy", "snapshot_directory_access_enabled",
 				"space.snapshot.used", "space.snapshot.reserve_percent",
 				"nas.export_policy.name", "encryption.enabled", "tiering.policy", "qos.policy.name",

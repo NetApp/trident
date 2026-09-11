@@ -823,7 +823,7 @@ func (d *ASAStorageDriver) Unpublish(
 	if d.Config.SANType == sa.FCP {
 		igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		lunPath := name
-		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath, ""); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
 		}
 
@@ -834,7 +834,7 @@ func (d *ASAStorageDriver) Unpublish(
 		// Attempt to unmap the LUN from the per-node igroup.
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		lunPath := name
-		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath, ""); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
 		}
 

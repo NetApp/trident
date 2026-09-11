@@ -1070,7 +1070,7 @@ func getNodeSpecificFCPIgroupName(nodeName, tridentUUID string) string {
 // This function assumes that the list of data LIF IP addresses does not change between driver initialization
 // and publish.
 // volConfig supplies per-volume settings from create (or import): FileSystem and FormatOptions. When FileSystem is
-// non-empty it is used as-is; when empty, fstype is read from the LUN via LunGetFSType, or drivers.DefaultFileSystemType
+// non-empty it is used as-is; when empty, fstype is read from the LUN attributes, or drivers.DefaultFileSystemType
 // if that fails or returns empty. When FormatOptions is non-empty it is used as-is; when empty, format options are
 // read from the LUN attribute "formatOptions" (config.FileSystemType is not consulted for fstype here).
 func PublishLUN(
@@ -1118,10 +1118,29 @@ func PublishLUN(
 		}
 	}
 
+	// The serial number identifies the host-visible LUN. A LUN missing from a volume Trident can address
+	// by UUID is genuinely absent, so the LUN path must not be used to look for a stand-in.
+	lunResponse, err := lookupLUNForVolume(ctx, clientAPI, lunPath, volConfig.BackendVolumeID)
+	if err != nil {
+		return fmt.Errorf("problem retrieving LUN info for %s: %w", lunPath, err)
+	}
+	if lunResponse == nil {
+		return fmt.Errorf("problem retrieving LUN info for %s: empty response", lunPath)
+	}
+	serial := lunResponse.SerialNumber
+
+	if serial == "" {
+		return fmt.Errorf("LUN '%v' serial number not found", lunPath)
+	}
+	mapLUNPath := lunPath
+	if lunResponse.Name != "" {
+		mapLUNPath = lunResponse.Name
+	}
+
 	// Prefer the LUN attribute fstype (authoritative, records what is on disk) over volConfig
 	// to catch import mismatches. Fall back to volConfig.
 	fstype := volConfig.FileSystem
-	lunFstype, lunErr := clientAPI.LunGetFSType(ctx, lunPath)
+	lunFstype, lunErr := getLUNFSType(ctx, clientAPI, lunPath, lunResponse.UUID, lunResponse.Comment)
 	if lunErr != nil || lunFstype == "" {
 		if lunErr != nil {
 			Logc(ctx).WithError(lunErr).Error("failed to get fstype for LUN")
@@ -1144,21 +1163,10 @@ func PublishLUN(
 	// "-E stride=256,stripe_width=16 -F -b 2435965"
 	formatOptions := volConfig.FormatOptions
 	if formatOptions == "" {
-		formatOptions, err = clientAPI.LunGetAttribute(ctx, lunPath, "formatOptions")
+		formatOptions, err = getLUNAttribute(ctx, clientAPI, lunPath, lunResponse.UUID, "formatOptions")
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to get format options for LUN")
 		}
-	}
-
-	// Get LUN Serial Number
-	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
-	if err != nil || lunResponse == nil {
-		return fmt.Errorf("problem retrieving LUN info: %v", err)
-	}
-	serial := lunResponse.SerialNumber
-
-	if serial == "" {
-		return fmt.Errorf("LUN '%v' serial number not found", lunPath)
 	}
 
 	if config.DriverContext == tridentconfig.ContextCSI {
@@ -1215,15 +1223,21 @@ func PublishLUN(
 	}
 
 	// Map LUN (it may already be mapped)
-	lunID, err := clientAPI.EnsureLunMapped(ctx, igroupName, lunPath)
+	var lunID int
+	if uuidAPI, ok := lunAPIForUUID(clientAPI, lunResponse.UUID); ok {
+		lunID, err = uuidAPI.EnsureLunMappedByUUID(ctx, igroupName, mapLUNPath, lunResponse.UUID)
+	} else {
+		lunID, err = clientAPI.EnsureLunMapped(ctx, igroupName, lunPath)
+	}
 	if err != nil {
 		return err
 	}
 
 	var filteredIPs []string
 	if config.SANType == sa.ISCSI {
-		filteredIPs, err = getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
-			publishInfo.Unmanaged)
+		filteredIPs, err = getISCSIDataLIFsForReportingNodes(
+			ctx, clientAPI, ips, lunPath, lunResponse.UUID, igroupName, publishInfo.Unmanaged,
+		)
 		if err != nil {
 			return err
 		}
@@ -1343,11 +1357,13 @@ func removeIgroupFromFCPIgroupList(fcpIgroupList, igroup string) string {
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodes(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, igroupName string, unmanagedImport bool,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, lunUUID, igroupName string,
+	unmanagedImport bool,
 ) ([]string, error) {
 	fields := LogFields{
 		"ips":     ips,
 		"lunPath": lunPath,
+		"lunUUID": lunUUID,
 		"igroup":  igroupName,
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> getISCSIDataLIFsForReportingNodes")
@@ -1357,7 +1373,13 @@ func getISCSIDataLIFsForReportingNodes(
 		return nil, fmt.Errorf("missing data LIF information")
 	}
 
-	reportingNodes, err := clientAPI.LunMapGetReportingNodes(ctx, igroupName, lunPath)
+	var reportingNodes []string
+	var err error
+	if uuidAPI, ok := clientAPI.(lunMapReportingNodesUUIDAPI); ok && lunUUID != "" {
+		reportingNodes, err = uuidAPI.LunMapGetReportingNodesByUUID(ctx, igroupName, lunUUID)
+	} else {
+		reportingNodes, err = clientAPI.LunMapGetReportingNodes(ctx, igroupName, lunPath)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
 	}
@@ -4091,27 +4113,23 @@ func calculateFlexvolEconomySizeBytes(
 
 type GetVolumeInfoFunc func(ctx context.Context, volumeName string) (volume *api.Volume, err error)
 
+func snapshotReserveFromVolume(info *api.Volume) (int, error) {
+	snapshotReserveInt, err := GetSnapshotReserve(info.SnapshotPolicy, strconv.Itoa(info.SnapshotReserve))
+	if err != nil {
+		return 0, fmt.Errorf("invalid value for snapshotReserve: %v", err)
+	}
+	return snapshotReserveInt, nil
+}
+
 // getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
 func getSnapshotReserveFromOntap(
 	ctx context.Context, name string, GetVolumeInfo GetVolumeInfoFunc,
 ) (int, error) {
-	snapshotPolicy := ""
-	snapshotReserveInt := 0
-
 	info, err := GetVolumeInfo(ctx, name)
 	if err != nil {
-		return snapshotReserveInt, fmt.Errorf("invalid value for snapshotReserve: %v", err)
+		return 0, fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
-
-	snapshotPolicy = info.SnapshotPolicy
-	snapshotReserveInt = info.SnapshotReserve
-
-	snapshotReserveInt, err = GetSnapshotReserve(snapshotPolicy, strconv.Itoa(snapshotReserveInt))
-	if err != nil {
-		return snapshotReserveInt, fmt.Errorf("invalid value for snapshotReserve: %v", err)
-	}
-
-	return snapshotReserveInt, nil
+	return snapshotReserveFromVolume(info)
 }
 
 func isFlexvolRW(ctx context.Context, ontap api.OntapAPI, name string) (bool, error) {
@@ -4487,8 +4505,8 @@ func ConstructGroupSnapshot(
 	return storage.NewGroupSnapshot(config, snapshotIDs, dateCreated), nil
 }
 
-func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err error, clonedVolName, sourceVol,
-	createdSnapName string,
+func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err error, clonedVolName, clonedVolID,
+	sourceVol, createdSnapName string,
 ) {
 	// Return if err is nil or if the error is a volume exists error.
 	if err == nil || drivers.IsVolumeExistsError(err) {
@@ -4506,7 +4524,8 @@ func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err err
 			"volume": clonedVolName,
 		}).Debug("Deleting volume after failed flexvol clone.")
 
-		if destroyErr := client.VolumeDestroy(ctx, clonedVolName, true, true); destroyErr != nil {
+		cloneConfig := &storage.VolumeConfig{InternalName: clonedVolName, BackendVolumeID: clonedVolID}
+		if destroyErr := destroyFlexvol(ctx, client, cloneConfig, true, true); destroyErr != nil {
 			Logc(ctx).WithError(destroyErr).Warn("Unable to delete volume after failed volume clone.")
 		}
 	}
@@ -4526,6 +4545,7 @@ func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err err
 func cloneFlexvol(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
+	captureBackendVolumeID bool,
 ) error {
 	// Vars used in failed clone cleanup
 	var err error
@@ -4542,7 +4562,9 @@ func cloneFlexvol(
 
 	// Cleanup cloned volume and snapshots we created if we error
 	defer func() {
-		cleanupFailedCloneFlexVol(ctx, client, err, clonedVolName, source, createdSnapName)
+		cleanupFailedCloneFlexVol(
+			ctx, client, err, clonedVolName, cloneVolConfig.BackendVolumeID, source, createdSnapName,
+		)
 	}()
 
 	fields := LogFields{
@@ -4581,11 +4603,20 @@ func cloneFlexvol(
 		return err
 	}
 
-	// Create the clone based on a snapshot
-	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, false); err != nil {
+	// Create the clone based on a snapshot.
+	if cloneAPI, ok := client.(volumeCloneUUIDAPI); ok && captureBackendVolumeID {
+		cloneVolConfig.BackendVolumeID, err = cloneAPI.VolumeCloneCreateWithUUID(ctx, name, source, snapshot)
+	} else {
+		err = client.VolumeCloneCreate(ctx, name, source, snapshot, false)
+	}
+	// ONTAP reports the clone's UUID as soon as it creates the object, so a create that fails while
+	// still reporting one left a volume behind for the cleanup above to remove.
+	if err == nil || cloneVolConfig.BackendVolumeID != "" {
+		clonedVolName = name
+	}
+	if err != nil {
 		return err
 	}
-	clonedVolName = name
 
 	desiredStates, abortStates := []string{"online"}, []string{"error"}
 	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
@@ -4655,26 +4686,30 @@ func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath str
 	return nil
 }
 
-// LunUnmapIgroup removes a LUN from an igroup.
-func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath string) error {
+// LunUnmapIgroup removes the LUN's mapping to igroup. A known LUN UUID addresses the LUN directly, so the
+// unmap does not depend on ONTAP's asynchronously updated LUN name index resolving to the right object.
+func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath, lunUUID string) error {
 	Logc(ctx).WithFields(LogFields{
-		"LUN":    lunPath,
-		"igroup": igroup,
+		"LUN":     lunPath,
+		"lunUUID": lunUUID,
+		"igroup":  igroup,
 	}).Debugf("Unmapping LUN from igroup.")
+
+	if uuidAPI, ok := lunAPIForUUID(clientAPI, lunUUID); ok {
+		if err := uuidAPI.LunUnmapByUUID(ctx, igroup, lunPath, lunUUID); err != nil {
+			return fmt.Errorf("unmap LUN %s from igroup %s: %w", lunPath, igroup, err)
+		}
+		return nil
+	}
 
 	lunID, err := clientAPI.LunMapInfo(ctx, igroup, lunPath)
 	if err != nil {
-		msg := fmt.Sprintf("error reading LUN maps")
-		Logc(ctx).WithError(err).Error(msg)
-		return errors.New(msg)
+		return fmt.Errorf("read maps for LUN %s in igroup %s: %w", lunPath, igroup, err)
 	}
 
 	if lunID >= 0 {
-		err := clientAPI.LunUnmap(ctx, igroup, lunPath)
-		if err != nil {
-			msg := "error unmapping LUN"
-			Logc(ctx).WithError(err).Error(msg)
-			return errors.New(msg)
+		if err := clientAPI.LunUnmap(ctx, igroup, lunPath); err != nil {
+			return fmt.Errorf("unmap LUN %s from igroup %s: %w", lunPath, igroup, err)
 		}
 	}
 
@@ -5622,30 +5657,30 @@ func cloneASAvol(
 	return nil
 }
 
-// destroyFlexvol deletes the FlexVol backing volConfig, treating an already-absent volume as
-// success so the delete is idempotent. When volConfig records the backend volume ID (the FlexVol
-// UUID on ONTAP) it deletes by UUID, which addresses the volume directly and avoids the REST name
-// index that ONTAP updates asynchronously — the index can otherwise report a just-created volume as
-// already gone and leave it orphaned. It falls back to deleting by name when no ID is recorded (a
-// volume created before the ID was tracked, or a backend such as ZAPI that does not report one) or
-// when the backend cannot delete by UUID (ZAPI returns UnsupportedError).
+// destroyFlexvol deletes the FlexVol backing volConfig, treating an already-absent volume as success so
+// the delete is idempotent. When volConfig records the backend volume ID (the FlexVol UUID on ONTAP) it
+// deletes by UUID, which addresses the volume directly and avoids the REST name index that ONTAP updates
+// asynchronously. The UUID is ONTAP's key for the object, so a UUID that does not resolve means the volume
+// Trident created is gone and the delete is complete; a volume still answering to the name is a different
+// object and is left alone. Configs with no recorded ID, and backends that cannot delete by UUID, delete
+// by name.
 func destroyFlexvol(
 	ctx context.Context, ontapAPI api.OntapAPI, volConfig *storage.VolumeConfig, force, skipRecoveryQueue bool,
 ) error {
 	name := volConfig.InternalName
+	recordedID := volConfig.BackendVolumeID
 
-	if volConfig.BackendVolumeID != "" {
-		err := ontapAPI.VolumeDestroyByUUID(ctx, volConfig.BackendVolumeID, name, force, skipRecoveryQueue)
+	if recordedID != "" {
+		err := ontapAPI.VolumeDestroyByUUID(ctx, recordedID, name, force, skipRecoveryQueue)
 		switch {
 		case err == nil:
 			return nil
 		case errors.IsNotFoundError(err):
-			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": volConfig.BackendVolumeID}).
+			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": recordedID}).
 				Debug("Volume already deleted.")
 			return nil
 		case errors.IsUnsupportedError(err):
-			// The backend cannot delete by UUID (e.g. ZAPI); delete by name.
-			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": volConfig.BackendVolumeID}).
+			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": recordedID}).
 				Debug("Deleting volume by name instead of UUID.")
 		default:
 			return err
@@ -5680,6 +5715,26 @@ func isUnusableVolumeError(err error) bool {
 	return errors.As(err, &unusable)
 }
 
+// destroyReconciledVolume deletes a Flexvol the caller has just examined. A known UUID identifies that
+// exact volume, so it is used in preference to the name, which ONTAP indexes asynchronously and which a
+// replacement volume could already answer to. A backend that addresses volumes by name deletes by name.
+func destroyReconciledVolume(ctx context.Context, client api.OntapAPI, name, volumeUUID string) error {
+	if volumeUUID != "" {
+		err := client.VolumeDestroyByUUID(ctx, volumeUUID, name, true, false)
+		switch {
+		case err == nil, errors.IsNotFoundError(err):
+			return nil
+		case errors.IsUnsupportedError(err):
+			Logc(ctx).WithFields(LogFields{"volume": name, "uuid": volumeUUID}).
+				Debug("Deleting volume by name instead of UUID.")
+		default:
+			return err
+		}
+	}
+
+	return client.VolumeDestroy(ctx, name, true, false)
+}
+
 // destroyUnusableVolume removes a Flexvol that cannot be reconciled with the current create request and
 // returns the error Create hands back, so the next attempt starts from a clean slate.
 //
@@ -5688,15 +5743,16 @@ func isUnusableVolumeError(err error) bool {
 // while it goes away, so this waits for the volume to actually disappear. Both outcomes are reported with a
 // typed error the core keeps the volume transaction for: a volume that is gone is a create waiting to be
 // retried, and a volume that is still being deleted is reported as such so the retry comes later.
-func destroyUnusableVolume(ctx context.Context, client api.OntapAPI, name, reason string) error {
+func destroyUnusableVolume(ctx context.Context, client api.OntapAPI, name, volumeUUID, reason string) error {
 	Logc(ctx).WithFields(LogFields{
 		"volume": name,
+		"uuid":   volumeUUID,
 		"reason": reason,
 	}).Warning("Destroying volume left over from an earlier create attempt.")
 
 	// Automatic create reconciliation must be less destructive than an explicit user delete. Preserve the
 	// volume in ONTAP's recovery queue so a mistaken ownership or attribute decision remains recoverable.
-	if err := client.VolumeDestroy(ctx, name, true, false); err != nil {
+	if err := destroyReconciledVolume(ctx, client, name, volumeUUID); err != nil {
 		Logc(ctx).WithError(err).WithField("volume", name).Error("Could not clean up volume")
 		if api.IsVolumeBusyError(err) {
 			return errors.VolumeDeletingError(
@@ -5724,10 +5780,11 @@ func destroyUnusableVolume(ctx context.Context, client api.OntapAPI, name, reaso
 // A Flexvol that has not come online is still being built, so it is reported as still creating and left
 // alone -- destroying it would restart a slow create on every retry, and provisioning on top of it now could
 // fail and take the Flexvol down with it. A Flexvol that cannot be reconciled is destroyed, and the returned
-// error asks the caller to retry with a clean create.
+// error asks the caller to retry with a clean create. It returns the reconciled volume's backend ID so
+// callers that address child objects by volume UUID can continue without another name-based lookup.
 func reconcileExistingVolumeForCreate(
 	ctx context.Context, client api.OntapAPI, desired api.Volume, allowedAggregates []string,
-) error {
+) (string, error) {
 	name := desired.Name
 
 	state, err := client.VolumeWaitForStates(ctx, name, []string{"online"}, []string{"error"},
@@ -5735,27 +5792,31 @@ func reconcileExistingVolumeForCreate(
 	if err != nil {
 		var terminal *api.TerminalStateError
 		if errors.As(err, &terminal) {
-			return destroyUnusableVolume(ctx, client, name, fmt.Sprintf("volume is in state %q", state))
+			// The volume has not been read yet, so there is no UUID to delete by.
+			return "", destroyUnusableVolume(ctx, client, name, "", fmt.Sprintf("volume is in state %q", state))
 		}
-		return errors.VolumeCreatingError("volume %s is not online yet (state %q): %v", name, state, err)
+		return "", errors.VolumeCreatingError("volume %s is not online yet (state %q): %v", name, state, err)
 	}
 
 	existing, err := client.VolumeInfo(ctx, name)
 	if err != nil {
 		if exists, existsErr := client.VolumeExists(ctx, name); existsErr == nil && !exists {
-			return errors.VolumeCreatingError("volume %s is no longer present; retrying the create", name)
+			return "", errors.VolumeCreatingError("volume %s is no longer present; retrying the create", name)
 		}
-		return fmt.Errorf("error reading existing volume %s: %v", name, err)
+		return "", fmt.Errorf("error reading existing volume %s: %v", name, err)
+	}
+	if existing == nil {
+		return "", fmt.Errorf("existing volume %s has no volume information", name)
 	}
 
 	if err = reconcileExistingFlexvol(ctx, client, existing, desired, allowedAggregates); err != nil {
 		if isUnusableVolumeError(err) {
-			return destroyUnusableVolume(ctx, client, name, err.Error())
+			return "", destroyUnusableVolume(ctx, client, name, existing.UUID, err.Error())
 		}
-		return err
+		return "", err
 	}
 
-	return nil
+	return existing.UUID, nil
 }
 
 func reconcileExistingFlexgroupForCreate(ctx context.Context, client api.OntapAPI, desired api.Volume) error {
@@ -6012,16 +6073,31 @@ func reconcileExistingLun(ctx context.Context, client api.OntapAPI, existing *ap
 			reason: fmt.Sprintf("LUN is %d bytes, request asks for %d", existingSize, desiredSize),
 		}
 	}
+	// The LUN was discovered authoritatively, so address it by its own UUID where the backend supports
+	// that. Resolving the path again would go back through ONTAP's asynchronously updated name index,
+	// which could grow or re-QoS a different LUN that has taken over the path.
+	uuidAPI, addressableByUUID := lunAPIForUUID(client, existing.UUID)
+
 	if existingSize < desiredSize {
 		Logc(ctx).WithFields(LogFields{
 			"LUN": desired.Name, "size": existingSize, "newSize": desiredSize,
 		}).Debug("Growing existing LUN to the requested size.")
-		if _, err = client.LunSetSize(ctx, desired.Name, desired.Size); err != nil {
+		if addressableByUUID {
+			_, err = uuidAPI.LunSetSizeByUUID(ctx, desired.Name, existing.UUID, desired.Size)
+		} else {
+			_, err = client.LunSetSize(ctx, desired.Name, desired.Size)
+		}
+		if err != nil {
 			return fmt.Errorf("could not resize LUN %s: %w", desired.Name, err)
 		}
 	}
 	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
-		if err = client.LunSetQosPolicyGroup(ctx, desired.Name, desired.Qos); err != nil {
+		if addressableByUUID {
+			err = uuidAPI.LunSetQosPolicyGroupByUUID(ctx, desired.Name, existing.UUID, desired.Qos)
+		} else {
+			err = client.LunSetQosPolicyGroup(ctx, desired.Name, desired.Qos)
+		}
+		if err != nil {
 			return fmt.Errorf("could not set QoS policy group on LUN %s: %w", desired.Name, err)
 		}
 	}

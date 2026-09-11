@@ -996,6 +996,24 @@ func TestOntapREST_LunListByPattern(t *testing.T) {
 	}
 }
 
+func TestOntapREST_LunListByVolumeUUID(t *testing.T) {
+	const volumeUUID = "volume-uuid"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, volumeUUID, r.URL.Query().Get("location.volume.uuid"))
+		assert.Empty(t, r.URL.Query().Get("name"))
+		mockLunListResponse(false, w, r)
+	}))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	response, err := rs.LunListByVolumeUUID(ctx, volumeUUID, []string{"uuid", "serial_number"})
+
+	require.NoError(t, err)
+	require.NotNil(t, response)
+}
+
 func getLunInfo(lunAttr *string) *models.Lun {
 	comment := "LUN for flexvol"
 	igroup1 := "igroup1"
@@ -1440,6 +1458,88 @@ func TestOntapREST_LunGetAttribute(t *testing.T) {
 	}
 }
 
+func TestOntapREST_LunGetAttributeByUUID(t *testing.T) {
+	var paths []string
+	var lunGetAccept string
+	var lunGetQuery string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		lunGetAccept = r.Header.Get("Accept")
+		lunGetQuery = r.URL.RawQuery
+
+		lunInfo := getLunInfo(convert.ToPtr("formatOptions"))
+		lunInfo.LunInlineAttributes[0].Value = convert.ToPtr("-b 4096")
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(lunInfo)
+	}))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	value, err := rs.LunGetAttributeByUUID(ctx, "fake-lunUUID", "formatOptions")
+
+	require.NoError(t, err)
+	assert.Equal(t, "-b 4096", value)
+	// The UUID addresses the LUN directly, so the name index is never consulted.
+	assert.Equal(t, []string{"/api/storage/luns/fake-lunUUID"}, paths)
+	assert.Contains(t, lunGetQuery, "attributes.name")
+	assert.Contains(t, lunGetQuery, "attributes.value")
+	assert.NotContains(t, lunGetAccept, "multipart/form-data")
+}
+
+func TestOntapREST_LunGetAttributeByUUID_AttributeMissing(t *testing.T) {
+	tests := []struct {
+		name            string
+		attributeName   string
+		attributes      []*models.LunInlineAttributesInlineArrayItem
+		expectedValue   string
+		isErrorExpected bool
+	}{
+		{"AttributeNotSet", "formatOptions", nil, "", true},
+		{
+			"DifferentAttributeSet", "formatOptions",
+			[]*models.LunInlineAttributesInlineArrayItem{{Name: convert.ToPtr("poolName")}},
+			"", false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				lunInfo := getLunInfo(nil)
+				lunInfo.LunInlineAttributes = test.attributes
+				setHTTPResponseHeader(w, http.StatusOK)
+				json.NewEncoder(w).Encode(lunInfo)
+			}))
+			defer server.Close()
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			require.NotNil(t, rs)
+
+			value, err := rs.LunGetAttributeByUUID(ctx, "fake-lunUUID", test.attributeName)
+
+			if test.isErrorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, test.expectedValue, value)
+		})
+	}
+}
+
+func TestOntapREST_LunGetAttributeByUUID_BackendError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	_, err := rs.LunGetAttributeByUUID(ctx, "fake-lunUUID", "formatOptions")
+
+	assert.Error(t, err)
+}
+
 func mockLunAttrNotExistsResponse(w http.ResponseWriter, r *http.Request) {
 	lunInfo := getLunInfo(nil)
 	numRecords := int64(1)
@@ -1488,6 +1588,35 @@ func TestOntapREST_LunAttributeModify(t *testing.T) {
 	}
 }
 
+func TestOntapREST_LunSetAttributeByUUID(t *testing.T) {
+	var paths []string
+	var lunGetAccept string
+	var lunGetFields string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if r.URL.Path == "/api/storage/luns/fake-lunName" {
+			lunGetAccept = r.Header.Get("Accept")
+			lunGetFields = r.URL.Query().Get("fields")
+		}
+		mockLunResponse(w, r)
+	}))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	err := rs.LunSetAttributeByUUID(ctx, "fake-lunName", "lunAttr", "lunAttr1")
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		"/api/storage/luns/fake-lunName",
+		"/api/storage/luns/fake-lunUUID/attributes/lunAttr",
+	}, paths)
+	// The set requests the UUID it is about to write through, rather than relying on ONTAP echoing a
+	// field that was never asked for.
+	assert.Equal(t, "uuid,attributes.name", lunGetFields)
+	assert.NotContains(t, lunGetAccept, "multipart/form-data")
+}
+
 func TestOntapREST_LunSetQosPolicyGroup(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -1515,6 +1644,23 @@ func TestOntapREST_LunSetQosPolicyGroup(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestOntapREST_LunSetQosPolicyGroupByUUID(t *testing.T) {
+	var paths []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		mockLunResponse(w, r)
+	}))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	err := rs.LunSetQosPolicyGroupByUUID(ctx, "lun-uuid", "fake-qosPolicy")
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/api/storage/luns/lun-uuid"}, paths)
 }
 
 func TestOntapREST_LunRename(t *testing.T) {
@@ -1776,6 +1922,38 @@ func TestOntapREST_LunMap(t *testing.T) {
 	}
 }
 
+func TestOntapREST_LunMapByUUID(t *testing.T) {
+	const (
+		initiatorGroup = "fake-initiatorGroupName"
+		lunPath        = "/vol/volume/lun0"
+		lunUUID        = "lun-uuid"
+	)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			assert.Equal(t, lunUUID, r.URL.Query().Get("lun.uuid"))
+			assert.Empty(t, r.URL.Query().Get("lun.name"))
+		case http.MethodPost:
+			var request models.LunMap
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+			require.NotNil(t, request.Lun)
+			assert.Equal(t, lunUUID, *request.Lun.UUID)
+			// ONTAP accepts either identifier. Sending only the UUID keeps the map off the name index.
+			assert.Nil(t, request.Lun.Name)
+		}
+		mockLunMapResponse(w, r)
+	}))
+	defer server.Close()
+
+	client := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, client)
+
+	_, err := client.LunMapInfoByUUID(ctx, "", lunUUID)
+	require.NoError(t, err)
+	_, err = client.LunMapByUUID(ctx, initiatorGroup, lunPath, lunUUID, -1)
+	require.NoError(t, err)
+}
+
 func TestOntapREST_LunMapList(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -1899,6 +2077,25 @@ func TestOntapREST_GetLunMapReportingNodes(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestOntapREST_GetLunMapReportingNodesByUUID(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/storage/luns" {
+			t.Error("LUN UUID reporting-node lookup must not query LUNs by name")
+			http.Error(w, "unexpected LUN name lookup", http.StatusInternalServerError)
+			return
+		}
+		mockLunMapReportingNode(w, r)
+	}
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+
+	nodes, err := rs.LunMapGetReportingNodesByUUID(ctx, "fake-initiatorGroupName", "fake-lunUUID")
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{"fake-lunMap"}, nodes)
 }
 
 func mockLunResponseSizeNil(w http.ResponseWriter, r *http.Request) {
@@ -2803,6 +3000,51 @@ func TestOntapREST_VolumeCloneCreateAsync(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func mockVolumeCloneCreateWithUUID(w http.ResponseWriter, r *http.Request) {
+	cloneUUID := "12345678-1234-1234-1234-123456789abc"
+	response := models.VolumeJobLinkResponse{
+		NumRecords: 1,
+		Records:    []*models.Volume{{UUID: &cloneUUID}},
+	}
+
+	if r.Method == http.MethodPost {
+		jobUUID := strfmt.UUID("1234")
+		response.Job = &models.JobLink{UUID: &jobUUID}
+		setHTTPResponseHeader(w, http.StatusAccepted)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+	mockJobResponse(w, r)
+}
+
+func mockVolumeCloneCreateWithUUIDJobFailure(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		mockVolumeCloneCreateWithUUID(w, r)
+		return
+	}
+	mockJobResponseJobStateFailure(w, r)
+}
+
+func TestOntapREST_VolumeCloneCreateAsyncWithUUID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockVolumeCloneCreateWithUUID))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+
+	cloneUUID, err := rs.VolumeCloneCreateAsyncWithUUID(ctx, "fakeClone", "fakeVolume", "fakeSnapshot")
+
+	require.NoError(t, err)
+	assert.Equal(t, "12345678-1234-1234-1234-123456789abc", cloneUUID)
+
+	failureServer := httptest.NewServer(http.HandlerFunc(mockVolumeCloneCreateWithUUIDJobFailure))
+	defer failureServer.Close()
+	rs = newRestClient(failureServer.Listener.Addr().String(), failureServer.Client())
+
+	cloneUUID, err = rs.VolumeCloneCreateAsyncWithUUID(ctx, "fakeClone", "fakeVolume", "fakeSnapshot")
+
+	require.Error(t, err)
+	assert.Equal(t, "12345678-1234-1234-1234-123456789abc", cloneUUID)
 }
 
 func mockJobResponseStateNil(w http.ResponseWriter, r *http.Request) {

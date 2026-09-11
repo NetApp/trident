@@ -458,6 +458,20 @@ func WithNextLink(next *models.Href) func(*runtime.ClientOperation) {
 	}
 }
 
+// withoutLUNDataAccept keeps LunGet on the property path. The generated client
+// advertises multipart/form-data because GET /storage/luns/{uuid} can also
+// read LUN payload bytes; ONTAP treats that Accept value as a data-read and
+// rejects query parameters such as fields (error 262187).
+func withoutLUNDataAccept(op *runtime.ClientOperation) {
+	filtered := make([]string, 0, len(op.ProducesMediaTypes))
+	for _, mediaType := range op.ProducesMediaTypes {
+		if mediaType != "multipart/form-data" {
+			filtered = append(filtered, mediaType)
+		}
+	}
+	op.ProducesMediaTypes = filtered
+}
+
 // HasNextLink checks if restResult.Links.Next exists using reflection
 func HasNextLink(restResult interface{}) (result bool) {
 	//
@@ -1280,7 +1294,7 @@ func (c *RestClient) restoreSnapshotByNameAndStyle(
 func (c *RestClient) createCloneNAS(
 	ctx context.Context,
 	cloneName, sourceVolumeName, snapshotName string,
-) (*storage.VolumeCreateAccepted, error) {
+) (*storage.VolumeCreateCreated, *storage.VolumeCreateAccepted, error) {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1304,8 +1318,7 @@ func (c *RestClient) createCloneNAS(
 
 	params.SetInfo(volumeInfo)
 
-	_, volumeCreateAccepted, err := c.api.Storage.VolumeCreate(params, c.authInfo)
-	return volumeCreateAccepted, err
+	return c.api.Storage.VolumeCreate(params, c.authInfo)
 }
 
 // listAllVolumeNamesBackedBySnapshot returns the names of all volumes backed by the specified snapshot
@@ -2222,22 +2235,43 @@ func (c *RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeNa
 func (c *RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (
 	*storage.VolumeCreateAccepted, error,
 ) {
-	return c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshotName)
+	_, accepted, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshotName)
+	return accepted, err
 }
 
 // VolumeCloneCreateAsync clones a volume from a snapshot
 func (c *RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
-	cloneCreateResult, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
+	_, err := c.VolumeCloneCreateAsyncWithUUID(ctx, cloneName, sourceVolumeName, snapshot)
+	return err
+}
+
+// VolumeCloneCreateAsyncWithUUID clones a volume and returns its UUID when ONTAP includes the created record.
+func (c *RestClient) VolumeCloneCreateAsyncWithUUID(
+	ctx context.Context, cloneName, sourceVolumeName, snapshot string,
+) (string, error) {
+	created, accepted, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
 	if err != nil {
-		return fmt.Errorf("could not create clone; %v", err)
+		return "", fmt.Errorf("could not create clone: %w", err)
 	}
-	if cloneCreateResult == nil {
-		return fmt.Errorf("could not create clone: %v", "unexpected result")
+
+	if created != nil {
+		return volumeUUIDFromJobLinkResponse(created.Payload), nil
+	}
+	if accepted == nil {
+		return "", fmt.Errorf("could not create clone: unexpected result")
 	}
 
 	// NOTE the callers of this function should perform their own existence checks based on type (vol or flexgroup)
-	jobLink := getGenericJobLinkFromVolumeJobLink(cloneCreateResult.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	cloneUUID := volumeUUIDFromJobLinkResponse(accepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(accepted.Payload)
+	return cloneUUID, c.PollJobStatus(ctx, jobLink)
+}
+
+func volumeUUIDFromJobLinkResponse(payload *models.VolumeJobLinkResponse) string {
+	if payload == nil || len(payload.Records) != 1 || payload.Records[0] == nil || payload.Records[0].UUID == nil {
+		return ""
+	}
+	return *payload.Records[0].UUID
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -2814,12 +2848,29 @@ func (c *RestClient) lunCreate(ctx context.Context, params *san.LunCreateParams,
 
 // LunGet gets the LUN with the specified uuid
 func (c *RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error) {
+	return c.lunGetByUUID(ctx, uuid, nil)
+}
+
+// LunGetByUUID gets selected properties for the LUN with the specified UUID.
+func (c *RestClient) LunGetByUUID(ctx context.Context, uuid string, fields []string) (*models.Lun, error) {
+	result, err := c.lunGetByUUID(ctx, uuid, fields)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+	return result.Payload, nil
+}
+
+func (c *RestClient) lunGetByUUID(ctx context.Context, uuid string, fields []string) (*san.LunGetOK, error) {
 	params := san.NewLunGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.UUID = uuid
+	params.Fields = fields
 
-	return c.api.San.LunGet(params, c.authInfo)
+	return c.api.San.LunGet(params, c.authInfo, withoutLUNDataAccept)
 }
 
 // LunGetByName gets the LUN with the specified name
@@ -2850,6 +2901,24 @@ func (c *RestClient) LunList(ctx context.Context, pattern string, fields []strin
 
 	params.SetFields(fields)
 
+	return c.lunList(params)
+}
+
+// LunListByVolumeUUID finds LUNs in the specified volume without consulting the LUN name index.
+func (c *RestClient) LunListByVolumeUUID(
+	ctx context.Context, volumeUUID string, fields []string,
+) (*san.LunCollectionGetOK, error) {
+	params := san.NewLunCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SvmUUID = convert.ToPtr(c.svmUUID)
+	params.SetLocationVolumeUUID(convert.ToPtr(volumeUUID))
+	params.SetFields(fields)
+
+	return c.lunList(params)
+}
+
+func (c *RestClient) lunList(params *san.LunCollectionGetParams) (*san.LunCollectionGetOK, error) {
 	result, err := c.api.San.LunCollectionGet(params, c.authInfo)
 	if err != nil {
 		return nil, err
@@ -2989,6 +3058,24 @@ func (c *RestClient) LunGetAttribute(
 	if lun == nil {
 		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
+
+	return lunGetAttribute(lun, attributeName)
+}
+
+// LunGetAttributeByUUID gets an attribute by name for a given LUN without consulting the LUN name index.
+func (c *RestClient) LunGetAttributeByUUID(ctx context.Context, lunUUID, attributeName string) (string, error) {
+	lunResponse, err := c.lunGetByUUID(ctx, lunUUID, []string{"attributes.name", "attributes.value"})
+	if err != nil {
+		return "", err
+	}
+	if lunResponse == nil || lunResponse.Payload == nil {
+		return "", fmt.Errorf("could not find LUN with UUID %v", lunUUID)
+	}
+
+	return lunGetAttribute(lunResponse.Payload, attributeName)
+}
+
+func lunGetAttribute(lun *models.Lun, attributeName string) (string, error) {
 	if lun.LunInlineAttributes == nil {
 		return "", fmt.Errorf("LUN did not have any attributes")
 	}
@@ -3021,7 +3108,30 @@ func (c *RestClient) LunSetAttribute(
 		return fmt.Errorf("could not find LUN UUID with name %v", lunPath)
 	}
 
-	uuid := *lun.UUID
+	return c.lunSetAttribute(ctx, lun, attributeName, attributeValue)
+}
+
+// LunSetAttributeByUUID sets the attribute to the provided value without consulting the LUN name index.
+func (c *RestClient) LunSetAttributeByUUID(
+	ctx context.Context, lunUUID, attributeName, attributeValue string,
+) error {
+	lunResponse, err := c.lunGetByUUID(ctx, lunUUID, []string{"uuid", "attributes.name"})
+	if err != nil {
+		return err
+	}
+	if lunResponse == nil || lunResponse.Payload == nil {
+		return fmt.Errorf("could not find LUN with UUID %v", lunUUID)
+	}
+
+	return c.lunSetAttribute(ctx, lunResponse.Payload, attributeName, attributeValue)
+}
+
+func (c *RestClient) lunSetAttribute(
+	ctx context.Context, lun *models.Lun, attributeName, attributeValue string,
+) error {
+	if lun.UUID == nil {
+		return errors.New("could not find LUN UUID")
+	}
 
 	attributeExists := false
 	for _, attrs := range lun.LunInlineAttributes {
@@ -3035,7 +3145,7 @@ func (c *RestClient) LunSetAttribute(
 		params := san.NewLunAttributeCreateParamsWithTimeout(c.httpClient.Timeout)
 		params.Context = ctx
 		params.HTTPClient = c.httpClient
-		params.LunUUID = uuid
+		params.LunUUID = *lun.UUID
 
 		attrInfo := &models.LunAttribute{
 			// in a create, the attribute name is specified here
@@ -3060,7 +3170,7 @@ func (c *RestClient) LunSetAttribute(
 		params := san.NewLunAttributeModifyParamsWithTimeout(c.httpClient.Timeout)
 		params.Context = ctx
 		params.HTTPClient = c.httpClient
-		params.LunUUID = uuid
+		params.LunUUID = *lun.UUID
 		params.Name = attributeName
 
 		attrInfo := &models.LunAttribute{
@@ -3097,12 +3207,15 @@ func (c *RestClient) LunSetQosPolicyGroup(
 		return fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 
-	uuid := *lun.UUID
+	return c.LunSetQosPolicyGroupByUUID(ctx, *lun.UUID, qosPolicyGroup)
+}
 
+// LunSetQosPolicyGroupByUUID sets the QoS policy for a LUN without consulting the LUN name index.
+func (c *RestClient) LunSetQosPolicyGroupByUUID(ctx context.Context, lunUUID, qosPolicyGroup string) error {
 	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.UUID = uuid
+	params.UUID = lunUUID
 
 	qosPolicy := &models.LunInlineQosPolicy{
 		Name: convert.ToPtr(qosPolicyGroup),
@@ -3184,10 +3297,28 @@ func (c *RestClient) LunMapInfo(
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.LunName = &lunPath
+	return c.lunMapInfo(initiatorGroupName, params)
+}
+
+// LunMapInfoByUUID gets LUN mapping information without consulting the LUN name index.
+func (c *RestClient) LunMapInfoByUUID(
+	ctx context.Context,
+	initiatorGroupName, lunUUID string,
+) (*san.LunMapCollectionGetOK, error) {
+	params := san.NewLunMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.LunUUID = &lunUUID
+	return c.lunMapInfo(initiatorGroupName, params)
+}
+
+func (c *RestClient) lunMapInfo(
+	initiatorGroupName string, params *san.LunMapCollectionGetParams,
+) (*san.LunMapCollectionGetOK, error) {
 	if initiatorGroupName != "" {
 		params.IgroupName = &initiatorGroupName
 	}
-	params.Fields = []string{"svm", "lun", "igroup", "logical-unit-number"}
+	params.Fields = []string{"svm", "lun", "igroup", "logical_unit_number"}
 
 	return c.api.San.LunMapCollectionGet(params, c.authInfo)
 }
@@ -3200,22 +3331,15 @@ func (c *RestClient) LunUnmap(
 ) error {
 	lunMapResponse, err := c.LunMapInfo(ctx, initiatorGroupName, lunPath)
 	if err != nil {
-		return fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
-	} else if lunMapResponse.Payload == nil || lunMapResponse.Payload.NumRecords == nil {
-		return fmt.Errorf("problem reading maps for LUN %s", lunPath)
-	} else if *lunMapResponse.Payload.NumRecords == 0 {
+		return fmt.Errorf("problem reading maps for LUN %s: %w", lunPath, err)
+	}
+	igroupUUID, mapped, err := igroupUUIDFromLunMap(lunPath, lunMapResponse)
+	if err != nil {
+		return err
+	}
+	if !mapped {
 		return nil
 	}
-
-	if lunMapResponse.Payload == nil ||
-		lunMapResponse.Payload.LunMapResponseInlineRecords == nil ||
-		lunMapResponse.Payload.LunMapResponseInlineRecords[0] == nil ||
-		lunMapResponse.Payload.LunMapResponseInlineRecords[0].Igroup == nil ||
-		lunMapResponse.Payload.LunMapResponseInlineRecords[0].Igroup.UUID == nil {
-		return fmt.Errorf("problem reading maps for LUN %s", lunPath)
-	}
-
-	igroupUUID := *lunMapResponse.Payload.LunMapResponseInlineRecords[0].Igroup.UUID
 
 	fields := []string{""}
 	lun, err := c.LunGetByName(ctx, lunPath, fields)
@@ -3230,17 +3354,58 @@ func (c *RestClient) LunUnmap(
 	}
 	lunUUID := *lun.UUID
 
+	return c.lunMapDelete(ctx, igroupUUID, lunUUID)
+}
+
+// LunUnmapByUUID deletes the LUN's mapping to an igroup without consulting the LUN name index.
+func (c *RestClient) LunUnmapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string) error {
+	if lunUUID == "" {
+		return errors.InvalidInputError("LUN UUID is required")
+	}
+
+	lunMapResponse, err := c.LunMapInfoByUUID(ctx, initiatorGroupName, lunUUID)
+	if err != nil {
+		return fmt.Errorf("problem reading maps for LUN %s: %w", lunPath, err)
+	}
+	igroupUUID, mapped, err := igroupUUIDFromLunMap(lunPath, lunMapResponse)
+	if err != nil {
+		return err
+	}
+	if !mapped {
+		return nil
+	}
+
+	return c.lunMapDelete(ctx, igroupUUID, lunUUID)
+}
+
+// igroupUUIDFromLunMap reads the igroup UUID out of a LUN map query, reporting whether the LUN is mapped
+// at all so callers can treat an unmapped LUN as nothing to do.
+func igroupUUIDFromLunMap(
+	lunPath string, lunMapResponse *san.LunMapCollectionGetOK,
+) (string, bool, error) {
+	if lunMapResponse == nil || lunMapResponse.Payload == nil || lunMapResponse.Payload.NumRecords == nil {
+		return "", false, fmt.Errorf("problem reading maps for LUN %s", lunPath)
+	}
+	if *lunMapResponse.Payload.NumRecords == 0 {
+		return "", false, nil
+	}
+
+	records := lunMapResponse.Payload.LunMapResponseInlineRecords
+	if len(records) == 0 || records[0] == nil || records[0].Igroup == nil || records[0].Igroup.UUID == nil {
+		return "", false, fmt.Errorf("problem reading maps for LUN %s", lunPath)
+	}
+	return *records[0].Igroup.UUID, true, nil
+}
+
+func (c *RestClient) lunMapDelete(ctx context.Context, igroupUUID, lunUUID string) error {
 	params := san.NewLunMapDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.IgroupUUID = igroupUUID
 	params.LunUUID = lunUUID
 
-	_, err = c.api.San.LunMapDelete(params, c.authInfo)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := c.api.San.LunMapDelete(params, c.authInfo)
+	return err
 }
 
 // LunMap maps a LUN to an id in an initiator group
@@ -3258,8 +3423,18 @@ func (c *RestClient) LunMap(
 	if lun == nil {
 		return nil, fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
-	uuid := lun.UUID
+	if lun.UUID == nil {
+		return nil, fmt.Errorf("could not find LUN UUID with name %v", lunPath)
+	}
+	return c.LunMapByUUID(ctx, initiatorGroupName, lunPath, *lun.UUID, lunID)
+}
 
+// LunMapByUUID maps a LUN without consulting the LUN name index.
+func (c *RestClient) LunMapByUUID(
+	ctx context.Context,
+	initiatorGroupName, lunPath, lunUUID string,
+	lunID int,
+) (*san.LunMapCreateCreated, error) {
 	params := san.NewLunMapCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -3268,9 +3443,10 @@ func (c *RestClient) LunMap(
 	igroupInfo := &models.LunMapInlineIgroup{
 		Name: convert.ToPtr(initiatorGroupName),
 	}
+	// ONTAP accepts either the LUN's UUID or its name. Sending only the UUID keeps the map off the name
+	// index, which can resolve to a different LUN that has taken over this path.
 	lunInfo := &models.LunMapInlineLun{
-		Name: convert.ToPtr(lunPath),
-		UUID: uuid,
+		UUID: convert.ToPtr(lunUUID),
 	}
 	lunSVM := &models.LunMapInlineSvm{
 		UUID: convert.ToPtr(c.svmUUID),
@@ -3330,8 +3506,16 @@ func (c *RestClient) LunMapGetReportingNodes(
 	if lun.UUID == nil {
 		return nil, fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
-	lunUUID := *lun.UUID
+	return c.LunMapGetReportingNodesByUUID(ctx, initiatorGroupName, *lun.UUID)
+}
 
+// LunMapGetReportingNodesByUUID returns reporting nodes without consulting the LUN name index.
+func (c *RestClient) LunMapGetReportingNodesByUUID(
+	ctx context.Context, initiatorGroupName, lunUUID string,
+) ([]string, error) {
+	if lunUUID == "" {
+		return nil, errors.InvalidInputError("LUN UUID is required")
+	}
 	igroupFields := []string{""}
 	igroup, igroupGetErr := c.IgroupGetByName(ctx, initiatorGroupName, igroupFields)
 	if igroupGetErr != nil {
@@ -3419,12 +3603,15 @@ func (c *RestClient) LunSetSize(
 		return 0, fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 
-	uuid := *lun.UUID
+	return c.LunSetSizeByUUID(ctx, *lun.UUID, newSize)
+}
 
+// LunSetSizeByUUID sets the size for a LUN without consulting the LUN name index.
+func (c *RestClient) LunSetSizeByUUID(ctx context.Context, lunUUID, newSize string) (uint64, error) {
 	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.UUID = uuid
+	params.UUID = lunUUID
 
 	sizeBytesStr, _ := capacity.ToBytes(newSize)
 	sizeBytes, err := convert.ToPositiveInt64(sizeBytesStr)

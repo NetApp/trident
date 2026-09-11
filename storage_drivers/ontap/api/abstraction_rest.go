@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -20,6 +19,7 @@ import (
 	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
+	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -213,8 +213,9 @@ func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, ski
 }
 
 // VolumeDestroyByUUID deletes the volume identified by volumeUUID. Addressing the volume by UUID
-// avoids the lag in ONTAP's name index, which can report a just-created volume as missing. A UUID
-// that no longer resolves yields a NotFoundError, meaning the delete already completed.
+// avoids the lag in ONTAP's name index, which can report a just-created volume as missing. The UUID is
+// ONTAP's key for the object, so a UUID that no longer resolves yields a NotFoundError meaning the volume
+// is genuinely gone.
 func (d OntapAPIREST) VolumeDestroyByUUID(
 	ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool,
 ) error {
@@ -300,7 +301,7 @@ func (d OntapAPIREST) VolumeRecoveryQueueGetName(ctx context.Context, name strin
 
 func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
 	fields := []string{
-		"type", "size", "comment", "aggregates", "nas", "guarantee",
+		"uuid", "type", "size", "comment", "aggregates", "nas", "guarantee",
 		"snapshot_policy", "snapshot_directory_access_enabled",
 		"space.snapshot.used", "space.snapshot.reserve_percent",
 		"nas.export_policy.name", "encryption.enabled", "tiering.policy", "qos.policy.name",
@@ -524,8 +525,17 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		responseLunMaps = append(responseLunMaps, lunMap)
 	}
 
-	if lunGetResponse.Space != nil && lunGetResponse.Space.Size != nil {
-		responseSize = strconv.FormatInt(*lunGetResponse.Space.Size, 10)
+	// Space reservation and space allocation are what LunCreate sets, and a resumed create compares them
+	// against the request to decide whether an existing LUN can be reused, so decode them here.
+	var responseSpaceReserved, responseSpaceAllocated *bool
+	if lunGetResponse.Space != nil {
+		if lunGetResponse.Space.Size != nil {
+			responseSize = strconv.FormatInt(*lunGetResponse.Space.Size, 10)
+		}
+		if lunGetResponse.Space.Guarantee != nil {
+			responseSpaceReserved = lunGetResponse.Space.Guarantee.Requested
+		}
+		responseSpaceAllocated = lunGetResponse.Space.ScsiThinProvisioningSupportEnabled
 	}
 
 	if lunGetResponse.Comment != nil {
@@ -581,19 +591,21 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	}
 
 	lunInfo := &Lun{
-		Comment:      responseComment,
-		CreateTime:   responseCreateTime,
-		Enabled:      enabled,
-		LunMaps:      responseLunMaps,
-		Name:         name,
-		Qos:          QosPolicyGroup{Name: responseQos},
-		Size:         responseSize,
-		Mapped:       responseMapped,
-		UUID:         uuid,
-		SerialNumber: serialNumber,
-		State:        state,
-		VolumeName:   responseVolName,
-		OsType:       osType,
+		Comment:        responseComment,
+		CreateTime:     responseCreateTime,
+		Enabled:        enabled,
+		LunMaps:        responseLunMaps,
+		Name:           name,
+		Qos:            QosPolicyGroup{Name: responseQos},
+		Size:           responseSize,
+		Mapped:         responseMapped,
+		UUID:           uuid,
+		SerialNumber:   serialNumber,
+		State:          state,
+		VolumeName:     responseVolName,
+		OsType:         osType,
+		SpaceReserved:  responseSpaceReserved,
+		SpaceAllocated: responseSpaceAllocated,
 	}
 	return lunInfo, nil
 }
@@ -1625,6 +1637,17 @@ func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 	return nil
 }
 
+// VolumeCloneCreateWithUUID creates a clone and returns the UUID from ONTAP's create response when present.
+func (d OntapAPIREST) VolumeCloneCreateWithUUID(
+	ctx context.Context, cloneName, sourceName, snapshot string,
+) (string, error) {
+	cloneUUID, err := d.api.VolumeCloneCreateAsyncWithUUID(ctx, cloneName, sourceName, snapshot)
+	if err != nil {
+		return cloneUUID, fmt.Errorf("error creating clone: %w", err)
+	}
+	return cloneUUID, nil
+}
+
 func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string, maxElapsedTime time.Duration) (string, error) {
 	fields := LogFields{
 		"method":        "VolumeWaitForStates",
@@ -2282,6 +2305,62 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 	return luns, nil
 }
 
+// LunGetByVolumeUUID gets the LUN at lunPath from the FlexVol with the given UUID. Listing the volume's
+// LUNs by its UUID keeps the lookup off ONTAP's asynchronously updated LUN name index; lunPath only
+// selects among the LUNs the volume itself reports.
+func (d OntapAPIREST) LunGetByVolumeUUID(ctx context.Context, volumeUUID, lunPath string) (*Lun, error) {
+	if volumeUUID == "" {
+		return nil, errors.InvalidInputError("volume UUID is required")
+	}
+	if lunPath == "" {
+		return nil, errors.InvalidInputError("LUN path is required")
+	}
+
+	fields := []string{
+		"uuid",
+		"name",
+		"comment",
+		"serial_number",
+		"status.state",
+		"os_type",
+		"location.volume.name",
+		"space.size",
+		"space.guarantee.requested",
+		"space.scsi_thin_provisioning_support_enabled",
+		"qos_policy.name",
+	}
+	response, err := d.api.LunListByVolumeUUID(ctx, volumeUUID, fields)
+	if err != nil {
+		return nil, err
+	}
+	if response == nil || response.Payload == nil {
+		return nil, errors.NotFoundError("could not get LUN %v for volume UUID %v", lunPath, volumeUUID)
+	}
+
+	var lunResponse *models.Lun
+	for _, record := range response.Payload.LunResponseInlineRecords {
+		if record == nil || record.Name == nil || *record.Name != lunPath {
+			continue
+		}
+		if lunResponse != nil {
+			return nil, fmt.Errorf("multiple LUNs named %v found for volume UUID %v", lunPath, volumeUUID)
+		}
+		lunResponse = record
+	}
+	if lunResponse == nil {
+		return nil, errors.NotFoundError("could not get LUN %v for volume UUID %v", lunPath, volumeUUID)
+	}
+
+	lun, err := lunInfoFromRestAttrsHelper(lunResponse)
+	if err != nil {
+		return nil, err
+	}
+	if lun.UUID == "" {
+		return nil, fmt.Errorf("LUN %v for volume UUID %v has no UUID", lunPath, volumeUUID)
+	}
+	return lun, nil
+}
+
 func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 	fields := LogFields{
 		"Method": "LunCreate",
@@ -2302,10 +2381,14 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 	creationErr := d.api.LunCreate(ctx, lun.Name, sizeBytes, lun.OsType, lun.Qos, lun.SpaceReserved,
 		lun.SpaceAllocated)
 	if creationErr != nil {
-		// Preserve typed create-in-progress / volume-busy signals so callers can short-circuit cleanup
-		// and keep the volume for a retry. Other failures stay wrapped for context.
+		// Preserve create-in-progress, existing-LUN, and volume-busy signals so callers can short-circuit
+		// cleanup and keep the volume for reconciliation on retry. Other failures stay wrapped for context.
 		if IsVolumeCreateJobExistsError(creationErr) {
 			return creationErr
+		}
+		if IsLUNCreateConflictRESTError(creationErr) {
+			return VolumeCreateJobExistsError(fmt.Sprintf("LUN %s already exists or is being created: %v",
+				lun.Name, creationErr))
 		}
 		if IsVolumeBusyRESTError(creationErr) {
 			return VolumeCreateJobExistsError(fmt.Sprintf("volume is busy creating LUN %s: %v",
@@ -2344,26 +2427,65 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 	return nil
 }
 
+// LunDestroyByUUID deletes a LUN without consulting the LUN name index.
+func (d OntapAPIREST) LunDestroyByUUID(ctx context.Context, lunPath, lunUUID string) error {
+	if lunUUID == "" {
+		return errors.InvalidInputError("LUN UUID is required")
+	}
+	if err := d.api.LunDelete(ctx, lunUUID); err != nil {
+		return fmt.Errorf("delete LUN %v: %w", lunPath, err)
+	}
+	return nil
+}
+
 func (d OntapAPIREST) LunSetAttribute(
 	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions, poolName string,
 ) error {
-	if strings.Contains(lunPath, failureLUNSetAttr) {
-		return errors.New("injected error")
+	if err := injectedLUNSetAttrError(lunPath); err != nil {
+		return err
 	}
 
-	if err := d.api.LunSetAttribute(ctx, lunPath, attribute, fstype); err != nil {
+	setAttribute := func(attributeName, attributeValue string) error {
+		return d.api.LunSetAttribute(ctx, lunPath, attributeName, attributeValue)
+	}
+	return setLunAttributes(ctx, lunPath, attribute, fstype, context, luks, formatOptions, poolName, setAttribute)
+}
+
+// LunSetAttributeByUUID updates LUN attributes without consulting the LUN name index.
+func (d OntapAPIREST) LunSetAttributeByUUID(
+	ctx context.Context, lunPath, lunUUID, attribute, fstype, driverContext, luks, formatOptions, poolName string,
+) error {
+	if lunUUID == "" {
+		return errors.InvalidInputError("LUN UUID is required")
+	}
+	if err := injectedLUNSetAttrError(lunPath); err != nil {
+		return err
+	}
+	setAttribute := func(attributeName, attributeValue string) error {
+		return d.api.LunSetAttributeByUUID(ctx, lunUUID, attributeName, attributeValue)
+	}
+	return setLunAttributes(
+		ctx, lunPath, attribute, fstype, driverContext, luks, formatOptions, poolName, setAttribute,
+	)
+}
+
+func setLunAttributes(
+	ctx context.Context, lunPath, attribute, fstype, driverContext, luks, formatOptions, poolName string,
+	setAttribute func(string, string) error,
+) error {
+	if err := setAttribute(attribute, fstype); err != nil {
 		Logc(ctx).WithField("LUN", lunPath).Error("Failed to save the fstype attribute for new LUN.")
 		return err
 	}
 
-	if context != "" {
-		if err := d.api.LunSetAttribute(ctx, lunPath, "context", context); err != nil {
+	if driverContext != "" {
+		if err := setAttribute("context", driverContext); err != nil {
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
 		}
 	}
 
 	if luks != "" {
-		if err := d.api.LunSetAttribute(ctx, lunPath, "LUKS", luks); err != nil {
+		if err := setAttribute("LUKS", luks); err != nil {
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the LUKS attribute for new LUN.")
 		}
 	}
@@ -2371,14 +2493,14 @@ func (d OntapAPIREST) LunSetAttribute(
 	// An example of how formatOption may look like:
 	// "-E stride=256,stripe_width=16 -F -b 2435965"
 	if formatOptions != "" {
-		if err := d.api.LunSetAttribute(ctx, lunPath, "formatOptions", formatOptions); err != nil {
+		if err := setAttribute("formatOptions", formatOptions); err != nil {
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the format options attribute for new LUN.")
 			return fmt.Errorf("failed to save the formatOptions attribute for new LUN: %w", err)
 		}
 	}
 
 	// Save the pool name attribute at the end. Set new attribute as needed before this.
-	if err := d.api.LunSetAttribute(ctx, lunPath, "poolName", poolName); err != nil {
+	if err := setAttribute("poolName", poolName); err != nil {
 		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the pool name attribute for new LUN.")
 		return fmt.Errorf("failed to save the pool name attribute for new LUN: %w", err)
 	}
@@ -2397,17 +2519,8 @@ func (d OntapAPIREST) LunGetFSType(ctx context.Context, lunPath string) (string,
 			return "", err
 		}
 
-		// Parse the comment to get fstype value
-		var lunComment map[string]map[string]string
-		err = json.Unmarshal([]byte(comment), &lunComment)
-		if err != nil {
+		if fstype, err = FSTypeFromLunComment(comment); err != nil {
 			return "", err
-		}
-		lunAttrs := lunComment["lunAttributes"]
-		if lunAttrs != nil {
-			fstype = lunAttrs["fstype"]
-		} else {
-			return "", fmt.Errorf("lunAttributes field not found in LUN comment")
 		}
 	}
 
@@ -2424,6 +2537,30 @@ func (d OntapAPIREST) LunGetAttribute(ctx context.Context, lunPath, attributeNam
 	Logc(ctx).WithFields(LogFields{
 		"LUN":         lunPath,
 		attributeName: attributeValue,
+	}).Debug("Found LUN attribute.")
+
+	return attributeValue, nil
+}
+
+// LunGetAttributeByUUID reads a LUN attribute without consulting the LUN name index. The name index can
+// lag behind a create, while the UUID identifies the LUN as soon as ONTAP has one.
+func (d OntapAPIREST) LunGetAttributeByUUID(
+	ctx context.Context, lunPath, lunUUID, attributeName string,
+) (string, error) {
+	if lunUUID == "" {
+		return "", errors.InvalidInputError("LUN UUID is required")
+	}
+
+	attributeValue, err := d.api.LunGetAttributeByUUID(ctx, lunUUID, attributeName)
+	if err != nil {
+		return "", fmt.Errorf("LUN attribute %s not found: %w", attributeName, err)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"LUN":            lunPath,
+		"lunUUID":        lunUUID,
+		"attribute":      attributeName,
+		"attributeValue": attributeValue,
 	}).Debug("Found LUN attribute.")
 
 	return attributeValue, nil
@@ -2489,6 +2626,39 @@ func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 	return d.api.LunSetQosPolicyGroup(ctx, lunPath, qosPolicyGroup.Name)
 }
 
+// LunSetQosPolicyGroupByUUID sets LUN QoS without consulting the LUN name index.
+func (d OntapAPIREST) LunSetQosPolicyGroupByUUID(
+	ctx context.Context, lunPath, lunUUID string, qosPolicyGroup QosPolicyGroup,
+) error {
+	if lunUUID == "" {
+		return errors.InvalidInputError("LUN UUID is required")
+	}
+	if err := injectedLUNSetAttrError(lunPath); err != nil {
+		return err
+	}
+	return d.api.LunSetQosPolicyGroupByUUID(ctx, lunUUID, qosPolicyGroup.Name)
+}
+
+// LunSetSizeByUUID resizes a LUN without consulting the LUN name index.
+func (d OntapAPIREST) LunSetSizeByUUID(ctx context.Context, lunPath, lunUUID, newSize string) (uint64, error) {
+	fields := LogFields{
+		"Method":  "LunSetSizeByUUID",
+		"Type":    "OntapAPIREST",
+		"Name":    lunPath,
+		"uuid":    lunUUID,
+		"NewSize": newSize,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunSetSizeByUUID")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunSetSizeByUUID")
+
+	if lunUUID == "" {
+		return 0, errors.InvalidInputError("LUN UUID is required")
+	}
+	return d.api.LunSetSizeByUUID(ctx, lunUUID, newSize)
+}
+
 func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
 	logFields := LogFields{
 		"Method":  "LunGetByName",
@@ -2501,9 +2671,12 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunGetByName")
 
 	fields := []string{
+		"uuid",
 		"lun_maps.igroup.name",
 		"lun_maps.logical_unit_number",
 		"space.size",
+		"space.guarantee.requested",
+		"space.scsi_thin_provisioning_support_enabled",
 		"comment",
 		"qos_policy.name",
 		"status.mapped",
@@ -2592,12 +2765,38 @@ func (d OntapAPIREST) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 func (d OntapAPIREST) isLunMapped(
 	ctx context.Context, lunPath, initiatorGroupName string,
 ) (bool, int, error) {
+	mapInfo := func() (*san.LunMapCollectionGetOK, error) {
+		return d.api.LunMapInfo(ctx, "", lunPath)
+	}
+	getLUN := func(fields []string) (*models.Lun, error) {
+		return d.api.LunGetByName(ctx, lunPath, fields)
+	}
+	return isLunMapped(ctx, lunPath, initiatorGroupName, mapInfo, getLUN)
+}
+
+func (d OntapAPIREST) isLunMappedByUUID(
+	ctx context.Context, lunPath, lunUUID, initiatorGroupName string,
+) (bool, int, error) {
+	mapInfo := func() (*san.LunMapCollectionGetOK, error) {
+		return d.api.LunMapInfoByUUID(ctx, "", lunUUID)
+	}
+	getLUN := func(fields []string) (*models.Lun, error) {
+		return d.api.LunGetByUUID(ctx, lunUUID, fields)
+	}
+	return isLunMapped(ctx, lunPath, initiatorGroupName, mapInfo, getLUN)
+}
+
+func isLunMapped(
+	ctx context.Context, lunPath, initiatorGroupName string,
+	mapInfo func() (*san.LunMapCollectionGetOK, error),
+	getLUN func([]string) (*models.Lun, error),
+) (bool, int, error) {
 	alreadyMapped := false
 	lunID := -1
 
-	lunMapResponse, err := d.api.LunMapInfo(ctx, "", lunPath)
+	lunMapResponse, err := mapInfo()
 	if err != nil {
-		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
+		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s: %w", lunPath, err)
 	}
 	if lunMapResponse == nil || lunMapResponse.Payload == nil {
 		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s", lunPath)
@@ -2630,7 +2829,7 @@ func (d OntapAPIREST) isLunMapped(
 					break
 				} else {
 					fields := []string{"lun_maps.logical_unit_number"}
-					lun, err := d.api.LunGetByName(ctx, lunPath, fields)
+					lun, err := getLUN(fields)
 					if err != nil {
 						return alreadyMapped, lunID, err
 					}
@@ -2660,30 +2859,62 @@ func (d OntapAPIREST) EnsureLunMapped(ctx context.Context, initiatorGroupName, l
 		return -1, err
 	}
 
-	// Map IFF not already mapped
 	if !alreadyMapped {
 		lunMapResponse, err := d.api.LunMap(ctx, initiatorGroupName, lunPath, lunID)
 		if err != nil {
-			return -1, fmt.Errorf("err not nil, problem mapping LUN %s: %s", lunPath, err.Error())
+			return -1, fmt.Errorf("problem mapping LUN %s: %w", lunPath, err)
 		}
-		if lunMapResponse == nil {
-			return -1, fmt.Errorf("response nil, problem mapping LUN %s: %v", lunPath, err)
-		}
-		if lunMapResponse.Payload == nil || lunMapResponse.Payload.NumRecords == nil {
-			return -1, fmt.Errorf("response payload nil, problem mapping LUN %s: %v", lunPath, err)
-		}
-		if len(lunMapResponse.Payload.LunMapResponseInlineRecords) > 0 {
-			if lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber != nil {
-				lunID = int(*lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber)
-			}
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"lun":    lunPath,
-			"igroup": initiatorGroupName,
-			"id":     lunID,
-		}).Debug("LUN mapped.")
+		return mappedLunID(ctx, lunPath, initiatorGroupName, lunID, lunMapResponse)
 	}
+
+	return lunID, nil
+}
+
+// EnsureLunMappedByUUID maps a LUN without consulting the REST LUN name index.
+func (d OntapAPIREST) EnsureLunMappedByUUID(
+	ctx context.Context, initiatorGroupName, lunPath, lunUUID string,
+) (int, error) {
+	if lunUUID == "" {
+		return -1, errors.InvalidInputError("LUN UUID is required")
+	}
+	alreadyMapped, lunID, err := d.isLunMappedByUUID(ctx, lunPath, lunUUID, initiatorGroupName)
+	if err != nil {
+		return -1, err
+	}
+
+	if !alreadyMapped {
+		lunMapResponse, err := d.api.LunMapByUUID(ctx, initiatorGroupName, lunPath, lunUUID, lunID)
+		if err != nil {
+			return -1, fmt.Errorf("problem mapping LUN %s: %w", lunPath, err)
+		}
+		return mappedLunID(ctx, lunPath, initiatorGroupName, lunID, lunMapResponse)
+	}
+
+	return lunID, nil
+}
+
+// mappedLunID reports the LUN ID ONTAP assigned in a map response, falling back to the requested lunID
+// when the response carries no ID of its own.
+func mappedLunID(
+	ctx context.Context, lunPath, initiatorGroupName string, lunID int,
+	lunMapResponse *san.LunMapCreateCreated,
+) (int, error) {
+	if lunMapResponse == nil {
+		return -1, fmt.Errorf("response nil, problem mapping LUN %s", lunPath)
+	}
+	if lunMapResponse.Payload == nil || lunMapResponse.Payload.NumRecords == nil {
+		return -1, fmt.Errorf("response payload nil, problem mapping LUN %s", lunPath)
+	}
+	if len(lunMapResponse.Payload.LunMapResponseInlineRecords) > 0 &&
+		lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber != nil {
+		lunID = int(*lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"lun":    lunPath,
+		"igroup": initiatorGroupName,
+		"id":     lunID,
+	}).Debug("LUN mapped.")
 
 	return lunID, nil
 }
@@ -2703,6 +2934,19 @@ func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath 
 		msg := "error unmapping LUN"
 		Logc(ctx).WithError(err).Error(msg)
 		return errors.New(msg)
+	}
+	return nil
+}
+
+// LunUnmapByUUID removes a LUN's igroup mapping without consulting the LUN name index. An unmapped LUN
+// is reported as success so the unmap is idempotent.
+func (d OntapAPIREST) LunUnmapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string) error {
+	if lunUUID == "" {
+		return errors.InvalidInputError("LUN UUID is required")
+	}
+
+	if err := d.api.LunUnmapByUUID(ctx, initiatorGroupName, lunPath, lunUUID); err != nil {
+		return fmt.Errorf("unmap LUN %v from igroup %v: %w", lunPath, initiatorGroupName, err)
 	}
 	return nil
 }
@@ -2755,6 +2999,13 @@ func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 	[]string, error,
 ) {
 	return d.api.LunMapGetReportingNodes(ctx, initiatorGroupName, lunPath)
+}
+
+// LunMapGetReportingNodesByUUID returns reporting nodes without consulting the LUN name index.
+func (d OntapAPIREST) LunMapGetReportingNodesByUUID(
+	ctx context.Context, initiatorGroupName, lunUUID string,
+) ([]string, error) {
+	return d.api.LunMapGetReportingNodesByUUID(ctx, initiatorGroupName, lunUUID)
 }
 
 func (d OntapAPIREST) LunSize(ctx context.Context, lunPath string) (int, error) {

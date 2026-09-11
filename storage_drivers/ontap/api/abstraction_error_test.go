@@ -471,3 +471,47 @@ func TestIsVolumeBusyRESTError(t *testing.T) {
 		})
 	}
 }
+
+func TestIsLUNCreateConflictRESTError(t *testing.T) {
+	tests := map[string]struct {
+		err  error
+		want bool
+	}{
+		"nil error":       {err: nil, want: false},
+		"unrelated error": {err: errors.New("snapshot not found"), want: false},
+		"LUN already exists": {
+			err:  errors.New("API State: failure, Message: LUN already exists, Code: 5374242"),
+			want: true,
+		},
+		"LUN create in progress": {
+			err:  errors.New("API State: failure, Message: LUN is being created, Code: 5702832"),
+			want: true,
+		},
+		"duplicate LUN name": {
+			err:  errors.New("API State: failure, Message: same name as an existing LUN, Code: 5440688"),
+			want: true,
+		},
+		"created but properties unset": {
+			err:  errors.New("API State: failure, Message: error after creating the LUN, Code: 5374863"),
+			want: true,
+		},
+		"created but properties unreadable": {
+			err:  errors.New("API State: failure, Message: error after creating the LUN, Code: 5374886"),
+			want: true,
+		},
+		"code prefix longer number": {
+			err:  errors.New("API State: failure, Message: unrelated, Code: 53742420"),
+			want: false,
+		},
+		"code suffix longer number": {
+			err:  errors.New("API State: failure, Message: unrelated, Code: 15702832"),
+			want: false,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.want, IsLUNCreateConflictRESTError(tc.err))
+		})
+	}
+}

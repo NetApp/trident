@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
 	"strings"
@@ -42,6 +43,32 @@ const (
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
 	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
 )
+
+// injectedLUNSetAttrError returns a non-nil error when lunPath carries the fault-injection token that
+// makes LUN set-attribute fail. Every set-attribute entry point must consult this so the injection
+// holds regardless of whether the LUN is addressed by path or by UUID.
+func injectedLUNSetAttrError(lunPath string) error {
+	if strings.Contains(lunPath, failureLUNSetAttr) {
+		return errors.New("injected error")
+	}
+	return nil
+}
+
+// FSTypeFromLunComment reads the filesystem type out of a LUN comment. LUNs that predate the fstype
+// LUN attribute carry the value there instead, so it is the fallback when the attribute is absent.
+func FSTypeFromLunComment(comment string) (string, error) {
+	var lunComment map[string]map[string]string
+	if err := json.Unmarshal([]byte(comment), &lunComment); err != nil {
+		return "", err
+	}
+
+	lunAttrs := lunComment["lunAttributes"]
+	if lunAttrs == nil {
+		return "", fmt.Errorf("lunAttributes field not found in LUN comment")
+	}
+
+	return lunAttrs["fstype"], nil
+}
 
 type OntapAPI interface {
 	APIVersion(ctx context.Context, cached bool) (string, error)

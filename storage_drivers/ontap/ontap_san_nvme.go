@@ -285,7 +285,8 @@ func (d *NVMeStorageDriver) reconcileNamespaceCreateState(
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(
 		"<<<< reconcileNamespaceCreateState")
 
-	if err := reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, allowedAggregates); err != nil {
+	volumeUUID, err := reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, allowedAggregates)
+	if err != nil {
 		return err
 	}
 
@@ -309,7 +310,7 @@ func (d *NVMeStorageDriver) reconcileNamespaceCreateState(
 			if created {
 				return nsErr
 			}
-			return destroyUnusableVolume(ctx, d.API, name,
+			return destroyUnusableVolume(ctx, d.API, name, volumeUUID,
 				fmt.Sprintf("namespace create failed in pool %s: %v", poolName, nsErr))
 		}
 		return afterNamespaceCreate.Inject()
@@ -317,7 +318,7 @@ func (d *NVMeStorageDriver) reconcileNamespaceCreateState(
 
 	if err = reconcileExistingNamespace(ctx, d.API, ns, desiredNamespace); err != nil {
 		if isUnusableVolumeError(err) {
-			return destroyUnusableVolume(ctx, d.API, name, err.Error())
+			return destroyUnusableVolume(ctx, d.API, name, volumeUUID, err.Error())
 		}
 		return err
 	}
@@ -675,7 +676,7 @@ func (d *NVMeStorageDriver) Create(
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, errors.New(errMessage))
 
-				destroyErr := destroyUnusableVolume(ctx, d.API, name,
+				destroyErr := destroyUnusableVolume(ctx, d.API, name, volumeUUID,
 					fmt.Sprintf("namespace create failed in pool %s/%s: %v", storagePool.Name(), aggregate, nsErr))
 				return destroyErr
 			}
@@ -774,7 +775,7 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 	if err = cloneFlexvol(
-		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
+		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{}, false,
 	); err != nil {
 		return err
 	}

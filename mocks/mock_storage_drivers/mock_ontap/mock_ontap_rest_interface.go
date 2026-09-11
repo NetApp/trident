@@ -984,6 +984,21 @@ func (mr *MockRestClientInterfaceMockRecorder) LunGetAttribute(ctx, lunPath, att
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetAttribute), ctx, lunPath, attributeName)
 }
 
+// LunGetAttributeByUUID mocks base method.
+func (m *MockRestClientInterface) LunGetAttributeByUUID(ctx context.Context, lunUUID, attributeName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunGetAttributeByUUID", ctx, lunUUID, attributeName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunGetAttributeByUUID indicates an expected call of LunGetAttributeByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunGetAttributeByUUID(ctx, lunUUID, attributeName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttributeByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetAttributeByUUID), ctx, lunUUID, attributeName)
+}
+
 // LunGetByName mocks base method.
 func (m *MockRestClientInterface) LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error) {
 	m.ctrl.T.Helper()
@@ -997,6 +1012,21 @@ func (m *MockRestClientInterface) LunGetByName(ctx context.Context, name string,
 func (mr *MockRestClientInterfaceMockRecorder) LunGetByName(ctx, name, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetByName), ctx, name, fields)
+}
+
+// LunGetByUUID mocks base method.
+func (m *MockRestClientInterface) LunGetByUUID(ctx context.Context, uuid string, fields []string) (*models.Lun, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunGetByUUID", ctx, uuid, fields)
+	ret0, _ := ret[0].(*models.Lun)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunGetByUUID indicates an expected call of LunGetByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunGetByUUID(ctx, uuid, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetByUUID), ctx, uuid, fields)
 }
 
 // LunGetComment mocks base method.
@@ -1029,6 +1059,21 @@ func (mr *MockRestClientInterfaceMockRecorder) LunList(ctx, pattern, fields any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunList", reflect.TypeOf((*MockRestClientInterface)(nil).LunList), ctx, pattern, fields)
 }
 
+// LunListByVolumeUUID mocks base method.
+func (m *MockRestClientInterface) LunListByVolumeUUID(ctx context.Context, volumeUUID string, fields []string) (*s_a_n.LunCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunListByVolumeUUID", ctx, volumeUUID, fields)
+	ret0, _ := ret[0].(*s_a_n.LunCollectionGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunListByVolumeUUID indicates an expected call of LunListByVolumeUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunListByVolumeUUID(ctx, volumeUUID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunListByVolumeUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunListByVolumeUUID), ctx, volumeUUID, fields)
+}
+
 // LunMap mocks base method.
 func (m *MockRestClientInterface) LunMap(ctx context.Context, initiatorGroupName, lunPath string, lunID int) (*s_a_n.LunMapCreateCreated, error) {
 	m.ctrl.T.Helper()
@@ -1042,6 +1087,21 @@ func (m *MockRestClientInterface) LunMap(ctx context.Context, initiatorGroupName
 func (mr *MockRestClientInterfaceMockRecorder) LunMap(ctx, initiatorGroupName, lunPath, lunID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMap", reflect.TypeOf((*MockRestClientInterface)(nil).LunMap), ctx, initiatorGroupName, lunPath, lunID)
+}
+
+// LunMapByUUID mocks base method.
+func (m *MockRestClientInterface) LunMapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string, lunID int) (*s_a_n.LunMapCreateCreated, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapByUUID", ctx, initiatorGroupName, lunPath, lunUUID, lunID)
+	ret0, _ := ret[0].(*s_a_n.LunMapCreateCreated)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunMapByUUID indicates an expected call of LunMapByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunMapByUUID(ctx, initiatorGroupName, lunPath, lunUUID, lunID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapByUUID), ctx, initiatorGroupName, lunPath, lunUUID, lunID)
 }
 
 // LunMapGetReportingNodes mocks base method.
@@ -1059,6 +1119,21 @@ func (mr *MockRestClientInterfaceMockRecorder) LunMapGetReportingNodes(ctx, init
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapGetReportingNodes", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapGetReportingNodes), ctx, initiatorGroupName, lunPath)
 }
 
+// LunMapGetReportingNodesByUUID mocks base method.
+func (m *MockRestClientInterface) LunMapGetReportingNodesByUUID(ctx context.Context, initiatorGroupName, lunUUID string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapGetReportingNodesByUUID", ctx, initiatorGroupName, lunUUID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunMapGetReportingNodesByUUID indicates an expected call of LunMapGetReportingNodesByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunMapGetReportingNodesByUUID(ctx, initiatorGroupName, lunUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapGetReportingNodesByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapGetReportingNodesByUUID), ctx, initiatorGroupName, lunUUID)
+}
+
 // LunMapInfo mocks base method.
 func (m *MockRestClientInterface) LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (*s_a_n.LunMapCollectionGetOK, error) {
 	m.ctrl.T.Helper()
@@ -1072,6 +1147,21 @@ func (m *MockRestClientInterface) LunMapInfo(ctx context.Context, initiatorGroup
 func (mr *MockRestClientInterfaceMockRecorder) LunMapInfo(ctx, initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapInfo", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapInfo), ctx, initiatorGroupName, lunPath)
+}
+
+// LunMapInfoByUUID mocks base method.
+func (m *MockRestClientInterface) LunMapInfoByUUID(ctx context.Context, initiatorGroupName, lunUUID string) (*s_a_n.LunMapCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapInfoByUUID", ctx, initiatorGroupName, lunUUID)
+	ret0, _ := ret[0].(*s_a_n.LunMapCollectionGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunMapInfoByUUID indicates an expected call of LunMapInfoByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunMapInfoByUUID(ctx, initiatorGroupName, lunUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapInfoByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapInfoByUUID), ctx, initiatorGroupName, lunUUID)
 }
 
 // LunMapList mocks base method.
@@ -1117,6 +1207,20 @@ func (mr *MockRestClientInterfaceMockRecorder) LunSetAttribute(ctx, lunPath, att
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetAttribute), ctx, lunPath, attributeName, attributeValue)
 }
 
+// LunSetAttributeByUUID mocks base method.
+func (m *MockRestClientInterface) LunSetAttributeByUUID(ctx context.Context, lunUUID, attributeName, attributeValue string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunSetAttributeByUUID", ctx, lunUUID, attributeName, attributeValue)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunSetAttributeByUUID indicates an expected call of LunSetAttributeByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunSetAttributeByUUID(ctx, lunUUID, attributeName, attributeValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttributeByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetAttributeByUUID), ctx, lunUUID, attributeName, attributeValue)
+}
+
 // LunSetComment mocks base method.
 func (m *MockRestClientInterface) LunSetComment(ctx context.Context, lunPath, comment string) error {
 	m.ctrl.T.Helper()
@@ -1145,6 +1249,20 @@ func (mr *MockRestClientInterfaceMockRecorder) LunSetQosPolicyGroup(ctx, lunPath
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetQosPolicyGroup", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetQosPolicyGroup), ctx, lunPath, qosPolicyGroup)
 }
 
+// LunSetQosPolicyGroupByUUID mocks base method.
+func (m *MockRestClientInterface) LunSetQosPolicyGroupByUUID(ctx context.Context, lunUUID, qosPolicyGroup string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunSetQosPolicyGroupByUUID", ctx, lunUUID, qosPolicyGroup)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunSetQosPolicyGroupByUUID indicates an expected call of LunSetQosPolicyGroupByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunSetQosPolicyGroupByUUID(ctx, lunUUID, qosPolicyGroup any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetQosPolicyGroupByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetQosPolicyGroupByUUID), ctx, lunUUID, qosPolicyGroup)
+}
+
 // LunSetSize mocks base method.
 func (m *MockRestClientInterface) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
 	m.ctrl.T.Helper()
@@ -1158,6 +1276,21 @@ func (m *MockRestClientInterface) LunSetSize(ctx context.Context, lunPath, newSi
 func (mr *MockRestClientInterfaceMockRecorder) LunSetSize(ctx, lunPath, newSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetSize", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetSize), ctx, lunPath, newSize)
+}
+
+// LunSetSizeByUUID mocks base method.
+func (m *MockRestClientInterface) LunSetSizeByUUID(ctx context.Context, lunUUID, newSize string) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunSetSizeByUUID", ctx, lunUUID, newSize)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunSetSizeByUUID indicates an expected call of LunSetSizeByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunSetSizeByUUID(ctx, lunUUID, newSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetSizeByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunSetSizeByUUID), ctx, lunUUID, newSize)
 }
 
 // LunSize mocks base method.
@@ -1187,6 +1320,20 @@ func (m *MockRestClientInterface) LunUnmap(ctx context.Context, initiatorGroupNa
 func (mr *MockRestClientInterfaceMockRecorder) LunUnmap(ctx, initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockRestClientInterface)(nil).LunUnmap), ctx, initiatorGroupName, lunPath)
+}
+
+// LunUnmapByUUID mocks base method.
+func (m *MockRestClientInterface) LunUnmapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunUnmapByUUID", ctx, initiatorGroupName, lunPath, lunUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunUnmapByUUID indicates an expected call of LunUnmapByUUID.
+func (mr *MockRestClientInterfaceMockRecorder) LunUnmapByUUID(ctx, initiatorGroupName, lunPath, lunUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmapByUUID", reflect.TypeOf((*MockRestClientInterface)(nil).LunUnmapByUUID), ctx, initiatorGroupName, lunPath, lunUUID)
 }
 
 // NVMeAddHostNqnToSubsystem mocks base method.
@@ -2639,6 +2786,21 @@ func (m *MockRestClientInterface) VolumeCloneCreateAsync(ctx context.Context, cl
 func (mr *MockRestClientInterfaceMockRecorder) VolumeCloneCreateAsync(ctx, cloneName, sourceVolumeName, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreateAsync", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCloneCreateAsync), ctx, cloneName, sourceVolumeName, snapshot)
+}
+
+// VolumeCloneCreateAsyncWithUUID mocks base method.
+func (m *MockRestClientInterface) VolumeCloneCreateAsyncWithUUID(ctx context.Context, cloneName, sourceVolumeName, snapshot string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeCloneCreateAsyncWithUUID", ctx, cloneName, sourceVolumeName, snapshot)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeCloneCreateAsyncWithUUID indicates an expected call of VolumeCloneCreateAsyncWithUUID.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeCloneCreateAsyncWithUUID(ctx, cloneName, sourceVolumeName, snapshot any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreateAsyncWithUUID", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCloneCreateAsyncWithUUID), ctx, cloneName, sourceVolumeName, snapshot)
 }
 
 // VolumeCloneSplitStart mocks base method.

@@ -418,7 +418,7 @@ func (d *NASStorageDriver) Create(
 			UnixPermissions: unixPermissions,
 			DPVolume:        volConfig.IsMirrorDestination,
 		}
-		if err = reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, physicalPoolNames); err != nil {
+		if _, err = reconcileExistingVolumeForCreate(ctx, d.API, desiredVolume, physicalPoolNames); err != nil {
 			return err
 		}
 		return drivers.NewVolumeExistsError(name)
@@ -620,7 +620,7 @@ func (d *NASStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 
-	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), qosPolicyGroup); err != nil {
+	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), qosPolicyGroup, false); err != nil {
 		return err
 	}
 

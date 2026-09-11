@@ -581,8 +581,8 @@ func (c Client) LunDestroy(lunPath string) (*azgo.LunDestroyResponse, error) {
 
 // LunSetAttribute sets a named attribute for a given LUN.
 func (c Client) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttributeResponse, error) {
-	if strings.Contains(lunPath, failureLUNSetAttr) {
-		return nil, errors.New("injected error")
+	if err := injectedLUNSetAttrError(lunPath); err != nil {
+		return nil, err
 	}
 
 	response, err := azgo.NewLunSetAttributeRequest().

@@ -1596,7 +1596,7 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", nil).Times(1)
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("xfs", nil).Times(1)
+				// The LUN lookup is the first LUN call publish makes, so nothing reads the fstype here.
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(nil, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {

@@ -21,13 +21,21 @@ type seqLunGetter struct {
 	i int
 }
 
-func (s *seqLunGetter) LunGetByName(ctx context.Context, name string) (*Lun, error) {
+func (s *seqLunGetter) next() (*Lun, error) {
 	if s.i >= len(s.responses) {
 		return nil, terr.NotFoundError("stub exhausted")
 	}
 	r := s.responses[s.i]
 	s.i++
 	return r.lun, r.err
+}
+
+func (s *seqLunGetter) LunGetByName(context.Context, string) (*Lun, error) {
+	return s.next()
+}
+
+func (s *seqLunGetter) LunGetByVolumeUUID(context.Context, string, string) (*Lun, error) {
+	return s.next()
 }
 
 func TestWaitForLunToExist_RetriesNotFoundThenSucceeds(t *testing.T) {
@@ -44,6 +52,25 @@ func TestWaitForLunToExist_RetriesNotFoundThenSucceeds(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, lun)
 	assert.Equal(t, "/vol/v/lun0", lun.Name)
+	assert.Equal(t, 2, g.i)
+}
+
+func TestWaitForLunToExistByVolumeUUID_RetriesNotFoundThenSucceeds(t *testing.T) {
+	g := &seqLunGetter{
+		responses: []struct {
+			lun *Lun
+			err error
+		}{
+			{nil, terr.NotFoundError("not found")},
+			{&Lun{Name: "/vol/v/lun0", UUID: "lun-uuid"}, nil},
+		},
+	}
+
+	lun, err := WaitForLunToExistByVolumeUUID(context.Background(), g, "volume-uuid", "/vol/v/lun0")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, lun)
+	assert.Equal(t, "lun-uuid", lun.UUID)
 	assert.Equal(t, 2, g.i)
 }
 

@@ -4,6 +4,7 @@ package storagedrivers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -930,13 +931,14 @@ func IsBackendIneligibleError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*BackendIneligibleError)
-	return ok
+	var ineligibleErr *BackendIneligibleError
+	return errors.As(err, &ineligibleErr)
 }
 
 func GetIneligiblePhysicalPoolNames(err error) (error, []string) {
-	if IsBackendIneligibleError(err) {
-		return nil, err.(*BackendIneligibleError).getIneligiblePhysicalPools()
+	var ineligibleErr *BackendIneligibleError
+	if errors.As(err, &ineligibleErr) {
+		return nil, ineligibleErr.getIneligiblePhysicalPools()
 	}
 	return fmt.Errorf("this method is applicable to BackendIneligibleError type only"), nil
 }
@@ -957,8 +959,8 @@ func IsVolumeExistsError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*VolumeExistsError)
-	return ok
+	var volumeExistsErr *VolumeExistsError
+	return errors.As(err, &volumeExistsErr)
 }
 
 func injectionError(fieldName string) error {

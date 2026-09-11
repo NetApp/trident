@@ -6,6 +6,8 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	"github.com/netapp/trident/pkg/collection"
 )
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -27,7 +29,23 @@ const (
 	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
 	VOLUME_BUSY_ERROR_REST                     = "524486"
 	VOLUME_CREATE_IN_PROGRESS_ERROR_REST       = "13107405"
+	LUN_ALREADY_EXISTS_ERROR_REST              = "5374242"
+	LUN_CREATE_IN_PROGRESS_ERROR_REST          = "5702832"
+	LUN_DUPLICATE_NAME_ERROR_REST              = "5440688"
+	LUN_CREATED_PROPERTIES_UNSET_ERROR_REST    = "5374863"
+	LUN_CREATED_PROPERTIES_UNREADABLE_REST     = "5374886"
 )
+
+// lunCreateConflictRESTCodes are the LUN create responses that mean the LUN exists on the array: it was
+// already there, another request is making it, or this request made it but could not finish reporting on
+// it. None of them warrant tearing the Flexvol down, because a retry can reconcile what is there.
+var lunCreateConflictRESTCodes = []string{
+	LUN_ALREADY_EXISTS_ERROR_REST,
+	LUN_CREATE_IN_PROGRESS_ERROR_REST,
+	LUN_DUPLICATE_NAME_ERROR_REST,
+	LUN_CREATED_PROPERTIES_UNSET_ERROR_REST,
+	LUN_CREATED_PROPERTIES_UNREADABLE_REST,
+}
 
 // VolumeBusyRESTCodeRegexp matches REST errno VOLUME_BUSY_ERROR_REST when comma-heavy messages break ExtractError.
 var VolumeBusyRESTCodeRegexp = regexp.MustCompile(`(?i)\bCode:\s*` + VOLUME_BUSY_ERROR_REST + `\b`)
@@ -35,6 +53,10 @@ var VolumeBusyRESTCodeRegexp = regexp.MustCompile(`(?i)\bCode:\s*` + VOLUME_BUSY
 // VolumeCreateInProgressRESTCodeRegexp matches the REST job error returned for a competing volume create.
 var VolumeCreateInProgressRESTCodeRegexp = regexp.MustCompile(
 	`(?i)\bCode:\s*` + VOLUME_CREATE_IN_PROGRESS_ERROR_REST + `\b`,
+)
+
+var lunCreateConflictRESTCodeRegexp = regexp.MustCompile(
+	`(?i)\bCode:\s*(?:` + strings.Join(lunCreateConflictRESTCodes, "|") + `)\b`,
 )
 
 // IsVolumeBusyRESTError reports whether err means another ONTAP volume job is still active.
@@ -46,6 +68,17 @@ func IsVolumeBusyRESTError(err error) bool {
 	return code == VOLUME_BUSY_ERROR_REST || code == VOLUME_CREATE_IN_PROGRESS_ERROR_REST ||
 		VolumeBusyRESTCodeRegexp.MatchString(err.Error()) ||
 		VolumeCreateInProgressRESTCodeRegexp.MatchString(err.Error())
+}
+
+// IsLUNCreateConflictRESTError reports whether ONTAP says the LUN the create asked for is already on the
+// array, so the caller can reconcile it on a retry instead of destroying the Flexvol underneath it.
+func IsLUNCreateConflictRESTError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, _, code := ExtractError(err)
+	return collection.ContainsString(lunCreateConflictRESTCodes, code) ||
+		lunCreateConflictRESTCodeRegexp.MatchString(err.Error())
 }
 
 // IsVolumeBusyError reports whether ONTAP rejected an operation because another volume job is still active.

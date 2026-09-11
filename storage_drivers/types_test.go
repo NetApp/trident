@@ -1207,6 +1207,10 @@ func TestVolumeExistsError(t *testing.T) {
 			errorExists: true,
 		},
 		{
+			inputError:  fmt.Errorf("wrapped: %w", NewVolumeExistsError("error")),
+			errorExists: true,
+		},
+		{
 			inputError:  errors.New("error"),
 			errorExists: false,
 		},

@@ -1415,7 +1415,7 @@ func (d *SANEconomyStorageDriver) Unpublish(
 	igroupMutex.Lock(igroupName)
 	defer igroupMutex.Unlock(igroupName)
 
-	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath, ""); err != nil {
 		return fmt.Errorf("error unmapping LUN %s from igroup %s; %w", lunPath, igroupName, err)
 	}
 

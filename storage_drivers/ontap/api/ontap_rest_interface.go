@@ -124,6 +124,8 @@ type RestClientInterface interface {
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (*storage.VolumeCreateAccepted, error)
 	// VolumeCloneCreateAsync clones a volume from a snapshot
 	VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error
+	// VolumeCloneCreateAsyncWithUUID clones a volume and returns its UUID when ONTAP includes it.
+	VolumeCloneCreateAsyncWithUUID(ctx context.Context, cloneName, sourceVolumeName, snapshot string) (string, error)
 	// IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 	// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
 	IscsiInitiatorGetDefaultAuth(ctx context.Context, fields []string) (*san.IscsiCredentialsCollectionGetOK, error)
@@ -165,10 +167,14 @@ type RestClientInterface interface {
 	LunCreate(ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved, spaceAllocated *bool) error
 	// LunGet gets the LUN with the specified uuid
 	LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error)
+	// LunGetByUUID gets selected properties for the LUN with the specified UUID.
+	LunGetByUUID(ctx context.Context, uuid string, fields []string) (*models.Lun, error)
 	// LunGetByName gets the LUN with the specified name
 	LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error)
 	// LunList finds LUNs with the specified pattern
 	LunList(ctx context.Context, pattern string, fields []string) (*san.LunCollectionGetOK, error)
+	// LunListByVolumeUUID finds LUNs in the specified volume
+	LunListByVolumeUUID(ctx context.Context, volumeUUID string, fields []string) (*san.LunCollectionGetOK, error)
 	// LunDelete deletes a LUN
 	LunDelete(ctx context.Context, lunUUID string) error
 	// LunGetComment gets the comment for a given LUN.
@@ -177,20 +183,32 @@ type RestClientInterface interface {
 	LunSetComment(ctx context.Context, lunPath, comment string) error
 	// LunGetAttribute gets an attribute by name for a given LUN.
 	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
+	// LunGetAttributeByUUID gets an attribute by name for a given LUN UUID.
+	LunGetAttributeByUUID(ctx context.Context, lunUUID, attributeName string) (string, error)
 	// LunSetAttribute sets the attribute to the provided value for a given LUN.
 	LunSetAttribute(ctx context.Context, lunPath, attributeName, attributeValue string) error
+	// LunSetAttributeByUUID sets the attribute to the provided value for a given LUN UUID.
+	LunSetAttributeByUUID(ctx context.Context, lunUUID, attributeName, attributeValue string) error
 	// LunSetQosPolicyGroup sets the QoS policy for a given LUN.
 	LunSetQosPolicyGroup(ctx context.Context, lunPath, qosPolicyGroup string) error
+	// LunSetQosPolicyGroupByUUID sets the QoS policy for a given LUN UUID.
+	LunSetQosPolicyGroupByUUID(ctx context.Context, lunUUID, qosPolicyGroup string) error
 	// LunRename changes the name of a LUN
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
 	// LunMapInfo gets the LUN maping information for the specified LUN
 	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (*san.LunMapCollectionGetOK, error)
+	// LunMapInfoByUUID gets the mapping information for the specified LUN UUID.
+	LunMapInfoByUUID(ctx context.Context, initiatorGroupName, lunUUID string) (*san.LunMapCollectionGetOK, error)
 	// LunUnmap deletes the lun mapping for the given LUN path and igroup
 	// equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
 	LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error
+	// LunUnmapByUUID deletes the lun mapping for the specified LUN UUID and igroup.
+	LunUnmapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string) error
 	// LunMap maps a LUN to an id in an initiator group
 	// equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
 	LunMap(ctx context.Context, initiatorGroupName, lunPath string, lunID int) (*san.LunMapCreateCreated, error)
+	// LunMapByUUID maps the specified LUN UUID to an initiator group.
+	LunMapByUUID(ctx context.Context, initiatorGroupName, lunPath, lunUUID string, lunID int) (*san.LunMapCreateCreated, error)
 	// LunMapList equivalent to the following
 	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup *
@@ -199,10 +217,15 @@ type RestClientInterface interface {
 	// LunMapGetReportingNodes
 	// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
+	// LunMapGetReportingNodesByUUID gets reporting nodes for the specified LUN UUID.
+	LunMapGetReportingNodesByUUID(ctx context.Context, initiatorGroupName, lunUUID string) ([]string, error)
 	// LunSize gets the size for a given LUN.
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	// LunSetSize sets the size for a given LUN.
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
+
+	// LunSetSizeByUUID sets the size for a given LUN UUID.
+	LunSetSizeByUUID(ctx context.Context, lunUUID, newSize string) (uint64, error)
 	// NetworkIPInterfacesList lists all IP interfaces
 	NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)

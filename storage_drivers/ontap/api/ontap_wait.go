@@ -49,6 +49,11 @@ type LunGetter interface {
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
 }
 
+// LunByVolumeUUIDGetter is the minimal surface needed for WaitForLunToExistByVolumeUUID.
+type LunByVolumeUUIDGetter interface {
+	LunGetByVolumeUUID(ctx context.Context, volumeUUID, lunPath string) (*Lun, error)
+}
+
 // NVMeNamespaceGetter is the minimal surface needed for WaitForNVMeNamespaceToExist.
 type NVMeNamespaceGetter interface {
 	NVMeNamespaceGetByName(context.Context, string) (*NVMeNamespace, error)
@@ -113,9 +118,25 @@ func errWaitInterrupted(ctx context.Context, resourceDesc, path string, retryErr
 // REST read-after-write where the LUN collection is briefly empty right after create). Other errors
 // fail immediately.
 func WaitForLunToExist(ctx context.Context, o LunGetter, lunPath string) (*Lun, error) {
+	return waitForLunToExist(ctx, lunPath, func() (*Lun, error) {
+		return o.LunGetByName(ctx, lunPath)
+	})
+}
+
+// WaitForLunToExistByVolumeUUID calls LunGetByVolumeUUID until the SAN FlexVol's LUN exists, ctx is done,
+// or newOntapBackOff exhausts its budget. It avoids the REST LUN name index after create.
+func WaitForLunToExistByVolumeUUID(
+	ctx context.Context, o LunByVolumeUUIDGetter, volumeUUID, lunPath string,
+) (*Lun, error) {
+	return waitForLunToExist(ctx, lunPath, func() (*Lun, error) {
+		return o.LunGetByVolumeUUID(ctx, volumeUUID, lunPath)
+	})
+}
+
+func waitForLunToExist(ctx context.Context, lunPath string, getLUN func() (*Lun, error)) (*Lun, error) {
 	var found *Lun
 	operation := func() error {
-		lun, err := o.LunGetByName(ctx, lunPath)
+		lun, err := getLUN()
 		if err != nil {
 			if errors.IsNotFoundError(err) {
 				return err

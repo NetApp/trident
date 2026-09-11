@@ -14,6 +14,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -41,6 +42,261 @@ const (
 	testSnapshotReserve        = "10"
 	testVolumeName             = "test-volume"
 )
+
+type lunUUIDAPITestAdapter struct {
+	api.OntapAPI
+	destroyedUUID     string
+	attributeSetUUID  string
+	attributeGetUUID  string
+	attributeGetName  string
+	attributeGetNames []string
+	attributeValue    string
+	attributeValues   map[string]string
+	attributeGetErr   error
+	lunByVolume       *api.Lun
+	lunByVolumeErr    error
+	lunVolumeUUID     string
+	lunVolumePath     string
+	unmappedIgroup    string
+	unmappedLUNPath   string
+	unmappedLUNUUID   string
+	unmapErr          error
+	mappedLUNPath     string
+	mappedLUNUUID     string
+	mappedLUNID       int
+	mapErr            error
+	reportingLUNUUID  string
+	reportingNodes    []string
+	reportingNodesErr error
+	qosLunPath        string
+	qosLunUUID        string
+	qosErr            error
+	sizeLunPath       string
+	sizeLunUUID       string
+	sizeNewSize       string
+	sizeErr           error
+}
+
+func (a *lunUUIDAPITestAdapter) LunDestroyByUUID(_ context.Context, _, lunUUID string) error {
+	a.destroyedUUID = lunUUID
+	return nil
+}
+
+func (a *lunUUIDAPITestAdapter) LunGetAttributeByUUID(
+	_ context.Context, _, lunUUID, attributeName string,
+) (string, error) {
+	a.attributeGetUUID = lunUUID
+	a.attributeGetName = attributeName
+	a.attributeGetNames = append(a.attributeGetNames, attributeName)
+	if value, ok := a.attributeValues[attributeName]; ok {
+		return value, nil
+	}
+	return a.attributeValue, a.attributeGetErr
+}
+
+func (a *lunUUIDAPITestAdapter) LunSetAttributeByUUID(
+	_ context.Context, _, lunUUID, _, _, _, _, _, _ string,
+) error {
+	a.attributeSetUUID = lunUUID
+	return nil
+}
+
+func (a *lunUUIDAPITestAdapter) LunSetQosPolicyGroupByUUID(
+	_ context.Context, lunPath, lunUUID string, _ api.QosPolicyGroup,
+) error {
+	a.qosLunPath = lunPath
+	a.qosLunUUID = lunUUID
+	return a.qosErr
+}
+
+func (a *lunUUIDAPITestAdapter) LunSetSizeByUUID(
+	_ context.Context, lunPath, lunUUID, newSize string,
+) (uint64, error) {
+	a.sizeLunPath = lunPath
+	a.sizeLunUUID = lunUUID
+	a.sizeNewSize = newSize
+	return 0, a.sizeErr
+}
+
+func (a *lunUUIDAPITestAdapter) LunGetByVolumeUUID(_ context.Context, volumeUUID, lunPath string) (*api.Lun, error) {
+	a.lunVolumeUUID = volumeUUID
+	a.lunVolumePath = lunPath
+	return a.lunByVolume, a.lunByVolumeErr
+}
+
+func (a *lunUUIDAPITestAdapter) LunUnmapByUUID(_ context.Context, igroup, lunPath, lunUUID string) error {
+	a.unmappedIgroup = igroup
+	a.unmappedLUNPath = lunPath
+	a.unmappedLUNUUID = lunUUID
+	return a.unmapErr
+}
+
+func (a *lunUUIDAPITestAdapter) EnsureLunMappedByUUID(
+	_ context.Context, _, lunPath, lunUUID string,
+) (int, error) {
+	a.mappedLUNPath = lunPath
+	a.mappedLUNUUID = lunUUID
+	return a.mappedLUNID, a.mapErr
+}
+
+func (a *lunUUIDAPITestAdapter) LunMapGetReportingNodesByUUID(
+	_ context.Context, _, lunUUID string,
+) ([]string, error) {
+	a.reportingLUNUUID = lunUUID
+	return a.reportingNodes, a.reportingNodesErr
+}
+
+type volumeCloneUUIDAPITestAdapter struct {
+	*lunUUIDAPITestAdapter
+	cloneUUID  string
+	cloneErr   error
+	cloneCalls int
+}
+
+func (a *volumeCloneUUIDAPITestAdapter) VolumeCloneCreateWithUUID(
+	context.Context, string, string, string,
+) (string, error) {
+	a.cloneCalls++
+	return a.cloneUUID, a.cloneErr
+}
+
+func TestSetLUNQos(t *testing.T) {
+	const (
+		lunPath    = "/vol/clone/lun0"
+		volumeUUID = "volume-uuid"
+		lunUUID    = "lun-uuid"
+	)
+	qosPolicyGroup := api.QosPolicyGroup{Name: "qos-policy", Kind: api.QosPolicyGroupKind}
+
+	tests := []struct {
+		name             string
+		addressesByUUID  bool
+		backendVolumeID  string
+		lunByVolume      *api.Lun
+		lunByVolumeErr   error
+		expectNameLookup bool
+		expectPathQoS    bool
+		expectedVolumeID string
+		expectedLUNUUID  string
+		wantErr          bool
+	}{
+		{
+			name:             "REST discovers LUN by volume UUID",
+			addressesByUUID:  true,
+			backendVolumeID:  volumeUUID,
+			lunByVolume:      &api.Lun{Name: lunPath, UUID: lunUUID},
+			expectedVolumeID: volumeUUID,
+			expectedLUNUUID:  lunUUID,
+		},
+		{
+			// The volume UUID identifies the FlexVol exactly, so a LUN the volume does not report is
+			// genuinely absent and the name index must not be consulted for a stand-in.
+			name:             "REST reports the LUN missing from the volume",
+			addressesByUUID:  true,
+			backendVolumeID:  volumeUUID,
+			lunByVolumeErr:   errors.NotFoundError("LUN not found"),
+			expectedVolumeID: volumeUUID,
+			wantErr:          true,
+		},
+		{
+			name:             "REST without volume UUID discovers LUN by name",
+			addressesByUUID:  true,
+			expectNameLookup: true,
+			expectedLUNUUID:  lunUUID,
+		},
+		{
+			name:          "ZAPI sets QoS by path",
+			expectPathQoS: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, _ := newMockOntapSANDriver(t)
+			var ontapAPI api.OntapAPI = mockAPI
+			var uuidAPI *lunUUIDAPITestAdapter
+			if test.addressesByUUID {
+				uuidAPI = &lunUUIDAPITestAdapter{
+					OntapAPI:       mockAPI,
+					lunByVolume:    test.lunByVolume,
+					lunByVolumeErr: test.lunByVolumeErr,
+				}
+				ontapAPI = uuidAPI
+			}
+			if test.expectNameLookup {
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), lunPath).Return(
+					&api.Lun{Name: lunPath, UUID: lunUUID}, nil,
+				)
+			}
+			if test.expectPathQoS {
+				mockAPI.EXPECT().LunSetQosPolicyGroup(gomock.Any(), lunPath, qosPolicyGroup).Return(nil)
+			}
+
+			err := setLUNQos(context.Background(), ontapAPI, lunPath, test.backendVolumeID, qosPolicyGroup)
+
+			if test.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, test.expectedVolumeID, uuidAPI.lunVolumeUUID)
+				assert.Empty(t, uuidAPI.qosLunUUID, "QoS must not be set on a LUN found by name")
+				return
+			}
+			require.NoError(t, err)
+			if uuidAPI != nil {
+				assert.Equal(t, test.expectedVolumeID, uuidAPI.lunVolumeUUID)
+				assert.Equal(t, lunPath, uuidAPI.qosLunPath)
+				assert.Equal(t, test.expectedLUNUUID, uuidAPI.qosLunUUID)
+			}
+		})
+	}
+}
+
+func TestOntapSanCreateClone_SetsLUNQosByUUID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	const (
+		cloneVolumeUUID = "clone-volume-uuid"
+		cloneLUNUUID    = "clone-lun-uuid"
+	)
+	lunAPI := &lunUUIDAPITestAdapter{
+		OntapAPI: mockAPI,
+		lunByVolume: &api.Lun{
+			Name: lunPath(getVolumeConfig().InternalName),
+			UUID: cloneLUNUUID,
+		},
+	}
+	cloneAPI := &volumeCloneUUIDAPITestAdapter{
+		lunUUIDAPITestAdapter: lunAPI,
+		cloneUUID:             cloneVolumeUUID,
+	}
+	driver.API = cloneAPI
+
+	pool := storage.NewStoragePool(nil, "pool1")
+	pool.SetInternalAttributes(map[string]string{SplitOnClone: "false"})
+	volConfig := getVolumeConfig()
+	volConfig.CloneSourceVolume = "source"
+	volConfig.CloneSourceVolumeInternal = "source-internal"
+	volConfig.QosPolicy = "qos-policy"
+
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "source"}, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(
+		ctx, volConfig.InternalName, []string{"online"}, []string{"error"}, maxFlexvolCloneWait,
+	).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, gomock.Any(), gomock.Any()).Return(nil)
+
+	err := driver.CreateClone(ctx, nil, &volConfig, pool)
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, cloneAPI.cloneCalls)
+	assert.Equal(t, cloneVolumeUUID, volConfig.BackendVolumeID)
+	assert.Equal(t, cloneVolumeUUID, lunAPI.lunVolumeUUID)
+	assert.Equal(t, cloneLUNUUID, lunAPI.qosLunUUID)
+	assert.Equal(t, lunPath(volConfig.InternalName), lunAPI.qosLunPath)
+}
 
 func anyCtx() gomock.Matcher {
 	return gomock.AssignableToTypeOf(context.Background())
@@ -216,6 +472,62 @@ func newTestOntapSANDriver(
 	return sanDriver
 }
 
+func TestUpdateBackendVolumeIDFromVolume(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name          string
+		volConfig     storage.VolumeConfig
+		volume        *api.Volume
+		wantBackendID string
+	}{
+		{
+			name: "refreshes when live UUID differs",
+			volConfig: storage.VolumeConfig{
+				InternalName:    "vol1",
+				BackendVolumeID: "stale-uuid",
+			},
+			volume:        &api.Volume{UUID: "live-uuid"},
+			wantBackendID: "live-uuid",
+		},
+		{
+			name: "no-op when UUID matches",
+			volConfig: storage.VolumeConfig{
+				InternalName:    "vol1",
+				BackendVolumeID: "same-uuid",
+			},
+			volume:        &api.Volume{UUID: "same-uuid"},
+			wantBackendID: "same-uuid",
+		},
+		{
+			name: "no-op when volume is nil",
+			volConfig: storage.VolumeConfig{
+				InternalName:    "vol1",
+				BackendVolumeID: "stored-uuid",
+			},
+			volume:        nil,
+			wantBackendID: "stored-uuid",
+		},
+		{
+			name: "no-op when live UUID is empty",
+			volConfig: storage.VolumeConfig{
+				InternalName:    "vol1",
+				BackendVolumeID: "stored-uuid",
+			},
+			volume:        &api.Volume{UUID: ""},
+			wantBackendID: "stored-uuid",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			volConfig := tc.volConfig
+			updateBackendVolumeIDFromVolume(ctx, &volConfig, tc.volume)
+			assert.Equal(t, tc.wantBackendID, volConfig.BackendVolumeID)
+		})
+	}
+}
+
 // TestOntapSANTerminate tests the driver termination process
 func TestOntapSANTerminate(t *testing.T) {
 	ctx := context.Background()
@@ -326,7 +638,7 @@ func expectLunAndVolumeCreateSequence(mockAPI *mockapi.MockOntapAPI, fsType, luk
 
 	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volume api.Volume) (string, error) {
-			return "", nil
+			return "volume-uuid", nil
 		},
 	).MaxTimes(1)
 
@@ -335,7 +647,8 @@ func expectLunAndVolumeCreateSequence(mockAPI *mockapi.MockOntapAPI, fsType, luk
 			return nil
 		},
 	).MaxTimes(1)
-	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{}, nil).MaxTimes(1)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+		Return(&api.Lun{UUID: "lun-uuid"}, nil).MaxTimes(1)
 
 	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions, poolName string) error {
@@ -391,6 +704,7 @@ func TestOntapSANVolumeCreate(t *testing.T) {
 	assert.Equal(t, "true", volConfig.LUKSEncryption)
 	assert.Equal(t, "xfs", volConfig.FileSystem)
 	assert.Equal(t, "-b 4096", volConfig.FormatOptions)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID)
 }
 
 // TestOntapSanVolumeCreate_InvalidSkipRecoveryQueue tests volume creation with invalid recovery queue configuration
@@ -522,6 +836,91 @@ func TestGetChapInfo(t *testing.T) {
 			assert.Equalf(t, tt.want, got, "GetChapInfo(%v, %v, %v)", tt.args.in0, tt.args.in1, tt.args.in2)
 		})
 	}
+}
+
+// TestOntapSanUnpublish_UnmapsByLunUUID proves unpublish addresses the LUN through the FlexVol UUID the
+// volume records, so it cannot unmap a different LUN that has taken over the path, and that a LUN the
+// volume no longer holds leaves nothing to unmap.
+func TestOntapSanUnpublish_UnmapsByLunUUID(t *testing.T) {
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	volConfig := getVolumeConfig()
+	expectedLUNPath := lunPath(volConfig.InternalName)
+
+	tests := []struct {
+		name            string
+		lunByVolume     *api.Lun
+		lunByVolumeErr  error
+		wantUnmappedID  string
+		wantUnmapByName bool
+	}{
+		{
+			name:           "unmaps the LUN the volume reports",
+			lunByVolume:    &api.Lun{Name: expectedLUNPath, UUID: "lun-uuid"},
+			wantUnmappedID: "lun-uuid",
+		},
+		{
+			name:           "treats a LUN the volume no longer holds as unmapped",
+			lunByVolumeErr: errors.NotFoundError("LUN not found"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockAPI, driver := newMockOntapSANDriver(t)
+			uuidAPI := &lunUUIDAPITestAdapter{
+				OntapAPI:       mockAPI,
+				lunByVolume:    test.lunByVolume,
+				lunByVolumeErr: test.lunByVolumeErr,
+			}
+			driver.API = uuidAPI
+
+			publishInfo := &models.VolumePublishInfo{HostName: "node1", TridentUUID: "trident-uuid"}
+			igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+			unpublishVolConfig := volConfig
+			unpublishVolConfig.BackendVolumeID = "volume-uuid"
+
+			// No LunMapInfo or LunUnmap expectation in either case: a LUN the volume still holds is
+			// unmapped by UUID, and a LUN it no longer holds is already gone. gomock fails this test if
+			// the unmap reaches for the LUN path.
+			mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+			mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)
+
+			err := driver.Unpublish(ctx, &unpublishVolConfig, publishInfo)
+
+			require.NoError(t, err)
+			assert.Equal(t, "volume-uuid", uuidAPI.lunVolumeUUID)
+			assert.Equal(t, expectedLUNPath, uuidAPI.lunVolumePath)
+			assert.Equal(t, test.wantUnmappedID, uuidAPI.unmappedLUNUUID)
+		})
+	}
+}
+
+// TestOntapSanVolume_ReconcileLUNCreateState_NameAddressedBackend covers a backend that reports no volume
+// UUID. Its volumes stay reachable by name, so a resumed create finishes instead of waiting for an ID that
+// will never arrive.
+func TestOntapSanVolume_ReconcileLUNCreateState_NameAddressedBackend(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+	existingVolume := newResumeExistingVolume()
+	existingVolume.UUID = ""
+
+	expectExistingVolumeOnlineWith(mockAPI, existingVolume)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil, errors.NotFoundError("no LUN"))
+	mockAPI.EXPECT().LunCreate(gomock.Any(), newResumeDesiredLUN()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).
+		Return(&api.Lun{Name: testResumeLUNPath, Size: "1000000000", State: "online"}, nil)
+	expectLUNRestamped(mockAPI, nil)
+
+	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
+		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	require.NoError(t, err)
+	assert.Empty(t, volConfig.BackendVolumeID, "A name-addressed backend records no backend volume ID")
 }
 
 func TestOntapSanUnpublish(t *testing.T) {
@@ -667,6 +1066,45 @@ func TestOntapSanUnpublish(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestOntapSanVolumePublish_RequiresVolumeUUIDWhenAddressedByUUID proves publish stops when a UUID-addressed
+// backend reports a FlexVol without one. Continuing would resolve the LUN through ONTAP's name index and
+// could map a LUN belonging to a different volume to the host.
+func TestOntapSanVolumePublish_RequiresVolumeUUIDWhenAddressedByUUID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.API = &lunUUIDAPITestAdapter{OntapAPI: mockAPI}
+	driver.Config.SANType = sa.ISCSI
+
+	volConfig := getVolumeConfig()
+	volConfig.BackendVolumeID = ""
+
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+		Return(&api.Volume{Name: volConfig.InternalName, AccessType: VolTypeRW}, nil)
+
+	err := driver.Publish(ctx, &volConfig, &models.VolumePublishInfo{HostIQN: []string{"host_iqn"}})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Empty(t, volConfig.BackendVolumeID)
+}
+
+// TestOntapSanVolumePublish_PreservesVolumeInfoErrorCause proves a failed volume read keeps the underlying
+// error in the chain, so callers can still classify why publish failed instead of seeing only a generic
+// "could not get volume" message.
+func TestOntapSanVolumePublish_PreservesVolumeInfoErrorCause(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.SANType = sa.ISCSI
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+		Return(nil, errors.NotFoundError("volume not found"))
+
+	err := driver.Publish(ctx, &volConfig, &models.VolumePublishInfo{HostIQN: []string{"host_iqn"}})
+
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err), "the cause must survive wrapping, got %v", err)
 }
 
 func TestOntapSanVolumePublishManaged(t *testing.T) {
@@ -903,6 +1341,7 @@ func newResumeDesiredVolume() api.Volume {
 func newResumeExistingVolume() *api.Volume {
 	existing := newResumeDesiredVolume()
 	existing.Aggregates = []string{ONTAPTEST_VSERVER_AGGR_NAME}
+	existing.UUID = "volume-uuid"
 	return &existing
 }
 
@@ -931,15 +1370,23 @@ func newResumeDesiredAttrs() lunAttributes {
 // expectExistingVolumeOnline sets up the reads every resumed create makes on a healthy existing Flexvol
 // whose attributes already match the request.
 func expectExistingVolumeOnline(mockAPI *mockapi.MockOntapAPI) {
+	expectExistingVolumeOnlineWith(mockAPI, newResumeExistingVolume())
+}
+
+// expectExistingVolumeOnlineWith sets up the wait and read a resumed create performs on a Flexvol an
+// earlier attempt left behind.
+func expectExistingVolumeOnlineWith(mockAPI *mockapi.MockOntapAPI, existing *api.Volume) {
 	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), "trident-pvc-1234", []string{"online"},
 		[]string{"error"}, gomock.Any()).Return("online", nil)
-	mockAPI.EXPECT().VolumeInfo(gomock.Any(), "trident-pvc-1234").Return(newResumeExistingVolume(), nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), "trident-pvc-1234").Return(existing, nil)
 }
 
 // expectVolumeDestroyed sets up the destroy and the wait for the volume to disappear that
-// destroyUnusableVolume performs on a Flexvol this request cannot reuse.
+// destroyUnusableVolume performs on a Flexvol this request cannot reuse. The volume was just read, so it is
+// destroyed by the UUID that read reported rather than through ONTAP's name index.
 func expectVolumeDestroyed(mockAPI *mockapi.MockOntapAPI, name string) {
-	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), name, true, false).Return(nil)
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), newResumeExistingVolume().UUID, name, true, false).
+		Return(nil)
 	mockAPI.EXPECT().VolumeExists(gomock.Any(), name).Return(false, nil)
 }
 
@@ -962,6 +1409,182 @@ func expectLUNCreated(mockAPI *mockapi.MockOntapAPI, createdLun *api.Lun) {
 	mockAPI.EXPECT().LunCreate(gomock.Any(), newResumeDesiredLUN()).Return(nil)
 	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(createdLun, nil)
 	expectLUNRestamped(mockAPI, nil)
+}
+
+func TestLUNUUIDOperations(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, _ := newMockOntapSANDriver(t)
+	uuidAPI := &lunUUIDAPITestAdapter{OntapAPI: mockAPI, attributeValue: "testPool"}
+	lun := &api.Lun{Name: "/vol/volume/lun", UUID: "lun-uuid"}
+
+	require.NoError(t, setLUNAttributes(ctx, uuidAPI, lun, newResumeDesiredAttrs()))
+	require.NoError(t, destroyLUN(ctx, uuidAPI, lun))
+
+	poolName, err := getLUNAttribute(ctx, uuidAPI, lun.Name, lun.UUID, "poolName")
+	require.NoError(t, err)
+
+	assert.Equal(t, "lun-uuid", uuidAPI.attributeSetUUID)
+	assert.Equal(t, "lun-uuid", uuidAPI.destroyedUUID)
+	assert.Equal(t, "lun-uuid", uuidAPI.attributeGetUUID)
+	assert.Equal(t, "poolName", uuidAPI.attributeGetName)
+	assert.Equal(t, "testPool", poolName)
+}
+
+// TestGetLUNAttributeFallsBackToName covers the two cases where the UUID index cannot be used: no UUID in
+// hand, and a backend API that only addresses LUNs by path (ZAPI).
+func TestGetLUNAttributeFallsBackToName(t *testing.T) {
+	ctx := context.Background()
+	lunPath := "/vol/volume/lun"
+
+	t.Run("NoUUIDKnown", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{OntapAPI: mockAPI, attributeValue: "uuidPool"}
+		mockAPI.EXPECT().LunGetAttribute(gomock.Any(), lunPath, "poolName").Return("namePool", nil)
+
+		poolName, err := getLUNAttribute(ctx, uuidAPI, lunPath, "", "poolName")
+
+		require.NoError(t, err)
+		assert.Equal(t, "namePool", poolName)
+		assert.Empty(t, uuidAPI.attributeGetUUID, "UUID GET must not be attempted without a UUID")
+	})
+
+	t.Run("APIWithoutUUIDOperations", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().LunGetAttribute(gomock.Any(), lunPath, "poolName").Return("namePool", nil)
+
+		poolName, err := getLUNAttribute(ctx, mockAPI, lunPath, "lun-uuid", "poolName")
+
+		require.NoError(t, err)
+		assert.Equal(t, "namePool", poolName)
+	})
+
+	t.Run("PropagatesNameGetError", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().LunGetAttribute(gomock.Any(), lunPath, "poolName").Return("",
+			errors.New("failed to get attribute"))
+
+		_, err := getLUNAttribute(ctx, mockAPI, lunPath, "", "poolName")
+
+		assert.Error(t, err)
+	})
+}
+
+func TestGetLUNFSType(t *testing.T) {
+	ctx := context.Background()
+	lunPath := "/vol/volume/lun"
+	commentWithFSType := `{"lunAttributes":{"fstype":"ext4"}}`
+
+	t.Run("ReadsAttributeByUUID", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{
+			OntapAPI:        mockAPI,
+			attributeValues: map[string]string{LUNAttributeFSType: "xfs"},
+		}
+
+		fstype, err := getLUNFSType(ctx, uuidAPI, lunPath, "lun-uuid", "")
+
+		require.NoError(t, err)
+		assert.Equal(t, "xfs", fstype)
+		assert.Equal(t, "lun-uuid", uuidAPI.attributeGetUUID)
+	})
+
+	t.Run("FallsBackToCommentAlreadyFetched", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{
+			OntapAPI:        mockAPI,
+			attributeGetErr: errors.New("attribute not found"),
+		}
+
+		fstype, err := getLUNFSType(ctx, uuidAPI, lunPath, "lun-uuid", commentWithFSType)
+
+		require.NoError(t, err)
+		assert.Equal(t, "ext4", fstype)
+	})
+
+	t.Run("FallsBackToCommentWhenAttributeEmpty", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{
+			OntapAPI: mockAPI,
+		}
+
+		fstype, err := getLUNFSType(ctx, uuidAPI, lunPath, "lun-uuid", commentWithFSType)
+
+		require.NoError(t, err)
+		assert.Equal(t, "ext4", fstype)
+		assert.Equal(t, "lun-uuid", uuidAPI.attributeGetUUID)
+	})
+
+	t.Run("ReportsAttributeErrorWhenCommentHasNoFSType", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{
+			OntapAPI:        mockAPI,
+			attributeGetErr: errors.New("attribute not found"),
+		}
+
+		_, err := getLUNFSType(ctx, uuidAPI, lunPath, "lun-uuid", "not json")
+
+		assert.ErrorContains(t, err, "attribute not found")
+	})
+
+	t.Run("NoUUIDKnown", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		uuidAPI := &lunUUIDAPITestAdapter{
+			OntapAPI:        mockAPI,
+			attributeValues: map[string]string{LUNAttributeFSType: "xfs"},
+		}
+		mockAPI.EXPECT().LunGetFSType(gomock.Any(), lunPath).Return("ext4", nil)
+
+		fstype, err := getLUNFSType(ctx, uuidAPI, lunPath, "", "")
+
+		require.NoError(t, err)
+		assert.Equal(t, "ext4", fstype)
+		assert.Empty(t, uuidAPI.attributeGetUUID, "UUID GET must not be attempted without a UUID")
+	})
+
+	t.Run("APIWithoutUUIDOperations", func(t *testing.T) {
+		mockAPI, _ := newMockOntapSANDriver(t)
+		mockAPI.EXPECT().LunGetFSType(gomock.Any(), lunPath).Return("ext4", nil)
+
+		fstype, err := getLUNFSType(ctx, mockAPI, lunPath, "lun-uuid", "")
+
+		require.NoError(t, err)
+		assert.Equal(t, "ext4", fstype)
+	})
+}
+
+// TestOntapSanVolume_ReconcileLUNCreateState_ReadsPoolNameByUUID proves the resumed create reads back the
+// pool name through the LUN UUID reported by the LUN it just found, rather than through the name index.
+func TestOntapSanVolume_ReconcileLUNCreateState_ReadsPoolNameByUUID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	extantLUN := &api.Lun{
+		Name:           testResumeLUNPath,
+		UUID:           "lun-uuid",
+		Comment:        "dummyLun",
+		SerialNumber:   "testSerialNumber",
+		Size:           "1000000000",
+		SpaceAllocated: convert.ToPtr(false),
+	}
+	uuidAPI := &lunUUIDAPITestAdapter{
+		OntapAPI:       mockAPI,
+		attributeValue: "testPool",
+		lunByVolume:    extantLUN,
+	}
+	driver.API = uuidAPI
+
+	volConfig := getVolumeConfig()
+
+	// No LunGetByName or LunGetAttribute expectation: a name-indexed read would fail this test.
+	expectExistingVolumeOnline(mockAPI)
+
+	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
+		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assertVolumeExistsError(t, err, "A LUN already stamped for this pool should be reported as existing")
+	assert.Equal(t, "lun-uuid", uuidAPI.attributeGetUUID)
+	assert.Equal(t, "poolName", uuidAPI.attributeGetName)
+	assert.Equal(t, "volume-uuid", uuidAPI.lunVolumeUUID)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID)
 }
 
 func TestOntapSanVolume_ReconcileLUNCreateState(t *testing.T) {
@@ -1096,8 +1719,8 @@ func TestOntapSanVolume_ReconcileLUNCreateState(t *testing.T) {
 				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
 					[]string{"error"}, gomock.Any()).Return("online", nil)
 				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(strayVolume, nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(
-					errors.New("volume destroy failed"))
+				mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), strayVolume.UUID, volConfig.InternalName,
+					true, false).Return(errors.New("volume destroy failed"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Should error when the destroy of an unusable volume fails",
@@ -1176,12 +1799,16 @@ func TestOntapSanVolume_ReconcileLUNCreateState(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI, driver := newMockOntapSANDriver(t)
 			test.mocks(mockAPI)
+			testVolConfig := getVolumeConfig()
 
-			err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(),
+			err := driver.reconcileLUNCreateState(ctx, &testVolConfig, newResumeDesiredVolume(),
 				newResumeDesiredLUN(), newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
 
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
+			}
+			if test.name == "LUNExists_PoolNameMatches" {
+				assert.Equal(t, "volume-uuid", testVolConfig.BackendVolumeID)
 			}
 		})
 	}
@@ -1199,6 +1826,67 @@ func TestOntapSanVolume_ReconcileLUNCreateState_StillCreatingIsRetryable(t *test
 
 	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
 		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+// TestOntapSanVolume_ReconcileLUNCreateState_RequiresCurrentVolumeUUID covers a UUID-addressed backend that
+// returns a volume without one. The volume cannot be identified later, so the create is retried rather than
+// recorded with an empty ID.
+func TestOntapSanVolume_ReconcileLUNCreateState_RequiresCurrentVolumeUUID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.API = &lunUUIDAPITestAdapter{OntapAPI: mockAPI}
+	volConfig := getVolumeConfig()
+	existingVolume := newResumeExistingVolume()
+	existingVolume.UUID = ""
+
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(existingVolume, nil)
+
+	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
+		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.False(t, drivers.IsVolumeExistsError(err))
+	assert.Empty(t, volConfig.BackendVolumeID)
+}
+
+// TestOntapSanVolume_ReconcileLUNCreateState_RecordsVolumeUUIDBeforeLUNWork proves the resumed create
+// records the FlexVol it adopted before touching the LUN. A LUN step that fails retryably must still leave
+// the ID behind, or the cleanup and delete that follow would fall back to ONTAP's name index.
+func TestOntapSanVolume_ReconcileLUNCreateState_RecordsVolumeUUIDBeforeLUNWork(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.API = &lunUUIDAPITestAdapter{
+		OntapAPI:       mockAPI,
+		lunByVolumeErr: errors.New("LUN lookup failed"),
+	}
+	volConfig := getVolumeConfig()
+	volConfig.BackendVolumeID = ""
+	existingVolume := newResumeExistingVolume()
+	existingVolume.UUID = "live-volume-uuid"
+
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(existingVolume, nil)
+
+	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
+		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Equal(t, "live-volume-uuid", volConfig.BackendVolumeID,
+		"the adopted FlexVol UUID must be recorded even though the LUN step failed")
+}
+
+func TestOntapSanVolumeCreate_VolumeProbeFailureIsRetryable(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).
+		Return(false, errors.New("volume probe failed"))
+
+	err := driver.Create(context.Background(), &volConfig, nil, nil)
 
 	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
 }
@@ -1446,11 +2134,14 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+		Return(nil, errors.New("volume info failed")).AnyTimes()
 
 	tests := []struct {
 		name          string
 		mocks         func(mockAPI *mockapi.MockOntapAPI)
 		wantErr       assert.ErrorAssertionFunc
+		wantVolumeID  string // the backend volume ID the failed create leaves recorded
 		assertMessage string // This message prints when the test case fails
 	}{
 		{
@@ -1468,12 +2159,16 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("attempt-volume-uuid", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroyByUUID(
+					gomock.Any(), "attempt-volume-uuid", volConfig.InternalName, true, false,
+				).Return(nil)
+				// The cleanup waits for ONTAP to finish the asynchronous delete before the create retries.
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
+			wantVolumeID:  "attempt-volume-uuid",
 			assertMessage: "LUN is created",
 		},
 		{
@@ -1501,6 +2196,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				// The cleanup waits for ONTAP to finish the asynchronous delete before the create retries.
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
@@ -1518,6 +2214,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(errors.New("LUN destroy failed"))
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				// The cleanup waits for ONTAP to finish the asynchronous delete before the create retries.
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
@@ -1544,11 +2241,18 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			test.mocks(mockAPI)
+			testVolConfig := volConfig
 
-			err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+			err := driver.Create(ctx, &testVolConfig, pool1, volAttrs)
 
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
+			}
+			if test.name != "volumeCreateFail" {
+				assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+				// The ID is recorded as soon as ONTAP reports the volume, so a create that fails while
+				// building the LUN still leaves the volume addressable by UUID for a later delete.
+				assert.Equal(t, test.wantVolumeID, testVolConfig.BackendVolumeID)
 			}
 		})
 	}
@@ -1569,6 +2273,7 @@ func newSANCreatePool() storage.Pool {
 func newSANCreateExistingVolume(name string) *api.Volume {
 	return &api.Volume{
 		Name:            name,
+		UUID:            "volume-uuid",
 		Aggregates:      []string{"pool1"},
 		Size:            "10000000000000",
 		SnapshotPolicy:  "fake-snap-policy",
@@ -1592,12 +2297,161 @@ func TestOntapSanVolumeCreate_VolumeCreateInProgress(t *testing.T) {
 	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("",
 		api.VolumeCreateJobExistsError("volume vol1 is busy: Volume is busy with a volume create, job ID [abc]"))
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+		Return(nil, errors.New("volume info failed"))
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 
 	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
 
 	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanVolumeCreate_JobExistsResolvesVolumeUUID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool}
+	volConfig := getVolumeConfig()
+	lunPath := lunPath(volConfig.InternalName)
+
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).
+		Return("", api.VolumeCreateJobExistsError("volume create job exists"))
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+		Return(&api.Volume{UUID: "resolved-volume-uuid"}, nil)
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lunPath).
+		Return(&api.Lun{Name: lunPath, UUID: "lun-uuid", Size: "1073741824", State: "online"}, nil)
+	mockAPI.EXPECT().LunSetAttribute(
+		gomock.Any(), lunPath, LUNAttributeFSType, "xfs", gomock.Any(), gomock.Any(), gomock.Any(), "pool1",
+	).Return(nil)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool, nil)
+
+	require.NoError(t, err)
+	assert.Equal(t, "resolved-volume-uuid", volConfig.BackendVolumeID)
+}
+
+// TestOntapSanVolumeCreate_RequiresVolumeUUIDWhenAddressedByUUID covers what Create records as the backend
+// volume ID for each kind of backend. A backend that addresses objects by UUID must report one for the volume
+// it just created, and a create that reports none fails instead of recording an empty ID. A name-addressed
+// backend reports no UUID and its volume stays reachable by name.
+func TestOntapSanVolumeCreate_RequiresVolumeUUIDWhenAddressedByUUID(t *testing.T) {
+	lunPath := lunPath(getVolumeConfig().InternalName)
+
+	tests := []struct {
+		name            string
+		addressesByUUID bool
+		createdUUID     string
+		expectLUN       bool
+		wantErr         assert.ErrorAssertionFunc
+		wantVolumeID    string
+	}{
+		{
+			name:            "UUID-addressed backend reports a UUID",
+			addressesByUUID: true,
+			createdUUID:     "created-volume-uuid",
+			expectLUN:       true,
+			wantErr:         assert.NoError,
+			wantVolumeID:    "created-volume-uuid",
+		},
+		{
+			name:            "UUID-addressed backend reports no UUID",
+			addressesByUUID: true,
+			wantErr:         assert.Error,
+		},
+		{
+			name:      "name-addressed backend reports no UUID",
+			expectLUN: true,
+			wantErr:   assert.NoError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			pool := newSANCreatePool()
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool}
+			volConfig := getVolumeConfig()
+
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+			mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+			mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(test.createdUUID, nil)
+			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+			mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+			if test.expectLUN {
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				if !test.addressesByUUID {
+					mockAPI.EXPECT().LunGetByName(gomock.Any(), lunPath).
+						Return(&api.Lun{Name: lunPath, Size: "1073741824", State: "online"}, nil)
+					mockAPI.EXPECT().LunSetAttribute(gomock.Any(), lunPath, LUNAttributeFSType, "xfs",
+						gomock.Any(), gomock.Any(), gomock.Any(), "pool1").Return(nil)
+				}
+			}
+			if test.addressesByUUID {
+				uuidAPI := &lunUUIDAPITestAdapter{OntapAPI: mockAPI}
+				if test.expectLUN {
+					uuidAPI.lunByVolume = &api.Lun{
+						Name: lunPath, UUID: "lun-uuid", Size: "1073741824", State: "online",
+					}
+				}
+				driver.API = uuidAPI
+			}
+
+			err := driver.Create(context.Background(), &volConfig, pool, nil)
+
+			test.wantErr(t, err)
+			if err != nil {
+				assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+			}
+			assert.Equal(t, test.wantVolumeID, volConfig.BackendVolumeID)
+		})
+	}
+}
+
+func TestOntapSanVolumeCreate_ExistingMirrorRequiresCurrentUUID(t *testing.T) {
+	tests := []struct {
+		name            string
+		volume          *api.Volume
+		volumeInfoError error
+		wantExists      bool
+	}{
+		{
+			name:       "UUID refreshed",
+			volume:     &api.Volume{UUID: "mirror-volume-uuid"},
+			wantExists: true,
+		},
+		{
+			name:            "UUID refresh fails",
+			volumeInfoError: errors.New("volume info failed"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			volConfig := getVolumeConfig()
+			volConfig.IsMirrorDestination = true
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+			mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).
+				Return(test.volume, test.volumeInfoError)
+
+			err := driver.Create(context.Background(), &volConfig, nil, nil)
+
+			assert.Equal(t, test.wantExists, drivers.IsVolumeExistsError(err))
+			assert.Equal(t, !test.wantExists, errors.IsVolumeCreatingError(err))
+			if test.wantExists {
+				assert.Equal(t, "mirror-volume-uuid", volConfig.BackendVolumeID)
+			} else {
+				assert.Empty(t, volConfig.BackendVolumeID)
+			}
+		})
+	}
 }
 
 func TestOntapSanVolumeCreate_LunCreateInProgress(t *testing.T) {
@@ -1633,9 +2487,98 @@ func TestOntapSanCreateLUN_AcceptedCreateReadBackFailureIsRetryable(t *testing.T
 	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(nil)
 	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(nil, nil)
 
-	err := driver.createLUN(context.Background(), newResumeDesiredVolume().Name, lun, newResumeDesiredAttrs())
+	err := driver.createLUN(context.Background(), newResumeDesiredVolume().Name, "", lun, newResumeDesiredAttrs())
 
 	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanCreateLUN_ReadsCreatedLUNByVolumeUUID(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+	uuidAPI := &lunUUIDAPITestAdapter{
+		OntapAPI:    mockAPI,
+		lunByVolume: &api.Lun{Name: lun.Name, UUID: "lun-uuid"},
+	}
+	driver.API = uuidAPI
+
+	// No LunGetByName expectation: REST read-after-write must use the FlexVol UUID.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(nil)
+
+	err := driver.createLUN(context.Background(), newResumeDesiredVolume().Name, "volume-uuid", lun,
+		newResumeDesiredAttrs())
+
+	require.NoError(t, err)
+	assert.Equal(t, "volume-uuid", uuidAPI.lunVolumeUUID)
+	assert.Equal(t, "lun-uuid", uuidAPI.attributeSetUUID)
+}
+
+// TestOntapSanVolumeCreate_RecordsVolumeUUIDWhenLunReadBackFails covers the read-after-write lag this fix
+// exists for: ONTAP creates the Flexvol and accepts the LUN, but the LUN is not readable yet. The volume is
+// deliberately left in place for the retry, so its UUID has to be recorded or a later delete would fall
+// back to the name index and could leave the Flexvol orphaned.
+func TestOntapSanVolumeCreate_RecordsVolumeUUIDWhenLunReadBackFails(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	pool := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool}
+	volConfig := getVolumeConfig()
+
+	// No destroy expectation: an accepted create whose read-back fails must leave both objects in place.
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("created-volume-uuid", nil)
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lunPath(volConfig.InternalName)).Return(nil, nil)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(context.Background(), &volConfig, pool, nil)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Equal(t, "created-volume-uuid", volConfig.BackendVolumeID,
+		"The volume ONTAP created must stay addressable by UUID after a LUN read-back failure")
+}
+
+func TestOntapSanCleanupFailedLUN_ResolvesLiveVolumeUUID(t *testing.T) {
+	tests := []struct {
+		name      string
+		volume    *api.Volume
+		infoError error
+		useUUID   bool
+	}{
+		{
+			name:    "live UUID",
+			volume:  &api.Volume{UUID: "live-volume-uuid"},
+			useUUID: true,
+		},
+		{
+			name:      "volume info failure",
+			infoError: errors.New("volume info failed"),
+		},
+		{
+			name:   "empty UUID",
+			volume: &api.Volume{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			mockAPI.EXPECT().VolumeInfo(gomock.Any(), "volume").Return(test.volume, test.infoError)
+			if test.useUUID {
+				mockAPI.EXPECT().VolumeDestroyByUUID(
+					gomock.Any(), "live-volume-uuid", "volume", true, false,
+				).Return(nil)
+			} else {
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "volume", true, false).Return(nil)
+			}
+			// The cleanup waits for ONTAP to finish the asynchronous delete before the create retries.
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), "volume").Return(false, nil)
+
+			err := driver.cleanupFailedLUN(context.Background(), "volume", "", nil, "LUN create failure")
+
+			assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+		})
+	}
 }
 
 func TestOntapSanVolumeCreate_ResumesLunCreateOnExistingVolume(t *testing.T) {
@@ -1671,6 +2614,7 @@ func TestOntapSanVolumeCreate_ResumesLunCreateOnExistingVolume(t *testing.T) {
 	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
 
 	assert.NoError(t, err, "expected Create to resume LUN creation on the existing volume")
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID)
 }
 
 func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
@@ -1787,6 +2731,7 @@ func TestOntapSanVolumeClone(t *testing.T) {
 	driver.Config.Labels = pool1.GetLabels(ctx, "")
 
 	volConfig := getVolumeConfig()
+	volConfig.BackendVolumeID = "source-volume-uuid"
 	volume := api.Volume{
 		Name:    "vol1",
 		Comment: "iscsi volume",
@@ -1804,13 +2749,174 @@ func TestOntapSanVolumeClone(t *testing.T) {
 	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"}, []string{"error"},
 		maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(
+		&api.Volume{Name: volConfig.InternalName, UUID: "clone-volume-uuid"}, nil)
 
 	err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
 
 	assert.Empty(t, volConfig.CloneSourceVolume, "Clone source volume name is not empty")
 	assert.NotEmpty(t, volConfig.CloneSourceSnapshotInternal, "Clone source snapshot internal name is empty")
+	assert.Equal(t, "clone-volume-uuid", volConfig.BackendVolumeID, "Clone did not record its own volume UUID")
 
 	assert.NoError(t, err, "Clone creation failed. Expected no error")
+}
+
+func TestOntapSanVolumeClone_BackendVolumeID(t *testing.T) {
+	ctx := context.Background()
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SnapshotPolicy: "fake-snap-policy",
+		SplitOnClone:   "false",
+	})
+
+	tests := []struct {
+		name              string
+		cloneVolume       *api.Volume
+		cloneVolumeErr    error
+		wantBackendVolume string
+		wantErr           bool
+	}{
+		{
+			name:              "CloneVolumeUUIDRecorded",
+			cloneVolume:       &api.Volume{Name: "trident-pvc-1234", UUID: "clone-volume-uuid"},
+			wantBackendVolume: "clone-volume-uuid",
+		},
+		{
+			name:           "VolumeInfoFails",
+			cloneVolumeErr: errors.New("volume info failed"),
+			wantErr:        true,
+		},
+		{
+			// A name-addressed backend reports no UUID, and the clone stays reachable by name.
+			name:        "VolumeInfoHasNoUUID",
+			cloneVolume: &api.Volume{Name: "trident-pvc-1234"},
+		},
+		{
+			name:    "VolumeInfoIsEmpty",
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+			volConfig := getVolumeConfig()
+			volConfig.BackendVolumeID = "source-volume-uuid"
+
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(
+				&api.Volume{Name: "vol1"}, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+			mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"},
+				[]string{"error"}, maxFlexvolCloneWait).Return("online", nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(test.cloneVolume, test.cloneVolumeErr)
+
+			err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
+
+			if test.wantErr {
+				assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+			} else {
+				assert.NoError(t, err, "Clone creation failed. Expected no error")
+			}
+			assert.Equal(t, test.wantBackendVolume, volConfig.BackendVolumeID)
+			assert.NotEqual(t, "source-volume-uuid", volConfig.BackendVolumeID,
+				"Clone kept the source volume UUID")
+		})
+	}
+}
+
+// TestOntapSanVolumeClone_CleansUpByUUIDWhenCreateFails proves a clone create that reports a UUID and then
+// fails is cleaned up through that UUID. ONTAP had already made the volume, so deleting it by name could
+// reach a different volume, and leaving it behind would strand a FlexVol nothing references.
+func TestOntapSanVolumeClone_CleansUpByUUIDWhenCreateFails(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	cloneAPI := &volumeCloneUUIDAPITestAdapter{
+		lunUUIDAPITestAdapter: &lunUUIDAPITestAdapter{OntapAPI: mockAPI},
+		cloneUUID:             "clone-volume-uuid",
+		cloneErr:              errors.New("clone job failed"),
+	}
+	driver.API = cloneAPI
+
+	pool := storage.NewStoragePool(nil, "pool1")
+	pool.SetInternalAttributes(map[string]string{SnapshotPolicy: "fake-snap-policy", SplitOnClone: "false"})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool}
+
+	volConfig := getVolumeConfig()
+	volConfig.CloneSourceVolumeInternal = "source-volume"
+
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "source"}, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), volConfig.CloneSourceVolumeInternal).Return(nil)
+	// No VolumeDestroy expectation: cleanup must address the clone by UUID, not by name.
+	mockAPI.EXPECT().VolumeDestroyByUUID(ctx, "clone-volume-uuid", volConfig.InternalName, true, true).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, gomock.Any(), volConfig.CloneSourceVolumeInternal).Return(nil)
+
+	err := driver.CreateClone(ctx, nil, &volConfig, pool)
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsVolumeExistsError(err))
+}
+
+func TestOntapSanVolumeClone_RetryReconcilesBackendVolumeID(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	lunAPI := &lunUUIDAPITestAdapter{OntapAPI: mockAPI}
+	cloneAPI := &volumeCloneUUIDAPITestAdapter{lunUUIDAPITestAdapter: lunAPI}
+	driver.API = cloneAPI
+
+	pool := storage.NewStoragePool(nil, "pool1")
+	pool.SetInternalAttributes(map[string]string{
+		SnapshotPolicy: "fake-snap-policy",
+		SplitOnClone:   "false",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool}
+
+	volConfig := getVolumeConfig()
+	volConfig.CloneSourceVolumeInternal = "source-volume"
+	volConfig.QosPolicy = "qos-policy"
+	lunAPI.lunByVolume = &api.Lun{Name: lunPath(volConfig.InternalName), UUID: "clone-lun-uuid"}
+
+	gomock.InOrder(
+		mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "source"}, nil),
+		mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil),
+		mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), volConfig.CloneSourceVolumeInternal).Return(nil),
+		mockAPI.EXPECT().VolumeWaitForStates(
+			ctx, volConfig.InternalName, []string{"online"}, []string{"error"}, maxFlexvolCloneWait,
+		).Return("online", nil),
+		mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, gomock.Any(), gomock.Any()).Return(nil),
+		mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(nil, errors.New("volume index not ready")),
+		mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "source"}, nil),
+		mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil),
+		mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(
+			&api.Volume{Name: volConfig.InternalName, UUID: "clone-volume-uuid"}, nil,
+		),
+	)
+
+	err := driver.CreateClone(ctx, nil, &volConfig, pool)
+	require.Error(t, err)
+	assert.True(t, errors.IsVolumeCreatingError(err))
+	assert.Empty(t, volConfig.BackendVolumeID)
+
+	err = driver.CreateClone(ctx, nil, &volConfig, pool)
+	assert.True(t, drivers.IsVolumeExistsError(err))
+	assert.Equal(t, "clone-volume-uuid", volConfig.BackendVolumeID)
+	assert.Equal(t, 1, cloneAPI.cloneCalls)
+	assert.Equal(t, "clone-lun-uuid", lunAPI.qosLunUUID)
 }
 
 func TestOntapSanVolumeClone_VolumeInfoFail(t *testing.T) {
@@ -1904,6 +3010,8 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, getVolumeConfig().InternalName, []string{"online"}, []string{"error"},
 					maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, getVolumeConfig().InternalName).Return(
+					&api.Volume{Name: getVolumeConfig().InternalName, UUID: "clone-volume-uuid"}, nil)
 				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.NoError,
@@ -1926,6 +3034,8 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, getVolumeConfig().InternalName).Return(
+					&api.Volume{Name: getVolumeConfig().InternalName, UUID: "clone-volume-uuid"}, nil)
 				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(),
 					gomock.Any()).Return(errors.New("update QOS policy on LUN failed"))
 			},
@@ -2115,10 +3225,13 @@ func TestOntapSanVolumeClone_NameTemplate(t *testing.T) {
 			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"},
 				maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 			mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(
+				&api.Volume{Name: volConfig.InternalName, UUID: "clone-volume-uuid"}, nil)
 
 			err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
 
 			assert.NoError(t, err, "Clone creation failed. Expected no error")
+			assert.Equal(t, "clone-volume-uuid", volConfig.BackendVolumeID)
 		})
 	}
 }
@@ -3919,6 +5032,24 @@ func TestOntapSANStorageDriverResize_VolumeExistsFail(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestOntapSANStorageDriverResize_PreservesVolumeInfoErrorCause proves a failed volume read during resize
+// keeps the underlying error in the chain rather than collapsing to a generic metadata message.
+func TestOntapSANStorageDriverResize_PreservesVolumeInfoErrorCause(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().VolumeSize(ctx, volConfig.InternalName).Return(uint64(1073741824), nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/"+volConfig.InternalName+"/lun0").Return(1073741824, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).
+		Return(nil, errors.NotFoundError("volume not found"))
+
+	err := driver.Resize(ctx, &volConfig, 2147483648)
+
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err), "the cause must survive wrapping, got %v", err)
 }
 
 func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
