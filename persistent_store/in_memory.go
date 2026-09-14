@@ -9,8 +9,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -188,6 +190,35 @@ func (c *InMemoryClient) UpdateVolume(_ context.Context, vol *storage.Volume) er
 		return NewPersistentStoreError(KeyNotFoundErr, vol.Config.Name)
 	}
 	c.volumes[vol.Config.Name] = vol.ConstructExternal()
+	return nil
+}
+
+// UpdateVolumeNodeConfig applies a sparse, node-originated update directly to the stored
+// config. No CAS/merge-patch machinery is needed here: this is a single in-process map, so there
+// is no concurrent writer to race, unlike the CRD store where the API server mediates access
+// across the controller and node processes.
+func (c *InMemoryClient) UpdateVolumeNodeConfig(
+	_ context.Context, volumeName string, update *models.NodeVolumeUpdate,
+) error {
+	if update.IsEmpty() {
+		return nil
+	}
+	vol, ok := c.volumes[volumeName]
+	if !ok {
+		return errors.NotFoundError("volume %s not found", volumeName)
+	}
+
+	if update.LUKSPassphraseNames != nil {
+		desired := *update.LUKSPassphraseNames
+		if desired == nil {
+			desired = []string{}
+		}
+		// Compared as an unordered set: no consumer of LUKSPassphraseNames reads a name by
+		// position, so a reordering of the same names is not a change and must not produce a write.
+		if !collection.EqualValues(desired, vol.Config.LUKSPassphraseNames) {
+			vol.Config.LUKSPassphraseNames = desired
+		}
+	}
 	return nil
 }
 

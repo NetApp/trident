@@ -102,6 +102,20 @@ func (mr *MockClientMockRecorder) RegisterNode(ctx, node, timeout any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterNode", reflect.TypeOf((*MockClient)(nil).RegisterNode), ctx, node, timeout)
 }
 
+// UpdateVolume mocks base method.
+func (m *MockClient) UpdateVolume(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolume", ctx, volumeName, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolume indicates an expected call of UpdateVolume.
+func (mr *MockClientMockRecorder) UpdateVolume(ctx, volumeName, update any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockClient)(nil).UpdateVolume), ctx, volumeName, update)
+}
+
 // MockChangeNotifier is a mock of ChangeNotifier interface.
 type MockChangeNotifier struct {
 	ctrl     *gomock.Controller

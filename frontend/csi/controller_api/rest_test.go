@@ -13,8 +13,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -659,6 +657,58 @@ func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestUpdateVolumeFromNode(t *testing.T) {
+	// Positive: 200 accepted, body carries the update
+	controllerRestClient := ControllerRestClient{}
+	ctx = context.Background()
+	mockUpdateVolumeFromNode := func(w http.ResponseWriter, r *http.Request) {
+		update := &models.NodeVolumeUpdate{}
+		body, err := io.ReadAll(io.LimitReader(r.Body, config.MaxRESTRequestSize))
+		assert.NoError(t, err)
+
+		err = json.Unmarshal(body, update)
+		assert.NoError(t, err, "Got: ", body)
+		assert.NotNil(t, update.LUKSPassphraseNames)
+		assert.Equal(t, []string{"A"}, *update.LUKSPassphraseNames)
+
+		createResponse(w, "", http.StatusOK)
+	}
+
+	names := []string{"A"}
+	server := getHttpServer(config.VolumeURL+"/test-vol/nodeConfig", mockUpdateVolumeFromNode)
+	controllerRestClient.url = server.URL
+	err := controllerRestClient.UpdateVolumeFromNode(ctx, "test-vol", &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+	assert.NoError(t, err)
+	server.Close()
+
+	// Positive: empty/nil update is a no-op, no HTTP call at all - the closed server proves it,
+	// since any InvokeAPI call would fail to connect.
+	controllerRestClient = ControllerRestClient{url: "http://127.0.0.1:0"}
+	err = controllerRestClient.UpdateVolumeFromNode(ctx, "test-vol", &models.NodeVolumeUpdate{})
+	assert.NoError(t, err)
+	err = controllerRestClient.UpdateVolumeFromNode(ctx, "test-vol", nil)
+	assert.NoError(t, err)
+
+	// Negative: unexpected status code
+	controllerRestClient = ControllerRestClient{}
+	ctx = context.Background()
+	mockUpdateVolumeFromNode = func(w http.ResponseWriter, r *http.Request) {
+		createResponse(w, "", http.StatusNotFound)
+	}
+
+	server = getHttpServer(config.VolumeURL+"/test-vol/nodeConfig", mockUpdateVolumeFromNode)
+	controllerRestClient.url = server.URL
+	err = controllerRestClient.UpdateVolumeFromNode(ctx, "test-vol", &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+	assert.Error(t, err)
+	server.Close()
+
+	// Negative: cannot connect to the Trident API
+	controllerRestClient = ControllerRestClient{}
+	ctx = context.Background()
+	err = controllerRestClient.UpdateVolumeFromNode(ctx, "test-vol", &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+	assert.Error(t, err)
+}
+
 func TestListVolumePublicationsForNode(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	ctx = context.Background()
@@ -773,6 +823,37 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 	}
 }
 
+func TestParseRetryAfter(t *testing.T) {
+	tests := []struct {
+		name        string
+		value       string
+		want        time.Duration
+		expectError bool
+	}{
+		{
+			name:  "RFC 9110 delay-seconds - the real wire format rateLimiterMiddleware sends",
+			value: "1", want: time.Second,
+		},
+		{name: "multi-digit delay-seconds", value: "45", want: 45 * time.Second},
+		{name: "zero delay-seconds", value: "0", want: 0},
+		{name: "Go duration string fallback", value: "200ms", want: 200 * time.Millisecond},
+		{name: "negative delay-seconds is rejected", value: "-1", expectError: true},
+		{name: "empty value is rejected", value: "", expectError: true},
+		{name: "garbage value is rejected", value: "not-a-duration", expectError: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseRetryAfter(tt.value)
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestRequestAndRetry(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 
@@ -829,33 +910,102 @@ func TestRequestAndRetry(t *testing.T) {
 }
 
 func TestRequestAndRetrySucceedsAfterTooManyRequests(t *testing.T) {
+	// Stub the sleep so the test runs instantly and deterministically instead of racing a real
+	// timer against a background goroutine flipping the response status.
+	originalSleep := retryAfterSleep
+	var slept []time.Duration
+	retryAfterSleep = func(_ context.Context, d time.Duration) error {
+		slept = append(slept, d)
+		return nil
+	}
+	defer func() { retryAfterSleep = originalSleep }()
+
 	controllerRestClient := ControllerRestClient{}
-	wg := &sync.WaitGroup{}
-	var statusCode atomic.Int32
-	statusCode.Store(http.StatusTooManyRequests)
 
-	// Ensure this change happens after the first request but before the second.
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		// Sleep for a bit to give requestAndRetry a chance to retry.
-		time.Sleep(100 * time.Millisecond)
-		// Changing this here will allow requestAndRetry to exit.
-		statusCode.Store(http.StatusAccepted)
-	}()
-
-	// Build a fresh response per call, while status transitions are synchronized via atomics.
+	callCount := 0
 	requestFunc := func() (*http.Response, []byte, error) {
+		callCount++
+		statusCode := http.StatusTooManyRequests
+		if callCount > 1 {
+			statusCode = http.StatusAccepted
+		}
 		response := &http.Response{
-			StatusCode: int(statusCode.Load()),
+			StatusCode: statusCode,
 			Header:     make(http.Header, 1),
 		}
-		response.Header.Set("Retry-After", "200ms")
+		// "1" is the real wire format: rateLimiterMiddleware (frontend/rest/middleware.go) sends
+		// RFC 9110 delay-seconds - a bare integer - not a Go duration string.
+		// time.ParseDuration("1") fails outright, which is the regression this pins: the old code
+		// returned an error immediately here instead of retrying.
+		response.Header.Set("Retry-After", "1")
 		return response, []byte{}, nil
 	}
 
 	_, _, err := controllerRestClient.requestAndRetry(ctx, requestFunc)
-	wg.Wait()
+
 	assert.NoError(t, err, "expected no error")
+	assert.Equal(t, 2, callCount, "expected exactly one retry")
+	assert.Equal(t, []time.Duration{1 * time.Second}, slept,
+		"expected to sleep for the parsed Retry-After duration, not a mangled value")
+}
+
+// TestRequestAndRetry_CancelDuringSleepReturnsPromptly pins the fix for a real hang risk: a bare
+// time.Sleep in the old retryAfterSleep ignored ctx entirely, so a canceled/timed-out caller would
+// stay blocked for the full Retry-After delay instead of returning as soon as its context was
+// done. Uses the real retryAfterSleep (not a stub) with a long delay and a context canceled almost
+// immediately, so a passing test proves cancellation actually interrupts the sleep rather than
+// merely being checked before/after it.
+func TestRequestAndRetry_CancelDuringSleepReturnsPromptly(t *testing.T) {
+	cancelCtx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		cancel()
+	}()
+
+	controllerRestClient := ControllerRestClient{}
+
+	requestFunc := func() (*http.Response, []byte, error) {
+		response := &http.Response{
+			StatusCode: http.StatusTooManyRequests,
+			Header:     make(http.Header, 1),
+		}
+		// Long enough that the test would time out if cancellation weren't honored mid-sleep.
+		response.Header.Set("Retry-After", "30")
+		return response, []byte{}, nil
+	}
+
+	start := time.Now()
+	_, _, err := controllerRestClient.requestAndRetry(cancelCtx, requestFunc)
+	elapsed := time.Since(start)
+
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Less(t, elapsed, 5*time.Second, "expected cancellation to interrupt the sleep, not wait out the full Retry-After")
+}
+
+// TestRequestAndRetry_GivesUpAfterMaxAttempts pins a real hang risk: without a retry cap, a
+// controller that stays rate-limited indefinitely (or a misbehaving proxy inflating Retry-After)
+// would keep requestAndRetry looping forever instead of ever returning to its caller.
+func TestRequestAndRetry_GivesUpAfterMaxAttempts(t *testing.T) {
+	originalSleep := retryAfterSleep
+	retryAfterSleep = func(_ context.Context, _ time.Duration) error { return nil }
+	defer func() { retryAfterSleep = originalSleep }()
+
+	controllerRestClient := ControllerRestClient{}
+
+	callCount := 0
+	requestFunc := func() (*http.Response, []byte, error) {
+		callCount++
+		response := &http.Response{
+			StatusCode: http.StatusTooManyRequests,
+			Header:     make(http.Header, 1),
+		}
+		response.Header.Set("Retry-After", "0")
+		return response, []byte{}, nil
+	}
+
+	_, _, err := controllerRestClient.requestAndRetry(ctx, requestFunc)
+
+	assert.Error(t, err, "expected an error once the retry cap is exceeded")
+	assert.Equal(t, maxRetryAfterAttempts+1, callCount,
+		"expected the initial request plus exactly maxRetryAfterAttempts retries, then giving up")
 }

@@ -23,6 +23,10 @@ type TridentController interface {
 	DeleteNode(ctx context.Context, name string) error
 	GetChap(ctx context.Context, volume, node string) (*models.IscsiChapInfo, error)
 	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames []string) error
+	// UpdateVolumeFromNode is the REST backchannel side of the TridentController API's UpdateVolume
+	// (frontend/csi/tridentcontroller). Wrapped in requestAndRetry, unlike
+	// UpdateVolumeLUKSPassphraseNames above.
+	UpdateVolumeFromNode(ctx context.Context, volume string, update *models.NodeVolumeUpdate) error
 	ListVolumePublicationsForNode(ctx context.Context, nodeName string) ([]*models.VolumePublicationExternal, error)
 	// TODO (bpresnel) Enable later with rate-limiting?
 	// GetLoggingConfig(ctx context.Context) (string, string, string, error)

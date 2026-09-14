@@ -669,6 +669,75 @@ func UpdateVolumeLUKSPassphraseNames(w http.ResponseWriter, r *http.Request) {
 	UpdateGeneric(w, r, response, volumeLUKSPassphraseNamesUpdater)
 }
 
+// UpdateVolumeFromNodeResponse is a minimal ack for the node-facing UpdateVolume API. Unlike
+// UpdateVolumeResponse, it carries no *storage.VolumeExternal: the node discards it, and fetching
+// one would reintroduce the extra orchestrator.GetVolume call this route's handler exists to avoid
+// (see volumeFromNodeUpdater below) - a real cost on the serial orchestrator's single lock, at RWX
+// scale.
+type UpdateVolumeFromNodeResponse struct {
+	Error string `json:"error,omitempty"`
+}
+
+func (r *UpdateVolumeFromNodeResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *UpdateVolumeFromNodeResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *UpdateVolumeFromNodeResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"handler": "UpdateVolumeFromNode",
+	}).Info("Updated a volume's node-owned fields.")
+}
+
+func (r *UpdateVolumeFromNodeResponse) logFailure(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"handler": "UpdateVolumeFromNode",
+	}).Error(r.Error)
+}
+
+// volumeFromNodeUpdater implements the TridentController API's REST transport server side
+// (frontend/csi/tridentcontroller/rest is the client side). Deliberately does not call
+// orchestrator.GetVolume first, unlike volumeLUKSPassphraseNamesUpdater above: the node discards
+// that value, so fetching it is pure overhead - a full orchestrator lock acquisition and object
+// construction per node call, which is exactly the scaling cost this API replaces the old
+// backchannel design to avoid.
+func volumeFromNodeUpdater(
+	_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte,
+) int {
+	updateResponse, ok := response.(*UpdateVolumeFromNodeResponse)
+	if !ok {
+		response.setError(fmt.Errorf("response object must be of type UpdateVolumeFromNodeResponse"))
+		return http.StatusInternalServerError
+	}
+
+	update := &models.NodeVolumeUpdate{}
+	if err := json.Unmarshal(body, update); err != nil {
+		updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+		return http.StatusBadRequest
+	}
+	if update.IsEmpty() {
+		return http.StatusOK
+	}
+
+	if err := orchestrator.UpdateVolumeLUKSPassphraseNames(r.Context(), vars["volume"], update.LUKSPassphraseNames); err != nil {
+		updateResponse.setError(fmt.Errorf("failed to update volume %s: %s", vars["volume"], err.Error()))
+		if errors.IsNotFoundError(err) {
+			return http.StatusNotFound
+		}
+		return http.StatusInternalServerError
+	}
+
+	return http.StatusOK
+}
+
+func UpdateVolumeFromNode(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateVolumeFromNodeResponse{}
+	UpdateGeneric(w, r, response, volumeFromNodeUpdater)
+}
+
 func UpdateVolume(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateVolumeResponse{}
 	UpdateGeneric(w, r, response, volumeUpdater)

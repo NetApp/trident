@@ -23,6 +23,11 @@ type Client interface {
 	GetNodeCleanupStatus(ctx context.Context, nodeName string) (models.NodePublicationState, error)
 	// MarkNodeCleanupComplete signals that the node finished local cleanup work.
 	MarkNodeCleanupComplete(ctx context.Context, nodeName string) error
+	// UpdateVolume applies node-originated fields to the volume's controller-side record. Only
+	// fields set on the update are changed; nil fields are left alone. Implementations must be
+	// idempotent. Callers must treat failure as non-fatal - this is observability/propagation
+	// state, not a data path.
+	UpdateVolume(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error
 }
 
 // ChangeNotifier is optional: CRD mode can push publication/cleanup changes; plain REST uses polling.

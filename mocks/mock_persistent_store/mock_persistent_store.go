@@ -13,13 +13,12 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	config "github.com/netapp/trident/config"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	models "github.com/netapp/trident/utils/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockStoreClient is a mock of Client interface.
@@ -808,6 +807,20 @@ func (m *MockStoreClient) UpdateVolume(ctx context.Context, vol *storage.Volume)
 func (mr *MockStoreClientMockRecorder) UpdateVolume(ctx, vol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolume), ctx, vol)
+}
+
+// UpdateVolumeNodeConfig mocks base method.
+func (m *MockStoreClient) UpdateVolumeNodeConfig(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeNodeConfig", ctx, volumeName, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeNodeConfig indicates an expected call of UpdateVolumeNodeConfig.
+func (mr *MockStoreClientMockRecorder) UpdateVolumeNodeConfig(ctx, volumeName, update any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeNodeConfig", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumeNodeConfig), ctx, volumeName, update)
 }
 
 // UpdateVolumePublication mocks base method.

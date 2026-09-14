@@ -14,13 +14,12 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "go.uber.org/mock/gomock"
-
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	models "github.com/netapp/trident/utils/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockOrchestrator is a mock of Orchestrator interface.
@@ -1143,6 +1142,20 @@ func (m *MockOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, v
 func (mr *MockOrchestratorMockRecorder) ReestablishMirror(ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+}
+
+// RefreshVolumeNodeConfig mocks base method.
+func (m *MockOrchestrator) RefreshVolumeNodeConfig(ctx context.Context, volume string, luksPassphraseNames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RefreshVolumeNodeConfig", ctx, volume, luksPassphraseNames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RefreshVolumeNodeConfig indicates an expected call of RefreshVolumeNodeConfig.
+func (mr *MockOrchestratorMockRecorder) RefreshVolumeNodeConfig(ctx, volume, luksPassphraseNames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshVolumeNodeConfig", reflect.TypeOf((*MockOrchestrator)(nil).RefreshVolumeNodeConfig), ctx, volume, luksPassphraseNames)
 }
 
 // ReleaseMirror mocks base method.

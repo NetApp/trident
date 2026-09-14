@@ -29,6 +29,11 @@ const (
 	getNodeBurst             = 10000   // maximum request burst
 	addOrUpdateNodeRateLimit = 50.0    // requests per second
 	addOrUpdateNodeBurst     = 100     // maximum request burst
+
+	// updateVolumeFromNodeRateLimit/Burst match addOrUpdateNode above: both are per-node writes
+	// backed by a store write, the closest existing analogue for this route's cost.
+	updateVolumeFromNodeRateLimit = 50.0 // requests per second
+	updateVolumeFromNodeBurst     = 100  // maximum request burst
 )
 
 var controllerRoutes = Routes{
@@ -122,6 +127,25 @@ var controllerRoutes = Routes{
 		config.VolumeURL + "/{volume}/luksPassphraseNames",
 		nil,
 		UpdateVolumeLUKSPassphraseNames,
+	},
+	Route{
+		// The TridentController API's REST transport (frontend/csi/tridentcontroller/rest). Kept
+		// separate from UpdateVolumeLUKSPassphraseNames above: that route's body is a bare JSON
+		// array and cannot carry a second field without a breaking change. "nodeConfig" is a noun
+		// naming the node-owned config subset, matching every other sub-resource route's
+		// convention (luksPassphraseNames, publicationState, state, level, workflows, layers -
+		// always a noun for the thing being read/written, never a verb), and kept generic rather
+		// than LUKS-specific since the request body (models.NodeVolumeUpdate) is designed to grow
+		// beyond LUKS fields later. That growth is DTO/route naming only, not automatic: the
+		// handler (volumeFromNodeUpdater) applies only LUKSPassphraseNames today, so adding a new
+		// field to NodeVolumeUpdate also requires wiring it through there and into the orchestrator.
+		"UpdateVolumeFromNode",
+		"PUT",
+		config.VolumeURL + "/{volume}/nodeConfig",
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(updateVolumeFromNodeRateLimit, updateVolumeFromNodeBurst),
+		},
+		UpdateVolumeFromNode,
 	},
 	Route{
 		"UpdateVolume",

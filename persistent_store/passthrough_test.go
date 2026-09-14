@@ -513,6 +513,15 @@ func TestPassthroughClient_UpdateVolume(t *testing.T) {
 	}
 }
 
+func TestPassthroughClient_UpdateVolumeNodeConfig(t *testing.T) {
+	p := newPassthroughClient()
+	names := []string{"a"}
+	err := p.UpdateVolumeNodeConfig(ctx(), "any-volume", &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+	if err != nil {
+		t.Error("UpdateVolumeNodeConfig must be a no-op on the passthrough client, not an error")
+	}
+}
+
 func TestPassthroughClient_UpdateVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()

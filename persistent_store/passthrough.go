@@ -301,6 +301,12 @@ func (c *PassthroughClient) UpdateVolume(context.Context, *storage.Volume) error
 	return nil
 }
 
+// UpdateVolumeNodeConfig is a no-op in passthrough mode, matching UpdateVolume above: storage
+// backends, not this client, are the source of truth, and there is no CR for a node to write to.
+func (c *PassthroughClient) UpdateVolumeNodeConfig(context.Context, string, *models.NodeVolumeUpdate) error {
+	return nil
+}
+
 func (c *PassthroughClient) DeleteVolume(context.Context, *storage.Volume) error {
 	return nil
 }

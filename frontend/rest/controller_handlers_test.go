@@ -196,6 +196,108 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockCtrl.Finish()
 }
 
+func TestVolumeFromNodeUpdater(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: valid update calls the orchestrator once with the right args, no GetVolume call
+	writer := &http_test.TestResponseWriter{}
+	response := &UpdateVolumeFromNodeResponse{}
+	body := `{"luksPassphraseNames":["a","b"]}`
+	request := generateHTTPRequest(http.MethodPut, body)
+
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), "test", &[]string{"a", "b"}).Return(nil)
+	// GetVolume must never be called here - that's the whole point of this route vs
+	// volumeLUKSPassphraseNamesUpdater above (see volumeFromNodeUpdater's doc comment).
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), gomock.Any()).Times(0)
+
+	rc := volumeFromNodeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusOK, rc)
+	assert.Equal(t, "", response.Error)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: invalid response object provided
+	writer = &http_test.TestResponseWriter{}
+	invalidResponse := &ImportVolumeResponse{} // Wrong type!
+
+	rc = volumeFromNodeUpdater(writer, request, invalidResponse, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusInternalServerError, rc)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: malformed JSON, orchestrator never called
+	writer = &http_test.TestResponseWriter{}
+	response = &UpdateVolumeFromNodeResponse{}
+	body = `not json`
+	request = generateHTTPRequest(http.MethodPut, body)
+
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+
+	rc = volumeFromNodeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusBadRequest, rc)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: empty update ({}) -> 200, no orchestrator call at all
+	writer = &http_test.TestResponseWriter{}
+	response = &UpdateVolumeFromNodeResponse{}
+	body = `{}`
+	request = generateHTTPRequest(http.MethodPut, body)
+
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+
+	rc = volumeFromNodeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusOK, rc)
+	assert.Equal(t, "", response.Error)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: orchestrator returns a not-found error
+	writer = &http_test.TestResponseWriter{}
+	response = &UpdateVolumeFromNodeResponse{}
+	body = `{"luksPassphraseNames":["a"]}`
+	request = generateHTTPRequest(http.MethodPut, body)
+
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), "test", &[]string{"a"}).Return(errors.NotFoundError("test error"))
+
+	rc = volumeFromNodeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusNotFound, rc)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: orchestrator returns a generic error
+	writer = &http_test.TestResponseWriter{}
+	response = &UpdateVolumeFromNodeResponse{}
+	body = `{"luksPassphraseNames":["a"]}`
+	request = generateHTTPRequest(http.MethodPut, body)
+
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), "test", &[]string{"a"}).Return(fmt.Errorf("test error"))
+
+	rc = volumeFromNodeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusInternalServerError, rc)
+	mockCtrl.Finish()
+}
+
 func TestUpdateVolume(t *testing.T) {
 	volName := "test"
 	internalId := "/svm/fakesvm/flexvol/fakevol/qtree/" + volName

@@ -17,6 +17,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -505,6 +506,72 @@ func TestInMemoryClient_VolumeOperations(t *testing.T) {
 				err := client.UpdateVolume(testCtx(), volume)
 				assert.Error(t, err)
 				assert.True(t, MatchKeyNotFoundErr(err))
+			},
+		},
+		{
+			name: "UpdateVolumeNodeConfig_NotFound",
+			assertion: func(t *testing.T, client *InMemoryClient) {
+				names := []string{"a"}
+				err := client.UpdateVolumeNodeConfig(testCtx(), "nonexistent", &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name: "UpdateVolumeNodeConfig_EmptyUpdateIsNoOp",
+			assertion: func(t *testing.T, client *InMemoryClient) {
+				backend := getTestBackend()
+				volume := getTestVolume(backend)
+				require.NoError(t, client.AddVolume(testCtx(), volume))
+
+				err := client.UpdateVolumeNodeConfig(testCtx(), volume.Config.Name, &models.NodeVolumeUpdate{})
+				assert.NoError(t, err)
+				assert.Empty(t, client.volumes[volume.Config.Name].Config.LUKSPassphraseNames)
+			},
+		},
+		{
+			name: "UpdateVolumeNodeConfig_UnchangedIsNoOp",
+			assertion: func(t *testing.T, client *InMemoryClient) {
+				backend := getTestBackend()
+				volume := getTestVolume(backend)
+				volume.Config.LUKSPassphraseNames = []string{"a"}
+				require.NoError(t, client.AddVolume(testCtx(), volume))
+
+				names := []string{"a"}
+				err := client.UpdateVolumeNodeConfig(testCtx(), volume.Config.Name, &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+				assert.NoError(t, err)
+				assert.Equal(t, []string{"a"}, client.volumes[volume.Config.Name].Config.LUKSPassphraseNames)
+			},
+		},
+		{
+			name: "UpdateVolumeNodeConfig_ReorderedNamesIsNoOp",
+			assertion: func(t *testing.T, client *InMemoryClient) {
+				backend := getTestBackend()
+				volume := getTestVolume(backend)
+				volume.Config.LUKSPassphraseNames = []string{"a", "b"}
+				require.NoError(t, client.AddVolume(testCtx(), volume))
+
+				names := []string{"b", "a"}
+				err := client.UpdateVolumeNodeConfig(testCtx(), volume.Config.Name, &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+				assert.NoError(t, err)
+				stored := client.volumes[volume.Config.Name]
+				assert.Equal(t, []string{"a", "b"}, stored.Config.LUKSPassphraseNames,
+					"a reordering of the same names must not rewrite the stored value")
+			},
+		},
+		{
+			name: "UpdateVolumeNodeConfig_Changed",
+			assertion: func(t *testing.T, client *InMemoryClient) {
+				backend := getTestBackend()
+				volume := getTestVolume(backend)
+				volume.Config.LUKSPassphraseNames = []string{"a"}
+				require.NoError(t, client.AddVolume(testCtx(), volume))
+
+				names := []string{"a", "b"}
+				err := client.UpdateVolumeNodeConfig(testCtx(), volume.Config.Name, &models.NodeVolumeUpdate{LUKSPassphraseNames: &names})
+				assert.NoError(t, err)
+				stored := client.volumes[volume.Config.Name]
+				assert.Equal(t, []string{"a", "b"}, stored.Config.LUKSPassphraseNames)
 			},
 		},
 		{

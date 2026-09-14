@@ -653,9 +653,35 @@ func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	}
 }
 
+// VolumeUpdateInfo is a backend-driver-level volume update (snapshot directory, pool level)
+// originating from tridentctl via PUT /volume/{volume}, routed through
+// core.Orchestrator.UpdateVolume to the storage.Driver. Not to be confused with NodeVolumeUpdate
+// below, which is a node-originated update to a different, disjoint set of fields.
 type VolumeUpdateInfo struct {
 	SnapshotDirectory string `json:"snapshotDirectory"`
 	PoolLevel         bool   `json:"poolLevel"`
+}
+
+// NodeVolumeUpdate carries volume fields that originate on a Trident node and are pushed to the
+// controller via the TridentController UpdateVolume API. A nil field is left unchanged. A non-nil
+// field, including a pointer to an empty slice, is an explicit value - so passing &[]string{}
+// explicitly clears the field, distinct from passing nil (leave alone). To clear, construct the
+// pointer directly (&[]string{}); a pointer to a nil slice (var s []string; &s) also marshals to
+// JSON null, which a merge patch treats as "remove this key" rather than "set to empty" -
+// transports normalize a pointer-to-nil-slice to an empty slice defensively so this footgun can't
+// surface. Only the fields present on this struct may ever be written by a node; adding a field
+// here is the single point at which a node's write authority over a volume is widened.
+//
+// Not to be confused with VolumeUpdateInfo above, which is a backend-driver-level volume update
+// originating from tridentctl.
+type NodeVolumeUpdate struct {
+	LUKSPassphraseNames *[]string `json:"luksPassphraseNames,omitempty"`
+}
+
+// IsEmpty reports whether the update has nothing to apply, i.e. every field is nil. A non-nil
+// pointer to an empty slice is NOT empty - it is an explicit clear.
+func (u *NodeVolumeUpdate) IsEmpty() bool {
+	return u == nil || u.LUKSPassphraseNames == nil
 }
 
 type Node struct {

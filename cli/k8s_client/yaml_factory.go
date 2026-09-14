@@ -254,6 +254,14 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentvolumemoves", "tridentvolumemoves/status"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  # UpdateVolume (TridentController API): node reads then merge-patches node-owned config fields
+  # on the TVOL (LUKSPassphraseNames). get is required for the read-before-write; patch is
+  # scoped to just those config keys in application code, so update/create/delete are withheld,
+  # and list/watch are withheld too - a node has no business enumerating every volume in the
+  # cluster.
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentvolumes"]
+    verbs: ["get", "patch"]
 `
 
 func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {

@@ -1067,6 +1067,113 @@ func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	assert.ErrorIs(t, err, bootstrapError)
 }
 
+func TestRefreshVolumeNodeConfig(t *testing.T) {
+	newOrchestrator := func(mockStoreClient persistentstore.Client) *TridentOrchestrator {
+		return &TridentOrchestrator{
+			mutex:       &sync.Mutex{},
+			volumes:     map[string]*storage.Volume{},
+			storeClient: mockStoreClient,
+		}
+	}
+
+	t.Run("BootstrapError", func(t *testing.T) {
+		o := newOrchestrator(nil)
+		o.bootstrapError = fmt.Errorf("my bootstrap error")
+
+		err := o.RefreshVolumeNodeConfig(context.TODO(), "vol1", []string{"a"})
+
+		assert.ErrorIs(t, err, o.bootstrapError)
+	})
+
+	t.Run("VolumeNotFound", func(t *testing.T) {
+		o := newOrchestrator(nil)
+
+		err := o.RefreshVolumeNodeConfig(context.TODO(), "nonexistent", []string{"a"})
+
+		assert.Error(t, err)
+		assert.True(t, errors.IsNotFoundError(err))
+	})
+
+	t.Run("CanceledContext", func(t *testing.T) {
+		o := newOrchestrator(nil)
+		o.volumes["vol1"] = &storage.Volume{Config: &storage.VolumeConfig{Name: "vol1"}}
+		canceledCtx, cancel := context.WithCancel(context.TODO())
+		cancel()
+
+		err := o.RefreshVolumeNodeConfig(canceledCtx, "vol1", []string{"a"})
+
+		assert.ErrorIs(t, err, context.Canceled)
+	})
+
+	t.Run("Changed", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		// Cache-only by design: this method must never touch the persistent store.
+		mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+		mockStoreClient.EXPECT().UpdateVolumeNodeConfig(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+		o := newOrchestrator(mockStoreClient)
+		original := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                "vol1",
+				LUKSPassphraseNames: []string{"a"},
+			},
+			BackendUUID: "backend-uuid1",
+		}
+		o.volumes["vol1"] = original
+
+		err := o.RefreshVolumeNodeConfig(context.TODO(), "vol1", []string{"a", "b"})
+
+		assert.NoError(t, err)
+		updated := o.volumes["vol1"]
+		assert.Equal(t, []string{"a", "b"}, updated.Config.LUKSPassphraseNames)
+		assert.NotSame(t, original, updated, "a real change must not mutate the previous cache entry in place")
+	})
+
+	t.Run("AlreadyEqualIsNoOp", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+
+		o := newOrchestrator(mockStoreClient)
+		original := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                "vol1",
+				LUKSPassphraseNames: []string{"a"},
+			},
+			BackendUUID: "backend-uuid1",
+		}
+		o.volumes["vol1"] = original
+
+		err := o.RefreshVolumeNodeConfig(context.TODO(), "vol1", []string{"a"})
+
+		assert.NoError(t, err)
+		assert.Same(t, original, o.volumes["vol1"], "a no-op must leave the existing pointer alone for concurrent readers")
+	})
+
+	t.Run("ReorderedNamesIsNoOp", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+
+		o := newOrchestrator(mockStoreClient)
+		original := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                "vol1",
+				LUKSPassphraseNames: []string{"a", "b"},
+			},
+			BackendUUID: "backend-uuid1",
+		}
+		o.volumes["vol1"] = original
+
+		err := o.RefreshVolumeNodeConfig(context.TODO(), "vol1", []string{"b", "a"})
+
+		assert.NoError(t, err)
+		assert.Same(t, original, o.volumes["vol1"], "the names are an unordered set, so a reorder is already current")
+		assert.Equal(t, []string{"a", "b"}, o.volumes["vol1"].Config.LUKSPassphraseNames)
+	})
+}
+
 func TestUpdateVolumeAutogrowStatus(t *testing.T) {
 	now := time.Now()
 	statusSuccess := &models.VolumeAutogrowStatus{

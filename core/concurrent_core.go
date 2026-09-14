@@ -2735,17 +2735,63 @@ func (o *ConcurrentTridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 		return errors.NotFoundError("volume %s not found", volumeName)
 	}
 
-	// Ensure we have something to do
-	if passphraseNames == nil {
+	update := &models.NodeVolumeUpdate{LUKSPassphraseNames: passphraseNames}
+	if update.IsEmpty() {
 		return nil
 	}
-	volume.Config.LUKSPassphraseNames = *passphraseNames
 
-	// Update persistent store
-	if err = o.storeClient.UpdateVolume(ctx, volume); err != nil {
+	// UpdateVolumeNodeConfig is the sole legitimate writer of LUKSPassphraseNames - see the serial
+	// core's UpdateVolumeLUKSPassphraseNames for why this legacy REST-driven path goes through it
+	// rather than the general-purpose UpdateVolume.
+	if err = o.storeClient.UpdateVolumeNodeConfig(ctx, volumeName, update); err != nil {
 		return err
 	}
 
+	// The names the caller supplied are exactly what was persisted, so the cache can be set from
+	// them directly. A pointer to a nil slice means "clear", which the store records as empty.
+	desired := *passphraseNames
+	if desired == nil {
+		desired = []string{}
+	}
+	volume.Config.LUKSPassphraseNames = desired
+
+	upserter(volume)
+	return nil
+}
+
+// RefreshVolumeNodeConfig reconciles node-owned config fields a node has already durably
+// persisted to the TridentVolume CR into the in-memory volume cache. Cache-only by design: no
+// store write means no new informer event, so there is no reconcile loop back to the caller that
+// triggered this.
+func (o *ConcurrentTridentOrchestrator) RefreshVolumeNodeConfig(
+	ctx context.Context, volumeName string, luksPassphraseNames []string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	// Get write lock for volume
+	_, results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+	defer unlocker()
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume; %w", err)
+	}
+	volume := results[0].Volume.Read
+	upserter := results[0].Volume.Upsert
+	if volume == nil {
+		return errors.NotFoundError("volume %s not found", volumeName)
+	}
+
+	// Names are compared as an unordered set: no consumer reads a passphrase name by position, so
+	// a reordering of the same names is already current.
+	if collection.EqualValues(volume.Config.LUKSPassphraseNames, luksPassphraseNames) {
+		// Already current; nothing to upsert.
+		return nil
+	}
+
+	volume.Config.LUKSPassphraseNames = luksPassphraseNames
 	upserter(volume)
 	return nil
 }

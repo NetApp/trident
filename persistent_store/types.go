@@ -49,6 +49,12 @@ type Client interface {
 	GetVolume(ctx context.Context, volName string) (*storage.VolumeExternal, error)
 	GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	UpdateVolume(ctx context.Context, vol *storage.Volume) error
+	// UpdateVolumeNodeConfig applies a sparse, node-originated update (LUKSPassphraseNames) to a
+	// volume's node-owned config fields. Unlike UpdateVolume, which overwrites the whole cached
+	// config, this method's writes are the sole legitimate writer of
+	// these specific keys, so UpdateVolume's implementations must preserve them across other
+	// writes rather than clobbering them.
+	UpdateVolumeNodeConfig(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error
 	DeleteVolume(ctx context.Context, vol *storage.Volume) error
 	DeleteVolumes(ctx context.Context) error
 

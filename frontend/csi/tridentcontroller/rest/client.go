@@ -79,3 +79,14 @@ func (c *Client) MarkNodeCleanupComplete(ctx context.Context, nodeName string) e
 	}
 	return c.restClient.UpdateNode(ctx, nodeName, &models.NodePublicationStateFlags{ProvisionerReady: convert.ToPtr(true)})
 }
+
+// UpdateVolume applies node-originated fields to the volume's controller-side record over the REST
+// backchannel. NodeVolumeUpdate rides the wire as-is (see controllerAPI.UpdateVolumeFromNode), so
+// there is no per-field mapping here that could go stale against a newer NodeVolumeUpdate: any
+// field this transport can't yet make sense of is the server handler's problem, not this one's.
+func (c *Client) UpdateVolume(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error {
+	if c.restClient == nil {
+		return fmt.Errorf("controller REST client is not configured")
+	}
+	return c.restClient.UpdateVolumeFromNode(ctx, volumeName, update)
+}

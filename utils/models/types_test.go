@@ -2451,3 +2451,58 @@ func TestGetStorageProtocol(t *testing.T) {
 		assert.Equal(t, StorageProtocol(""), (&VolumePublishInfo{}).GetStorageProtocol())
 	})
 }
+
+func TestNodeVolumeUpdate_IsEmpty(t *testing.T) {
+	var nilSlice []string
+
+	tests := []struct {
+		name   string
+		update *NodeVolumeUpdate
+		want   bool
+	}{
+		{"nil update", nil, true},
+		{"zero-value update", &NodeVolumeUpdate{}, true},
+		{"nil LUKSPassphraseNames", &NodeVolumeUpdate{LUKSPassphraseNames: nil}, true},
+		{"pointer to nil slice is NOT empty", &NodeVolumeUpdate{LUKSPassphraseNames: &nilSlice}, false},
+		{"pointer to empty slice is NOT empty (explicit clear)", &NodeVolumeUpdate{LUKSPassphraseNames: &[]string{}}, false},
+		{"pointer to populated slice is NOT empty", &NodeVolumeUpdate{LUKSPassphraseNames: &[]string{"a"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.update.IsEmpty())
+		})
+	}
+}
+
+// TestNodeVolumeUpdate_JSONRoundTrip pins the nil-vs-non-nil-empty wire semantics the CRD/REST
+// transports depend on: omitempty on a pointer field omits only when the pointer itself is nil,
+// not when the slice it points to is empty, so "not set" and "explicitly cleared" are
+// distinguishable on the wire without needing JSON null anywhere.
+func TestNodeVolumeUpdate_JSONRoundTrip(t *testing.T) {
+	t.Run("nil field is omitted from JSON", func(t *testing.T) {
+		b, err := json.Marshal(&NodeVolumeUpdate{})
+		assert.NoError(t, err)
+		assert.JSONEq(t, `{}`, string(b))
+	})
+
+	t.Run("pointer to empty slice marshals as an explicit empty array, not omitted", func(t *testing.T) {
+		b, err := json.Marshal(&NodeVolumeUpdate{LUKSPassphraseNames: &[]string{}})
+		assert.NoError(t, err)
+		assert.JSONEq(t, `{"luksPassphraseNames":[]}`, string(b))
+	})
+
+	t.Run("populated slice round-trips", func(t *testing.T) {
+		orig := &NodeVolumeUpdate{LUKSPassphraseNames: &[]string{"a", "b"}}
+		b, err := json.Marshal(orig)
+		assert.NoError(t, err)
+		var decoded NodeVolumeUpdate
+		assert.NoError(t, json.Unmarshal(b, &decoded))
+		assert.Equal(t, orig.LUKSPassphraseNames, decoded.LUKSPassphraseNames)
+	})
+
+	t.Run("absent key decodes to nil, not empty", func(t *testing.T) {
+		var decoded NodeVolumeUpdate
+		assert.NoError(t, json.Unmarshal([]byte(`{}`), &decoded))
+		assert.True(t, decoded.IsEmpty())
+	})
+}

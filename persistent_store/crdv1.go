@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
@@ -1001,7 +1002,17 @@ func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) 
 		return err
 	}
 
+	// Capture Config.Raw before Apply() overwrites it. Controller UpdateVolume still uses a
+	// full typed Update() (many callers, many fields); a node-scoped merge patch would not
+	// cover those writes. PreserveNodeConfigFields restores node-owned keys from this GET so
+	// they are not clobbered. UpdateVolumeNodeConfig is the only writer of those keys.
+	existingConfig := volume.Config.Raw
+
 	if err = volume.Apply(ctx, update.ConstructExternal()); err != nil {
+		return err
+	}
+
+	if err = v1.PreserveNodeConfigFields(existingConfig, &volume.Config); err != nil {
 		return err
 	}
 
@@ -1011,6 +1022,46 @@ func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) 
 	}
 
 	return nil
+}
+
+// UpdateVolumeNodeConfig applies a sparse, node-originated update to the volume's node-owned
+// config fields (LUKSPassphraseNames). It reads the CR to no-op cheaply when nothing has changed,
+// then writes back with a JSON
+// merge patch scoped to just the allowlisted config keys - never a full VolumeConfig decode/
+// re-encode - so config keys this binary's struct doesn't recognize survive the write even across
+// a version-skewed rolling upgrade. This is the same shape the node's CRD transport
+// (frontend/csi/tridentcontroller/crd) uses directly against the API server, so REST-path and
+// CRD-path writes produce byte-identical mutations.
+func (k *CRDClientV1) UpdateVolumeNodeConfig(
+	ctx context.Context, volumeName string, update *models.NodeVolumeUpdate,
+) error {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
+	if update.IsEmpty() {
+		return nil
+	}
+
+	name := v1.NameFix(volumeName)
+	volume, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, name, getOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return errors.NotFoundError("volume %s not found", volumeName)
+		}
+		return err
+	}
+
+	patch, changed, err := v1.NodeVolumeUpdateMergePatch(volume.Config.Raw, update)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+
+	_, err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Patch(
+		ctx, name, types.MergePatchType, patch, metav1.PatchOptions{},
+	)
+	return err
 }
 
 func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) (err error) {

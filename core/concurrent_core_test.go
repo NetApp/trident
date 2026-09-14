@@ -6094,10 +6094,16 @@ func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 
 				addVolumesToCache(t, vol)
 
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeNodeConfig(gomock.Any(), "vol1", gomock.Any()).Return(nil).Times(1)
+				// The names the caller supplied are what was persisted, so the cache is set from
+				// them directly without re-reading the store.
+				mockStoreClient.EXPECT().GetVolume(gomock.Any(), gomock.Any()).Times(0)
 			},
 			verifyError: func(t *testing.T, err error) {
 				assert.NoError(t, err)
+				vol := getVolumeByNameFromCache(t, "vol1")
+				require.NotNil(t, vol)
+				assert.Equal(t, []string{"key1", "key2"}, vol.Config.LUKSPassphraseNames)
 			},
 		},
 		{
@@ -6139,7 +6145,8 @@ func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 
 				addVolumesToCache(t, vol)
 
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeNodeConfig(gomock.Any(), "vol1", gomock.Any()).
+					Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(t *testing.T, err error) {
 				assert.Error(t, err)
@@ -6168,6 +6175,127 @@ func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 
 			if tt.verifyError != nil {
 				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestRefreshVolumeNodeConfigConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		volumeName   string
+		names        []string
+		bootstrapErr error
+		setupMocks   func(mockStoreClient *mockpersistentstore.MockStoreClient)
+		verify       func(t *testing.T, err error)
+	}{
+		{
+			name:         "BootstrapError",
+			volumeName:   "vol1",
+			names:        []string{"a"},
+			bootstrapErr: errors.New("bootstrap error"),
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name:       "VolumeNotFound",
+			volumeName: "nonexistent",
+			names:      []string{"a"},
+			verify: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "volume nonexistent not found")
+			},
+		},
+		{
+			name:       "Changed",
+			volumeName: "vol1",
+			names:      []string{"a", "b"},
+			setupMocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name: "vol1", InternalName: "vol1",
+						LUKSPassphraseNames: []string{"a"},
+					},
+					BackendUUID: "backend-uuid1",
+				}
+				addVolumesToCache(t, vol)
+				// Cache-only by design: this method must never touch the persistent store.
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+				mockStoreClient.EXPECT().UpdateVolumeNodeConfig(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+			verify: func(t *testing.T, err error) {
+				require.NoError(t, err)
+				vol := getVolumeByNameFromCache(t, "vol1")
+				require.NotNil(t, vol)
+				assert.Equal(t, []string{"a", "b"}, vol.Config.LUKSPassphraseNames)
+			},
+		},
+		{
+			name:       "AlreadyEqualIsNoOp",
+			volumeName: "vol1",
+			names:      []string{"a"},
+			setupMocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name: "vol1", InternalName: "vol1",
+						LUKSPassphraseNames: []string{"a"},
+					},
+					BackendUUID: "backend-uuid1",
+				}
+				addVolumesToCache(t, vol)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+			},
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:       "ReorderedNamesIsNoOp",
+			volumeName: "vol1",
+			names:      []string{"b", "a"},
+			setupMocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name: "vol1", InternalName: "vol1",
+						LUKSPassphraseNames: []string{"a", "b"},
+					},
+					BackendUUID: "backend-uuid1",
+				}
+				addVolumesToCache(t, vol)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(0)
+			},
+			verify: func(t *testing.T, err error) {
+				require.NoError(t, err)
+				vol := getVolumeByNameFromCache(t, "vol1")
+				require.NotNil(t, vol)
+				assert.Equal(t, []string{"a", "b"}, vol.Config.LUKSPassphraseNames,
+					"the names are an unordered set, so a reorder must not rewrite the cache")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockStoreClient)
+			}
+
+			err := o.RefreshVolumeNodeConfig(testCtx, tt.volumeName, tt.names)
+
+			if tt.verify != nil {
+				tt.verify(t, err)
 			}
 
 			persistenceCleanup(t, o)

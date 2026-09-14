@@ -2494,21 +2494,71 @@ func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 		return ctx.Err()
 	}
 	defer o.updateMetrics()
-	vol, err := o.storeClient.GetVolume(ctx, volume)
-	if err != nil {
+
+	update := &models.NodeVolumeUpdate{LUKSPassphraseNames: passphraseNames}
+	if update.IsEmpty() {
+		return nil
+	}
+
+	vol, ok := o.volumes[volume]
+	if !ok {
+		return errors.NotFoundError("volume %s not found", volume)
+	}
+
+	// UpdateVolumeNodeConfig is the sole legitimate writer of LUKSPassphraseNames - routing
+	// through it here, rather than the general-purpose UpdateVolume, keeps this legacy REST-driven
+	// path's writes byte-identical to the TridentController UpdateVolume API's
+	// (frontend/csi/tridentcontroller), and applies the same merge-preserve semantics instead of
+	// overwriting the whole cached config.
+	if err := o.storeClient.UpdateVolumeNodeConfig(ctx, volume, update); err != nil {
 		return err
 	}
 
-	// We want to make sure the persistence layer is updated before we update the core copy
-	// So we have to deep copy the volume from the cache to construct the volume to pass into the store client
+	// The names the caller supplied are exactly what was persisted, so the cache can be set from
+	// them directly. A pointer to a nil slice means "clear", which the store records as empty.
+	desired := *passphraseNames
+	if desired == nil {
+		desired = []string{}
+	}
 	newVolume := storage.NewVolume(vol.Config.ConstructClone(), vol.BackendUUID, vol.Pool, vol.Orphaned, vol.State)
-	if passphraseNames != nil {
-		newVolume.Config.LUKSPassphraseNames = *passphraseNames
+	newVolume.Config.LUKSPassphraseNames = desired
+	o.volumes[volume] = newVolume
+	return nil
+}
+
+// RefreshVolumeNodeConfig reconciles node-owned config fields a node has already durably
+// persisted to the TridentVolume CR into the in-memory volume cache. Cache-only by design: no
+// store write means no new informer event, so there is no reconcile loop back to the caller that
+// triggered this.
+func (o *TridentOrchestrator) RefreshVolumeNodeConfig(
+	ctx context.Context, volume string, luksPassphraseNames []string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
 	}
-	err = o.storeClient.UpdateVolume(ctx, newVolume)
-	if err != nil {
-		return err
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
 	}
+
+	vol, ok := o.volumes[volume]
+	if !ok {
+		return errors.NotFoundError("volume %s not found", volume)
+	}
+
+	// Names are compared as an unordered set: no consumer reads a passphrase name by position, so
+	// a reordering of the same names is already current.
+	if collection.EqualValues(vol.Config.LUKSPassphraseNames, luksPassphraseNames) {
+		// Already current; leave the existing pointer alone for concurrent readers.
+		return nil
+	}
+
+	newVolume := storage.NewVolume(vol.Config.ConstructClone(), vol.BackendUUID, vol.Pool, vol.Orphaned, vol.State)
+	newVolume.Config.LUKSPassphraseNames = luksPassphraseNames
 	o.volumes[volume] = newVolume
 	return nil
 }

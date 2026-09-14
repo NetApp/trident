@@ -89,3 +89,34 @@ func containsResource(resources []string, name string) bool {
 	}
 	return false
 }
+
+// TestNodeClusterRoleCSI_TridentVolumesPatchOnly pins the TridentController UpdateVolume API's
+// node RBAC grant: get (for the read-before-write and for a follower node checking generation) and
+// patch (scoped to node-owned config keys in application code), and nothing broader - update would
+// let a node replace the whole CR (state, backendUUID, finalizers); list/watch would let it
+// enumerate every volume in the cluster, which it has no business doing.
+func TestNodeClusterRoleCSI_TridentVolumesPatchOnly(t *testing.T) {
+	t.Parallel()
+
+	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+
+	var role rbacv1.ClusterRole
+	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
+
+	var volumeRule *rbacv1.PolicyRule
+	for i := range role.Rules {
+		rule := &role.Rules[i]
+		if containsResource(rule.Resources, "tridentvolumes") {
+			volumeRule = rule
+			break
+		}
+	}
+
+	require.NotNil(t, volumeRule, "expected a tridentvolumes rule in the node ClusterRole")
+	assert.ElementsMatch(t, []string{"get", "patch"}, volumeRule.Verbs)
+	for _, forbidden := range []string{"update", "create", "delete", "list", "watch"} {
+		assert.NotContains(t, volumeRule.Verbs, forbidden,
+			"node ClusterRole must not grant %q on tridentvolumes", forbidden)
+	}
+}

@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/netapp/trident/config"
@@ -335,6 +336,44 @@ func (c *ControllerRestClient) ListVolumePublicationsForNode(
 	return listResponse.VolumePublications, nil
 }
 
+// maxRetryAfterAttempts bounds how many times requestAndRetry will honor a 429's Retry-After before
+// giving up. Without a cap, a controller that stays rate-limited indefinitely (or a misbehaving
+// proxy sending an inflated Retry-After) would block the calling goroutine forever - unacceptable
+// for a CSI RPC, whose caller must be able to time it out rather than hang.
+const maxRetryAfterAttempts = 10
+
+// retryAfterSleep is exposed as a var (not a direct time.Sleep call) so tests can stub it out and
+// run at full speed instead of actually sleeping. Unlike a bare time.Sleep, it returns ctx.Err()
+// promptly if ctx is canceled mid-sleep, instead of blocking a canceled/timed-out caller for the
+// full Retry-After delay.
+var retryAfterSleep = func(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+// parseRetryAfter parses an HTTP Retry-After header value. RFC 9110's delay-seconds form - a plain
+// non-negative integer number of seconds - is tried first, since that is what
+// rateLimiterMiddleware (frontend/rest/middleware.go) actually sends; a Go duration string (e.g.
+// "200ms") is accepted as a fallback for robustness against any other sender. Using
+// time.ParseDuration alone, as this used to, rejects the integer-seconds form outright:
+// time.ParseDuration("1") fails with "missing unit in duration", so every real 429 response from
+// this server previously returned an error immediately instead of retrying.
+func parseRetryAfter(value string) (time.Duration, error) {
+	if seconds, err := strconv.Atoi(value); err == nil {
+		if seconds < 0 {
+			return 0, fmt.Errorf("invalid Retry-After value: %d", seconds)
+		}
+		return time.Duration(seconds) * time.Second, nil
+	}
+	return time.ParseDuration(value)
+}
+
 // requestAndRetry is used when API requests may hit rate limiting. It inspects the headers and checks for
 // 429 / TooManyRequests status. The caller is responsible for setting up the request function properly.
 func (c *ControllerRestClient) requestAndRetry(
@@ -347,18 +386,26 @@ func (c *ControllerRestClient) requestAndRetry(
 	}()
 
 	res, body, err := req()
-	for err == nil && (res != nil && res.StatusCode == http.StatusTooManyRequests) {
+	for attempt := 0; err == nil && res != nil && res.StatusCode == http.StatusTooManyRequests; attempt++ {
+		if attempt >= maxRetryAfterAttempts {
+			return res, body, fmt.Errorf("gave up after %d retries due to sustained rate limiting", maxRetryAfterAttempts)
+		}
+
 		Logc(ctx).Debugf("Request rejected due to rate limiting.")
 
 		// Convert the Retry-After value to a time duration.
-		retryAfter, err := time.ParseDuration(res.Header.Get("Retry-After"))
-		if err != nil {
-			return res, body, fmt.Errorf("could not parse response header: %v; %v", res.Header, err)
+		retryAfter, parseErr := parseRetryAfter(res.Header.Get("Retry-After"))
+		if parseErr != nil {
+			return res, body, fmt.Errorf("could not parse response header: %v; %v", res.Header, parseErr)
 		}
 
-		// Sleep for n-seconds supplied from Retry-After.
-		Logc(ctx).Debugf("Sleeping for %s seconds to retry operation...", retryAfter)
-		time.Sleep(time.Duration(retryAfter.Seconds()))
+		// Sleep for the duration supplied by Retry-After - not its value converted to nanoseconds,
+		// which is what time.Duration(retryAfter.Seconds()) used to do here. Returns promptly with
+		// ctx.Err() instead of blocking the full delay if ctx is canceled mid-sleep.
+		Logc(ctx).Debugf("Sleeping for %s to retry operation...", retryAfter)
+		if sleepErr := retryAfterSleep(ctx, retryAfter); sleepErr != nil {
+			return res, body, sleepErr
+		}
 
 		// Try to make the update call again.
 		res, body, err = req()
@@ -382,6 +429,41 @@ func (c *ControllerRestClient) UpdateVolumeLUKSPassphraseNames(
 	}
 	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("could not update volume LUKS passphrase names, status code %d", resp.StatusCode)
+	}
+	return nil
+}
+
+// UpdateVolumeFromNode is the REST backchannel side of the TridentController API's UpdateVolume.
+// Unlike UpdateVolumeLUKSPassphraseNames above, this is wrapped in requestAndRetry so a 429 from
+// the controller's rate limiter (frontend/rest/controller_routes.go) is honored rather than
+// surfaced as an immediate error.
+func (c *ControllerRestClient) UpdateVolumeFromNode(
+	ctx context.Context, volumeName string, update *models.NodeVolumeUpdate,
+) error {
+	if update.IsEmpty() {
+		return nil
+	}
+
+	body, err := json.Marshal(update)
+	if err != nil {
+		return fmt.Errorf("could not marshal JSON; %v", err)
+	}
+	url := config.VolumeURL + "/" + volumeName + "/nodeConfig"
+
+	updateRequest := func() (*http.Response, []byte, error) {
+		resp, respBody, err := c.InvokeAPI(ctx, body, "PUT", url, false, false)
+		if err != nil {
+			return resp, respBody, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
+		}
+		return resp, respBody, nil
+	}
+
+	resp, _, err := c.requestAndRetry(ctx, updateRequest)
+	if err != nil {
+		return fmt.Errorf("failed during retry for UpdateVolumeFromNode: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("could not update volume %s, status code %d", volumeName, resp.StatusCode)
 	}
 	return nil
 }

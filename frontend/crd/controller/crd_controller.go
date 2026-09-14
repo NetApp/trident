@@ -64,6 +64,7 @@ const (
 	ObjectTypeTridentAutogrowPolicy          = crdtypes.ObjectTypeTridentAutogrowPolicy
 	ObjectTypeTridentAutogrowRequestInternal = crdtypes.ObjectTypeTridentAutogrowRequestInternal
 	ObjectTypeTridentVolumeMove              = crdtypes.ObjectTypeTridentVolumeMove
+	ObjectTypeTridentVolume                  = crdtypes.ObjectTypeTridentVolume
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -433,6 +434,18 @@ func newTridentCrdControllerImpl(
 		DeleteFunc: controller.deleteCRHandler,
 	})
 
+	// Reconciles node-owned TridentVolume config fields (LUKS passphrase names/generation, written
+	// directly to the CR by a node) into the orchestrator's in-memory volume cache. UpdateFunc only:
+	// no AddFunc, since the informer's initial list would enqueue every volume on every controller
+	// start and Bootstrap has already read the store, so the cache is authoritative then (same
+	// reasoning as secretInformer below); no DeleteFunc, since deletion is controller-driven.
+	// volumeInformer already has the generic finalizer-removal UpdateFunc registered below (via the
+	// `informers` loop) - handlers on an informer are additive, so this adds a second, independent
+	// UpdateFunc rather than replacing that one.
+	_, _ = volumeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		UpdateFunc: controller.updateTridentVolumeHandler,
+	})
+
 	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		// Do not handle AddFunc here otherwise everytime trident is restarted,
 		// there will be unwarranted reconciles and backend initializations
@@ -765,6 +778,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleAutogrowPolicy
 		case ObjectTypeTridentVolumeMove:
 			handleFunction = c.handleVolumeMove
+		case ObjectTypeTridentVolume:
+			handleFunction = c.handleTridentVolume
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}

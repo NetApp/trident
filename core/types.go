@@ -41,6 +41,16 @@ type Orchestrator interface {
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *models.VolumeUpdateInfo) error
 	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error
+	// RefreshVolumeNodeConfig updates the in-memory volume cache from node-originated field
+	// values that a node has already durably persisted directly to the TridentVolume CR. It does
+	// not write the persistent store - the store already has these values; this only makes the
+	// cache stop being stale, so that clone/snapshot creation (which reads the cache) sees them.
+	// Takes the resulting field values directly, not a *models.NodeVolumeUpdate: the caller (the
+	// CRD controller's TridentVolume informer reconcile) reads them straight off the CR it just
+	// observed, so this is a plain assignment of already-decided values, unlike the write path
+	// where NodeVolumeUpdate's sparse-update semantics apply.
+	// Never called from a data-path RPC.
+	RefreshVolumeNodeConfig(ctx context.Context, volume string, luksPassphraseNames []string) error
 	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *models.VolumePublishInfo) error
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error

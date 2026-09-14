@@ -162,6 +162,20 @@ func (mr *MockTridentControllerMockRecorder) UpdateNode(ctx, nodeName, nodeState
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNode", reflect.TypeOf((*MockTridentController)(nil).UpdateNode), ctx, nodeName, nodeState)
 }
 
+// UpdateVolumeFromNode mocks base method.
+func (m *MockTridentController) UpdateVolumeFromNode(ctx context.Context, volume string, update *models.NodeVolumeUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeFromNode", ctx, volume, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeFromNode indicates an expected call of UpdateVolumeFromNode.
+func (mr *MockTridentControllerMockRecorder) UpdateVolumeFromNode(ctx, volume, update any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeFromNode", reflect.TypeOf((*MockTridentController)(nil).UpdateVolumeFromNode), ctx, volume, update)
+}
+
 // UpdateVolumeLUKSPassphraseNames mocks base method.
 func (m *MockTridentController) UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames []string) error {
 	m.ctrl.T.Helper()
