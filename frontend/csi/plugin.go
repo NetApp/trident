@@ -402,50 +402,53 @@ func (p *Plugin) addGroupControllerServiceCapabilities(ctx context.Context, cl [
 	p.gcsCap = gcsCap
 }
 
+// getCSIErrorForOrchestratorError converts a core/node error to a gRPC status error.
+// The core layers are transport-agnostic and never construct gRPC statuses directly.
 func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
-	// The core/node layer is transport-agnostic and never constructs gRPC statuses itself.
-	// Some paths (e.g. iSCSI/NVMe self-healing lock timeouts) instead return a sentinel
-	// errors.MaxWaitExceededError, which callers may have wrapped or joined along the way.
-	// Map that to codes.Aborted here since kubelet/CSI sidecars treat it differently
-	// (e.g. immediate retry) than an opaque Unknown.
+	if err == nil {
+		return nil
+	}
 	if s, ok := status.FromError(err); ok && s.Code() != codes.Unknown {
 		return err
 	}
-	if errors.IsMaxWaitExceededError(err) {
-		return status.Error(codes.Aborted, err.Error())
-	} else if errors.IsNotReadyError(err) {
-		return status.Error(codes.Unavailable, err.Error())
-	} else if errors.IsBootstrapError(err) {
-		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if errors.IsPreconditionError(err) {
-		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if errors.IsNotFoundError(err) {
-		return status.Error(codes.NotFound, err.Error())
-	} else if ok, errPtr := errors.HasUnsupportedCapacityRangeError(err); ok && errPtr != nil {
+	if ok, errPtr := errors.HasUnsupportedCapacityRangeError(err); ok && errPtr != nil {
 		return status.Error(codes.OutOfRange, errPtr.Error())
-	} else if errors.IsFoundError(err) {
-		return status.Error(codes.AlreadyExists, err.Error())
-	} else if errors.IsNodeNotSafeToPublishForBackendError(err) {
-		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if errors.IsVolumeCreatingError(err) {
-		return status.Error(codes.DeadlineExceeded, err.Error())
-	} else if errors.IsVolumeDeletingError(err) {
-		return status.Error(codes.DeadlineExceeded, err.Error())
-	} else if ok, errPtr := errors.HasResourceExhaustedError(err); ok && errPtr != nil {
-		return status.Error(codes.ResourceExhausted, err.Error())
-	} else if errors.IsInvalidInputError(err) {
-		return status.Error(codes.InvalidArgument, err.Error())
-	} else if errors.IsInternalError(err) {
-		return status.Error(codes.Internal, err.Error())
-	} else if errors.IsPermissionDeniedError(err) {
-		return status.Error(codes.PermissionDenied, err.Error())
-	} else if errors.IsInvalidJSONError(err) {
-		return status.Error(codes.Internal, err.Error())
-	} else if errors.IsVolumeStateError(err) {
-		return status.Error(codes.Aborted, err.Error())
-	} else {
-		return status.Error(codes.Unknown, err.Error())
 	}
+	if ok, errPtr := errors.HasResourceExhaustedError(err); ok && errPtr != nil {
+		return status.Error(codes.ResourceExhausted, err.Error())
+	}
+
+	var code codes.Code
+	switch {
+	case errors.IsNotReadyError(err):
+		code = codes.Unavailable
+	case errors.IsBootstrapError(err),
+		errors.IsPreconditionError(err),
+		errors.IsNodeNotSafeToPublishForBackendError(err):
+		code = codes.FailedPrecondition
+	case errors.IsNotFoundError(err):
+		code = codes.NotFound
+	case errors.IsFoundError(err):
+		code = codes.AlreadyExists
+	case errors.IsMaxWaitExceededError(err),
+		errors.IsVolumeStateError(err):
+		// Some paths (e.g. iSCSI/NVMe self-healing lock timeouts) instead return a sentinel
+		// errors.MaxWaitExceededError, which callers may have wrapped or joined along the way.
+		// Map that to codes.Aborted here since kubelet/CSI sidecars treat it differently
+		// (e.g. immediate retry) than an opaque Unknown.
+		code = codes.Aborted
+	case errors.IsVolumeCreatingError(err), errors.IsVolumeDeletingError(err):
+		code = codes.DeadlineExceeded
+	case errors.IsInvalidInputError(err):
+		code = codes.InvalidArgument
+	case errors.IsInternalError(err), errors.IsInvalidJSONError(err):
+		code = codes.Internal
+	case errors.IsPermissionDeniedError(err):
+		code = codes.PermissionDenied
+	default:
+		code = codes.Unknown
+	}
+	return status.Error(code, err.Error())
 }
 
 // IsReady reports whether this role is ready to serve data-path RPCs. CSIController has no node

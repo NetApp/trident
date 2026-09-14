@@ -254,6 +254,9 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentvolumemoves", "tridentvolumemoves/status"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
   # UpdateVolume (TridentController API): node reads then merge-patches node-owned config fields
   # on the TVOL (LUKSPassphraseNames). get is required for the read-before-write; patch is
   # scoped to just those config keys in application code, so update/create/delete are withheld,

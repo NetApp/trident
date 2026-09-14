@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -49,6 +50,18 @@ func (f *fakeController) CHAPInfo(
 
 var _ Controller = (*fakeController)(nil)
 
+// lockerFunc lets tests create a distlock.Locker inline as a closure, without a separate named
+// type per test. Example:
+//
+//	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+//	    return distlock.ErrLockDeleteFailed
+//	})
+type lockerFunc func(ctx context.Context, fn func(context.Context) error) error
+
+func (f lockerFunc) WithLock(ctx context.Context, fn func(context.Context) error) error {
+	return f(ctx, fn)
+}
+
 // testMocks bundles every mock the Core depends on so individual tests can set expectations on
 // exactly the ones they need and ignore the rest.
 type testMocks struct {
@@ -69,7 +82,7 @@ type testMocks struct {
 // fail the test if an unexpected call is made on a strict mock.
 func newTestMocks(t *testing.T) *testMocks {
 	ctrl := gomock.NewController(t)
-	return &testMocks{
+	mocks := &testMocks{
 		ISCSI:      mock_iscsi.NewMockISCSI(ctrl),
 		FCP:        mock_fcp.NewMockFCP(ctrl),
 		NVMe:       mock_nvme.NewMockNVMeInterface(ctrl),
@@ -84,6 +97,13 @@ func newTestMocks(t *testing.T) *testMocks {
 			MockChapClient: mockNode.NewMockChapClient(ctrl),
 		},
 	}
+	// Default: returns a noop lock for all volumes. Tests that need
+	// specific locker behavior (e.g. LUKS RWX) can override this expectation.
+	mocks.NodeHelper.EXPECT().
+		LockFor(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(distlock.NewNoopLock(), nil).
+		AnyTimes()
+	return mocks
 }
 
 // expectNodeInfoDiscovery sets up permissive expectations for the host discovery calls
@@ -124,7 +144,7 @@ func newUnbootstrappedTestCore(t *testing.T, extraOpts ...Option) (*Core, *testM
 		WithMount(mocks.Mount),
 		WithOsUtils(mocks.OsUtils),
 		WithCommand(mocks.Command),
-		WithLocalStore(mocks.NodeHelper),
+		WithNodeHelper(mocks.NodeHelper),
 		WithController(mocks.Controller),
 		WithHostName("test-node"),
 	}
@@ -206,7 +226,7 @@ func TestNewCore_OptionsApply(t *testing.T) {
 		WithMount(mocks.Mount),
 		WithOsUtils(mocks.OsUtils),
 		WithCommand(mocks.Command),
-		WithLocalStore(mocks.NodeHelper),
+		WithNodeHelper(mocks.NodeHelper),
 		WithController(mocks.Controller),
 		WithHostName("my-node"),
 		WithUnsafeDetach(true),
@@ -225,7 +245,7 @@ func TestNewCore_OptionsApply(t *testing.T) {
 	assert.Equal(t, mocks.Mount, core.mount)
 	assert.Equal(t, mocks.OsUtils, core.osutils)
 	assert.Equal(t, mocks.Command, core.cmd)
-	assert.Equal(t, mocks.NodeHelper, core.localStore)
+	assert.Equal(t, mocks.NodeHelper, core.nodeHelper)
 	assert.Equal(t, mocks.Controller, core.controller)
 	assert.Equal(t, "my-node", core.hostName)
 	assert.True(t, core.unsafeDetach)

@@ -297,6 +297,18 @@ rules:
       - use
     resourceNames:
       - tridentpods
+  # Required so the operator can grant coordination.k8s.io/leases to trident-node-linux
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
   # Now Operator specific permissions
   - apiGroups:
       - ""

@@ -464,6 +464,11 @@ func TestInitializeASANVMe(t *testing.T) {
 			tt.setupMocks()
 			err := driver.Initialize(ctx, driverContext, string(configJSON), commonConfig, backendSecret, backendUUID)
 			tt.verify(t, err)
+			// Stop the telemetry goroutine so it doesn't call into the mock after the
+			// sub-test completes and gomock tears down its controller.
+			if driver.telemetry != nil {
+				driver.telemetry.Stop()
+			}
 		})
 	}
 }

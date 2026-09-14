@@ -26,21 +26,20 @@ type VolumeAccessInfo struct {
 	NfsAccessInfo
 	SMBAccessInfo
 	FCPAccessInfo
-	SharedTarget       bool   `json:"sharedTarget,omitempty"`
-	MountOptions       string `json:"mountOptions,omitempty"`
-	FormatOptions      string `json:"formatOptions,omitempty"`
-	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
-	ReadOnly           bool   `json:"readOnly,omitempty"`
-	// The access mode values are defined by CSI
-	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode int32 `json:"accessMode,omitempty"`
+	SharedTarget          bool              `json:"sharedTarget,omitempty"`
+	MountOptions          string            `json:"mountOptions,omitempty"`
+	FormatOptions         string            `json:"formatOptions,omitempty"`
+	PublishEnforcement    bool              `json:"publishEnforcement,omitempty"`
+	ReadOnly              bool              `json:"readOnly,omitempty"`
+	AccessMode            int32             `json:"-"` // The access modes defined by CSI. Deprecated in v26.10; fully remove in v27.10.
+	ProvisionerAccessMode config.AccessMode `json:"provisionerAccessMode,omitempty"`
 }
 
-func (in *VolumeAccessInfo) DeepCopyInto(out *VolumeAccessInfo) {
-	if in == nil {
+func (v *VolumeAccessInfo) DeepCopyInto(out *VolumeAccessInfo) {
+	if v == nil {
 		return
 	}
-	*out = *deep.MustCopy(in)
+	*out = *deep.MustCopy(v)
 }
 
 func (v *VolumeAccessInfo) DeepCopy() *VolumeAccessInfo {
@@ -480,17 +479,24 @@ func (v *VolumePublishInfo) DeepCopy() *VolumePublishInfo {
 
 // GetStorageProtocol returns the persisted storage protocol when set, otherwise infers it
 // from protocol identity fields and legacy stage metadata (SANType, fstype).
-func (p *VolumePublishInfo) GetStorageProtocol() StorageProtocol {
-	if p == nil {
+func (v *VolumePublishInfo) GetStorageProtocol() StorageProtocol {
+	if v == nil {
 		return ""
 	}
-	if p.StorageProtocol != "" {
-		return p.StorageProtocol
+	if v.StorageProtocol != "" {
+		return v.StorageProtocol
 	}
-	if protocol := storageProtocolFromIdentityFields(p); protocol != "" {
+	if protocol := storageProtocolFromIdentityFields(v); protocol != "" {
 		return protocol
 	}
-	return storageProtocolFromLegacyStageFields(p)
+	return storageProtocolFromLegacyStageFields(v)
+}
+
+func (v *VolumePublishInfo) UseLUKS() bool {
+	if v == nil {
+		return false
+	}
+	return convert.ToBool(v.LUKSEncryption)
 }
 
 // storageProtocolFromIdentityFields infers StorageProtocol from protocol-identifying

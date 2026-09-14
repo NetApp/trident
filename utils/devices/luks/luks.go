@@ -185,9 +185,9 @@ func (d *LUKSDevice) RawDevicePath() string {
 // EnsureFormattedAndOpen ensures the specified device is LUKS formatted and opened.
 // Returns two booleans: the first indicates if the device is crypt formatted,
 // the second indicates if the device is safe to file format, meaning the device was empty before being crypt formatted.
-func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (
-	formatted, safeToFileFormat bool, err error,
-) {
+func (d *LUKSDevice) EnsureFormattedAndOpen(
+	ctx context.Context, luksPassphrase string,
+) (formatted, safeToFileFormat bool, err error) {
 	return d.ensureLUKSDevice(ctx, luksPassphrase)
 }
 

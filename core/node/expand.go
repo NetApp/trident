@@ -58,7 +58,7 @@ func (c *Core) Expand(ctx context.Context, volume string, req ExpandRequest) err
 	}
 	defer release()
 
-	trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volume)
+	trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volume)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			return errors.NotFoundError("unable to find tracking file for volume: %s ; needed it for resize", volume)

@@ -14,6 +14,7 @@ import (
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_fcp"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/nvme"
@@ -461,7 +462,7 @@ func TestDetachISCSIVolumeRetry_SucceedsWithoutRetry(t *testing.T) {
 	).Return(nil)
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
 
-	err := core.detachISCSIVolumeRetry(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolumeRetry(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -476,7 +477,7 @@ func TestDetachISCSIVolume_NoHostSessionMap_CleanupOnly(t *testing.T) {
 	).Return(nil)
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -494,7 +495,7 @@ func TestDetachISCSIVolume_NoHostSessionMap_LUKSTeardownNonLegacyPath(t *testing
 	mocks.Devices.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), ti.DevicePath, gomock.Any(), gomock.Any()).Return(nil)
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -512,7 +513,7 @@ func TestDetachISCSIVolume_LunSerialResolvesDevicePath(t *testing.T) {
 	).Return(nil)
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 	assert.Equal(t, "/dev/mpatha", ti.VolumePublishInfo.DevicePath)
 }
@@ -526,7 +527,7 @@ func TestDetachISCSIVolume_GetDeviceInfoError(t *testing.T) {
 	mocks.ISCSI.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), int(ti.IscsiLunNumber), ti.IscsiTargetIQN, false).
 		Return(nil, errors.New("scan failed"))
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "could not get device info")
 }
@@ -551,7 +552,7 @@ func TestDetachISCSIVolume_DeviceInfoNil_ContinuesCleanup(t *testing.T) {
 		mocks.ISCSI.EXPECT().Logout(gomock.Any(), ti.IscsiTargetIQN, portal).Return(nil)
 	}
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -585,7 +586,7 @@ func TestDetachISCSIVolume_NotSharedTarget_AlwaysLogsOut(t *testing.T) {
 		mocks.ISCSI.EXPECT().Logout(gomock.Any(), ti.IscsiTargetIQN, portal).Return(nil)
 	}
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -600,7 +601,7 @@ func TestDetachISCSIVolume_SharedTarget_HasMountedDevice_NoLogout(t *testing.T) 
 	mocks.ISCSI.EXPECT().TargetHasMountedDevice(gomock.Any(), ti.IscsiTargetIQN).Return(true, nil)
 	// No RemovePortalsFromSession/Logout calls expected: shared target has other mounted devices.
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -615,7 +616,7 @@ func TestDetachISCSIVolume_SharedTarget_MountCheckError_NoLogout(t *testing.T) {
 	mocks.ISCSI.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).
 		Return(false, errors.New("mount check failed"))
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -630,7 +631,7 @@ func TestDetachISCSIVolume_SharedTarget_NotSafeToLogout_NoLogout(t *testing.T) {
 	mocks.ISCSI.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
 	mocks.ISCSI.EXPECT().SafeToLogOut(gomock.Any(), 6, 3).Return(false)
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -651,7 +652,7 @@ func TestDetachISCSIVolume_SharedTarget_SafeToLogout_LogsOutAllPortals(t *testin
 		mocks.ISCSI.EXPECT().Logout(gomock.Any(), ti.IscsiTargetIQN, portal).Return(nil)
 	}
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -678,7 +679,7 @@ func TestDetachISCSIVolume_PrepareDeviceForRemovalError_SameLunRetry(t *testing.
 	mocks.ISCSI.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 	mocks.ISCSI.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -703,7 +704,7 @@ func TestDetachISCSIVolume_UnsafeDetachBypassesError(t *testing.T) {
 	mocks.ISCSI.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 	mocks.ISCSI.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -731,8 +732,171 @@ func TestDetachISCSIVolume_LUKSTeardownWithDeviceFound(t *testing.T) {
 	mocks.ISCSI.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 	mocks.ISCSI.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false)
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
 	assert.NoError(t, err)
+}
+
+// TestDetachISCSIVolume_NoHostSessionMap_LUKS_LockDeleteFailed covers the early-exit path at
+// line 480 of detach.go: the device is already gone (no host session map), the LUKS device is
+// closed successfully, but the locker cannot delete the lease (ErrLockDeleteFailed). The function
+// must propagate the error so the CO can retry.
+func TestDetachISCSIVolume_NoHostSessionMap_LUKS_LockDeleteFailed(t *testing.T) {
+	core, mocks := newTestCore(t)
+	iscsiMock := withMockedIscsiUtils(t)
+	ti := sampleTrackingInfo(ISCSI)
+	ti.LUKSEncryption = "true"
+	ti.DevicePath = "/dev/mapper/mpatha"
+	ti.IscsiLunSerial = ""
+
+	iscsiMock.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(map[int]int{})
+	mocks.Devices.EXPECT().GetLUKSDeviceForMultipathDevice(ti.DevicePath).Return("/dev/mapper/luks-uuid", nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+	// RemoveMultipathDeviceMappingWithRetries and DeleteTrackingInfo are NOT expected: the error
+	// must short-circuit before we reach them.
+
+	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+		if err := fn(ctx); err != nil {
+			return err
+		}
+		return distlock.ErrLockDeleteFailed
+	})
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err), "expected InternalError, got: %v", err)
+}
+
+// TestDetachISCSIVolume_LUKS_LockDeleteFailed covers path at line 538 of detach.go: the main
+// detach path finds a device, closes the LUKS device successfully, but the locker cannot delete
+// the lease. The function must return InternalError (translated from ErrLockDeleteFailed) for CO retry.
+func TestDetachISCSIVolume_LUKS_LockDeleteFailed(t *testing.T) {
+	core, mocks := newTestCore(t)
+	iscsiMock := withMockedIscsiUtils(t)
+	ti := sampleTrackingInfo(ISCSI)
+	ti.LUKSEncryption = "true"
+	ti.DevicePath = "/dev/mapper/mpatha"
+	deviceInfo := &models.ScsiDeviceInfo{MultipathDevice: "/dev/mapper/mpatha"}
+
+	iscsiMock.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(map[int]int{6: 3})
+	mocks.ISCSI.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+		Return(deviceInfo, nil)
+	mocks.ISCSI.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+	mocks.Devices.EXPECT().GetLUKSDeviceForMultipathDevice(ti.DevicePath).Return("/dev/mapper/luks-uuid", nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+
+	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+		if err := fn(ctx); err != nil {
+			return err
+		}
+		return distlock.ErrLockDeleteFailed
+	})
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err), "expected InternalError, got: %v", err)
+}
+
+// TestDetachISCSIVolume_LUKS_LockAcquireConflict verifies that ErrLockAcquireConflict at the
+// second close site (line ~538) is translated to VolumeStateError so the CO can retry.
+func TestDetachISCSIVolume_LUKS_LockAcquireConflict(t *testing.T) {
+	core, mocks := newTestCore(t)
+	iscsiMock := withMockedIscsiUtils(t)
+	ti := sampleTrackingInfo(ISCSI)
+	ti.LUKSEncryption = "true"
+	ti.DevicePath = "/dev/mapper/mpatha"
+	deviceInfo := &models.ScsiDeviceInfo{MultipathDevice: "/dev/mapper/mpatha"}
+
+	iscsiMock.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(map[int]int{6: 3})
+	mocks.ISCSI.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+		Return(deviceInfo, nil)
+	mocks.ISCSI.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+	mocks.Devices.EXPECT().GetLUKSDeviceForMultipathDevice(ti.DevicePath).Return("/dev/mapper/luks-uuid", nil)
+	// The lock is acquired by another host; EnsureLUKSDeviceClosedWithMaxWaitLimit is never called.
+
+	locker := lockerFunc(func(_ context.Context, _ func(context.Context) error) error {
+		return distlock.ErrLockAcquireConflict
+	})
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsVolumeStateError(err), "expected VolumeStateError, got: %v", err)
+}
+
+// TestDetachISCSIVolume_LUKS_MaxWaitExceeded_ContinuesCleanup covers the default case at line 544
+// of detach.go: when EnsureLUKSDeviceClosedWithMaxWaitLimit returns a MaxWaitExceededError, the
+// detach must continue rather than returning an error, leaving cleanup to subsequent calls.
+func TestDetachISCSIVolume_LUKS_MaxWaitExceeded_ContinuesCleanup(t *testing.T) {
+	core, mocks := newTestCore(t)
+	iscsiMock := withMockedIscsiUtils(t)
+	ti := sampleTrackingInfo(ISCSI)
+	ti.LUKSEncryption = "true"
+	ti.DevicePath = "/dev/mapper/mpatha"
+	deviceInfo := &models.ScsiDeviceInfo{MultipathDevice: "/dev/mapper/mpatha"}
+
+	iscsiMock.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(map[int]int{6: 3})
+	mocks.ISCSI.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+		Return(deviceInfo, nil)
+	mocks.ISCSI.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+	mocks.Devices.EXPECT().GetLUKSDeviceForMultipathDevice(ti.DevicePath).Return("/dev/mapper/luks-uuid", nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-uuid").
+		Return(errors.MaxWaitExceededError("timed out waiting for LUKS close"))
+	mocks.ISCSI.EXPECT().PrepareDeviceForRemoval(gomock.Any(), deviceInfo, gomock.Any(), nil, false, false).
+		Return(deviceInfo.MultipathDevice, nil)
+	mocks.Devices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), deviceInfo.MultipathDevice, gomock.Any()).Return(nil)
+	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+	mocks.Devices.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), deviceInfo.MultipathDevice, gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
+	mocks.ISCSI.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+	mocks.ISCSI.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, distlock.NewNoopLock())
+	assert.NoError(t, err)
+}
+
+// TestDetachISCSIVolume_LUKS_PostBlockDeviceRemoval_LockDeleteFailed covers path at line 653 of
+// detach.go: the LUKS device lingered past block device removal, EnsureLUKSDeviceClosed succeeds,
+// but the locker cannot delete the lease. The function must return ErrLockDeleteFailed.
+//
+// SharedTarget=true with TargetHasMountedDevice returning true suppresses the logout path so the
+// test only needs to set up expectations for the LUKS-specific calls and cleanup.
+func TestDetachISCSIVolume_LUKS_PostBlockDeviceRemoval_LockDeleteFailed(t *testing.T) {
+	core, mocks := newTestCore(t)
+	iscsiMock := withMockedIscsiUtils(t)
+	ti := sampleTrackingInfo(ISCSI)
+	ti.LUKSEncryption = "true"
+	ti.DevicePath = "/dev/mapper/mpatha"
+	ti.SharedTarget = true // suppresses logout to keep mock setup tractable
+	deviceInfo := &models.ScsiDeviceInfo{MultipathDevice: "/dev/mapper/mpatha"}
+
+	iscsiMock.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(map[int]int{6: 3})
+	mocks.ISCSI.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+		Return(deviceInfo, nil)
+	mocks.ISCSI.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+	mocks.Devices.EXPECT().GetLUKSDeviceForMultipathDevice(ti.DevicePath).Return("/dev/mapper/luks-uuid", nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+	mocks.ISCSI.EXPECT().PrepareDeviceForRemoval(gomock.Any(), deviceInfo, gomock.Any(), nil, false, false).
+		Return(deviceInfo.MultipathDevice, nil)
+	mocks.Devices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), deviceInfo.MultipathDevice, gomock.Any()).Return(nil)
+	// SharedTarget + TargetHasMountedDevice=true → logout=false, skip all RemovePortals/Logout calls.
+	mocks.ISCSI.EXPECT().TargetHasMountedDevice(gomock.Any(), ti.IscsiTargetIQN).Return(true, nil)
+	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+	mocks.Devices.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+	// RemoveMultipathDeviceMappingWithRetries and DeleteTrackingInfo are NOT expected: the error propagates.
+
+	// A locker that succeeds on the first WithLock call and returns ErrLockDeleteFailed on the second.
+	callCount := 0
+	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+		callCount++
+		if err := fn(ctx); err != nil {
+			return err
+		}
+		if callCount >= 2 {
+			return distlock.ErrLockDeleteFailed
+		}
+		return nil
+	})
+
+	err := core.detachISCSIVolume(context.Background(), "test-volume", ti, false, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err), "expected InternalError, got: %v", err)
 }
 
 // fakeDetachNVMeSubsystem hand-implements the slice of nvme.NVMeSubsystemInterface that

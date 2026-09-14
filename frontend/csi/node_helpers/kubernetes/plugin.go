@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/afero"
 
+	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
@@ -20,6 +21,7 @@ import (
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	tridentcontrollercrd "github.com/netapp/trident/frontend/csi/tridentcontroller/crd"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -34,19 +36,61 @@ const (
 )
 
 type helper struct {
-	orchestrator                     core.Orchestrator
-	podsPath                         string
-	kubeConfigPath                   string
-	publishedPaths                   map[string]map[string]struct{}
-	enableForceDetach                bool
-	mount                            mount.Mount
-	nodehelpers.VolumePublishManager // Embedded/extended interface
-	nodehelpers.VolumeStatsManager   // Embedded/extended interface
+	orchestrator      core.Orchestrator
+	k8sClients        *clik8sclient.Clients
+	podsPath          string
+	kubeConfigPath    string
+	publishedPaths    map[string]map[string]struct{}
+	enableForceDetach bool
+	mount             mount.Mount
+
+	// Extended helpers
+	nodehelpers.VolumePublishManager
+	nodehelpers.VolumeStatsManager
 }
 
 // NewControllerClient returns a CRD-backed tridentcontroller.Client for this helper.
 func (h *helper) NewControllerClient(_ controllerAPI.TridentController) (tridentcontroller.Client, error) {
 	return tridentcontrollercrd.NewClient(h.kubeConfigPath), nil
+}
+
+func (h *helper) requiresDistributedLock(publishInfo *models.VolumePublishInfo) bool {
+	return publishInfo.VolumeMode == string(config.RawBlock) &&
+		publishInfo.UseLUKS() &&
+		publishInfo.ProvisionerAccessMode == config.ReadWriteMany
+}
+
+// LockFor returns a fresh distlock.Locker that exists for the duration of a request.
+// If the request parent context times out, this the lock will be garbage collected.
+func (h *helper) LockFor(
+	ctx context.Context, resourceID, hostID string, publishInfo *models.VolumePublishInfo,
+) (distlock.Locker, error) {
+	Logc(ctx).Debug(">>>> kubernetes_helper.LockFor")
+	defer Logc(ctx).Debug("<<<< kubernetes_helper.LockFor")
+
+	if publishInfo == nil {
+		return nil, fmt.Errorf("publishInfo is nil; distributed locks will be unavailable")
+	}
+
+	// Fast path: volumes that don't require a distributed lock get a noop immediately,
+	// regardless of whether k8s clients are available. This prevents NFS, SMB, and non-LUKS
+	// volumes from failing if the client was never initialized (e.g. Activate error).
+	if !h.requiresDistributedLock(publishInfo) {
+		return distlock.NewNoopLock(), nil
+	}
+
+	if h.k8sClients == nil || h.k8sClients.KubeClient == nil {
+		return nil, fmt.Errorf("k8s clients are nil; cannot acquire distributed lock for %s", resourceID)
+	}
+	if resourceID == "" {
+		return nil, fmt.Errorf("resourceID is empty")
+	}
+	if hostID == "" {
+		return nil, fmt.Errorf("hostID is empty")
+	}
+
+	leaseClient := h.k8sClients.KubeClient.CoordinationV1().Leases(h.k8sClients.Namespace)
+	return distlock.NewLeaseLock(leaseClient, h.k8sClients.Namespace, hostID, resourceID), nil
 }
 
 // NewHelper instantiates the Kubernetes CSI node helper.
@@ -94,6 +138,13 @@ func (h *helper) Activate() error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
+
+	clients, err := clik8sclient.CreateK8SClients("", h.kubeConfigPath, "")
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Could not initialize kubernetes client; distributed locks will be unavailable.")
+	} else {
+		h.k8sClients = clients
+	}
 
 	if err := h.reconcileVolumePublishInfo(ctx); err != nil {
 		Logc(ctx).WithError(err).Error("Could not reconcile volume publish info.")

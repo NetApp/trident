@@ -59,7 +59,7 @@ func (c *Core) Graft(
 	defer release()
 
 	// Get the published info this node has a record of, if any.
-	trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volumeID)
+	trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (c *Core) graftISCSIAttachment(
 	publishInfo.VolumeAccessInfo = convert.ToVal(attachInfo.VolumeAccessInfo.DeepCopy())
 
 	// Update the tracking file.
-	if err := c.localStore.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
+	if err := c.nodeHelper.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
 		Logc(ctx).WithFields(fields).WithError(err).Error("Could not update publish info.")
 		return nil, err
 	}

@@ -102,7 +102,7 @@ func (c *Core) unmountGeneric(ctx context.Context, volume, targetPath string) er
 		Logc(ctx).Debugf("Unable to delete resource at target path: %s; %v", targetPath, err)
 	}
 
-	if err = c.localStore.RemovePublishedPath(ctx, volume, targetPath); err != nil {
+	if err = c.nodeHelper.RemovePublishedPath(ctx, volume, targetPath); err != nil {
 		if errors.IsNotFoundError(err) {
 			Logc(ctx).WithFields(LogFields{
 				"targetPath": targetPath, "volumeId": volume,

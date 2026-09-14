@@ -53,7 +53,7 @@ func (c *Core) Prune(
 	defer release()
 
 	// Get the published info this node has a record of, if any.
-	trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volumeID)
+	trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 	if err != nil && !errors.IsNotFoundError(err) {
 		Logc(ctx).WithFields(fields).WithError(err).Warn(
 			"Error reading tracking file for volume; stale sessions may persist. Continuing with prune attachment workflow.")

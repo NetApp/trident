@@ -602,7 +602,7 @@ func main() {
 
 			nodeCore = nodecore.NewCore(
 				nodecore.WithController(nodecore.NewController(controllerClient, restClient)),
-				nodecore.WithLocalStore(nodeHelper),
+				nodecore.WithNodeHelper(nodeHelper),
 				nodecore.WithHostName(*csiNodeName),
 				nodecore.WithUnsafeDetach(*csiUnsafeNodeDetach),
 				nodecore.WithEnableForceDetach(*enableForceDetach),

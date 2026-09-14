@@ -10,6 +10,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/locks"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	legacyiscsi "github.com/netapp/trident/utils/iscsi"
@@ -167,7 +168,7 @@ func (c *Core) readAllTrackingFiles(ctx context.Context) []models.VolumePublishI
 	publishInfos := make([]models.VolumePublishInfo, 0)
 	volumeIDs := legacyiscsi.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
-		trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volumeID)
+		trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 		if err != nil || trackingInfo == nil {
 			Logc(ctx).WithError(err).WithFields(LogFields{
 				"volumeID": volumeID,
@@ -234,4 +235,22 @@ func (c *Core) disconnectNVMeSubsystemIfNeeded(
 		return err
 	}
 	return nil
+}
+
+// orchestratorErrorForLockError converts lock errors from WithLock
+// calls into business logic errors. It should wrap lockErr's instead
+// of replacing them.
+//
+// Example:
+//
+//	fmt.Errorf("%w: %w", orchestratorErr, lockErr)
+func orchestratorErrorForLockError(lockErr error) error {
+	switch {
+	case errors.Is(lockErr, distlock.ErrLockAcquireConflict):
+		return fmt.Errorf("%w: %w", errors.VolumeStateError("lock is unavailable"), lockErr)
+	case errors.Is(lockErr, distlock.ErrLockDeleteFailed):
+		return fmt.Errorf("%w: %w", errors.InternalError("lock could not be deleted"), lockErr)
+	default:
+		return lockErr
+	}
 }

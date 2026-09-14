@@ -378,7 +378,13 @@ func (p *Plugin) ControllerPublishVolume(
 		Pool:           volume.Pool,
 		StorageClass:   volume.Config.StorageClass,
 	}
-	populatePublishInfoFromCSIPublishRequest(volumePublishInfo, req)
+	p.capabilitiesFromPublishRequest(volumePublishInfo, req)
+
+	// Capture accessMode and mountOptions before PublishVolume, which takes volumePublishInfo by
+	// pointer and may overwrite these fields (e.g., the orchestrator mock does this in tests).
+	// These values come from the CSI request and must not be lost.
+	capturedAccessMode := string(volumePublishInfo.ProvisionerAccessMode)
+	capturedMountOptions := volumePublishInfo.MountOptions
 
 	// Update NFS export rules (?), add node IQN to igroup, etc.
 	err = p.orchestrator.PublishVolume(ctx, volume.Config.Name, volumePublishInfo)
@@ -387,20 +393,14 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	// If any mount options are passed in via CSI (e.g. from a StorageClass), then any mount options
-	// that were specified in the storage driver's backend configuration and passed here in the
-	// VolumePublishInfo struct are completely discarded and replaced by the CSI-supplied values.
-	mount := req.VolumeCapability.GetMount()
-	if mount != nil && len(mount.MountFlags) > 0 {
-		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
-	}
-
 	// Build CSI controller publish info from volume publish info
 	publishInfo := map[string]string{
 		"protocol": string(volume.Config.Protocol),
 	}
 
-	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
+	// accessMode must not change for the lifecycle of the attachment; set once at ControllerPublish.
+	publishInfo["accessMode"] = capturedAccessMode
+	publishInfo["mountOptions"] = capturedMountOptions
 	publishInfo["formatOptions"] = volumePublishInfo.FormatOptions
 	publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 	publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
@@ -477,12 +477,24 @@ func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *models.Vo
 	}
 }
 
-func populatePublishInfoFromCSIPublishRequest(info *models.VolumePublishInfo, req *csi.ControllerPublishVolumeRequest) {
+func (p *Plugin) capabilitiesFromPublishRequest(info *models.VolumePublishInfo, req *csi.ControllerPublishVolumeRequest) {
 	info.ReadOnly = req.GetReadonly()
-	if req.VolumeCapability != nil {
-		if req.VolumeCapability.GetAccessMode() != nil {
-			info.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
-		}
+	capability := req.GetVolumeCapability()
+	if capability == nil {
+		return
+	}
+
+	// If any mount options are passed in via CSI (e.g. from a StorageClass), then any mount options
+	// that were specified in the storage driver's backend configuration and passed here in the
+	// VolumePublishInfo struct are completely discarded and replaced by the CSI-supplied values.
+	if mount := capability.GetMount(); mount != nil && len(mount.MountFlags) > 0 {
+		info.MountOptions = strings.Join(mount.MountFlags, ",")
+	}
+
+	if accessMode := capability.GetAccessMode(); accessMode != nil {
+		mode := accessMode.GetMode()
+		info.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
+		info.ProvisionerAccessMode = p.getAccessForCSIAccessMode(mode)
 	}
 }
 

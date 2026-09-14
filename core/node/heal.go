@@ -58,7 +58,7 @@ var (
 func (c *Core) populatePublishedSessions(ctx context.Context) {
 	volumeIDs := iscsi.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
-		trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volumeID)
+		trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 		if err != nil || trackingInfo == nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID": volumeID,
@@ -358,7 +358,7 @@ func (c *Core) selfHealingRectifySession(ctx context.Context, portal string, act
 // any are in use. Precise LUN scanning removes the need for this, but it remains useful for
 // debugging and support, and the calculation is cheap.
 func (c *Core) deprecatedIgroupInUse(ctx context.Context) bool {
-	volumeTrackingInfo, _ := c.localStore.ListVolumeTrackingInfo(ctx)
+	volumeTrackingInfo, _ := c.nodeHelper.ListVolumeTrackingInfo(ctx)
 	for id, info := range volumeTrackingInfo {
 		if !iscsi.IsPerNodeIgroup(info.IscsiIgroup) {
 			Logc(ctx).WithFields(LogFields{
@@ -639,7 +639,7 @@ func (c *Core) discoverDesiredPublicationState(ctx context.Context) (
 func (c *Core) discoverActualPublicationState(ctx context.Context) (map[string]*models.VolumeTrackingInfo, error) {
 	Logc(ctx).Debug("Discovering actual publication state.")
 
-	actualPublicationState, err := c.localStore.ListVolumeTrackingInfo(ctx)
+	actualPublicationState, err := c.nodeHelper.ListVolumeTrackingInfo(ctx)
 	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, fmt.Errorf("failed to get actual publication state")
 	}

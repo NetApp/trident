@@ -941,7 +941,7 @@ func TestControllerPublishVolume(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "smb", "formatOptions": "", "mountOptions": "", "smbPath": "", "smbServer": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"accessMode": "ReadWriteMany", "filesystemType": "smb", "formatOptions": "", "mountOptions": "", "smbPath": "", "smbServer": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
 			publishInfo: models.VolumePublishInfo{
 				SANType:        sa.FCP,
 				FilesystemType: "smb",
@@ -963,7 +963,7 @@ func TestControllerPublishVolume(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "", "formatOptions": "", "mountOptions": "", "nfsPath": "", "nfsServerIp": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"accessMode": "ReadWriteMany", "filesystemType": "", "formatOptions": "", "mountOptions": "", "nfsPath": "", "nfsServerIp": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
 			expErrCode:       codes.OK,
 		},
 		{
@@ -1064,6 +1064,7 @@ func TestControllerPublishVolume(t *testing.T) {
 			},
 			expectedResponse: &csi.ControllerPublishVolumeResponse{
 				PublishContext: map[string]string{
+					"accessMode":        "",
 					"filesystemType":    "",
 					"LUKSEncryption":    "",
 					"mountOptions":      "mnt-flag",
@@ -1100,6 +1101,7 @@ func TestControllerPublishVolume(t *testing.T) {
 			},
 			expectedResponse: &csi.ControllerPublishVolumeResponse{
 				PublishContext: map[string]string{
+					"accessMode":             "",
 					"filesystemType":         "",
 					"iscsiIgroup":            "",
 					"iscsiInterface":         "",
@@ -1138,6 +1140,7 @@ func TestControllerPublishVolume(t *testing.T) {
 			},
 			expectedResponse: &csi.ControllerPublishVolumeResponse{
 				PublishContext: map[string]string{
+					"accessMode":     "",
 					"LUKSEncryption": "",
 					"SANType":        sa.FCP,
 					"fcTargetWWNN":   "",

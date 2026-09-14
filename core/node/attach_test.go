@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -320,7 +321,7 @@ func TestAttachISCSIVolume_Success(t *testing.T) {
 		gomock.Any(), gomock.Any(), publishInfo, "test-volume", "", models.NotInvalid,
 	)
 
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -331,7 +332,7 @@ func TestAttachISCSIVolume_AttachError(t *testing.T) {
 	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(int64(0), errors.New("attach failed"))
 
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, distlock.NewNoopLock())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "attach failed")
 }
@@ -346,7 +347,7 @@ func TestAttachISCSIVolume_FormatMountError(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Return(errors.New("mkfs failed"))
 
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, distlock.NewNoopLock())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "mkfs failed")
 }
@@ -367,7 +368,7 @@ func TestAttachISCSIVolume_GratuitousResizeOnMpathSize(t *testing.T) {
 	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, int64(2147483648)).
 		Return(errors.New("resize failed"))
 
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -375,7 +376,6 @@ func TestAttachISCSIVolume_LUKSPassphraseRotation(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(ISCSI)
 	publishInfo.LUKSEncryption = "false" // avoid exercising real cryptsetup boundary via c.cmd/c.dev
-	publishInfo.Secrets = map[string]string{}
 
 	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
 	mocks.ISCSI.EXPECT().EnsureVolumeFormattedAndMounted(
@@ -385,21 +385,55 @@ func TestAttachISCSIVolume_LUKSPassphraseRotation(t *testing.T) {
 
 	// LUKSEncryption "false" means convert.ToBool is false, so ensureLUKSVolumePassphrase must
 	// not be invoked and no controller/luks calls should occur.
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, map[string]string{}, distlock.NewNoopLock())
 	assert.NoError(t, err)
+}
+
+// TestAttachISCSIVolume_LUKSLockDeleteFailed verifies that ErrLockDeleteFailed from the first
+// WithLock call (format/map) is translated to an orchestrator InternalError so the distlock
+// package does not leak into the CSI transport layer.
+func TestAttachISCSIVolume_LUKSLockDeleteFailed(t *testing.T) {
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(ISCSI)
+	publishInfo.LUKSEncryption = "true"
+
+	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
+
+	locker := lockerFunc(func(_ context.Context, _ func(context.Context) error) error {
+		return distlock.ErrLockDeleteFailed
+	})
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err), "expected InternalError, got: %v", err)
+}
+
+// TestAttachISCSIVolume_LUKSLockAcquireConflict verifies that ErrLockAcquireConflict from the
+// first WithLock call is translated to a VolumeStateError (→ codes.Aborted) so the CO retries.
+func TestAttachISCSIVolume_LUKSLockAcquireConflict(t *testing.T) {
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(ISCSI)
+	publishInfo.LUKSEncryption = "true"
+
+	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
+
+	locker := lockerFunc(func(_ context.Context, _ func(context.Context) error) error {
+		return distlock.ErrLockAcquireConflict
+	})
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, locker)
+	require.Error(t, err)
+	assert.True(t, errors.IsVolumeStateError(err), "expected VolumeStateError, got: %v", err)
 }
 
 func TestAttachISCSIVolume_LUKSFormatErrorPropagates(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(ISCSI)
 	publishInfo.LUKSEncryption = "true"
-	publishInfo.Secrets = map[string]string{} // no luks-passphrase supplied
 
 	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
 	// EnsureVolumeFormattedAndMounted / AddSession must never be reached: the LUKS format step
-	// fails first because no passphrase was supplied in Secrets.
+	// fails first because no passphrase was supplied in secrets.
 
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, map[string]string{}, distlock.NewNoopLock())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "LUKS passphrase cannot be empty")
 }
@@ -438,7 +472,7 @@ func TestAttachFCPVolume_Success(t *testing.T) {
 		gomock.Any(), publishInfo.InternalID, "", publishInfo, false, false,
 	).Return(nil)
 
-	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo, nil)
 	assert.NoError(t, err)
 }
 
@@ -449,7 +483,7 @@ func TestAttachFCPVolume_AttachError(t *testing.T) {
 	mocks.FCP.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(int64(0), errors.New("fcp attach failed"))
 
-	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "fcp attach failed")
 }
@@ -463,7 +497,7 @@ func TestAttachFCPVolume_FormatMountError(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Return(errors.New("mkfs failed"))
 
-	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "mkfs failed")
 }
@@ -481,7 +515,7 @@ func TestAttachFCPVolume_GratuitousResizeFailureIsSwallowed(t *testing.T) {
 	mocks.FCP.EXPECT().IsAlreadyAttached(gomock.Any(), int(publishInfo.FCPLunNumber), publishInfo.FCTargetWWNN).
 		Return(false)
 
-	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachFCPVolume(context.Background(), "test-volume", publishInfo, nil)
 	assert.NoError(t, err)
 }
 
@@ -491,14 +525,14 @@ func TestAttachNVMeVolume_Success(t *testing.T) {
 
 	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).Return(nil)
 	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), publishInfo.InternalID, publishInfo, publishInfo.Secrets,
+		gomock.Any(), publishInfo.InternalID, publishInfo, gomock.Nil(),
 	).Return(false, false, nil)
 	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
 		gomock.Any(), publishInfo.InternalID, "", publishInfo, false, false,
 	).Return(nil)
 	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo)
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
 	assert.NoError(t, err)
 }
 
@@ -509,7 +543,7 @@ func TestAttachNVMeVolume_AttachError(t *testing.T) {
 	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(errors.New("nvme connect failed"))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "nvme connect failed")
 }
@@ -523,7 +557,7 @@ func TestAttachNVMeVolume_CryptsetupError(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Return(false, false, errors.New("cryptsetup failed"))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "cryptsetup failed")
 }
@@ -540,7 +574,7 @@ func TestAttachNVMeVolume_FormatMountError(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Return(errors.New("mkfs failed"))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "mkfs failed")
 }
@@ -560,6 +594,6 @@ func TestAttachNVMeVolume_LUKSBranchSkippedWhenDisabled(t *testing.T) {
 	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo)
 
 	// No controller.GetChap or luks calls expected since LUKSEncryption is false.
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo)
+	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
 	assert.NoError(t, err)
 }

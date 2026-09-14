@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package plain
 
@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	tridentcontrollerrest "github.com/netapp/trident/frontend/csi/tridentcontroller/rest"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -115,4 +116,13 @@ func (h *helper) UpdatePublishInfo(ctx context.Context, volumeID string, publish
 // NewControllerClient returns a REST-backed tridentcontroller.Client for this helper.
 func (h *helper) NewControllerClient(restClient controllerAPI.TridentController) (tridentcontroller.Client, error) {
 	return tridentcontrollerrest.NewClient(restClient), nil
+}
+
+// LockFor returns a no-op distlock.Locker. The plain CSI helper has no distributed coordination
+// primitive (no Kubernetes Lease API) to back a real cross-host lock with, so multi-attach LUKS
+// mutation ordering across hosts is not coordinated for this container orchestrator.
+func (h *helper) LockFor(ctx context.Context, _, _ string, _ *models.VolumePublishInfo) (distlock.Locker, error) {
+	Logc(ctx).Trace(">>>> plain_helper.LockFor")
+	defer Logc(ctx).Trace("<<<< plain_helper.LockFor")
+	return distlock.NewNoopLock(), nil
 }

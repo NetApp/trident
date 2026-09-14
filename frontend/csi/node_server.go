@@ -171,6 +171,18 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 	secrets := req.GetSecrets()
 	volumeContext := req.GetVolumeContext()
 	publishContext := req.GetPublishContext()
+	provisionerAccessMode := tridentconfig.AccessMode(publishContext["accessMode"])
+
+	// Verify the specified access mode is what we set from CSI controller publish volume.
+	if provisionerAccessMode != "" {
+		csiAccessMode := req.GetVolumeCapability().GetAccessMode().GetMode()
+		if reqAccessMode := p.getAccessForCSIAccessMode(csiAccessMode); reqAccessMode != provisionerAccessMode {
+			return nil, status.Error(
+				codes.FailedPrecondition,
+				fmt.Sprintf("provisioner access mode: %s; CSI access mode: %s", provisionerAccessMode, reqAccessMode),
+			)
+		}
+	}
 
 	// Seed the publish info with values common to all protocols.
 	publishInfo := &models.VolumePublishInfo{}
@@ -180,7 +192,7 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 	publishInfo.VolumeMode = publishContext["volumeMode"]
 	publishInfo.MountOptions = publishContext["mountOptions"]
 	publishInfo.FilesystemType = publishContext["filesystemType"]
-	publishInfo.Secrets = secrets
+	publishInfo.ProvisionerAccessMode = provisionerAccessMode // Trident-specific access mode.
 
 	switch tridentconfig.Protocol(publishContext["protocol"]) {
 	case tridentconfig.File:
@@ -274,7 +286,7 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
 
-	attachReq := nodecore.AttachRequest{PublishInfo: publishInfo}
+	attachReq := nodecore.AttachRequest{PublishInfo: publishInfo, Secrets: secrets}
 	if tridentconfig.Protocol(publishContext["protocol"]) == tridentconfig.Block {
 		sharedTarget, parseErr := strconv.ParseBool(publishContext["sharedTarget"])
 		if parseErr != nil {

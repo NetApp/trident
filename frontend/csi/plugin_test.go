@@ -75,7 +75,7 @@ func newTestNodeCore(
 
 	return node.NewCore(
 		node.WithController(node.NewController(mockClient, mockChap)),
-		node.WithLocalStore(mockLocalStore),
+		node.WithNodeHelper(mockLocalStore),
 		node.WithHostName("test-node"),
 		node.WithOsUtils(mockOsUtils),
 		node.WithLegacyISCSI(mockISCSI),
@@ -457,6 +457,7 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 		{name: "InternalError", inputError: errors.InternalError("internal failure"), expectedCode: codes.Internal},
 		{name: "PermissionDeniedError", inputError: errors.PermissionDeniedError("permission denied"), expectedCode: codes.PermissionDenied},
 		{name: "InvalidJSONError", inputError: errors.InvalidJSONError("invalid json"), expectedCode: codes.Internal},
+		{name: "VolumeStateError", inputError: errors.VolumeStateError("lock held by another host"), expectedCode: codes.Aborted},
 		{name: "UnknownError", inputError: errors.New("unknown error"), expectedCode: codes.Unknown},
 	}
 
@@ -470,6 +471,11 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 			assert.Equal(t, tc.expectedCode, s.Code())
 		})
 	}
+}
+
+func TestPlugin_GetCSIErrorForOrchestratorError_NilInput(t *testing.T) {
+	plugin := &Plugin{}
+	assert.Nil(t, plugin.getCSIErrorForOrchestratorError(nil))
 }
 
 func TestPlugin_GetCSIErrorForOrchestratorError_PreservesGRPCStatus(t *testing.T) {

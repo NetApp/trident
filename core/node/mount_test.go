@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -569,7 +570,7 @@ func TestMountISCSIVolume_LUKS_LegacyDevicePath_ErrorsResolvingUnderlyingDevice(
 		Return([]byte{}, errors.New("cryptsetup status failed")).
 		AnyTimes()
 
-	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil)
+	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil, distlock.NewNoopLock())
 	require.Error(t, err)
 }
 
@@ -584,7 +585,7 @@ func TestMountISCSIVolume_LUKS_NonLegacyDevicePath_MountsMappedDevice(t *testing
 	mocks.Mount.EXPECT().MountDevice(gomock.Any(), expectedMappedPath, "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
 	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
-	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil)
+	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -597,7 +598,7 @@ func TestMountISCSIVolume_NonLUKS_MountsMultipathDevicePath(t *testing.T) {
 	mocks.Mount.EXPECT().MountDevice(gomock.Any(), "/dev/dm-3", "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
 	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
-	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil)
+	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, nil, distlock.NewNoopLock())
 	assert.NoError(t, err)
 }
 
@@ -632,10 +633,34 @@ func TestMountISCSIVolume_LUKS_UsesSecretsParameterNotPublishInfoSecrets(t *test
 	mocks.Mount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
 	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
-	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, secrets)
+	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, secrets, distlock.NewNoopLock())
 	assert.NoError(t, err) // ensureLUKSVolumePassphrase failures are logged, not propagated
 
 	for _, entry := range hook.AllEntries() {
 		assert.NotContains(t, entry.Message, "LUKS passphrase cannot be empty")
 	}
+}
+
+// TestMountISCSIVolume_LUKS_LockError_DoesNotPreventMount verifies that a WithLock failure during
+// passphrase rotation (e.g. ErrLockDeleteFailed) is treated as a soft error: it is logged but
+// does not abort the mount. The device is mounted using the existing open LUKS mapping.
+func TestMountISCSIVolume_LUKS_LockError_DoesNotPreventMount(t *testing.T) {
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(ISCSI)
+	publishInfo.LUKSEncryption = "true"
+	publishInfo.DevicePath = "/dev/dm-3"
+
+	secrets := map[string]string{"luks-passphrase": "secret", "luks-passphrase-name": "A"}
+
+	// The locker fails: WithLock returns ErrLockDeleteFailed. The error must be swallowed.
+	locker := lockerFunc(func(_ context.Context, _ func(context.Context) error) error {
+		return distlock.ErrLockDeleteFailed
+	})
+
+	// Mount must still be attempted against the LUKS mapper path (luks-<internalID>).
+	mocks.Mount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
+	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, secrets, locker)
+	assert.NoError(t, err)
 }

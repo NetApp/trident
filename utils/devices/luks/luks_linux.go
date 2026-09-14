@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 
 	"github.com/netapp/trident/internal/fiji"
@@ -297,6 +296,8 @@ func (d *LUKSDevice) IsLUKSDeviceOpen(ctx context.Context, devicePath string) (b
 func (d *LUKSDevice) RotatePassphrase(
 	ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string,
 ) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	if d.RawDevicePath() == "" {
 		return errors.New("no device path for LUKS device")
 	}
@@ -318,9 +319,7 @@ func (d *LUKSDevice) RotatePassphrase(
 	tempFileName := fmt.Sprintf("luks_key_%s", volumeId)
 	fd, err := generateAnonymousMemFile(tempFileName, previousLUKSPassphrase)
 	if err != nil {
-		Log().WithFields(LogFields{
-			"error": err,
-		}).Error("Failed to create passphrase file for LUKS.")
+		Logc(ctx).WithError(err).Error("Failed to create passphrase file for LUKS.")
 		return fmt.Errorf("failed to create passphrase files for LUKS; %v", err)
 	}
 	defer unix.Close(fd)
@@ -376,7 +375,7 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 		luksPassphrase, "resize", d.MappedDevicePath(),
 	)
 	if nil != err {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"MappedDevicePath": d.MappedDevicePath(),
 			"output":           string(output),
 		}).WithError(err).Debug("Failed to resize LUKS device")

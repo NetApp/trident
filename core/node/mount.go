@@ -4,12 +4,14 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
@@ -53,7 +55,7 @@ func (c *Core) Mount(ctx context.Context, volumeID string, req MountRequest) err
 	}
 	defer release()
 
-	trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volumeID)
+	trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			return errors.PreconditionError("volume %s is not staged: %v", volumeID, err)
@@ -72,6 +74,11 @@ func (c *Core) Mount(ctx context.Context, volumeID string, req MountRequest) err
 	protocol := publishInfo.GetStorageProtocol()
 	fields["Protocol"] = protocol
 
+	locker, err := c.nodeHelper.LockFor(ctx, volumeID, c.hostName, publishInfo)
+	if err != nil {
+		return fmt.Errorf("failed to create distributed lock for volume %s: %v", volumeID, err)
+	}
+
 	switch protocol {
 	case NFS:
 		return c.mountNFSVolume(ctx, volumeID, targetPath, publishInfo)
@@ -80,7 +87,7 @@ func (c *Core) Mount(ctx context.Context, volumeID string, req MountRequest) err
 	case FCP:
 		return c.mountFCPVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets)
 	case ISCSI:
-		return c.mountISCSIVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets)
+		return c.mountISCSIVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets, locker)
 	case NVMe:
 		return c.mountNVMeVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets)
 	default:
@@ -125,7 +132,7 @@ func (c *Core) mountNFSVolume(
 		return errors.InternalError("failed to attach NFS volume %s: %v", volumeID, err)
 	}
 
-	return c.localStore.AddPublishedPath(ctx, volumeID, targetPath)
+	return c.nodeHelper.AddPublishedPath(ctx, volumeID, targetPath)
 }
 
 func (c *Core) mountSMBVolume(
@@ -169,7 +176,7 @@ func (c *Core) mountSMBVolume(
 		return err
 	}
 
-	return c.localStore.AddPublishedPath(ctx, volumeID, targetPath)
+	return c.nodeHelper.AddPublishedPath(ctx, volumeID, targetPath)
 }
 
 func (c *Core) mountFCPVolume(
@@ -253,11 +260,13 @@ func (c *Core) mountDeviceAtTargetPath(
 		}
 	}
 
-	return c.localStore.AddPublishedPath(ctx, volumeID, targetPath)
+	return c.nodeHelper.AddPublishedPath(ctx, volumeID, targetPath)
 }
 
 func (c *Core) mountISCSIVolume(
-	ctx context.Context, volumeID, targetPath string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+	ctx context.Context, volumeID, targetPath string,
+	publishInfo *models.VolumePublishInfo,
+	secrets map[string]string, locker distlock.Locker,
 ) error {
 	Logc(ctx).Debug(">>>> mountISCSIVolume")
 	defer Logc(ctx).Debug("<<<< mountISCSIVolume")
@@ -282,10 +291,12 @@ func (c *Core) mountISCSIVolume(
 			luksDevice = luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 		}
 
-		// Secrets come from the Mount() caller (CSI's req.GetSecrets()), not publishInfo.Secrets,
-		// which is marked json:"-" and never survives a round trip through the tracking file.
-		if err = ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, false); err != nil {
-			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
+		if len(secrets) > 0 {
+			if err = locker.WithLock(ctx, func(ctx context.Context) error {
+				return ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, false)
+			}); err != nil {
+				Logc(ctx).WithError(orchestratorErrorForLockError(err)).Error("Failed to ensure current LUKS passphrase.")
+			}
 		}
 
 		// Mount the LUKS device instead of the multipath device.

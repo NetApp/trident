@@ -64,7 +64,7 @@ type Core struct {
 	// the tracking-file reads needed to pick the right protocol bucket - live entirely here.
 	protocolLimiters map[string]limiter.Limiter
 	volumeLocks      *locks.GCNamedMutex
-	localStore       nodehelpers.NodeHelper
+	nodeHelper       nodehelpers.NodeHelper
 	controller       Controller
 	readyChan        chan struct{}
 	readyOnce        sync.Once
@@ -166,9 +166,9 @@ func WithOsUtils(o osutils.Utils) Option {
 	}
 }
 
-func WithLocalStore(store nodehelpers.NodeHelper) Option {
+func WithNodeHelper(h nodehelpers.NodeHelper) Option {
 	return func(core *Core) {
-		core.localStore = store
+		core.nodeHelper = h
 	}
 }
 

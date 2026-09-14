@@ -11,6 +11,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
@@ -32,9 +33,11 @@ var (
 // AttachRequest holds inputs for staging a volume on the node (CSI NodeStageVolume).
 // PublishInfo carries protocol-specific publish context; SharedTarget applies to block
 // protocols and controls shared-target iSCSI logout behavior during detach.
+// Secrets carries transient per-call credentials (e.g. LUKS passphrase) and are never persisted.
 type AttachRequest struct {
 	PublishInfo  *models.VolumePublishInfo
 	SharedTarget bool
+	Secrets      map[string]string
 }
 
 func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (err error) {
@@ -71,11 +74,16 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 	}
 	defer release()
 
+	locker, err := c.nodeHelper.LockFor(ctx, volumeID, c.hostName, publishInfo)
+	if err != nil {
+		return fmt.Errorf("failed to create distributed lock for volume %s: %v", volumeID, err)
+	}
+
 	trackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		PublishedPaths:    map[string]struct{}{},
 	}
-	if err = c.localStore.WriteTrackingInfo(ctx, volumeID, trackingInfo); err != nil {
+	if err = c.nodeHelper.WriteTrackingInfo(ctx, volumeID, trackingInfo); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeID":          volumeID,
 			"stagingTargetPath": targetPath,
@@ -105,7 +113,7 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 			VolumePublishInfo: *publishInfo, // This may be healed during attach. Update it to the latest value.
 			PublishedPaths:    map[string]struct{}{},
 		}
-		if fileErr := c.localStore.WriteTrackingInfo(ctx, volumeID, trackingInfo); fileErr != nil {
+		if fileErr := c.nodeHelper.WriteTrackingInfo(ctx, volumeID, trackingInfo); fileErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":          volumeID,
 				"stagingTargetPath": targetPath,
@@ -127,11 +135,11 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 	case SMB:
 		err = c.attachSMBVolume(ctx, volumeID, publishInfo)
 	case NVMe:
-		err = c.attachNVMeVolume(ctx, volumeID, publishInfo)
+		err = c.attachNVMeVolume(ctx, volumeID, publishInfo, req.Secrets)
 	case ISCSI:
-		err = c.attachISCSIVolume(ctx, volumeID, publishInfo)
+		err = c.attachISCSIVolume(ctx, volumeID, publishInfo, req.Secrets, locker)
 	case FCP:
-		err = c.attachFCPVolume(ctx, volumeID, publishInfo)
+		err = c.attachFCPVolume(ctx, volumeID, publishInfo, req.Secrets)
 	default:
 		err = errors.UnsupportedError("unknown storage protocol")
 	}
@@ -172,7 +180,10 @@ func (c *Core) attachSMBVolume(ctx context.Context, volume string, publishInfo *
 }
 
 func (c *Core) attachISCSIVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
+	ctx context.Context, volume string,
+	publishInfo *models.VolumePublishInfo,
+	secrets map[string]string,
+	locker distlock.Locker,
 ) (err error) {
 	Logc(ctx).Debug(">>>> attachISCSIVolume")
 	defer Logc(ctx).Debug("<<<< attachISCSIVolume")
@@ -194,15 +205,17 @@ func (c *Core) attachISCSIVolume(
 		return err
 	}
 
-	// Cryptsetup format if necessary and map to host
-	luksFormatted, safeToFsFormat, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
-		ctx, publishInfo.InternalID, publishInfo, publishInfo.Secrets, c.cmd, c.dev,
-	)
-	if err != nil {
-		return err
+	var luksFormatted, safeToFsFormat bool
+	if err = locker.WithLock(ctx, func(ctx context.Context) error {
+		var luksErr error
+		luksFormatted, safeToFsFormat, luksErr = luks.EnsureCryptsetupFormattedAndMappedOnHost(
+			ctx, publishInfo.InternalID, publishInfo, secrets, c.cmd, c.dev,
+		)
+		return luksErr
+	}); err != nil {
+		return fmt.Errorf("could not map LUKS volume on host; %w", orchestratorErrorForLockError(err))
 	}
 
-	// Format and mount if necessary
 	if err = c.iscsi.EnsureVolumeFormattedAndMounted(
 		ctx, publishInfo.InternalID, "", publishInfo, luksFormatted, safeToFsFormat,
 	); err != nil {
@@ -213,18 +226,18 @@ func (c *Core) attachISCSIVolume(
 		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
 			return err
 		}
-		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 
-		// Ensure we update the passphrase in case it has never been set before
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, publishInfo.Secrets, true)
-		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
+		if err = locker.WithLock(ctx, func(ctx context.Context) error {
+			luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
+			return ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
+		}); err != nil {
+			return fmt.Errorf("could not set LUKS volume passphrase; %w", orchestratorErrorForLockError(err))
 		}
 	}
 
 	if mpathSize > 0 {
 		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
-		if err = c.expandISCSIVolume(ctx, volume, publishInfo, mpathSize, publishInfo.Secrets); err != nil {
+		if err = c.expandISCSIVolume(ctx, volume, publishInfo, mpathSize, secrets); err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":        volume,
 				"multipathSize":   mpathSize,
@@ -290,7 +303,7 @@ func (c *Core) ensureAttachISCSIVolume(
 }
 
 func (c *Core) attachFCPVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
+	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 ) (err error) {
 	Logc(ctx).Debug(">>>> attachFCPVolume")
 	defer Logc(ctx).Debug("<<<< attachFCPVolume")
@@ -310,7 +323,7 @@ func (c *Core) attachFCPVolume(
 
 	// Cryptsetup format if necessary and map to host
 	luksFormatted, safeToFsFormat, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
-		ctx, publishInfo.InternalID, publishInfo, publishInfo.Secrets, c.cmd, c.dev,
+		ctx, publishInfo.InternalID, publishInfo, secrets, c.cmd, c.dev,
 	)
 	if err != nil {
 		return err
@@ -330,7 +343,7 @@ func (c *Core) attachFCPVolume(
 		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 
 		// Ensure we update the passphrase in case it has never been set before
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, publishInfo.Secrets, true)
+		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}
@@ -338,7 +351,7 @@ func (c *Core) attachFCPVolume(
 
 	if mpathSize > 0 {
 		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
-		err = c.expandFCPVolume(ctx, volume, publishInfo, mpathSize, publishInfo.Secrets)
+		err = c.expandFCPVolume(ctx, volume, publishInfo, mpathSize, secrets)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":        volume,
@@ -371,7 +384,7 @@ func (c *Core) ensureAttachFCPVolume(
 }
 
 func (c *Core) attachNVMeVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
+	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 ) error {
 	Logc(ctx).Debug(">>>> attachNVMeVolume")
 	defer Logc(ctx).Debug("<<<< attachNVMeVolume")
@@ -395,7 +408,7 @@ func (c *Core) attachNVMeVolume(
 
 	// Cryptsetup format if necessary and map to host
 	luksFormatted, safeToFormat, err := c.nvme.EnsureCryptsetupFormattedAndMappedOnHost(
-		ctx, publishInfo.InternalID, publishInfo, publishInfo.Secrets,
+		ctx, publishInfo.InternalID, publishInfo, secrets,
 	)
 	if err != nil {
 		return err
@@ -415,7 +428,7 @@ func (c *Core) attachNVMeVolume(
 		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 
 		// Ensure we update the passphrase in case it has never been set before
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, publishInfo.Secrets, true)
+		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}

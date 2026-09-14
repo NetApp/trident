@@ -12,12 +12,16 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	clik8sclient "github.com/netapp/trident/cli/k8s_client"
+	"github.com/netapp/trident/config"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -538,6 +542,76 @@ func TestDiscoverPVCsToPublishedPathsRawDevices_EmptyMap(t *testing.T) {
 	err := h.discoverPVCsToPublishedPathsRawDevices(context.Background(), mapping)
 	assert.Nil(t, err)
 	assert.True(t, len(mapping) == 0, "expected empty map!")
+}
+
+// newLockForHelper returns a minimal *helper suitable for LockFor tests.
+// k8sClients is intentionally left nil unless the caller sets it; that covers
+// the "Activate never called / client unavailable" scenario.
+func newLockForHelper(t *testing.T) *helper {
+	t.Helper()
+	mountClient, err := mount.New()
+	require.NoError(t, err)
+	return &helper{mount: mountClient}
+}
+
+// rwxLUKSPublishInfo returns a VolumePublishInfo that requires a distributed lock
+// (LUKS + ReadWriteMany).
+func rwxLUKSPublishInfo() *models.VolumePublishInfo {
+	return &models.VolumePublishInfo{
+		LUKSEncryption: "true",
+		VolumeMode:     string(config.RawBlock), // requiresDistributedLock checks VolumeMode, not FilesystemType
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			ProvisionerAccessMode: config.ReadWriteMany,
+		},
+	}
+}
+
+// TestLockFor_NilPublishInfo verifies that a nil publishInfo returns an error immediately
+// rather than panicking.
+func TestLockFor_NilPublishInfo(t *testing.T) {
+	h := newLockForHelper(t)
+	_, err := h.LockFor(context.Background(), "vol-1", "host-1", nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "publishInfo is nil")
+}
+
+// TestLockFor_NonLUKSVolume_NilClient_ReturnsNoop verifies the bug fix: volumes that don't
+// require a distributed lock get a NoopLock even when k8sClients is nil. Before this fix,
+// NFS/SMB/RWO volumes would fail if Activate had not run.
+func TestLockFor_NonLUKSVolume_NilClient_ReturnsNoop(t *testing.T) {
+	h := newLockForHelper(t)                   // k8sClients is nil
+	publishInfo := &models.VolumePublishInfo{} // no LUKS, no RWX
+
+	locker, err := h.LockFor(context.Background(), "vol-1", "host-1", publishInfo)
+	require.NoError(t, err)
+	assert.IsType(t, &distlock.NoopLock{}, locker, "non-LUKS volume must get a NoopLock regardless of client state")
+}
+
+// TestLockFor_RWXLUKSVolume_NilClient_ReturnsError verifies that an RWX LUKS volume
+// correctly fails when k8sClients is nil, because it genuinely needs the distributed lock.
+func TestLockFor_RWXLUKSVolume_NilClient_ReturnsError(t *testing.T) {
+	h := newLockForHelper(t) // k8sClients is nil
+	_, err := h.LockFor(context.Background(), "vol-1", "host-1", rwxLUKSPublishInfo())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "k8s clients are nil")
+}
+
+// TestLockFor_RWXLUKSVolume_EmptyResourceID_ReturnsError ensures resourceID is validated
+// only for volumes that actually need a lease.
+func TestLockFor_RWXLUKSVolume_EmptyResourceID_ReturnsError(t *testing.T) {
+	h := newLockForHelper(t)
+	h.k8sClients = &clik8sclient.Clients{} // non-nil but KubeClient is nil
+	_, err := h.LockFor(context.Background(), "", "host-1", rwxLUKSPublishInfo())
+	require.Error(t, err)
+}
+
+// TestLockFor_RWXLUKSVolume_EmptyHostID_ReturnsError ensures hostID is validated
+// only for volumes that actually need a lease.
+func TestLockFor_RWXLUKSVolume_EmptyHostID_ReturnsError(t *testing.T) {
+	h := newLockForHelper(t)
+	h.k8sClients = &clik8sclient.Clients{} // non-nil but KubeClient is nil
+	_, err := h.LockFor(context.Background(), "vol-1", "", rwxLUKSPublishInfo())
+	require.Error(t, err)
 }
 
 func newValidHelper(

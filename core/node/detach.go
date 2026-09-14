@@ -16,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/locks"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -55,55 +56,55 @@ var (
 // DetachRequest holds inputs for unstaging a volume (CSI NodeUnstageVolume).
 type DetachRequest struct{}
 
-func (c *Core) Detach(ctx context.Context, volume string, _ DetachRequest) error {
+func (c *Core) Detach(ctx context.Context, volumeID string, _ DetachRequest) error {
 	fields := LogFields{
 		"Method": "Detach",
 		"Type":   "Node_Core",
-		"Volume": volume,
+		"Volume": volumeID,
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> Detach")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< Detach")
 
-	if volume == "" {
+	if volumeID == "" {
 		return errors.New("volume is empty")
 	}
 
 	if err := c.checkReady(); err != nil {
 		return err
 	}
-	release, err := c.acquireVolumeLock(ctx, volume)
+	release, err := c.acquireVolumeLock(ctx, volumeID)
 	if err != nil {
 		return err
 	}
 	defer release()
 
-	return c.detach(ctx, volume, false)
+	return c.detach(ctx, volumeID, false)
 }
 
 // detach tears down a volume attachment on a host.
 // It assumes the caller holds any required locking.
-func (c *Core) detach(ctx context.Context, volume string, force bool) error {
-	if volume == "" {
+func (c *Core) detach(ctx context.Context, volumeID string, force bool) error {
+	if volumeID == "" {
 		return errors.New("volume is empty")
 	}
 
 	fields := LogFields{
 		"Method": "detach",
 		"Type":   "Node_Core",
-		"Volume": volume,
+		"Volume": volumeID,
 		"Force":  force,
 	}
 	Logc(ctx).WithFields(fields).Trace(">>>> detach")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< detach")
 
-	trackingInfo, err := c.localStore.ReadTrackingInfo(ctx, volume)
+	trackingInfo, err := c.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			Logc(ctx).WithFields(fields).Warning("Volume tracking info file not found, returning success.")
 			return nil
 		}
 
-		file := c.trackingFilePath(volume)
+		file := c.trackingFilePath(volumeID)
 		if errors.IsInvalidJSONError(err) {
 			errMsgTemplate := "The volume tracking file is not readable because it was not valid JSON: %s ."
 			Logc(ctx).WithFields(fields).WithError(err).Errorf(errMsgTemplate, file)
@@ -119,17 +120,22 @@ func (c *Core) detach(ctx context.Context, volume string, force bool) error {
 	protocol := publishInfo.GetStorageProtocol()
 	fields["Protocol"] = protocol
 
+	locker, err := c.nodeHelper.LockFor(ctx, volumeID, c.hostName, publishInfo)
+	if err != nil {
+		return fmt.Errorf("failed to create distributed lock for volume %s: %v", volumeID, err)
+	}
+
 	switch protocol {
 	case NFS:
-		return c.detachNFSVolume(ctx, volume)
+		return c.detachNFSVolume(ctx, volumeID)
 	case SMB:
-		return c.detachSMBVolume(ctx, volume, trackingInfo)
+		return c.detachSMBVolume(ctx, volumeID, trackingInfo)
 	case FCP:
-		return c.detachFCPVolumeRetry(ctx, volume, publishInfo, force)
+		return c.detachFCPVolumeRetry(ctx, volumeID, publishInfo, force)
 	case ISCSI:
-		return c.detachISCSIVolumeRetry(ctx, volume, trackingInfo, force)
+		return c.detachISCSIVolumeRetry(ctx, volumeID, trackingInfo, force, locker)
 	case NVMe:
-		return c.detachNVMeVolume(ctx, volume, publishInfo, force)
+		return c.detachNVMeVolume(ctx, volumeID, publishInfo, force)
 	default:
 		return errors.PreconditionError("unknown storage protocol")
 	}
@@ -146,7 +152,7 @@ func (c *Core) detachNFSVolume(ctx context.Context, volume string) error {
 	defer release()
 
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
-	if err := c.localStore.DeleteTrackingInfo(ctx, volume); err != nil {
+	if err := c.nodeHelper.DeleteTrackingInfo(ctx, volume); err != nil {
 		return err
 	}
 	return nil
@@ -173,7 +179,7 @@ func (c *Core) detachSMBVolume(ctx context.Context, volume string, trackingInfo 
 
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed,
 	// regardless of the unmount outcome above.
-	if delErr := c.localStore.DeleteTrackingInfo(ctx, volume); delErr != nil {
+	if delErr := c.nodeHelper.DeleteTrackingInfo(ctx, volume); delErr != nil {
 		return delErr
 	}
 
@@ -260,7 +266,7 @@ func (c *Core) detachFCPVolume(
 			removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
 			Logc(ctx).Warn("Unable to remove multipath device. Continuing with tracking file removal.")
 		}
-		if err = c.localStore.DeleteTrackingInfo(ctx, volume); err != nil {
+		if err = c.nodeHelper.DeleteTrackingInfo(ctx, volume); err != nil {
 			return err
 		}
 		return nil
@@ -352,7 +358,7 @@ func (c *Core) detachFCPVolume(
 		return err
 	}
 
-	if err = c.localStore.DeleteTrackingInfo(ctx, volume); err != nil {
+	if err = c.nodeHelper.DeleteTrackingInfo(ctx, volume); err != nil {
 		return err
 	}
 
@@ -360,7 +366,9 @@ func (c *Core) detachFCPVolume(
 }
 
 func (c *Core) detachISCSIVolumeRetry(
-	ctx context.Context, volume string, trackingInfo *models.VolumeTrackingInfo, force bool,
+	ctx context.Context, volume string,
+	trackingInfo *models.VolumeTrackingInfo, force bool,
+	locker distlock.Locker,
 ) error {
 	Logc(ctx).Debug(">>>> detachISCSIVolumeRetry")
 	defer Logc(ctx).Debug("<<<< detachISCSIVolumeRetry")
@@ -385,7 +393,7 @@ func (c *Core) detachISCSIVolumeRetry(
 	}
 
 	detachISCSIVolumeAttempt := func() error {
-		return c.detachISCSIVolume(ctx, volume, trackingInfo, force)
+		return c.detachISCSIVolume(ctx, volume, trackingInfo, force, locker)
 	}
 
 	detachISCSIVolumeBackoff := backoff.NewExponentialBackOff()
@@ -403,6 +411,7 @@ func (c *Core) detachISCSIVolumeRetry(
 
 func (c *Core) detachISCSIVolume(
 	ctx context.Context, volume string, trackingInfo *models.VolumeTrackingInfo, force bool,
+	locker distlock.Locker,
 ) error {
 	Logc(ctx).Debug(">>>> detachISCSIVolume")
 	defer Logc(ctx).Debug("<<<< detachISCSIVolume")
@@ -436,9 +445,12 @@ func (c *Core) detachISCSIVolume(
 		// and before the tracking file has been removed. We need to ensure the device was removed and remove
 		// the tracking file, without going through the rest of the detach process.
 		if convert.ToBool(publishInfo.LUKSEncryption) {
-			var err error
-			var luksMapperPath string
+			var (
+				err            error
+				luksMapperPath string
+			)
 			fields := LogFields{"device": publishInfo.DevicePath}
+
 			// Set device path to dm device to correctly verify legacy volumes.
 			if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 				luksMapperPath = publishInfo.DevicePath
@@ -461,7 +473,21 @@ func (c *Core) detachISCSIVolume(
 					Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
 				}
 			}
-			if err = c.dev.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath); err != nil {
+
+			if err = locker.WithLock(ctx, func(ctx context.Context) error {
+				return c.dev.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			}); err != nil {
+				if errors.Is(err, distlock.ErrLockDeleteFailed) {
+					// In this case, we couldn't delete the lock.
+					// Return an error so the caller can try again.
+					Logc(ctx).WithFields(fields).WithError(err).Warn(
+						"Distributed LUKS lock could not be deleted. " +
+							"Returning an error so the caller can retry. " +
+							"Manual cleanup may be required.",
+					)
+					return orchestratorErrorForLockError(err)
+				}
+				// ErrLockAcquireConflict and other transient errors: log and continue cleanup.
 				Logc(ctx).WithError(err).Debug("Unable to remove LUKS device. Continuing with tracking file removal.")
 			}
 		}
@@ -469,7 +495,7 @@ func (c *Core) detachISCSIVolume(
 			removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
 			Logc(ctx).Warn("Unable to remove multipath device. Continuing with tracking file removal.")
 		}
-		return c.localStore.DeleteTrackingInfo(ctx, volume)
+		return c.nodeHelper.DeleteTrackingInfo(ctx, volume)
 	}
 
 	deviceInfo, err := c.iscsi.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
@@ -513,11 +539,12 @@ func (c *Core) detachISCSIVolume(
 
 		if luksMapperPath != "" {
 			fields["luksDevice"] = luksMapperPath
-			err = c.dev.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
-			if err != nil {
+			if err = locker.WithLock(ctx, func(ctx context.Context) error {
+				return c.dev.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			}); err != nil {
 				if !errors.IsMaxWaitExceededError(err) {
 					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
-					return err
+					return orchestratorErrorForLockError(err)
 				}
 				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
 			}
@@ -626,8 +653,14 @@ func (c *Core) detachISCSIVolume(
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point. It needs
 	// to be removed prior to removing the 'mpathDevicePath' device below.
 	if luksMapperPath != "" {
-		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
-		if err = c.dev.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+		if err = locker.WithLock(ctx, func(ctx context.Context) error {
+			return c.dev.EnsureLUKSDeviceClosed(ctx, luksMapperPath)
+		}); err != nil {
+			if errors.Is(err, distlock.ErrLockDeleteFailed) {
+				Logc(ctx).WithField("devicePath", luksMapperPath).Error(err.Error())
+				return orchestratorErrorForLockError(err)
+			}
+			// ErrLockAcquireConflict and other transient errors: log warning and continue cleanup.
 			Logc(ctx).WithFields(LogFields{
 				"devicePath": luksMapperPath,
 			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
@@ -641,7 +674,7 @@ func (c *Core) detachISCSIVolume(
 		return err
 	}
 
-	return c.localStore.DeleteTrackingInfo(ctx, volume)
+	return c.nodeHelper.DeleteTrackingInfo(ctx, volume)
 }
 
 func (c *Core) detachNVMeVolume(
@@ -779,7 +812,7 @@ func (c *Core) detachNVMeVolume(
 		devices.LuksCloseDurations.RemoveDurationTracking(luksMapperPath)
 	}
 
-	if err = c.localStore.DeleteTrackingInfo(ctx, volume); err != nil {
+	if err = c.nodeHelper.DeleteTrackingInfo(ctx, volume); err != nil {
 		return err
 	}
 

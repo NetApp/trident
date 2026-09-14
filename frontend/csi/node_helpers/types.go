@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package nodehelpers
 
@@ -7,15 +7,23 @@ import (
 	"os"
 
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/models"
 )
 
-//go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_node_helpers/mock_node_helpers.go github.com/netapp/trident/frontend/csi/node_helpers NodeHelper,VolumePublishManager,VolumeStatsManager
+//go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_node_helpers/mock_node_helpers.go github.com/netapp/trident/frontend/csi/node_helpers NodeHelper,VolumePublishManager,VolumeStatsManager,LockProvider
 
 const (
 	KubernetesHelper = "k8s_csi_node_helper"
 	PlainCSIHelper   = "plain_csi_node_helper"
 )
+
+// LockProvider provides request-bound distlock.Locker instances.
+type LockProvider interface {
+	// LockFor returns a request-bound distlock.Locker instance for a given resource ID.
+	// Depending on the environment, this may return a concrete or a NOOP locker.
+	LockFor(ctx context.Context, resourceID, hostID string, publishInfo *models.VolumePublishInfo) (distlock.Locker, error)
+}
 
 type NodeHelper interface {
 	AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error
@@ -23,6 +31,7 @@ type NodeHelper interface {
 	UpdatePublishInfo(ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo) error
 	VolumePublishManager
 	VolumeStatsManager
+	LockProvider
 	// TODO(node-core): ClientFactory is bootstrap plumbing for transport selection (CRD vs REST).
 	// Node core should construct tridentcontroller.Client once; NodeHelper should stay local-only.
 	tridentcontroller.ClientFactory
