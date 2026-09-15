@@ -453,84 +453,7 @@ func ensureNodeAccessForPolicy(
 	exportPolicyMutex.Lock(policyName)
 	defer exportPolicyMutex.Unlock(policyName)
 
-	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
-		return err
-	} else if !exists {
-		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
-
-		if err = clientAPI.ExportPolicyCreate(ctx, policyName); err != nil {
-			return err
-		}
-	}
-
-	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
-	if err != nil {
-		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
-		Logc(ctx).Error(err)
-		return err
-	}
-	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
-
-	// first grab all existing rules
-	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
-	if err != nil {
-		// Could not list rules, just log it, no action required.
-		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
-	}
-	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
-
-	for _, desiredRule := range desiredRules {
-		desiredRule = strings.TrimSpace(desiredRule)
-
-		desiredIP := net.ParseIP(desiredRule)
-		if desiredIP == nil {
-			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
-			continue
-		}
-
-		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
-		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
-		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
-
-		ruleFound := false
-		for _, existingRule := range existingRules {
-			existingIPs := strings.Split(existingRule, ",")
-
-			for _, ip := range existingIPs {
-				ip = strings.TrimSpace(ip)
-
-				existingIP := net.ParseIP(ip)
-				if existingIP == nil {
-					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
-					continue
-				}
-
-				if existingIP.Equal(desiredIP) {
-					ruleFound = true
-					break
-				}
-			}
-
-			if ruleFound {
-				break
-			}
-		}
-
-		// Rule does not exist, so create it
-		if !ruleFound {
-			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
-				// Check if error is that the export policy rule already exist error
-				if errors.IsAlreadyExistsError(err) {
-					Logc(ctx).WithField("desiredRule", desiredRule).WithError(err).Debug(
-						"Export policy rule already exists")
-					continue
-				}
-				return err
-			}
-		}
-	}
-
-	return nil
+	return ensureNodeAccessRulesForPolicy(ctx, []*tridentmodels.Node{targetNode}, clientAPI, config, policyName)
 }
 
 // ensureNodeAccessForPolicyAndApply ensures an export policy exists with the correct rules for the target node,
@@ -558,6 +481,36 @@ func ensureNodeAccessForPolicyAndApply(
 	exportPolicyMutex.Lock(policyName)
 	defer exportPolicyMutex.Unlock(policyName)
 
+	if err := ensureNodeAccessRulesForPolicy(
+		ctx, []*tridentmodels.Node{targetNode}, clientAPI, config, policyName,
+	); err != nil {
+		return err
+	}
+
+	// Apply the policy while still holding the lock
+	if applyPolicy != nil {
+		if err := applyPolicy(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ensureNodeAccessRulesForPolicy ensures that the export policy identified by policyName exists (creating it if
+// necessary) and that it contains rules granting access for every IP address of the given nodes, filtered by
+// config.AutoExportCIDRs.
+//
+// This function only ADDS rules: it never deletes any existing rule, and it never changes which export policy
+// is assigned to any volume or qtree. Callers that need to remove stale rules should use
+// reconcileExportPolicyRules instead; that function acquires exportPolicyMutex for policyName itself, so it
+// MUST be called WITHOUT already holding that lock.
+// NOTE: Caller MUST hold the exportPolicyMutex for policyName before calling this function.
+// NOTE: Every element of nodes must be non-nil; a nil element will panic in getDesiredExportPolicyRules.
+func ensureNodeAccessRulesForPolicy(
+	ctx context.Context, nodes []*tridentmodels.Node, clientAPI api.OntapAPI,
+	config *drivers.OntapStorageDriverConfig, policyName string,
+) error {
 	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
 		return err
 	} else if !exists {
@@ -568,12 +521,15 @@ func ensureNodeAccessForPolicyAndApply(
 		}
 	}
 
-	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, config)
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
 		return err
 	}
+	// getDesiredExportPolicyRules unions the rules via a map, so its iteration order is random; sort to keep
+	// rule-creation order deterministic.
+	sort.Strings(desiredRules)
 	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
 
 	// first grab all existing rules
@@ -632,13 +588,6 @@ func ensureNodeAccessForPolicyAndApply(
 				}
 				return err
 			}
-		}
-	}
-
-	// Apply the policy while still holding the lock
-	if applyPolicy != nil {
-		if err = applyPolicy(); err != nil {
-			return err
 		}
 	}
 

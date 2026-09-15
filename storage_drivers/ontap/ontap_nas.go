@@ -1873,8 +1873,14 @@ func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
 	return nil
 }
 
+// ReconcileVolumeNodeAccess adds any missing export rules for the published nodes to the volume's own
+// per-volume export policy. It never removes a rule or changes which policy is assigned. Volumes that
+// are not on a Trident-managed per-volume policy (still on the backend policy, unpublished, or on a
+// customer-managed policy) are skipped, as are read-only clones, which never get a policy of their own
+// on this driver. The recorded ExportPolicy is trusted rather than re-read from ONTAP; a stale record
+// only delays repair until the volume's next publish or unpublish.
 func (d *NASStorageDriver) ReconcileVolumeNodeAccess(
-	ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node,
+	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node,
 ) error {
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
@@ -1883,7 +1889,43 @@ func (d *NASStorageDriver) ReconcileVolumeNodeAccess(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
 
-	return nil
+	skipFields := LogFields{
+		"volume":       volConfig.InternalName,
+		"exportPolicy": volConfig.ExportPolicy,
+	}
+
+	if !d.Config.AutoExportPolicy {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Auto export policies are not turned on; skipping export policy reconciliation.")
+		return nil
+	}
+
+	if len(nodes) == 0 {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"No published nodes to reconcile; skipping export policy reconciliation.")
+		return nil
+	}
+
+	if volConfig.InternalName == "" {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Volume has no internal name; skipping export policy reconciliation.")
+		return nil
+	}
+
+	if volConfig.ExportPolicy != volConfig.InternalName {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Volume is not on a per-volume export policy; skipping export policy reconciliation.")
+		return nil
+	}
+
+	policyName := volConfig.ExportPolicy
+
+	// ensureNodeAccessRulesForPolicy requires the caller to hold the export policy lock; it only adds missing
+	// rules and never assigns or deletes a policy.
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
+	return ensureNodeAccessRulesForPolicy(ctx, nodes, d.API, &d.Config, policyName)
 }
 
 // GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change

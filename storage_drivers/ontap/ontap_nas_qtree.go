@@ -2918,7 +2918,19 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, backendPolicyName)
 }
 
-func (d *NASQtreeStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node) error {
+// ReconcileVolumeNodeAccess repairs (add-only) the volume's qtree-level export policy so it grants access to
+// every currently published node; it never removes a rule or changes which policy is assigned. Read-only
+// clones have no export policy of their own -- they share their source qtree's policy and are reconciled
+// against it. It is a no-op when auto export policies are disabled, there are no published nodes, the volume
+// has no internal name, or the volume is not (yet) on a Trident-managed per-qtree policy -- e.g. it is still
+// on the backend policy, unpublished, predates the per-qtree policy field, or uses a customer-managed policy.
+// This method trusts the volume's recorded ExportPolicy instead of querying ONTAP for it; if that record is
+// stale (rare crash or out-of-band edit), the volume is skipped until its next publish/unpublish, or an
+// unreferenced policy may be recreated (possibly including rules for nodes that have since unpublished) --
+// an accepted trade-off to keep the reconcile cost bounded.
+func (d *NASQtreeStorageDriver) ReconcileVolumeNodeAccess(
+	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "NASQtreeStorageDriver",
@@ -2926,7 +2938,50 @@ func (d *NASQtreeStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, v
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
 
-	return nil
+	skipFields := LogFields{
+		"volume":       volConfig.InternalName,
+		"exportPolicy": volConfig.ExportPolicy,
+	}
+
+	if !d.Config.AutoExportPolicy {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Auto export policies are not turned on; skipping export policy reconciliation.")
+		return nil
+	}
+
+	if len(nodes) == 0 {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"No published nodes to reconcile; skipping export policy reconciliation.")
+		return nil
+	}
+
+	if volConfig.InternalName == "" {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Volume has no internal name; skipping export policy reconciliation.")
+		return nil
+	}
+
+	// A volume is on a Trident-managed per-qtree policy either because it owns that policy outright, or
+	// because it is a read-only clone sharing its source qtree's policy (RO clones never get their own
+	// export policy; Publish/publishQtreeShare leaves volConfig.ExportPolicy pointed at the source qtree).
+	onOwnPolicy := volConfig.ExportPolicy == volConfig.InternalName
+	onSourcePolicy := volConfig.ReadOnlyClone && volConfig.CloneSourceVolumeInternal != "" &&
+		volConfig.ExportPolicy == volConfig.CloneSourceVolumeInternal
+
+	if !onOwnPolicy && !onSourcePolicy {
+		Logc(ctx).WithFields(skipFields).Debug(
+			"Volume is not on a qtree-level export policy; skipping export policy reconciliation.")
+		return nil
+	}
+
+	policyName := volConfig.ExportPolicy
+
+	// ensureNodeAccessRulesForPolicy requires the caller to hold the export policy lock; it only adds missing
+	// rules and never assigns or deletes a policy.
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
+	return ensureNodeAccessRulesForPolicy(ctx, nodes, d.API, &d.Config, policyName)
 }
 
 // GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change

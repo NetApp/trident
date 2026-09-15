@@ -6573,25 +6573,198 @@ func TestOntapNASDriverGetConfig(t *testing.T) {
 	assert.NotNil(t, config)
 }
 
-func TestOntapNASDriverReconcileVolumeNodeAccess(t *testing.T) {
-	ctx := context.Background()
+func TestOntapNASDriverReconcileVolumeNodeAccess_AutoExportPolicyDisabled(t *testing.T) {
+	// Strict mock, zero expectations registered: auto export policy is off, so no ONTAP call of any kind
+	// should ever be made, regardless of nodes/policy state. Any call would fail the test as unexpected.
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = false
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
 
-	volConfig := &storage.VolumeConfig{
-		Name:         "test-volume",
-		InternalName: "trident_test_volume",
-	}
-
-	nodes := []*models.Node{
-		{
-			Name: "node1",
-		},
-	}
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "trident_pvc_x"}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
 
 	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
-
-	// This function returns nil in NAS driver - testing for coverage
 	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_EmptyNodes(t *testing.T) {
+	// No published nodes: an add-only reconciler has nothing to add, so it must not call ONTAP.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "trident_pvc_x"}
+	nodes := []*models.Node{}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_EmptyInternalName(t *testing.T) {
+	// Pins that the InternalName == "" guard runs before the policy-equality check: without it, the
+	// dangerous combination InternalName == "" && ExportPolicy == "" would satisfy volConfig.ExportPolicy ==
+	// volConfig.InternalName and go on to ensure a policy literally named "".
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "", ExportPolicy: ""}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_BackendPolicy(t *testing.T) {
+	// Volume is still on the backend policy; that is repaired by ReconcileNodeAccess, not this method.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	backendPolicy := getExportPolicyName(BackendUUID)
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: backendPolicy}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_EmptyExportPolicyName(t *testing.T) {
+	// Volume is unpublished (on the empty policy); nothing to reconcile until it is published.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	emptyPolicy := getEmptyExportPolicyName(*driver.Config.StoragePrefix)
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: emptyPolicy}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_UnmanagedPolicy(t *testing.T) {
+	// Customer-managed export policy; Trident must never touch it.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "default"}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_UnsetExportPolicy(t *testing.T) {
+	// Pre-23.04 upgrade case: ExportPolicy was never populated. Heals at the next publish/unpublish, not here.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: ""}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_ROCloneSkipped(t *testing.T) {
+	// Pins that ontap-nas deliberately has NO economy-style shared-source-policy arm. ExportPolicy is set
+	// equal to CloneSourceVolumeInternal -- the one value that would satisfy the economy driver's RO-clone
+	// arm (ReadOnlyClone && ExportPolicy == CloneSourceVolumeInternal) -- specifically so that this test
+	// fails the moment someone copies that arm onto this driver, forcing them to confront the difference:
+	// on this driver, core clears a read-only clone's ExportPolicy to "" (core/orchestrator_core.go) and
+	// CreateClone never provisions a FlexVol for it, so there is no backend object and no recorded policy
+	// name to reconcile against in the first place. In practice ExportPolicy stays "" for a real RO clone
+	// (see UnsetExportPolicy); this fixture is a deliberately adversarial value to pin the no-arm decision,
+	// not a state this driver actually produces.
+	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "trident_pvc_clone",
+		ExportPolicy:              "trident_pvc_src",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "trident_pvc_src",
+	}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_HappyPathMultiNode(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_x"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{
+		{Name: "node-1", IPs: []string{"10.0.0.5"}},
+		{Name: "node-2", IPs: []string{"10.0.0.6"}},
+	}
+
+	// One stale, out-of-CIDR rule is already present (e.g. left over from a node that is no longer
+	// published); the add-only helper must leave it alone and only create the two rules the current nodes
+	// are missing.
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(map[int]string{1: "203.0.113.5"}, nil)
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.5", gomock.Any()).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.6", gomock.Any()).Times(1).Return(nil),
+	)
+	// Pin add-only + no-assignment at the driver level: this method must never destroy a rule or (re)assign
+	// the policy to the volume.
+	mockAPI.EXPECT().ExportRuleDestroy(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_PolicyMissingRecreated(t *testing.T) {
+	// #1180-adjacent recovery: the policy was deleted out-of-band while the volume still references it by
+	// name. The whole sequence is order-pinned so an inverted implementation fails this test, not just one
+	// that merely calls each method once.
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_y"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.7"}}}
+
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil),
+		mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.7", gomock.Any()).Times(1).Return(nil),
+	)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestOntapNASDriverReconcileVolumeNodeAccess_HelperErrorPropagated(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_z"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.8"}}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, mockError)
+	mockAPI.EXPECT().ExportPolicyCreate(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.Error(t, err)
+	assert.Equal(t, mockError, err)
 }
 
 func TestOntapNASDriverEnablePublishEnforcement(t *testing.T) {

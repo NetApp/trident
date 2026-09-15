@@ -4418,6 +4418,219 @@ func TestReconcileNodeAccess(t *testing.T) {
 	assert.NoError(t, err, "Reconcile node access failed")
 }
 
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_AutoExportPolicyDisabled(t *testing.T) {
+	// Strict mock, zero expectations registered: auto export policy is off, so no ONTAP call of any kind
+	// should ever be made, regardless of nodes/policy state. Any call would fail the test as unexpected.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = false
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "trident_pvc_x"}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_EmptyNodes(t *testing.T) {
+	// No published nodes: an add-only reconciler has nothing to add, so it must not call ONTAP.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "trident_pvc_x"}
+	nodes := []*models.Node{}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_BackendPolicy(t *testing.T) {
+	// Volume is still on the backend policy; that is repaired by ReconcileNodeAccess, not this method.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	backendPolicy := getExportPolicyName(BackendUUID)
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: backendPolicy}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_EmptyExportPolicyName(t *testing.T) {
+	// Volume is unpublished (on the empty policy); nothing to reconcile until it is published.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	emptyPolicy := getEmptyExportPolicyName(*driver.Config.StoragePrefix)
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: emptyPolicy}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_UnmanagedPolicy(t *testing.T) {
+	// Customer-managed export policy; Trident must never touch it.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: "default"}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_UnsetExportPolicy(t *testing.T) {
+	// Pre-23.04 upgrade case: ExportPolicy was never populated. Heals at the next publish/unpublish, not here.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "trident_pvc_x", ExportPolicy: ""}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_EmptyInternalName(t *testing.T) {
+	// Pins that the InternalName == "" guard runs before the policy-equality arms: without it, the dangerous
+	// combination InternalName == "" && ExportPolicy == "" would satisfy volConfig.ExportPolicy ==
+	// volConfig.InternalName and go on to ensure a policy literally named "".
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{InternalName: "", ExportPolicy: "", ReadOnlyClone: false}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_ROCloneUnmanaged(t *testing.T) {
+	// A read-only clone whose ExportPolicy is a customer-managed (or otherwise unrelated) policy -- not the
+	// source qtree's policy -- must be skipped just like a non-clone volume on an unmanaged policy.
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "trident_pvc_clone",
+		ExportPolicy:              "default",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "trident_pvc_src",
+	}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.1"}}}
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_HappyPathMultiNode(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_x"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{
+		{Name: "node-1", IPs: []string{"10.0.0.5"}},
+		{Name: "node-2", IPs: []string{"10.0.0.6"}},
+	}
+
+	// One stale rule is already present (e.g. left over from a node that is no longer published); the
+	// add-only helper must leave it alone and only create the two rules the current nodes are missing.
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(map[int]string{1: "192.168.9.9"}, nil)
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.5", gomock.Any()).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.6", gomock.Any()).Times(1).Return(nil),
+	)
+	// Pin add-only + no-assignment at the driver level: this method must never destroy a rule or (re)assign
+	// the policy to the qtree.
+	mockAPI.EXPECT().ExportRuleDestroy(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().QtreeModifyExportPolicy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_ROClone(t *testing.T) {
+	// A published read-only clone has no export policy of its own: publishQtreeShare leaves its ExportPolicy
+	// pointed at the source qtree's policy. Reconciliation must run against that shared source-named policy,
+	// using the clone's own published node/IP, and must never destroy a rule or reassign the policy.
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	sourcePolicy := "trident_pvc_src"
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "trident_pvc_clone",
+		ExportPolicy:              sourcePolicy,
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: sourcePolicy,
+	}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.9"}}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, sourcePolicy).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, sourcePolicy).Times(1).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, sourcePolicy, "10.0.0.9", gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().QtreeModifyExportPolicy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_PolicyMissingRecreated(t *testing.T) {
+	// #1180-adjacent recovery: the policy was deleted out-of-band while the qtree still references it by name.
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_y"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.7"}}}
+
+	// The whole sequence is order-pinned so an inverted implementation (e.g. creating the rule before checking
+	// or creating the policy) fails this test, not just an implementation that merely calls each method once.
+	gomock.InOrder(
+		mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil),
+		mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil),
+		mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil),
+		mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, "10.0.0.7", gomock.Any()).Times(1).Return(nil),
+	)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.NoError(t, err)
+}
+
+func TestNASQtreeStorageDriverReconcileVolumeNodeAccess_HelperErrorPropagated(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"10.0.0.0/24"}
+
+	policyName := "trident_pvc_z"
+	volConfig := &storage.VolumeConfig{InternalName: policyName, ExportPolicy: policyName}
+	nodes := []*models.Node{{Name: "node-1", IPs: []string{"10.0.0.8"}}}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, mockError)
+	mockAPI.EXPECT().ExportPolicyCreate(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+	assert.Error(t, err)
+	assert.Equal(t, mockError, err)
+}
+
 func TestEnsureSMBShare_Success_WithSMBShareInConfig(t *testing.T) {
 	volName := "vol1"
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
