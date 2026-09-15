@@ -1203,10 +1203,117 @@ func TestImport_QtreeRenameFails(t *testing.T) {
 	assert.Contains(t, err.Error(), "rename failed")
 }
 
-func TestRename_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	result := driver.Rename(ctx, "", "")
-	assert.Error(t, result, "Expected error in Rename, got nil")
+func TestRename_Success_PlainName(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	flexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "old-qtree", gomock.Any()).Return(true, flexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx, "/vol/"+flexvol+"/old-qtree", "/vol/"+flexvol+"/new-qtree").Return(nil)
+
+	err := driver.Rename(ctx, "old-qtree", "new-qtree")
+	assert.NoError(t, err)
+}
+
+func TestRename_QtreeNotFound(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	mockAPI.EXPECT().QtreeExists(ctx, "missing-qtree", gomock.Any()).Return(false, "", nil)
+
+	err := driver.Rename(ctx, "missing-qtree", "new-qtree")
+	assert.Error(t, err)
+}
+
+func TestRename_QtreeExistsCheckFails(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	mockAPI.EXPECT().QtreeExists(ctx, "qtree1", gomock.Any()).Return(false, "", fmt.Errorf("api error"))
+
+	err := driver.Rename(ctx, "qtree1", "new-qtree")
+	assert.Error(t, err)
+}
+
+func TestRename_QtreeRenameFails(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	flexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "old-qtree", gomock.Any()).Return(true, flexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx, "/vol/"+flexvol+"/old-qtree", "/vol/"+flexvol+"/new-qtree").
+		Return(fmt.Errorf("rename blocked"))
+
+	err := driver.Rename(ctx, "old-qtree", "new-qtree")
+	assert.Error(t, err)
+}
+
+// TestRename_ImportCleanup_RevertsFlexVol asserts that when newName is a "flexvol/qtree" path (as
+// used by import-failure cleanup via ImportOriginalName) and the current FlexVol holds only the
+// qtree being reverted, both the qtree and the FlexVol are renamed back to their original names.
+func TestRename_ImportCleanup_RevertsFlexVol(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	currentFlexvol := "trident_qtree_pool_abc123"
+	originalFlexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "pvc-123", gomock.Any()).Return(true, currentFlexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-qtree").Return(nil)
+	mockAPI.EXPECT().QtreeCount(ctx, currentFlexvol).Return(1, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, originalFlexvol).Return(false, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, currentFlexvol, originalFlexvol).Return(nil)
+
+	err := driver.Rename(ctx, "pvc-123", originalFlexvol+"/old-qtree")
+	assert.NoError(t, err)
+}
+
+// TestRename_ImportCleanup_SharedFlexVolNotReverted asserts that the FlexVol is left alone when it
+// holds other qtrees besides the one being reverted, so those other qtrees aren't orphaned.
+func TestRename_ImportCleanup_SharedFlexVolNotReverted(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	currentFlexvol := "trident_qtree_pool_abc123"
+	originalFlexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "pvc-123", gomock.Any()).Return(true, currentFlexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-qtree").Return(nil)
+	mockAPI.EXPECT().QtreeCount(ctx, currentFlexvol).Return(2, nil)
+
+	err := driver.Rename(ctx, "pvc-123", originalFlexvol+"/old-qtree")
+	assert.NoError(t, err)
+}
+
+// TestRename_ImportCleanup_TargetFlexVolAlreadyExists asserts that the FlexVol rename is skipped
+// when a FlexVol with the target name already exists, to avoid a collision.
+func TestRename_ImportCleanup_TargetFlexVolAlreadyExists(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	currentFlexvol := "trident_qtree_pool_abc123"
+	originalFlexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "pvc-123", gomock.Any()).Return(true, currentFlexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-qtree").Return(nil)
+	mockAPI.EXPECT().QtreeCount(ctx, currentFlexvol).Return(1, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, originalFlexvol).Return(true, nil)
+
+	err := driver.Rename(ctx, "pvc-123", originalFlexvol+"/old-qtree")
+	assert.NoError(t, err)
+}
+
+// TestRename_ImportCleanup_FlexVolRenameFailsRollsBackQtree asserts that if the FlexVol rename
+// fails, the qtree rename is rolled back so the driver doesn't leave a half-reverted state.
+func TestRename_ImportCleanup_FlexVolRenameFailsRollsBackQtree(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	currentFlexvol := "trident_qtree_pool_abc123"
+	originalFlexvol := "userVol1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, "pvc-123", gomock.Any()).Return(true, currentFlexvol, nil)
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-qtree").Return(nil)
+	mockAPI.EXPECT().QtreeCount(ctx, currentFlexvol).Return(1, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, originalFlexvol).Return(false, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, currentFlexvol, originalFlexvol).Return(fmt.Errorf("volume rename blocked"))
+	mockAPI.EXPECT().QtreeRename(ctx,
+		"/vol/"+currentFlexvol+"/old-qtree", "/vol/"+currentFlexvol+"/pvc-123").Return(nil)
+
+	err := driver.Rename(ctx, "pvc-123", originalFlexvol+"/old-qtree")
+	assert.Error(t, err)
 }
 
 func TestDestroy_Success(t *testing.T) {

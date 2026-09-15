@@ -2342,12 +2342,110 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 	}
 }
 
-func TestOntapSanEconomyVolumeRename(t *testing.T) {
-	_, d := newMockOntapSanEcoDriver(t)
+func TestOntapSanEconomyVolumeRename_Success_PlainName(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	bucketVol := "userVol1"
+	lunPathPattern := fmt.Sprintf("/vol/%s*/volInternal", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(
+		api.Luns{{Name: "/vol/" + bucketVol + "/volInternal", VolumeName: bucketVol}}, nil)
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+bucketVol+"/volInternal", "/vol/"+bucketVol+"/newVolInternal").Return(nil)
 
 	err := d.Rename(ctx, "volInternal", "newVolInternal")
+	assert.NoError(t, err)
+}
 
-	assert.EqualError(t, err, "rename is not implemented")
+func TestOntapSanEconomyVolumeRename_LUNNotFound(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	lunPathPattern := fmt.Sprintf("/vol/%s*/volInternal", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(api.Luns{}, nil)
+
+	err := d.Rename(ctx, "volInternal", "newVolInternal")
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeRename_LUNRenameFails(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	bucketVol := "userVol1"
+	lunPathPattern := fmt.Sprintf("/vol/%s*/volInternal", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(
+		api.Luns{{Name: "/vol/" + bucketVol + "/volInternal", VolumeName: bucketVol}}, nil)
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+bucketVol+"/volInternal", "/vol/"+bucketVol+"/newVolInternal").Return(fmt.Errorf("rename blocked"))
+
+	err := d.Rename(ctx, "volInternal", "newVolInternal")
+	assert.Error(t, err)
+}
+
+// TestOntapSanEconomyVolumeRename_ImportCleanup_RevertsFlexVol asserts that when newName is a
+// "flexvol/LUN" path (as used by import-failure cleanup via ImportOriginalName) and the current
+// FlexVol holds only the LUN being reverted, both the LUN and the FlexVol are renamed back.
+func TestOntapSanEconomyVolumeRename_ImportCleanup_RevertsFlexVol(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	currentFlexvol := "trident_pool_abc123"
+	originalFlexvol := "userVol1"
+	lunPathPattern := fmt.Sprintf("/vol/%s*/pvc-123", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(
+		api.Luns{{Name: "/vol/" + currentFlexvol + "/pvc-123", VolumeName: currentFlexvol}}, nil)
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-lun").Return(nil)
+	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("/vol/%s/*", currentFlexvol)).Return(
+		api.Luns{{Name: "/vol/" + currentFlexvol + "/old-lun", VolumeName: currentFlexvol}}, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, originalFlexvol).Return(false, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, currentFlexvol, originalFlexvol).Return(nil)
+
+	err := d.Rename(ctx, "pvc-123", originalFlexvol+"/old-lun")
+	assert.NoError(t, err)
+}
+
+// TestOntapSanEconomyVolumeRename_ImportCleanup_SharedFlexVolNotReverted asserts that the FlexVol
+// is left alone when it holds other LUNs besides the one being reverted.
+func TestOntapSanEconomyVolumeRename_ImportCleanup_SharedFlexVolNotReverted(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	currentFlexvol := "trident_pool_abc123"
+	originalFlexvol := "userVol1"
+	lunPathPattern := fmt.Sprintf("/vol/%s*/pvc-123", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(
+		api.Luns{{Name: "/vol/" + currentFlexvol + "/pvc-123", VolumeName: currentFlexvol}}, nil)
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-lun").Return(nil)
+	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("/vol/%s/*", currentFlexvol)).Return(
+		api.Luns{
+			{Name: "/vol/" + currentFlexvol + "/old-lun", VolumeName: currentFlexvol},
+			{Name: "/vol/" + currentFlexvol + "/other-lun", VolumeName: currentFlexvol},
+		}, nil)
+
+	err := d.Rename(ctx, "pvc-123", originalFlexvol+"/old-lun")
+	assert.NoError(t, err)
+}
+
+// TestOntapSanEconomyVolumeRename_ImportCleanup_FlexVolRenameFailsRollsBackLUN asserts that if the
+// FlexVol rename fails, the LUN rename is rolled back so the driver doesn't leave a half-reverted
+// state.
+func TestOntapSanEconomyVolumeRename_ImportCleanup_FlexVolRenameFailsRollsBackLUN(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	currentFlexvol := "trident_pool_abc123"
+	originalFlexvol := "userVol1"
+	lunPathPattern := fmt.Sprintf("/vol/%s*/pvc-123", d.FlexvolNamePrefix())
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(
+		api.Luns{{Name: "/vol/" + currentFlexvol + "/pvc-123", VolumeName: currentFlexvol}}, nil)
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+currentFlexvol+"/pvc-123", "/vol/"+currentFlexvol+"/old-lun").Return(nil)
+	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("/vol/%s/*", currentFlexvol)).Return(
+		api.Luns{{Name: "/vol/" + currentFlexvol + "/old-lun", VolumeName: currentFlexvol}}, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, originalFlexvol).Return(false, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, currentFlexvol, originalFlexvol).Return(fmt.Errorf("volume rename blocked"))
+	mockAPI.EXPECT().LunRename(ctx,
+		"/vol/"+currentFlexvol+"/old-lun", "/vol/"+currentFlexvol+"/pvc-123").Return(nil)
+
+	err := d.Rename(ctx, "pvc-123", originalFlexvol+"/old-lun")
+	assert.Error(t, err)
 }
 
 func economyMainLUNPath(bucketVol string) string {
