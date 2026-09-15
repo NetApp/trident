@@ -220,6 +220,12 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 			publishInfo.FilesystemType = mountCapability.GetFsType()
 		}
 
+		sharedTarget, parseErr := strconv.ParseBool(publishContext["sharedTarget"])
+		if parseErr != nil {
+			return nil, status.Error(codes.Internal, parseErr.Error())
+		}
+		publishInfo.SharedTarget = sharedTarget
+
 		publishInfo.SANType = req.PublishContext["SANType"]
 		publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 		publishInfo.LUKSEncryption = strconv.FormatBool(convert.ToBool(req.PublishContext["LUKSEncryption"]))
@@ -287,14 +293,6 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 	}
 
 	attachReq := nodecore.AttachRequest{PublishInfo: publishInfo, Secrets: secrets}
-	if tridentconfig.Protocol(publishContext["protocol"]) == tridentconfig.Block {
-		sharedTarget, parseErr := strconv.ParseBool(publishContext["sharedTarget"])
-		if parseErr != nil {
-			return nil, status.Error(codes.Internal, parseErr.Error())
-		}
-		attachReq.SharedTarget = sharedTarget
-	}
-
 	if err := p.nodeOrchestrator.Attach(ctx, volumeID, attachReq); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "NodeStageVolume timed out")

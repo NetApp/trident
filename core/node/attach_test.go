@@ -83,6 +83,49 @@ func TestAttach_WritesTrackingInfoBeforeAndAfter(t *testing.T) {
 	assert.Len(t, writes, 2, "expected one write before dispatch and one deferred write after")
 }
 
+// TestAttach_SharedTargetPreservedInBothTrackingWrites asserts that publishInfo.SharedTarget
+// survives both tracking-file writes unchanged. Prior to removing the duplicate AttachRequest.SharedTarget
+// field, a caller passing req.SharedTarget=false (zero value) could overwrite publishInfo.SharedTarget.
+func TestAttach_SharedTargetPreservedInBothTrackingWrites(t *testing.T) {
+	for _, protocol := range []models.StorageProtocol{NFS, ISCSI, FCP} {
+		t.Run(string(protocol), func(t *testing.T) {
+			core, mocks := newTestCore(t)
+			publishInfo := samplePublishInfo(protocol)
+			publishInfo.SharedTarget = true
+
+			var writes []models.VolumePublishInfo
+			mocks.NodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), "test-volume", gomock.Any()).
+				Times(2).
+				DoAndReturn(func(_ context.Context, _ string, ti *models.VolumeTrackingInfo) error {
+					writes = append(writes, ti.VolumePublishInfo)
+					return nil
+				})
+
+			switch protocol {
+			case NFS:
+				mocks.Mount.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+			case ISCSI:
+				mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
+				mocks.ISCSI.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil)
+				mocks.ISCSI.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+			case FCP:
+				mocks.FCP.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
+				mocks.FCP.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil)
+			}
+
+			err := core.Attach(context.Background(), "test-volume", AttachRequest{PublishInfo: publishInfo})
+			require.NoError(t, err)
+			require.Len(t, writes, 2, "expected two tracking-file writes")
+			assert.True(t, writes[0].SharedTarget, "initial tracking write must preserve SharedTarget=true")
+			assert.True(t, writes[1].SharedTarget, "deferred tracking write must preserve SharedTarget=true")
+		})
+	}
+}
+
 func TestAttach_DeferredWriteFailure_SurfacesError(t *testing.T) {
 	core, mocks := newTestCore(t)
 

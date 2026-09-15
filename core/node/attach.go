@@ -35,9 +35,8 @@ var (
 // protocols and controls shared-target iSCSI logout behavior during detach.
 // Secrets carries transient per-call credentials (e.g. LUKS passphrase) and are never persisted.
 type AttachRequest struct {
-	PublishInfo  *models.VolumePublishInfo
-	SharedTarget bool
-	Secrets      map[string]string
+	PublishInfo *models.VolumePublishInfo
+	Secrets     map[string]string
 }
 
 func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (err error) {
@@ -50,11 +49,6 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 	}
 
 	protocol := publishInfo.GetStorageProtocol()
-	switch protocol {
-	case FCP, ISCSI, NVMe:
-		publishInfo.SharedTarget = req.SharedTarget
-	}
-
 	targetPath := publishInfo.GlobalMount
 	fields := LogFields{
 		"Method":     "Attach",
