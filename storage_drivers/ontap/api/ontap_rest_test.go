@@ -5082,7 +5082,7 @@ func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	_, err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
 		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, new(true), 0, models.VolumeStyleFlexvol,
-		false)
+		false, int64(0))
 	assert.Error(t, err, "volume created")
 	server.Close()
 }
@@ -5105,7 +5105,7 @@ func TestOntapREST_VolumeCreate(t *testing.T) {
 
 			_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
-				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false, int64(0))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a volume")
 			} else {
@@ -5151,7 +5151,7 @@ func TestOntapREST_VolumeCreateBalanced(t *testing.T) {
 
 			volumeUUID, err := rs.VolumeCreateBalanced(ctx, "fakeVolume", "1g", "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
-				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false, int64(0))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a balanced volume")
 				assert.NotEmpty(t, volumeUUID, "balanced volume create should return the UUID from its visibility GET")
@@ -5173,7 +5173,7 @@ func TestCreateApplicationContainerByStyle_Success(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 10, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create to succeed")
 }
 
@@ -5187,7 +5187,7 @@ func TestCreateApplicationContainerByStyle_FlexgroupStyle(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 10, false,
-		models.VolumeStyleFlexgroup)
+		models.VolumeStyleFlexgroup, int64(0))
 	assert.NoError(t, err, "expected container create with flexgroup style to succeed")
 }
 
@@ -5201,7 +5201,7 @@ func TestCreateApplicationContainerByStyle_DPVolume(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, &encrypt, NumericalValueNotSet, true,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create for DP volume to succeed")
 }
 
@@ -5214,7 +5214,7 @@ func TestCreateApplicationContainerByStyle_InvalidUnixPermissions(t *testing.T) 
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.Error(t, err, "expected error for invalid unix permissions")
 	assert.Contains(t, err.Error(), "cannot process unix permissions")
 }
@@ -5228,7 +5228,7 @@ func TestCreateApplicationContainerByStyle_EncryptNil(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create with nil encrypt to succeed")
 }
 
@@ -5241,7 +5241,7 @@ func TestCreateApplicationContainerByStyle_NoNASOptions(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create with no NAS options to succeed")
 }
 
@@ -5254,7 +5254,7 @@ func TestCreateApplicationContainerByStyle_WithTieringPolicy(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"", "", "", "", "auto",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create with tiering policy to succeed")
 }
 
@@ -5267,7 +5267,7 @@ func TestCreateApplicationContainerByStyle_BackendError(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"fakeSnapshotPolicy", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.Error(t, err, "expected error from backend")
 }
 
@@ -5284,7 +5284,7 @@ func TestCreateApplicationContainerByStyle_NilAcceptedResponse(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, NumericalValueNotSet, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.Error(t, err, "expected error for nil accepted response")
 }
 
@@ -5297,7 +5297,7 @@ func TestCreateApplicationContainerByStyle_WithQoSPolicy(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"", "---rwxr-xr-x", "default", "unix", "",
 		"test comment", QosPolicyGroup{Name: "myQos", Kind: QosPolicyGroupKind}, nil, 5, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create with QoS policy to succeed")
 }
 
@@ -5310,7 +5310,7 @@ func TestCreateApplicationContainerByStyle_WithSnapshotReserve(t *testing.T) {
 	err := rs.createApplicationContainerByStyle(ctx, "fakeVolume", 1073741824, "none",
 		"daily", "", "", "", "",
 		"", QosPolicyGroup{Kind: InvalidQosPolicyGroupKind}, nil, 20, false,
-		models.VolumeStyleFlexvol)
+		models.VolumeStyleFlexvol, int64(0))
 	assert.NoError(t, err, "expected container create with snapshot reserve to succeed")
 }
 
@@ -5739,7 +5739,7 @@ func TestOntapREST_FlexGroupCreate(t *testing.T) {
 
 			err := rs.FlexGroupCreate(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
-				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, new(true), 0)
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, new(true), 0, int64(0))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a flexgroup volume")
 			} else {
@@ -5768,7 +5768,7 @@ func TestOntapREST_FlexGroupCreateBalanced(t *testing.T) {
 
 			err := rs.FlexGroupCreateBalanced(ctx, "fakeVolume", 1073741824, "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
-				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0)
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, int64(0))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a balanced flexgroup volume")
 			} else {

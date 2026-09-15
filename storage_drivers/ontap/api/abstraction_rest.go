@@ -190,9 +190,14 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, 
 		aggregateName = volume.Aggregates[0]
 	}
 
+	gid, err := parseUnixGroupID(volume.UnixGroupID)
+	if err != nil {
+		return "", err
+	}
+
 	volumeUUID, creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume, gid)
 	if creationErr != nil {
 		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -216,9 +221,14 @@ func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) (
 		return "", errors.UnsupportedError("ONTAP version does not support balanced placement")
 	}
 
+	gid, err := parseUnixGroupID(volume.UnixGroupID)
+	if err != nil {
+		return "", err
+	}
+
 	volumeUUID, creationErr := d.api.VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume, gid)
 	if creationErr != nil {
 		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -733,9 +743,14 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
 
+	gid, err := parseUnixGroupID(volume.UnixGroupID)
+	if err != nil {
+		return err
+	}
+
 	creationErr := d.api.FlexGroupCreate(ctx, volume.Name, volumeSize, volume.Aggregates, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, gid)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -764,9 +779,14 @@ func (d OntapAPIREST) FlexgroupCreateBalanced(ctx context.Context, volume Volume
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
 
+	gid, err := parseUnixGroupID(volume.UnixGroupID)
+	if err != nil {
+		return err
+	}
+
 	creationErr := d.api.FlexGroupCreateBalanced(ctx, volume.Name, volumeSize, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, gid)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}

@@ -75,13 +75,18 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) (string, 
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
+	gid, err := parseUnixGroupIDInt(volume.UnixGroupID)
+	if err != nil {
+		return "", err
+	}
+
 	// ZAPI does not report a volume UUID on create, and the ZAPI path queries WAFL directly rather
 	// than an asynchronous name index, so it is not exposed to the create/delete propagation race.
 	// Callers therefore always delete ZAPI-created volumes by name.
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
 		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt,
-		volume.SnapshotReserve, volume.DPVolume)
+		volume.SnapshotReserve, volume.DPVolume, gid)
 	if err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}
@@ -1363,9 +1368,14 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
 
+	gid, err := parseUnixGroupIDInt(volume.UnixGroupID)
+	if err != nil {
+		return err
+	}
+
 	flexgroupCreateResponse, err := d.api.FlexGroupCreate(ctx, volume.Name, sizeBytes, volume.Aggregates,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, gid)
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	}

@@ -51,12 +51,12 @@ type RestClientInterface interface {
 	VolumeCreate(
 		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int, dpVolume bool,
+		snapshotReserve int, dpVolume bool, unixGroupID int64,
 	) (string, error)
 	VolumeCreateBalanced(
 		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int, dpVolume bool,
+		snapshotReserve int, dpVolume bool, unixGroupID int64,
 	) (string, error)
 	// VolumeModify modifies one or more volume attributes
 	VolumeModify(ctx context.Context, volume Volume) error
@@ -280,12 +280,12 @@ type RestClientInterface interface {
 	FlexGroupCreate(
 		ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int,
+		snapshotReserve int, unixGroupID int64,
 	) error
 	FlexGroupCreateBalanced(
 		ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int,
+		snapshotReserve int, unixGroupID int64,
 	) error
 	// FlexgroupModify modifies one or more volume attributes
 	FlexgroupModify(ctx context.Context, volume Volume) error
