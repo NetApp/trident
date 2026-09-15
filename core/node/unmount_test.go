@@ -45,7 +45,7 @@ func TestUnmount_AcquiresVolumeLock_SerializesConcurrentCalls(t *testing.T) {
 
 	core.volumeLocks.Lock(volume)
 
-	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, errors.New("stat failed"))
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, os.ErrNotExist)
 
 	done := make(chan error, 1)
 	go func() { done <- core.Unmount(context.Background(), volume, UnmountRequest{TargetPath: "/target"}) }()
@@ -60,8 +60,7 @@ func TestUnmount_AcquiresVolumeLock_SerializesConcurrentCalls(t *testing.T) {
 
 	select {
 	case err := <-done:
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "stat failed")
+		require.NoError(t, err)
 	case <-time.After(2 * time.Second):
 		t.Fatal("Unmount did not proceed after volume lock was released")
 	}
@@ -88,15 +87,45 @@ func TestUnmountGeneric_TargetPathGone_ReturnsNilSuccess(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUnmountGeneric_IsLikelyDirOtherError_Wrapped(t *testing.T) {
+func TestUnmountGeneric_StatError_Mounted_FallsBackToMountTableAndUnmounts(t *testing.T) {
 	core, mocks := newTestCore(t)
 
-	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, errors.New("permission denied"))
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, os.ErrPermission)
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", "/target", "").Return(true, nil)
+	// IsLikelyNotMountPoint must not be called: it would stat the path again.
+	mocks.Mount.EXPECT().Umount(gomock.Any(), "/target").Return(nil)
+	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+	mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+	err := core.unmountGeneric(context.Background(), "vol1", "/target")
+	assert.NoError(t, err)
+}
+
+func TestUnmountGeneric_StatError_NotMounted_SkipsUmount(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, os.ErrPermission)
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", "/target", "").Return(false, nil)
+	// IsLikelyNotMountPoint must not be called: it would stat the path again.
+	// No Umount call expected.
+	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+	mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+	err := core.unmountGeneric(context.Background(), "vol1", "/target")
+	assert.NoError(t, err)
+}
+
+func TestUnmountGeneric_StatError_MountTableError_Wrapped(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, os.ErrPermission)
+	// IsLikelyNotMountPoint must not be called: it would stat the path again.
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", "/target", "").Return(false, errors.New("boom"))
 
 	err := core.unmountGeneric(context.Background(), "vol1", "/target")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "could not check if the target path")
-	assert.Contains(t, err.Error(), "permission denied")
+	assert.Contains(t, err.Error(), "unable to check if targetPath")
+	assert.Contains(t, err.Error(), "boom")
 }
 
 func TestUnmountGeneric_IsDir_UsesIsLikelyNotMountPoint(t *testing.T) {
