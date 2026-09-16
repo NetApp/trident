@@ -52,6 +52,7 @@ func newMockOntapASADriver(t *testing.T) (*mockapi.MockOntapAPI, *ASAStorageDriv
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 	driver.managedPool = getASAManagedPool(nil)
+	stopTelemetryOnCleanup(t, driver)
 
 	return mockAPI, driver
 }
@@ -530,7 +531,7 @@ func TestInitializeASA(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			initializeFunction()
 			tt.setupMocks()
-			err := driver.Initialize(ctx, driverContext, string(configJSON), commonConfig, backendSecret, backendUUID)
+			err := initializeWithTelemetryCleanup(t, driver, ctx, driverContext, string(configJSON), commonConfig, backendSecret, backendUUID)
 			tt.verify(t, err)
 		})
 	}

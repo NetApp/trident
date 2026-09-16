@@ -24,6 +24,10 @@ func TestUpdateCmd_PersistentPreRunE(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.wantErr {
+				expectKubernetesCLIUnavailableForTest(t)
+			}
+
 			cmd := &cobra.Command{}
 			err := updateCmd.PersistentPreRunE(cmd, []string{})
 

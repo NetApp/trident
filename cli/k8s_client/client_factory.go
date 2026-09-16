@@ -23,6 +23,7 @@ import (
 	torc "github.com/netapp/trident/operator/crd/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
+	tridentexec "github.com/netapp/trident/utils/exec"
 )
 
 type Clients struct {
@@ -44,11 +45,12 @@ const (
 
 var cachedClients *Clients
 
-// CreateK8SClients is the top-level factory method for creating Kubernetes clients.  Whether this code is running
-// inside or outside a pod is detected automatically.  If inside, we can get the kubeconfig and namespace from the
-// context we are running in.  If outside, either a kubeconfig is specified or we use kubectl/oc to read the kubeconfig
-// using `kubectl config view --raw` and we attempt to discern the namespace from the kubeconfig context.  The
-// namespace may be overridden, and if the namespace may not be determined by any other means, it is set to 'default'.
+// command executes subprocesses for CLI discovery (tests replace with a mock Command).
+var command = tridentexec.NewCommand()
+
+// CreateK8SClients returns process-cached Kubernetes clients when already built, otherwise
+// constructs and caches them. Subsequent calls return the first successful result regardless
+// of arguments (intended for long-lived tridentctl / helper processes).
 func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowK8sClientFactory, LogLayerNone)
 	Logc(ctx).WithFields(LogFields{
@@ -58,10 +60,32 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 	}).Trace(">>>> CreateK8SClients")
 	defer Logc(ctx).Trace("<<<< CreateK8SClients")
 
-	// Return a cached copy if available
 	if cachedClients != nil {
 		return cachedClients, nil
 	}
+	clients, err := buildK8SClients(ctx, masterURL, kubeConfigPath, overrideNamespace)
+	if err != nil {
+		return nil, err
+	}
+	cachedClients = clients
+	return clients, nil
+}
+
+// BuildK8SClients constructs Kubernetes clients without using or updating the process cache.
+func BuildK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
+	ctx := GenerateRequestContext(nil, "", "", WorkflowK8sClientFactory, LogLayerNone)
+	return buildK8SClients(ctx, masterURL, kubeConfigPath, overrideNamespace)
+}
+
+func buildK8SClients(
+	ctx context.Context, masterURL, kubeConfigPath, overrideNamespace string,
+) (*Clients, error) {
+	Logc(ctx).WithFields(LogFields{
+		"MasterURL":         masterURL,
+		"KubeConfigPath":    kubeConfigPath,
+		"OverrideNamespace": overrideNamespace,
+	}).Trace(">>>> BuildK8SClients")
+	defer Logc(ctx).Trace("<<<< BuildK8SClients")
 
 	var clients *Clients
 	var err error
@@ -128,9 +152,7 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 		"version":   clients.K8SVersion.String(),
 	}).Debug("Created Kubernetes clients.")
 
-	cachedClients = clients
-
-	return cachedClients, nil
+	return clients, nil
 }
 
 func createK8SClientsExCluster(
@@ -179,9 +201,7 @@ func createK8SClientsExCluster(
 		}
 
 		// c.cli config view --raw
-		args := []string{"config", "view", "--raw"}
-
-		out, err := exec.Command(kubernetesCLI, args...).CombinedOutput()
+		out, err := command.ExecuteWithoutLog(ctx, kubernetesCLI, "config", "view", "--raw")
 		if err != nil {
 			return nil, fmt.Errorf("%s; %v", string(out), err)
 		}
@@ -265,13 +285,13 @@ func discoverKubernetesCLI(ctx context.Context) (string, error) {
 	Logc(ctx).Trace(">>>> discoverKubernetesCLI")
 	defer Logc(ctx).Trace("<<<< discoverKubernetesCLI")
 	// Try the OpenShift CLI first
-	_, err := exec.Command(CLIOpenShift, "version").Output()
+	_, err := command.ExecuteWithoutLog(ctx, CLIOpenShift, "version")
 	if getExitCodeFromError(err) == ExitCodeSuccess {
 		return CLIOpenShift, nil
 	}
 
 	// Fall back to the K8S CLI
-	_, err = exec.Command(CLIKubernetes, "version").Output()
+	_, err = command.ExecuteWithoutLog(ctx, CLIKubernetes, "version")
 	if getExitCodeFromError(err) == ExitCodeSuccess {
 		return CLIKubernetes, nil
 	}

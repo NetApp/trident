@@ -129,6 +129,10 @@ type helper struct {
 	tvmSource             cache.ListerWatcher
 }
 
+// createK8SClients builds Kubernetes clients for NewHelper. Unit tests replace this with
+// BuildK8SClients to avoid the process-wide cache in cli/k8s_client.
+var createK8SClients = clik8sclient.CreateK8SClients
+
 // NewHelper instantiates this plugin when running outside a pod.
 func NewHelper(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string, enableForceDetach bool,
@@ -137,7 +141,7 @@ func NewHelper(
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
 
-	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
+	clients, err := createK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}

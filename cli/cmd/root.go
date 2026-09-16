@@ -238,14 +238,14 @@ var execKubernetesCLIRaw = func(args ...string) *exec.Cmd {
 
 func discoverKubernetesCLI() error {
 	// Try the OpenShift CLI first
-	_, err := exec.Command(CLIOpenshift, "version").Output()
+	_, err := command.ExecuteWithoutLog(ctx(), CLIOpenshift, "version")
 	if GetExitCodeFromError(err) == ExitCodeSuccess {
 		KubernetesCLI = CLIOpenshift
 		return nil
 	}
 
 	// Fall back to the K8S CLI
-	_, err = exec.Command(CLIKubernetes, "version").Output()
+	_, err = command.ExecuteWithoutLog(ctx(), CLIKubernetes, "version")
 	if GetExitCodeFromError(err) == ExitCodeSuccess {
 		KubernetesCLI = CLIKubernetes
 		return nil

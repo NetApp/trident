@@ -404,7 +404,7 @@ func discoverInstallationEnvironment() error {
 	Log().Debugf("Autosupport image: %s", autosupportImage)
 
 	// Create the Kubernetes client
-	if client, err = initClient(); err != nil {
+	if client, err = initClientfunc(); err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 

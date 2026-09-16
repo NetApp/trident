@@ -226,7 +226,16 @@ func (t *Telemetry) Start(ctx context.Context) {
 	tickerC := tickerChannel(t.ticker)
 
 	go func() {
-		time.Sleep(HousekeepingStartupDelay)
+		startupDelay := time.NewTimer(HousekeepingStartupDelay)
+		defer startupDelay.Stop()
+
+		select {
+		case <-startupDelay.C:
+		case <-t.done:
+			// Stop() ran before the first heartbeat was due, so there is nothing left to send.
+			return
+		}
+
 		EMSHeartbeat(ctx, t.Driver)
 		for {
 			select {

@@ -13,8 +13,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
+	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 )
 
 func TestTunnelCommandRaw(t *testing.T) {
@@ -61,6 +63,8 @@ func TestTunnelCommandRaw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			withMockExecKubernetesCLIRaw(t)
+
 			prevDebug := Debug
 			prevPodName := TridentPodName
 			prevPodNamespace := TridentPodNamespace
@@ -170,11 +174,15 @@ func TestDiscoverJustOperatingMode(t *testing.T) {
 		},
 		{
 			name: "tunnel_mode_success", server: "", envServer: "", debug: false,
-			expectedMode: ModeTunnel, expectedServer: PodServer, wantErr: true, // May fail but covers tunnel path
+			expectedMode: ModeTunnel, expectedServer: PodServer,
 		},
 		{
 			name: "tunnel_mode_debug", server: "", envServer: "", debug: true,
-			expectedMode: ModeTunnel, expectedServer: PodServer, wantErr: true, // May fail but covers tunnel path
+			expectedMode: ModeTunnel, expectedServer: PodServer,
+		},
+		{
+			name: "tunnel_mode_cli_unavailable", server: "", envServer: "", debug: false,
+			wantErr: true, errorContains: "could not find the Kubernetes CLI",
 		},
 	}
 
@@ -183,12 +191,14 @@ func TestDiscoverJustOperatingMode(t *testing.T) {
 			prevServer := Server
 			prevOperatingMode := OperatingMode
 			prevDebug := Debug
+			prevKubernetesCLI := KubernetesCLI
 			prevEnvServer := os.Getenv("TRIDENT_SERVER")
 
 			defer func() {
 				Server = prevServer
 				OperatingMode = prevOperatingMode
 				Debug = prevDebug
+				KubernetesCLI = prevKubernetesCLI
 				os.Setenv("TRIDENT_SERVER", prevEnvServer)
 			}()
 
@@ -199,6 +209,12 @@ func TestDiscoverJustOperatingMode(t *testing.T) {
 				os.Setenv("TRIDENT_SERVER", tt.envServer)
 			} else {
 				os.Unsetenv("TRIDENT_SERVER")
+			}
+
+			if tt.name == "tunnel_mode_cli_unavailable" {
+				expectKubernetesCLIUnavailableForTest(t)
+			} else if tt.server == "" && tt.envServer == "" && !tt.wantErr {
+				expectKubectlCLIAvailable(withMockCommand(t))
 			}
 
 			cmd := &cobra.Command{}
@@ -1011,53 +1027,58 @@ func TestDiscoverAutosupportCollector(t *testing.T) {
 	}
 }
 
-func TestDiscoverKubernetesCLI_Logic(t *testing.T) {
+func TestDiscoverKubernetesCLI(t *testing.T) {
 	tests := []struct {
-		name               string
-		description        string
-		expectedErrorTypes []string
+		name            string
+		setup           func(t *testing.T)
+		wantErr         bool
+		wantErrContains string
+		wantCLI         string
 	}{
 		{
-			name:        "test_execution_paths",
-			description: "Tests the function execution to cover all code paths",
-			expectedErrorTypes: []string{
-				"could not find the Kubernetes CLI",                  // Most likely in test environment
-				"found the Kubernetes CLI, but it exited with error", // If kubectl exists but fails
+			name: "kubectl_available",
+			setup: func(t *testing.T) {
+				expectKubectlCLIAvailable(withMockCommand(t))
 			},
+			wantCLI: CLIKubernetes,
+		},
+		{
+			name: "openshift_available",
+			setup: func(t *testing.T) {
+				expectOpenShiftCLIAvailable(withMockCommand(t))
+			},
+			wantCLI: CLIOpenshift,
+		},
+		{
+			name: "no_cli_available",
+			setup: func(t *testing.T) {
+				expectKubernetesCLIUnavailableForTest(t)
+			},
+			wantErr:         true,
+			wantErrContains: "could not find the Kubernetes CLI",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Save original value
 			prevKubernetesCLI := KubernetesCLI
-			defer func() {
-				KubernetesCLI = prevKubernetesCLI
-			}()
+			defer func() { KubernetesCLI = prevKubernetesCLI }()
 
 			KubernetesCLI = ""
+			tt.setup(t)
 
 			err := discoverKubernetesCLI()
 
-			// In most test environments, this will error because oc/kubectl aren't available
-			// But this still provides coverage of the function logic
-			if err != nil {
+			if tt.wantErr {
 				assert.Error(t, err)
-				// Check that error matches one of the expected patterns
-				errorMatched := false
-				for _, expectedType := range tt.expectedErrorTypes {
-					if assert.ObjectsAreEqual(expectedType, err.Error()) ||
-						len(err.Error()) > 0 { // Any error indicates the function ran
-						errorMatched = true
-						break
-					}
+				if tt.wantErrContains != "" {
+					assert.Contains(t, err.Error(), tt.wantErrContains)
 				}
-				assert.True(t, errorMatched, "Error should match expected pattern")
-			} else {
-				// If no error, one of the CLIs was found and set
-				assert.True(t, KubernetesCLI == CLIOpenshift || KubernetesCLI == CLIKubernetes,
-					"KubernetesCLI should be set to either OpenShift or Kubernetes CLI")
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantCLI, KubernetesCLI)
 		})
 	}
 }
@@ -1090,20 +1111,28 @@ func TestExecKubernetesCLI(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockCommand := mockexec.NewMockCommand(mockCtrl)
+			mockCommand.EXPECT().
+				ExecuteWithoutLog(gomock.Any(), tt.kubernetesCLI, gomock.Any()).
+				Return(nil, errors.New("mock exec error"))
+
+			prevCommand := command
 			prevKubeConfigPath := KubeConfigPath
 			prevKubernetesCLI := KubernetesCLI
-
 			defer func() {
+				command = prevCommand
 				KubeConfigPath = prevKubeConfigPath
 				KubernetesCLI = prevKubernetesCLI
 			}()
 
+			command = mockCommand
 			KubeConfigPath = tt.kubeConfigPath
 			KubernetesCLI = tt.kubernetesCLI
 
 			output, err := execKubernetesCLI(tt.args...)
 
-			assert.IsType(t, []byte(nil), output)
+			assert.Nil(t, output)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -1369,6 +1398,8 @@ func TestTunnelCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			withMockExecKubernetesCLIRaw(t)
+
 			prevDebug := Debug
 			prevOutputFormat := OutputFormat
 			prevPodName := TridentPodName
@@ -1639,13 +1670,18 @@ func TestDiscoverOperatingMode(t *testing.T) {
 				os.Unsetenv("TRIDENT_SERVER")
 			}
 
-			// Execute - will fail for tunnel mode in test environment but covers code paths
+			if tt.wantErr && tt.server == "" && tt.envServer == "" {
+				expectKubernetesCLIUnavailableForTest(t)
+			}
+
 			cmd := &cobra.Command{}
 			err := discoverOperatingMode(cmd)
 
-			// Verify
 			if tt.wantErr {
 				assert.Error(t, err)
+				if tt.server == "" && tt.envServer == "" {
+					assert.Contains(t, err.Error(), "could not find the Kubernetes CLI")
+				}
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedMode, OperatingMode)

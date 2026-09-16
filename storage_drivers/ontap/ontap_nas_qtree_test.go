@@ -82,6 +82,7 @@ func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeS
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newNASQtreeStorageDriver(mockAPI)
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, driver
 }
 

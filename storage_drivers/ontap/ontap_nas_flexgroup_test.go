@@ -108,6 +108,7 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	driver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, new(FSX_ID))
 	driver.API = mockAPI
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, driver
 }
 
@@ -567,20 +568,20 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 			if test.name == "flexgroupAggrListFailed" {
 				configJSON, _ = getOntapStorageDriverConfigJson("true", "volume", "none", "",
 					[]string{"InvalidAggregate"})
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "Aggregate validation succeeded even with not all aggregates are assigned to the SVM")
 				assert.Contains(t, result.Error(), test.errMessage)
 			} else if test.name == "encryptionValueNonBool" {
 				configJSON, _ = getOntapStorageDriverConfigJson("none", "volume", "none", "", []string{"aggr1"})
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "Encryption field validation succeeded even with pasing non boolean value")
 				assert.Contains(t, result.Error(), test.errMessage)
 			} else {
 				configJSON, _ = getOntapStorageDriverConfigJson("true", "volume", "none", "",
 					[]string{"aggr1", "aggr2"})
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.NoError(t, result)
 			}
@@ -820,7 +821,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, errors.New(test.err))
 			}
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
-			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+			result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 			assert.Error(t, result, "Flexgroup driver initialization succeeded even with no aggregates found")
 		})
@@ -867,7 +868,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
 
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result,
 					"FlexGroup driver initialization succeeded even with ONTAP version does not support FlexGroups")
@@ -884,7 +885,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(nil,
 					errors.New("failed to get data LIFs")) // failed to get network interface
 
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "FlexGroup driver initialization succeeded even with failed to get data lifs")
 				assert.Contains(t, result.Error(), test.errMesaage)
@@ -899,7 +900,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 				)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
 
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
+				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "FlexGroup driver initialization succeeded even with invalid spaceReserve")
 				assert.Contains(t, result.Error(), test.errMesaage)

@@ -9,11 +9,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 
-	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
-	execCmd "github.com/netapp/trident/utils/exec"
 )
 
 func TestUpdateLoggingConfig_RunE(t *testing.T) {
@@ -74,19 +71,7 @@ func TestUpdateLoggingConfig_RunE(t *testing.T) {
 			}()
 
 			if tc.useMock {
-				mockCtrl := gomock.NewController(t)
-				mockCommand := mockexec.NewMockCommand(mockCtrl)
-
-				defer func(previousCommand execCmd.Command) {
-					command = previousCommand
-				}(command)
-
-				command = mockCommand
-
-				mockCommand.EXPECT().
-					ExecuteWithTimeout(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return([]byte(""), errors.New("mock error for coverage")).
-					AnyTimes()
+				withMockExecKubernetesCLIRaw(t)
 			}
 
 			OperatingMode = tc.operatingMode

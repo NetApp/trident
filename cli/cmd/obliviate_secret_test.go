@@ -465,6 +465,8 @@ func TestObliviateSecretCmdRunE_TunnelMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			withMockExecKubernetesCLIRaw(t)
+
 			withObliviateSecretTestMode(t, func() {
 				originalMode := OperatingMode
 				originalForce := forceObliviate
@@ -506,11 +508,24 @@ func TestObliviateSecretCmdRunE_DirectMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			originalInitClients := initClientsFunc
+			defer func() {
+				initClientsFunc = originalInitClients
+			}()
+			initClientsFunc = func() error {
+				return nil
+			}
+
 			withObliviateSecretTestMode(t, func() {
 				originalMode := OperatingMode
-				defer func() { OperatingMode = originalMode }()
+				originalForce := forceObliviate
+				defer func() {
+					OperatingMode = originalMode
+					forceObliviate = originalForce
+				}()
 
 				OperatingMode = "direct"
+				forceObliviate = true
 
 				mockClient := getMockK8sClientForSecrets(t)
 				tt.setupMocks(mockClient)

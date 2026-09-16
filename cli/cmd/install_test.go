@@ -4271,6 +4271,14 @@ func TestDiscoverInstallationEnvironment_Integration(t *testing.T) {
 	}()
 
 	t.Run("actual_function_sets_basic_state", func(t *testing.T) {
+		originalInitClient := initClientfunc
+		defer func() {
+			initClientfunc = originalInitClient
+		}()
+		initClientfunc = func() (k8sclient.KubernetesClient, error) {
+			return nil, fmt.Errorf("could not initialize Kubernetes client; simulated failure")
+		}
+
 		// Reset variables
 		OperatingMode = ""
 		tridentImage = ""
@@ -4300,6 +4308,14 @@ func TestDiscoverInstallationEnvironment_Integration1(t *testing.T) {
 	}()
 
 	t.Run("operating_mode_always_set", func(t *testing.T) {
+		originalInitClient := initClientfunc
+		defer func() {
+			initClientfunc = originalInitClient
+		}()
+		initClientfunc = func() (k8sclient.KubernetesClient, error) {
+			return nil, fmt.Errorf("could not initialize Kubernetes client; simulated failure")
+		}
+
 		OperatingMode = ""
 		tridentImage = ""
 		autosupportImage = ""

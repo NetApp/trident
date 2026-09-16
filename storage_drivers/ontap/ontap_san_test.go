@@ -81,6 +81,7 @@ func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 	driver.ips = []string{testLocalHostIP}
 
 	driver.AWSAPI = mockAWSAPI
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, mockAWSAPI, driver
 }
 
@@ -100,6 +101,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 	assert.NoError(t, err)
 	driver.iscsi = iscsiClient
 	driver.cloneSplitTimers = &sync.Map{}
+	stopTelemetryOnCleanup(t, driver)
 
 	return mockAPI, driver
 }
@@ -4520,7 +4522,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 			mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 
-			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+			result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 			assert.Error(t, result, test.assertMessage)
 		})

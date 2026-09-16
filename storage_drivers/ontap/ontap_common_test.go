@@ -720,6 +720,44 @@ func newMockOntapAPI(t *testing.T) *mock_ontap.MockOntapAPI {
 	return mockOntapAPI
 }
 
+// stopTelemetryOnCleanup must be called after every Initialize() so the heartbeat goroutine is
+// stopped when t finishes. Mock-driver constructors register it so later Initialize() calls in the
+// same test are covered. Register after gomock.NewController(t).
+func stopTelemetryOnCleanup(t *testing.T, driver StorageDriver) {
+	t.Helper()
+
+	t.Cleanup(func() {
+		// Driver fixtures assign Telemetry literals that have no done channel for Stop() to close.
+		if telemetry := driver.GetTelemetry(); telemetry != nil && telemetry.done != nil {
+			telemetry.Stop()
+		}
+	})
+}
+
+type telemetryInitializingDriver interface {
+	StorageDriver
+	Initialize(
+		ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
+		commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
+	) error
+}
+
+func initializeWithTelemetryCleanup(
+	t *testing.T, driver telemetryInitializingDriver, ctx context.Context, driverContext tridentconfig.DriverContext,
+	configJSON string, commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
+	backendUUID string,
+) error {
+	t.Helper()
+	err := driver.Initialize(ctx, driverContext, configJSON, commonConfig, backendSecret, backendUUID)
+	telemetry := driver.GetTelemetry()
+	t.Cleanup(func() {
+		if telemetry != nil && telemetry.done != nil {
+			telemetry.Stop()
+		}
+	})
+	return err
+}
+
 func newMockOntapAPIWithFlags(t *testing.T, rest, disaggregated, sanOptimized bool) *mock_ontap.MockOntapAPI {
 	mockCtrl := gomock.NewController(t)
 	mockOntapAPI := mock_ontap.NewMockOntapAPI(mockCtrl)

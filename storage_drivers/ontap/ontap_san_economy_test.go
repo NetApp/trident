@@ -367,6 +367,7 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, new(FSX_ID), mockAPI)
 	driver.AWSAPI = mockAWSAPI
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, mockAWSAPI, driver
 }
 
@@ -385,6 +386,7 @@ func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyS
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI)
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, driver
 }
 
@@ -5975,7 +5977,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 			} else {
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(nil, nil)
 			}
-			result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
+			result := initializeWithTelemetryCleanup(t, d, ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
 			assert.Error(t, result)
 		})
@@ -6043,7 +6045,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 				mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
 			}
 
-			result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
+			result := initializeWithTelemetryCleanup(t, d, ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
 			if test.expectError {
 				assert.Error(t, result)

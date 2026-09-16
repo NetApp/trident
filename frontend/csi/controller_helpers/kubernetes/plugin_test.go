@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -29,6 +31,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/netapp/trident/cli/k8s_client/k8sclienttest"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
@@ -2699,6 +2702,7 @@ func TestNewHelper(t *testing.T) {
 		name              string
 		masterURL         string
 		kubeConfigPath    string
+		useMockAPIServer  bool
 		enableForceDetach bool
 		mockK8sSetup      func() (*k8sfake.Clientset, error)
 		expectError       bool
@@ -2707,8 +2711,7 @@ func TestNewHelper(t *testing.T) {
 	}{
 		{
 			name:              "successful initialization with default config",
-			masterURL:         "",
-			kubeConfigPath:    "",
+			useMockAPIServer:  true,
 			enableForceDetach: false,
 			mockK8sSetup: func() (*k8sfake.Clientset, error) {
 				return k8sfake.NewSimpleClientset(), nil
@@ -2717,11 +2720,9 @@ func TestNewHelper(t *testing.T) {
 			validateResult: func(t *testing.T, plugin frontend.Plugin) {
 				assert.NotNil(t, plugin)
 
-				// Type assert to helper to check internal state
 				helper, ok := plugin.(*helper)
 				require.True(t, ok, "Plugin should be of type *helper")
 
-				// Check that all required fields are initialized
 				assert.NotNil(t, helper.kubeClient)
 				assert.NotNil(t, helper.pvcController)
 				assert.NotNil(t, helper.pvController)
@@ -2737,7 +2738,6 @@ func TestNewHelper(t *testing.T) {
 				assert.NotNil(t, helper.vrefIndexer)
 				assert.NotNil(t, helper.eventRecorder)
 
-				// Check stop channels are initialized
 				assert.NotNil(t, helper.pvcControllerStopChan)
 				assert.NotNil(t, helper.pvControllerStopChan)
 				assert.NotNil(t, helper.scControllerStopChan)
@@ -2745,14 +2745,12 @@ func TestNewHelper(t *testing.T) {
 				assert.NotNil(t, helper.mrControllerStopChan)
 				assert.NotNil(t, helper.vrefControllerStopChan)
 
-				// Check force detach setting
 				assert.Equal(t, false, helper.enableForceDetach)
 			},
 		},
 		{
 			name:              "successful initialization with force detach enabled",
-			masterURL:         "",
-			kubeConfigPath:    "",
+			useMockAPIServer:  true,
 			enableForceDetach: true,
 			mockK8sSetup: func() (*k8sfake.Clientset, error) {
 				return k8sfake.NewSimpleClientset(), nil
@@ -2768,42 +2766,39 @@ func TestNewHelper(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// Mock the orchestrator
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
-			// Since NewHelper creates real K8s clients and we can't easily mock the client creation,
-			// we'll test the parts we can and expect specific errors for invalid configs
+			withUncachedK8SClients(t)
+
+			kubeConfigPath := test.kubeConfigPath
+			if test.useMockAPIServer {
+				server := k8sclienttest.StartKubernetesAPIServer(t)
+				defer server.Close()
+				kubeConfigPath = k8sclienttest.WriteKubeconfig(t, server.URL, "default")
+			}
+
+			plugin, err := NewHelper(orchestrator, test.masterURL, kubeConfigPath, test.enableForceDetach)
 			if test.expectError {
-				plugin, err := NewHelper(orchestrator, test.masterURL, test.kubeConfigPath, test.enableForceDetach)
 				assert.Error(t, err, "Expected error for NewHelper test case: %s", test.name)
 				assert.Nil(t, plugin)
 				if test.errorContains != "" {
 					assert.Contains(t, err.Error(), test.errorContains)
 				}
-			} else {
-				// For non-error cases, we expect them to fail with K8s connection errors in test environment
-				// but we can still test the function structure
-				plugin, err := NewHelper(orchestrator, test.masterURL, test.kubeConfigPath, test.enableForceDetach)
-				if err != nil {
-					// Expected in test environment without real K8s cluster or kubectl
-					// Check for various possible connection error messages
-					errorMsg := err.Error()
-					connectionErrorFound := strings.Contains(errorMsg, "failed to construct clientset") ||
-						strings.Contains(errorMsg, "connection to the server") ||
-						strings.Contains(errorMsg, "was refused") ||
-						strings.Contains(errorMsg, "unable to load in-cluster configuration") ||
-						strings.Contains(errorMsg, "no such host") ||
-						strings.Contains(errorMsg, "timeout") ||
-						strings.Contains(errorMsg, "could not find the Kubernetes CLI") ||
-						strings.Contains(errorMsg, "executable file not found")
-					assert.True(t, connectionErrorFound, "Expected a K8s connection error, got: %s", errorMsg)
-				} else if plugin != nil {
-					// If it somehow succeeds (shouldn't in test env), validate the result
-					test.validateResult(t, plugin)
-				}
+				return
 			}
+
+			assert.NoError(t, err, "NewHelper test case: %s", test.name)
+			require.NotNil(t, plugin)
+			if test.validateResult != nil {
+				test.validateResult(t, plugin)
+			}
+			t.Cleanup(func() {
+				if plugin != nil {
+					plugin.Deactivate()
+				}
+			})
 		})
 	}
 }
@@ -2813,45 +2808,29 @@ func TestNewHelper_InvalidMasterURL(t *testing.T) {
 	defer mockCtrl.Finish()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
-	// Test with invalid master URL - use a URL that will definitely fail
-	plugin, err := NewHelper(orchestrator, "http://invalid-master-url-that-does-not-exist:6443", "", false)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
 
-	// In test environment, this might succeed if kubectl config is available
-	// So we check if error occurred OR if plugin creation succeeded but with fallback config
-	if err != nil {
-		assert.Error(t, err, "Expected error when connecting to invalid master URL")
-		assert.Nil(t, plugin)
-	} else if plugin != nil {
-		// If it succeeds (fallback to kubectl config), verify it's a valid plugin
-		assert.NotNil(t, plugin)
-		assert.IsType(t, &helper{}, plugin)
-	}
+	withUncachedK8SClients(t)
+
+	kubeconfigPath := k8sclienttest.WriteKubeconfig(t, server.URL, "default")
+	plugin, err := NewHelper(orchestrator, "http://invalid-master-url-that-does-not-exist:6443", kubeconfigPath, false)
+	assert.Error(t, err, "Expected error when API server returns errors")
+	assert.Nil(t, plugin)
 }
 
 func TestNewHelper_InvalidKubeConfig(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	defer func() {
-		if mockCtrl != nil {
-			mockCtrl.Finish()
-		}
-	}()
+	defer mockCtrl.Finish()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
-	// Test with non-existent kubeconfig path - this might fail or fallback to default config
-	plugin, err := NewHelper(orchestrator, "", "/this/path/definitely/does/not/exist/kubeconfig", false)
+	withUncachedK8SClients(t)
 
-	if err != nil {
-		// If it fails as expected, we just verify an error occurred
-		assert.Error(t, err)
-		assert.Nil(t, plugin)
-	} else {
-		// If it doesn't fail (fallback scenario), ensure we got a valid plugin
-		assert.NotNil(t, plugin)
-		// Clean up if plugin was created successfully
-		if plugin != nil {
-			plugin.Deactivate()
-		}
-	}
+	plugin, err := NewHelper(orchestrator, "", "/this/path/definitely/does/not/exist/kubeconfig", false)
+	assert.Error(t, err)
+	assert.Nil(t, plugin)
 }
 
 func TestActivate(t *testing.T) {

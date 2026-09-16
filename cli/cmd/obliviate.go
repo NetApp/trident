@@ -56,6 +56,8 @@ func initLogging() {
 	Log().WithField("logLevel", GetLogLevel()).Debug("Initialized logging.")
 }
 
+var initClientsFunc = initClients
+
 func initClients() error {
 	clients, err := k8sclient.CreateK8SClients("", configPath, TridentPodNamespace)
 	if err != nil {

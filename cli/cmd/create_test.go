@@ -41,6 +41,10 @@ func TestCreateCmd_PersistentPreRunE(t *testing.T) {
 				Server = originalServer
 			}()
 
+			if tc.wantErr {
+				expectKubernetesCLIUnavailableForTest(t)
+			}
+
 			cmd := &cobra.Command{}
 			err := createCmd.PersistentPreRunE(cmd, []string{})
 

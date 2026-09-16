@@ -68,7 +68,7 @@ var obliviateCRDCmd = &cobra.Command{
 			printOutput(cmd, out, err)
 			return err
 		} else {
-			if err := initClients(); err != nil {
+			if err := initClientsFunc(); err != nil {
 				return err
 			}
 

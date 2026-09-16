@@ -602,6 +602,18 @@ func TestObliviateCRDCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.operatingMode == ModeTunnel {
+				withMockExecKubernetesCLIRaw(t)
+			} else {
+				originalInitClients := initClientsFunc
+				defer func() {
+					initClientsFunc = originalInitClients
+				}()
+				initClientsFunc = func() error {
+					return fmt.Errorf("could not initialize Kubernetes client; simulated failure")
+				}
+			}
+
 			withObliviateCRDTestMode(t, func() {
 				OperatingMode = tt.operatingMode
 				forceObliviate = tt.forceObliviate

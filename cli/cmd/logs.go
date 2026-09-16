@@ -95,7 +95,7 @@ var logsCmd = &cobra.Command{
 		err := discoverOperatingMode(cmd)
 
 		// Initialize the clients
-		if err := initClients(); err != nil {
+		if err := initClientsFunc(); err != nil {
 			return err
 		}
 

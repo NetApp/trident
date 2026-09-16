@@ -22,6 +22,8 @@ func TestDeleteCmd_PersistentPreRunE(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			expectKubernetesCLIUnavailableForTest(t)
+
 			cmd := &cobra.Command{}
 			err := deleteCmd.PersistentPreRunE(cmd, []string{})
 

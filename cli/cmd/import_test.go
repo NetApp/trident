@@ -26,6 +26,10 @@ func TestImportCmd_PersistentPreRunE(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.expectError {
+				expectKubernetesCLIUnavailableForTest(t)
+			}
+
 			err := importCmd.PersistentPreRunE(tc.cmd, tc.args)
 			if tc.expectError {
 				assert.Error(t, err)

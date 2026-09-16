@@ -56,6 +56,7 @@ func newMockOntapASANVMeDriver(t *testing.T) (*mockapi.MockOntapAPI, *ASANVMeSto
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 	driver.Config.SANType = sa.NVMe
+	stopTelemetryOnCleanup(t, driver)
 
 	return mockAPI, driver
 }
@@ -462,7 +463,7 @@ func TestInitializeASANVMe(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			initializeFunction()
 			tt.setupMocks()
-			err := driver.Initialize(ctx, driverContext, string(configJSON), commonConfig, backendSecret, backendUUID)
+			err := initializeWithTelemetryCleanup(t, driver, ctx, driverContext, string(configJSON), commonConfig, backendSecret, backendUUID)
 			tt.verify(t, err)
 			// Stop the telemetry goroutine so it doesn't call into the mock after the
 			// sub-test completes and gomock tears down its controller.

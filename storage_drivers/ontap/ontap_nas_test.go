@@ -358,6 +358,7 @@ func newMockOntapNASDriverWithSVM(t *testing.T, svmName string) (*mockapi.MockOn
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	driver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, new(FSX_ID))
 	driver.API = mockAPI
+	stopTelemetryOnCleanup(t, driver)
 	return mockAPI, driver
 }
 
