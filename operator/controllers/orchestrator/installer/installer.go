@@ -1283,6 +1283,18 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 		}
 		Log().WithField("namespace", i.namespace).Info("Created Trident installation namespace.")
 	} else {
+		// Check if namespace is already labeled
+		hasLabels := i.client.CheckNamespaceLabels(i.namespace, map[string]string{
+			commonconfig.PodSecurityStandardsEnforceLabel: commonconfig.PodSecurityStandardsEnforceProfile,
+        })
+
+		if hasLabels {
+			Log().WithField("namespace", i.namespace).Info("Trident installation namespace already has the correct labels.")
+			return nil
+		} else {
+			Log().WithField("namespace", i.namespace).Info("Namespace missing labels. Attempting to patch now.")
+		}
+
 		// Patch namespace
 		err := i.client.PatchNamespaceLabels(i.namespace, map[string]string{
 			commonconfig.PodSecurityStandardsEnforceLabel: commonconfig.PodSecurityStandardsEnforceProfile,
