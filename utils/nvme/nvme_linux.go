@@ -351,6 +351,37 @@ func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NV
 	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
 }
 
+// RescanNamespaces re-enumerates the namespaces on each of the subsystem's controllers using
+// "nvme ns-rescan". It recovers namespaces that are mapped but missing on the host; it only adds
+// namespaces and never renames existing devices, so it is safe on a connected subsystem.
+func (s *NVMeSubsystem) RescanNamespaces(ctx context.Context) error {
+	Logc(ctx).Debug(">>>> nvme_linux.RescanNamespaces")
+	defer Logc(ctx).Debug("<<<< nvme_linux.RescanNamespaces")
+
+	if len(s.Paths) == 0 {
+		return fmt.Errorf("no paths present for subsystem %s; cannot rescan namespaces", s.NQN)
+	}
+
+	failed := 0
+	for _, path := range s.Paths {
+		// path.Name is the controller's sysfs path, e.g. .../nvme0; the device is /dev/nvme0.
+		controller := "/dev/" + path.Name[strings.LastIndex(path.Name, "/")+1:]
+		if _, err := s.command.Execute(ctx, "nvme", "ns-rescan", controller); err != nil {
+			Logc(ctx).WithError(err).Errorf("Failed to rescan namespaces on controller %s.", controller)
+			failed++
+			continue
+		}
+		Logc(ctx).WithField("controller", controller).Debug("Rescanned NVMe namespaces on controller.")
+	}
+
+	// Succeed if at least one controller path was rescanned successfully.
+	if failed == len(s.Paths) {
+		return fmt.Errorf("failed to rescan namespaces on all paths for subsystem %s", s.NQN)
+	}
+
+	return nil
+}
+
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.
 func (d *NVMeDevice) FlushNVMeDevice(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_linux.FlushNVMeDevice")

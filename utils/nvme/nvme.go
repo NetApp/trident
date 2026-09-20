@@ -300,6 +300,17 @@ func (nh *NVMeHandler) AttachNVMeVolume(
 
 	nvmeDev, err := nvmeSubsys.GetNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
+		// Subsystem is connected but the namespace device is absent, likely a missed namespace
+		// notification. Trigger a rescan so a subsequent attach retry can find the device.
+		if connectionStatus == NVMeSubsystemConnected && errors.IsNotFoundError(err) {
+			if rescanErr := nvmeSubsys.RescanNamespaces(ctx); rescanErr != nil {
+				Logc(ctx).WithError(rescanErr).Warning(
+					"Failed to rescan NVMe namespaces after namespace device was not found.")
+			} else {
+				Logc(ctx).WithField("namespace", publishInfo.NVMeNamespaceUUID).Debug(
+					"Triggered NVMe namespace rescan after namespace device was not found.")
+			}
+		}
 		return err
 	}
 	devPath := nvmeDev.GetPath()
@@ -679,6 +690,14 @@ func (nh *NVMeHandler) InspectNVMeSessions(
 			pubSessionData.SetRemediation(ConnectOp)
 			subsToFix = append(subsToFix, currSessionData.Subsystem)
 			continue
+		case NVMeSubsystemConnected:
+			// All paths are up but a published namespace may still be missing its device after a
+			// missed namespace notification. Schedule a rescan to recover it.
+			if nh.subsystemHasMissingNamespace(ctx, &currSessionData.Subsystem, pubSessionData) {
+				pubSessionData.SetRemediation(RescanOp)
+				subsToFix = append(subsToFix, currSessionData.Subsystem)
+				continue
+			}
 		}
 
 		// All/None of the paths are present for the subsystem
@@ -687,6 +706,39 @@ func (nh *NVMeHandler) InspectNVMeSessions(
 
 	SortSubsystemsUsingSessions(subsToFix, pubSessions)
 	return subsToFix
+}
+
+// subsystemHasMissingNamespace reports whether any namespace published on the subsystem is missing
+// its device on the host, a condition a namespace rescan can recover.
+func (nh *NVMeHandler) subsystemHasMissingNamespace(
+	ctx context.Context, sub *NVMeSubsystem, sessionData *NVMeSessionData,
+) bool {
+	if sessionData == nil {
+		return false
+	}
+
+	if present, err := afero.DirExists(sub.osFs, sub.Name); err != nil || !present {
+		return false
+	}
+
+	for nsUUID := range sessionData.Namespaces {
+		_, err := sub.GetNVMeDeviceAt(ctx, nsUUID)
+		if err == nil {
+			continue
+		}
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithFields(LogFields{
+				"subsystem": sub.NQN,
+				"namespace": nsUUID,
+			}).Warning("Published NVMe namespace has no device on host; scheduling namespace rescan.")
+			return true
+		}
+
+		Logc(ctx).WithError(err).WithField("namespace", nsUUID).Debug(
+			"Error while checking NVMe namespace device presence during self-healing.")
+	}
+
+	return false
 }
 
 // RectifyNVMeSession applies the required remediation on the subsystemToFix to make it working again.
@@ -705,11 +757,19 @@ func (nh *NVMeHandler) RectifyNVMeSession(
 	// Updating the access time as we are trying to do some NVMeOperation on this subsystem.
 	pubSessionData.LastAccessTime = time.Now()
 
-	if pubSessionData.Remediation == ConnectOp {
+	switch pubSessionData.Remediation {
+	case ConnectOp:
 		if err := subsystemToFix.Connect(ctx, pubSessionData.NVMeTargetIPs, true); err != nil {
 			Logc(ctx).Errorf("NVMe Self healing failed for subsystem %s; %v", subsystemToFix.NQN, err)
 		} else {
 			Logc(ctx).Infof("NVMe Self healing succeeded for %s", subsystemToFix.NQN)
+		}
+	case RescanOp:
+		if err := subsystemToFix.RescanNamespaces(ctx); err != nil {
+			Logc(ctx).Errorf("NVMe Self healing (namespace rescan) failed for subsystem %s; %v",
+				subsystemToFix.NQN, err)
+		} else {
+			Logc(ctx).Infof("NVMe Self healing (namespace rescan) succeeded for %s", subsystemToFix.NQN)
 		}
 	}
 }
