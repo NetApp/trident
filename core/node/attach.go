@@ -231,7 +231,7 @@ func (c *Core) attachISCSIVolume(
 
 	if mpathSize > 0 {
 		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
-		if err = c.expandISCSIVolume(ctx, volume, publishInfo, mpathSize, secrets); err != nil {
+		if err = c.expandISCSIVolume(ctx, volume, publishInfo, mpathSize, "", secrets); err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":        volume,
 				"multipathSize":   mpathSize,
@@ -345,7 +345,7 @@ func (c *Core) attachFCPVolume(
 
 	if mpathSize > 0 {
 		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
-		err = c.expandFCPVolume(ctx, volume, publishInfo, mpathSize, secrets)
+		err = c.expandFCPVolume(ctx, volume, publishInfo, mpathSize, "", secrets)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":        volume,

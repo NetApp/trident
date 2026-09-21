@@ -83,11 +83,11 @@ func (c *Core) Expand(ctx context.Context, volume string, req ExpandRequest) err
 		Logc(ctx).WithFields(fields).Info("Filesystem expansion check is not required for protocol.")
 		return nil
 	case ISCSI:
-		return c.expandISCSIVolume(ctx, volume, publishInfo, requiredBytes, secrets)
+		return c.expandISCSIVolume(ctx, volume, publishInfo, requiredBytes, mountPath, secrets)
 	case FCP:
-		return c.expandFCPVolume(ctx, volume, publishInfo, requiredBytes, secrets)
+		return c.expandFCPVolume(ctx, volume, publishInfo, requiredBytes, mountPath, secrets)
 	case NVMe:
-		return c.expandNVMeVolume(ctx, volume, publishInfo, requiredBytes, secrets)
+		return c.expandNVMeVolume(ctx, volume, publishInfo, requiredBytes, mountPath, secrets)
 	default:
 		return errors.PreconditionError("unknown storage protocol")
 	}
@@ -95,7 +95,7 @@ func (c *Core) Expand(ctx context.Context, volume string, req ExpandRequest) err
 
 func (c *Core) expandISCSIVolume(
 	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
-	requiredBytes int64, secrets map[string]string,
+	requiredBytes int64, filesystemPath string, secrets map[string]string,
 ) error {
 	Logc(ctx).Debug(">>>> expandISCSIVolume")
 	defer Logc(ctx).Debug("<<<< expandISCSIVolume")
@@ -118,7 +118,9 @@ func (c *Core) expandISCSIVolume(
 	// Capture the pre-expand size baseline before rescanning the device; the rescan itself grows
 	// the device's reported size, so capturing the baseline afterward would make the "did the
 	// filesystem actually grow" check below always pass trivially.
-	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(ctx, publishInfo)
+	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(
+		ctx, publishInfo, filesystemPath,
+	)
 	if err != nil {
 		return err
 	}
@@ -139,7 +141,7 @@ func (c *Core) expandISCSIVolume(
 
 func (c *Core) expandFCPVolume(
 	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
-	requiredBytes int64, secrets map[string]string,
+	requiredBytes int64, filesystemPath string, secrets map[string]string,
 ) error {
 	Logc(ctx).Debug(">>>> expandFCPVolume")
 	defer Logc(ctx).Debug("<<<< expandFCPVolume")
@@ -166,7 +168,9 @@ func (c *Core) expandFCPVolume(
 	// Capture the pre-expand size baseline before rescanning the device; the rescan itself grows
 	// the device's reported size, so capturing the baseline afterward would make the "did the
 	// filesystem actually grow" check below always pass trivially.
-	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(ctx, publishInfo)
+	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(
+		ctx, publishInfo, filesystemPath,
+	)
 	if err != nil {
 		return err
 	}
@@ -183,7 +187,7 @@ func (c *Core) expandFCPVolume(
 
 func (c *Core) expandNVMeVolume(
 	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
-	requiredBytes int64, secrets map[string]string,
+	requiredBytes int64, filesystemPath string, secrets map[string]string,
 ) error {
 	Logc(ctx).Debug(">>>> expandNVMeVolume")
 	defer Logc(ctx).Debug("<<<< expandNVMeVolume")
@@ -199,7 +203,9 @@ func (c *Core) expandNVMeVolume(
 	// asynchronous event indicating namespace attributes have changed.
 	Logc(ctx).WithField("volumeId", volume).Info("NVMe volume expansion check is not required.")
 
-	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(ctx, publishInfo)
+	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(
+		ctx, publishInfo, filesystemPath,
+	)
 	if err != nil {
 		return err
 	}
@@ -210,22 +216,33 @@ func (c *Core) expandNVMeVolume(
 }
 
 // capturePreExpandSizeBaseline reads the device and filesystem sizes before any protocol-specific
-// rescan/resize runs. Callers MUST invoke this before triggering a rescan (e.g. FCP's
-// RescanDevices): a rescan can grow the device's reported size immediately, so capturing the
-// "pre-expand" baseline afterward would make expandFilesystemAndLUKS's growth-verification check
-// trivially pass even when the filesystem failed to grow.
+// rescan/resize runs. filesystemPath must be a mounted path for the volume, such as the
+// NodeExpandVolume request's VolumePath. The staging directory is not necessarily a mount point;
+// statfs on an unmounted staging directory reports the host filesystem and creates a false
+// baseline. Callers without a mounted path (for example, a gratuitous attach-time resize) pass an
+// empty string and skip filesystem growth verification.
 func (c *Core) capturePreExpandSizeBaseline(
-	ctx context.Context, publishInfo *models.VolumePublishInfo,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, filesystemPath string,
 ) (preExpandDeviceSizeBytes, preExpandFilesystemSize int64, err error) {
 	fsType, err := filesystem.VerifyFilesystemSupport(publishInfo.FilesystemType)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	if fsType != filesystem.Raw {
-		preExpandFilesystemSize, err = c.fs.GetFilesystemSize(ctx, publishInfo.GlobalMount)
+	if fsType != filesystem.Raw && filesystemPath != "" {
+		var mounted bool
+		mounted, err = c.mount.IsMounted(ctx, "", filesystemPath, "")
 		if err != nil {
 			return 0, 0, err
+		}
+		if mounted {
+			preExpandFilesystemSize, err = c.fs.GetFilesystemSize(ctx, filesystemPath)
+			if err != nil {
+				return 0, 0, err
+			}
+		} else {
+			Logc(ctx).WithField("filesystemPath", filesystemPath).
+				Warn("Filesystem path is not mounted; skipping filesystem growth verification.")
 		}
 	}
 

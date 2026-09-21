@@ -100,6 +100,36 @@ func TestExpand_ProtocolISCSI_Delegates(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestExpand_ProtocolISCSI_UsesRequestMountPathForFilesystemBaseline(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(ISCSI)
+	publishInfo := &trackingInfo.VolumePublishInfo
+	publishInfo.FilesystemType = filesystem.Ext4
+	publishInfo.DevicePath = "/dev/sdz"
+	mountPath := "/var/lib/kubelet/pods/test-volume/mount"
+	requiredBytes := int64(2048)
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-vol").Return(trackingInfo, nil)
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", mountPath, "").Return(true, nil)
+	mocks.Filesystem.EXPECT().GetFilesystemSize(gomock.Any(), mountPath).Return(int64(100), nil)
+	gomock.InOrder(
+		mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), publishInfo.DevicePath).Return(int64(1000), nil),
+		mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), publishInfo.DevicePath).Return(int64(2000), nil),
+	)
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, requiredBytes).Return(nil)
+	mocks.Filesystem.EXPECT().
+		ExpandFilesystemOnNode(
+			gomock.Any(), publishInfo, publishInfo.DevicePath, publishInfo.GlobalMount,
+			filesystem.Ext4, publishInfo.MountOptions, requiredBytes,
+		).
+		Return(int64(200), nil)
+
+	err := core.Expand(
+		context.Background(), "test-vol", ExpandRequest{MountPath: mountPath, RequiredBytes: requiredBytes},
+	)
+	assert.NoError(t, err)
+}
+
 func TestExpand_ProtocolFCP_Delegates(t *testing.T) {
 	core, mocks := newTestCore(t)
 	trackingInfo := sampleTrackingInfo(FCP)
@@ -160,7 +190,7 @@ func TestExpandISCSIVolume_CapturePreExpandBaselineErrorPropagates(t *testing.T)
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = "unsupported-fs"
 
-	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported fileSystemType option")
 }
@@ -172,7 +202,7 @@ func TestExpandISCSIVolume_ExpandVolumeErrorPropagates(t *testing.T) {
 	pi.DevicePath = ""
 	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024)).Return(errors.New("expand failed"))
 
-	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "expand failed")
 }
@@ -184,7 +214,7 @@ func TestExpandISCSIVolume_Success(t *testing.T) {
 	pi.DevicePath = ""
 	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024)).Return(nil)
 
-	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	assert.NoError(t, err)
 }
 
@@ -193,7 +223,7 @@ func TestExpandFCPVolume_NotAttached(t *testing.T) {
 	pi := samplePublishInfo(FCP)
 	mocks.FCP.EXPECT().IsAlreadyAttached(gomock.Any(), int(pi.FCPLunNumber), pi.FCTargetWWNN).Return(false)
 
-	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "not attached")
 }
@@ -206,7 +236,7 @@ func TestExpandFCPVolume_RescanErrorPropagates(t *testing.T) {
 	mocks.FCP.EXPECT().IsAlreadyAttached(gomock.Any(), int(pi.FCPLunNumber), pi.FCTargetWWNN).Return(true)
 	mocks.FCP.EXPECT().RescanDevices(gomock.Any(), pi.FCTargetWWNN, pi.FCPLunNumber, int64(1024)).Return(errors.New("rescan failed"))
 
-	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "rescan failed")
 }
@@ -219,7 +249,7 @@ func TestExpandFCPVolume_Success(t *testing.T) {
 	mocks.FCP.EXPECT().IsAlreadyAttached(gomock.Any(), int(pi.FCPLunNumber), pi.FCTargetWWNN).Return(true)
 	mocks.FCP.EXPECT().RescanDevices(gomock.Any(), pi.FCTargetWWNN, pi.FCPLunNumber, int64(1024)).Return(nil)
 
-	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandFCPVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	assert.NoError(t, err)
 }
 
@@ -228,7 +258,7 @@ func TestExpandNVMeVolume_CapturePreExpandBaselineErrorPropagates(t *testing.T) 
 	pi := samplePublishInfo(NVMe)
 	pi.FilesystemType = "unsupported-fs"
 
-	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported fileSystemType option")
 }
@@ -242,7 +272,7 @@ func TestExpandNVMeVolume_Success(t *testing.T) {
 	// No rescan step for NVMe: no NVMe/Devices/Filesystem mock calls expected at all, since
 	// Raw+empty-DevicePath skips every size lookup in capturePreExpandSizeBaseline and
 	// expandFilesystemAndLUKS.
-	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, nil)
+	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	assert.NoError(t, err)
 }
 
@@ -251,7 +281,7 @@ func TestCapturePreExpandSizeBaseline_UnsupportedFilesystem(t *testing.T) {
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = "zfs"
 
-	_, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	_, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi, pi.GlobalMount)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported fileSystemType option: zfs")
 }
@@ -264,23 +294,40 @@ func TestCapturePreExpandSizeBaseline_RawSkipsFilesystemSizeLookup(t *testing.T)
 	mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), "/dev/sdz").Return(int64(4096), nil)
 	// No Filesystem.GetFilesystemSize expectation: a call would fail the test.
 
-	devSize, fsSize, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	devSize, fsSize, err := core.capturePreExpandSizeBaseline(context.Background(), pi, pi.GlobalMount)
 	require.NoError(t, err)
 	assert.Equal(t, int64(4096), devSize)
 	assert.Equal(t, int64(0), fsSize)
 }
 
-func TestCapturePreExpandSizeBaseline_NonRawCallsFilesystemSize(t *testing.T) {
+func TestCapturePreExpandSizeBaseline_NonRawUsesMountedFilesystemPath(t *testing.T) {
 	core, mocks := newTestCore(t)
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = filesystem.Ext4
 	pi.DevicePath = ""
-	mocks.Filesystem.EXPECT().GetFilesystemSize(gomock.Any(), pi.GlobalMount).Return(int64(1024), nil)
+	mountedFilesystemPath := "/var/lib/kubelet/pods/test-volume/mount"
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", mountedFilesystemPath, "").Return(true, nil)
+	mocks.Filesystem.EXPECT().GetFilesystemSize(gomock.Any(), mountedFilesystemPath).Return(int64(1024), nil)
 
-	devSize, fsSize, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	devSize, fsSize, err := core.capturePreExpandSizeBaseline(context.Background(), pi, mountedFilesystemPath)
 	require.NoError(t, err)
 	assert.Equal(t, int64(0), devSize)
 	assert.Equal(t, int64(1024), fsSize)
+}
+
+func TestCapturePreExpandSizeBaseline_NonRawUnmountedPathSkipsFilesystemSize(t *testing.T) {
+	core, mocks := newTestCore(t)
+	pi := samplePublishInfo(ISCSI)
+	pi.FilesystemType = filesystem.Ext4
+	pi.DevicePath = ""
+	unmountedFilesystemPath := "/var/lib/kubelet/plugins/test-volume/globalmount"
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", unmountedFilesystemPath, "").Return(false, nil)
+	// No Filesystem.GetFilesystemSize expectation: statfs would measure the host filesystem.
+
+	devSize, fsSize, err := core.capturePreExpandSizeBaseline(context.Background(), pi, unmountedFilesystemPath)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), devSize)
+	assert.Equal(t, int64(0), fsSize)
 }
 
 func TestCapturePreExpandSizeBaseline_FilesystemSizeErrorPropagates(t *testing.T) {
@@ -288,9 +335,10 @@ func TestCapturePreExpandSizeBaseline_FilesystemSizeErrorPropagates(t *testing.T
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = filesystem.Ext4
 	pi.DevicePath = ""
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", pi.GlobalMount, "").Return(true, nil)
 	mocks.Filesystem.EXPECT().GetFilesystemSize(gomock.Any(), pi.GlobalMount).Return(int64(0), errors.New("stat failed"))
 
-	_, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	_, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi, pi.GlobalMount)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "stat failed")
 }
@@ -300,10 +348,11 @@ func TestCapturePreExpandSizeBaseline_EmptyDevicePathSkipsDiskSize(t *testing.T)
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = filesystem.Ext4
 	pi.DevicePath = ""
+	mocks.Mount.EXPECT().IsMounted(gomock.Any(), "", pi.GlobalMount, "").Return(true, nil)
 	mocks.Filesystem.EXPECT().GetFilesystemSize(gomock.Any(), pi.GlobalMount).Return(int64(1024), nil)
 	// No Devices.GetDiskSize expectation: a call would fail the test.
 
-	devSize, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	devSize, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi, pi.GlobalMount)
 	require.NoError(t, err)
 	assert.Equal(t, int64(0), devSize)
 }
@@ -315,7 +364,7 @@ func TestCapturePreExpandSizeBaseline_DiskSizeErrorSwallowed(t *testing.T) {
 	pi.DevicePath = "/dev/sdz"
 	mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), "/dev/sdz").Return(int64(0), errors.New("io error"))
 
-	devSize, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi)
+	devSize, _, err := core.capturePreExpandSizeBaseline(context.Background(), pi, "")
 	require.NoError(t, err, "GetDiskSize errors must be swallowed (logged), not returned")
 	assert.Equal(t, int64(0), devSize)
 }
