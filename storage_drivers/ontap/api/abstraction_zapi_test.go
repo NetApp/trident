@@ -408,7 +408,7 @@ func TestOntapAPIZAPI_VolumeCreate_Success(t *testing.T) {
 		ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
 		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos,
-		volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		volume.Encrypt, volume.SnapshotReserve, volume.DPVolume, 0,
 	).Return(volumeCreateResponse, nil).Times(1)
 
 	_, err := oapi.VolumeCreate(ctx, volume)
@@ -434,7 +434,7 @@ func TestOntapAPIZAPI_VolumeCreate_Error(t *testing.T) {
 	mock.EXPECT().VolumeCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(nil, errors.New("API error")).Times(1)
+		gomock.Any(), gomock.Any()).Return(nil, errors.New("API error")).Times(1)
 
 	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "expected error when volume creation fails")
@@ -467,7 +467,7 @@ func TestOntapAPIZAPI_VolumeCreate_JobExists(t *testing.T) {
 	mock.EXPECT().VolumeCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(volumeCreateResponse, nil).Times(1)
+		gomock.Any(), gomock.Any()).Return(volumeCreateResponse, nil).Times(1)
 
 	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "expected VolumeCreateJobExistsError when volume create job already exists")
@@ -2907,7 +2907,7 @@ func TestOntapAPIZAPI_FlexgroupCreate(t *testing.T) {
 				mock.EXPECT().FlexGroupCreate(ctx, tt.volume.Name, sizeBytes, tt.volume.Aggregates,
 					tt.volume.SpaceReserve, tt.volume.SnapshotPolicy, tt.volume.UnixPermissions,
 					tt.volume.ExportPolicy, tt.volume.SecurityStyle, tt.volume.TieringPolicy,
-					tt.volume.Comment, tt.volume.Qos, tt.volume.Encrypt, tt.volume.SnapshotReserve).
+					tt.volume.Comment, tt.volume.Qos, tt.volume.Encrypt, tt.volume.SnapshotReserve, 0).
 					Return(tt.mockResponse, tt.mockError).Times(1)
 			}
 

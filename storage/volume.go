@@ -31,6 +31,7 @@ type VolumeConfig struct {
 	UnixPermissions string                  `json:"unixPermissions,omitempty"`
 	StorageClass    string                  `json:"storageClass,omitempty"`
 	AccessMode      config.AccessMode       `json:"accessMode,omitempty"`
+	UnixGroupID     string                  `json:"unixGroupID,omitempty"`
 	VolumeMode      config.VolumeMode       `json:"volumeMode,omitempty"`
 	AccessInfo      models.VolumeAccessInfo `json:"accessInformation"`
 	// MoveInfo is the operational status of an ongoing volume

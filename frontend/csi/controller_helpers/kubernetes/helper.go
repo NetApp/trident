@@ -927,6 +927,7 @@ func getVolumeConfig(
 		UnixPermissions:           getAnnotation(annotations, AnnUnixPermissions),
 		StorageClass:              storageClass.Name,
 		BlockSize:                 getAnnotation(annotations, AnnBlockSize),
+		UnixGroupID:               getAnnotation(annotations, AnnUnixGroupID),
 		FileSystem:                getAnnotation(annotations, AnnFileSystem),
 		LUKSEncryption:            luksEncryption,
 		SplitOnClone:              getAnnotation(annotations, AnnSplitOnClone),
