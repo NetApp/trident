@@ -799,6 +799,9 @@ func (d *NASQtreeStorageDriver) Import(
 	return nil
 }
 
+// Rename renames a qtree in place. newName may also be a "flexvol/qtree" path (the
+// format Import() stores as ImportOriginalName) to revert a failed import; in that
+// case the FlexVol is renamed back too, but only if it holds no other qtrees.
 func (d *NASQtreeStorageDriver) Rename(ctx context.Context, name, newName string) error {
 	fields := LogFields{
 		"Method":  "Rename",
@@ -809,7 +812,75 @@ func (d *NASQtreeStorageDriver) Rename(ctx context.Context, name, newName string
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
-	return errors.New("rename is not implemented")
+	volumePattern, qtreeName, err := d.SetVolumePatternToFindQtree(ctx, "", name, d.FlexvolNamePrefix())
+	if err != nil {
+		return err
+	}
+
+	exists, flexvol, err := d.API.QtreeExists(ctx, qtreeName, volumePattern)
+	if err != nil {
+		return fmt.Errorf("error checking for existing qtree %s: %v", name, err)
+	}
+	if !exists {
+		return errors.NotFoundError("qtree %s not found", name)
+	}
+
+	d.flexvolLocks.Lock(flexvol)
+	defer d.flexvolLocks.Unlock(flexvol)
+
+	targetFlexvol := flexvol
+	targetQtreeName := newName
+	if pathElements := strings.Split(newName, "/"); len(pathElements) == 2 {
+		targetFlexvol = pathElements[0]
+		targetQtreeName = pathElements[1]
+	}
+
+	currentPath := fmt.Sprintf("/vol/%s/%s", flexvol, qtreeName)
+	targetPath := fmt.Sprintf("/vol/%s/%s", flexvol, targetQtreeName)
+
+	if err := d.API.QtreeRename(ctx, currentPath, targetPath); err != nil {
+		return fmt.Errorf("error renaming qtree %s to %s: %v", name, targetQtreeName, err)
+	}
+
+	if targetFlexvol == flexvol {
+		return nil
+	}
+
+	// The caller also wants the FlexVol renamed back. Only do so if this FlexVol is
+	// exclusive to the qtree we just renamed.
+	count, err := d.API.QtreeCount(ctx, flexvol)
+	if err != nil {
+		Logc(ctx).WithError(err).WithField("flexvol", flexvol).
+			Warn("Could not verify FlexVol holds only this qtree; leaving FlexVol name unchanged.")
+		return nil
+	}
+	if count != 1 {
+		Logc(ctx).WithFields(LogFields{
+			"flexvol":    flexvol,
+			"qtreeCount": count,
+		}).Warn("FlexVol holds other qtrees; leaving FlexVol name unchanged to avoid orphaning them.")
+		return nil
+	}
+
+	flexvolExists, err := d.API.VolumeExists(ctx, targetFlexvol)
+	if err != nil {
+		return fmt.Errorf("error checking for existing FlexVol %s: %v", targetFlexvol, err)
+	}
+	if flexvolExists {
+		Logc(ctx).WithField("flexvol", targetFlexvol).
+			Warn("Target FlexVol name is already in use; leaving FlexVol name unchanged.")
+		return nil
+	}
+
+	if err := d.API.VolumeRename(ctx, flexvol, targetFlexvol); err != nil {
+		// Roll back the qtree rename so we don't leave a half-reverted state.
+		if renameErr := d.API.QtreeRename(ctx, targetPath, currentPath); renameErr != nil {
+			Logc(ctx).WithError(renameErr).Warn("Failed to restore qtree name after FlexVol rename failure.")
+		}
+		return fmt.Errorf("error renaming FlexVol %s to %s: %v", flexvol, targetFlexvol, err)
+	}
+
+	return nil
 }
 
 // Destroy the volume
