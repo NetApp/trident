@@ -31,6 +31,46 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestControllerRestURL(t *testing.T) {
+	testCases := []struct {
+		name     string
+		host     string
+		port     string
+		expected string
+	}{
+		{
+			name:     "IPv6 address",
+			host:     "2001:db8::1",
+			port:     "34571",
+			expected: "https://[2001:db8::1]:34571",
+		},
+		{
+			name:     "IPv4 address",
+			host:     "192.0.2.10",
+			port:     "34571",
+			expected: "https://192.0.2.10:34571",
+		},
+		{
+			name:     "DNS name",
+			host:     "trident-csi",
+			port:     "34571",
+			expected: "https://trident-csi:34571",
+		},
+		{
+			name:     "defaults",
+			expected: "https://trident-csi:34571",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TRIDENT_CSI_SERVICE_HOST", tc.host)
+			t.Setenv("TRIDENT_CSI_SERVICE_PORT", tc.port)
+			assert.Equal(t, tc.expected, controllerRestURL())
+		})
+	}
+}
+
 func TestMain_processCommandLineArgs_QPS(t *testing.T) {
 	type parameters struct {
 		k8sApiQPS         float64

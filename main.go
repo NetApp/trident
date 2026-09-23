@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -348,7 +349,7 @@ func controllerRestURL() string {
 	if hostname == "" {
 		hostname = config.ServerCertName
 	}
-	return "https://" + hostname + ":" + port
+	return "https://" + net.JoinHostPort(hostname, port)
 }
 
 func main() {
