@@ -135,12 +135,27 @@ func (c *ConfiguratorClient) getPatch(objType ObjectType, obj interface{}, newOb
 				return emptyPatch, err
 			}
 
+			mergePatch := make(map[string]json.RawMessage)
+
 			if len(patch) > 2 {
-				newPatch := "{\"spec\": " + string(patch) + "}"
-				return []byte(newPatch), nil
-			} else {
+				mergePatch["spec"] = patch
+			}
+
+			// A TBC created by an older operator may be missing the labels the configurator uses to find its own
+			// backends, so add whatever the new YAML carries. Labels only present on the existing TBC are left alone.
+			if labels := missingOrStaleLabels(oldObj.Labels, newObj.Labels); len(labels) > 0 {
+				metadata, err := json.Marshal(map[string]map[string]string{"labels": labels})
+				if err != nil {
+					return emptyPatch, err
+				}
+				mergePatch["metadata"] = metadata
+			}
+
+			if len(mergePatch) == 0 {
 				return emptyPatch, nil
 			}
+
+			return json.Marshal(mergePatch)
 		} else {
 			return emptyPatch, fmt.Errorf("wrong object type in getPatch")
 		}
@@ -149,6 +164,17 @@ func (c *ConfiguratorClient) getPatch(objType ObjectType, obj interface{}, newOb
 	// We can use k8sClient.GenericPatch for other objects as it combines the old and new objects into one. And
 	// currently, these objects have almost static fields.
 	return k8sClient.GenericPatch(obj, []byte(newObjYAML))
+}
+
+// missingOrStaleLabels returns the desired labels whose value differs from the existing ones.
+func missingOrStaleLabels(existing, desired map[string]string) map[string]string {
+	labels := make(map[string]string)
+	for key, value := range desired {
+		if existing[key] != value {
+			labels[key] = value
+		}
+	}
+	return labels
 }
 
 func (c *ConfiguratorClient) patchObject(objType ObjectType, objName, objNamespace string, patchBytes []byte) error {

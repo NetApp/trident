@@ -3,7 +3,11 @@ package storage_drivers
 import (
 	"testing"
 
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
+
+	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	sa "github.com/netapp/trident/storage_attribute"
 )
 
 func TestReplaceStringIfPresent(t *testing.T) {
@@ -434,6 +438,34 @@ func TestConstructMountOptions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := constructMountOptions(tc.input)
 			assert.Equal(t, tc.expected, result, "Incorrect mount options string returned")
+		})
+	}
+}
+
+// TestGetANFTBCYaml_hasConfiguratorLabel asserts ANF TridentBackendConfig YAML is stamped with
+// trident.netapp.io/configurator: <configurator name>.
+func TestGetANFTBCYaml_hasConfiguratorLabel(t *testing.T) {
+	tconfName := "netapp-anf-backend-configurator"
+	anf := &ANF{
+		ANFConfig: ANFConfig{
+			SubscriptionID: "sub",
+			TenantID:       "tenant",
+			Location:       "eastus",
+		},
+		TBCNamePrefix:    tconfName,
+		TridentNamespace: "trident",
+		AMIEnabled:       true,
+	}
+
+	for _, nasType := range []string{sa.NFS, sa.SMB} {
+		t.Run(nasType, func(t *testing.T) {
+			tbcYaml := getANFTBCYaml(anf, "", nasType)
+			assert.NotContains(t, tbcYaml, "{LABELS}")
+
+			var tbc tridentV1.TridentBackendConfig
+			assert.NoError(t, yaml.Unmarshal([]byte(tbcYaml), &tbc), "ANF TBC YAML must unmarshal")
+			assert.Equal(t, tconfName, tbc.Labels[TridentConfiguratorLabel],
+				"ANF TBC must have %s: %s", TridentConfiguratorLabel, tconfName)
 		})
 	}
 }

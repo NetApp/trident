@@ -3,6 +3,7 @@
 package clients
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -18,6 +19,8 @@ import (
 )
 
 const (
+	testConfiguratorLabel = "trident.netapp.io/configurator"
+
 	// Test object names
 	testBackendName      = "test-backend"
 	testBackendNameOld   = "old-backend"
@@ -530,6 +533,91 @@ data:
 	patchBytes, err = client.getPatch(OStorageClass, nonBackendObj, nonBackendYAML)
 	assert.NoError(t, err, "Should not error for non-backend object")
 	assert.NotEqual(t, []byte("{}"), patchBytes, "Should return patch for non-backend object")
+}
+
+// TestConfiguratorClient_getPatch_configuratorLabels covers upgrade repair: unlabeled TBCs get a
+// metadata merge-patch so post-create verification can find them.
+func TestConfiguratorClient_getPatch_configuratorLabels(t *testing.T) {
+	client := &ConfiguratorClient{}
+	tconfName := "netapp-anf-backend-configurator"
+
+	unlabeledTBC := &tridentV1.TridentBackendConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testBackendNameOld,
+			Namespace: testNamespace,
+		},
+		Spec: tridentV1.TridentBackendConfigSpec{
+			RawExtension: runtime.RawExtension{
+				Raw: []byte(`{"version": 1, "backendName": "` + testBackendNameOld + `", "storageDriverName": "` + testStorageDriverNAS + `"}`),
+			},
+		},
+	}
+
+	labeledYAML := `apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: old-backend
+  namespace: test-ns
+  labels:
+    ` + testConfiguratorLabel + `: ` + tconfName + `
+spec:
+  version: 1
+  backendName: old-backend
+  storageDriverName: ontap-nas`
+
+	patchBytes, err := client.getPatch(OBackend, unlabeledTBC, labeledYAML)
+	assert.NoError(t, err)
+
+	var mergePatch map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(patchBytes, &mergePatch))
+	assert.NotContains(t, mergePatch, "spec", "identical spec must not be patched")
+	assert.Contains(t, mergePatch, "metadata")
+
+	var metadata struct {
+		Labels map[string]string `json:"labels"`
+	}
+	assert.NoError(t, json.Unmarshal(mergePatch["metadata"], &metadata))
+	assert.Equal(t, tconfName, metadata.Labels[testConfiguratorLabel])
+
+	labeledTBC := unlabeledTBC.DeepCopy()
+	labeledTBC.Labels = map[string]string{testConfiguratorLabel: tconfName}
+	patchBytes, err = client.getPatch(OBackend, labeledTBC, labeledYAML)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("{}"), patchBytes, "matching labels and spec must not be patched")
+
+	staleTBC := unlabeledTBC.DeepCopy()
+	staleTBC.Labels = map[string]string{testConfiguratorLabel: "old-configurator"}
+	patchBytes, err = client.getPatch(OBackend, staleTBC, labeledYAML)
+	assert.NoError(t, err)
+	assert.NoError(t, json.Unmarshal(patchBytes, &mergePatch))
+	assert.NoError(t, json.Unmarshal(mergePatch["metadata"], &metadata))
+	assert.Equal(t, tconfName, metadata.Labels[testConfiguratorLabel])
+	assert.NotContains(t, string(patchBytes), "old-configurator")
+}
+
+func TestMissingOrStaleLabels(t *testing.T) {
+	label := testConfiguratorLabel
+	desired := map[string]string{label: "netapp-anf-backend-configurator"}
+
+	testCases := []struct {
+		name     string
+		existing map[string]string
+		desired  map[string]string
+		want     map[string]string
+	}{
+		{name: "nil existing", existing: nil, desired: desired, want: desired},
+		{name: "empty existing", existing: map[string]string{}, desired: desired, want: desired},
+		{name: "matching labels", existing: desired, desired: desired, want: map[string]string{}},
+		{name: "stale value", existing: map[string]string{label: "old-configurator"}, desired: desired, want: desired},
+		{name: "unrelated existing labels left off patch", existing: map[string]string{"unrelated": "keep-me"}, desired: desired, want: desired},
+		{name: "nil desired", existing: desired, desired: nil, want: map[string]string{}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, missingOrStaleLabels(tc.existing, tc.desired))
+		})
+	}
 }
 
 // Test CreateOrPatchObject function - comprehensive coverage for all major paths

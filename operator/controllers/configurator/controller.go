@@ -43,7 +43,7 @@ const (
 
 	TridentConfiguratorCRDName   = "tridentconfigurators.trident.netapp.io"
 	TridentConfiguratorFinalizer = "trident.netapp.io/configuratorFinalizer"
-	TridentConfiguratorLabel     = "trident.netapp.io/configurator"
+	TridentConfiguratorLabel     = storage_drivers.TridentConfiguratorLabel
 )
 
 var ctx = context.TODO

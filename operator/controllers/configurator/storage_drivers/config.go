@@ -17,4 +17,6 @@ const (
 
 	MaxNumberOfANFServiceLevels  = 3
 	MaxNumberOfANFStorageClasses = 6
+
+	TridentConfiguratorLabel = "trident.netapp.io/configurator"
 )

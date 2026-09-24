@@ -16,6 +16,7 @@ func getANFTBCYaml(anf *ANF, vPools, nasType string) string {
 
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{TBC_NAME}", getANFBackendName(anf.TBCNamePrefix, nasType))
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAMESPACE}", anf.TridentNamespace)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", constructConfiguratorLabels(anf.TBCNamePrefix))
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SUBSCRIPTION_ID}", anf.SubscriptionID)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{TENANT_ID}", anf.TenantID)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{LOCATION}", anf.Location)
@@ -45,6 +46,7 @@ kind: TridentBackendConfig
 metadata:
   name: {TBC_NAME}
   namespace: {NAMESPACE}
+  {LABELS}
 spec:
   version: 1
   storageDriverName: azure-netapp-files
@@ -67,6 +69,11 @@ spec:
   storage:
   {V_POOLS}
 `
+
+// constructConfiguratorLabels returns the metadata labels stamping a TridentBackendConfig as owned by tconfName.
+func constructConfiguratorLabels(tconfName string) string {
+	return fmt.Sprintf("labels:\n    %s: %s\n", TridentConfiguratorLabel, tconfName)
+}
 
 func constructEncryptionKeys(m map[string]string) (encryptionKeys string) {
 	if len(m) == 0 {
@@ -213,8 +220,7 @@ func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfN
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SVM_NAME}", svm.SvmName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{AWS_ARN}", svm.SecretARNName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", storageDriverName)
-	labels := fmt.Sprintf("labels:\n    trident.netapp.io/configurator: %s\n", tconfName)
-	tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", labels)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", constructConfiguratorLabels(tconfName))
 
 	if scManagedTconf {
 		tbcYaml = replaceBoolIfPresent(tbcYaml, "{USE_REST}", tconfSpec, "useREST")
