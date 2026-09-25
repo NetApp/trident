@@ -115,7 +115,7 @@ type ISCSI interface {
 		volID, sessionNumber string, reasonInvalid models.PortalInvalid,
 	)
 	PreChecks(ctx context.Context) error
-	ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64) error
+	ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64, removeBrokenPaths bool) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool
 	RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
 	RemovePortalsFromSession(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
@@ -763,7 +763,7 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 // to ensure the host-side multipath device reflects the expected size. This is a public entry point
 // for CSI node volume expansion; the actual convergence logic lives in ExpandMultipathDevice.
 func (client *Client) ExpandVolume(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64, removeBrokenPaths bool,
 ) error {
 	if publishInfo == nil {
 		return errors.New("nil publish info")
@@ -785,7 +785,7 @@ func (client *Client) ExpandVolume(
 	getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
 		return client.getDeviceInfoForLUNAndTarget(ctx, lunID, targetIQN)
 	}
-	return client.devices.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+	return client.devices.ExpandMultipathDevice(ctx, getter, targetSizeBytes, removeBrokenPaths)
 }
 
 func (client *Client) getDeviceInfoForLUNAndTarget(

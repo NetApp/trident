@@ -1066,9 +1066,9 @@ func TestClient_isRunning(t *testing.T) {
 	}
 }
 
-// --- discoverUnhealthyDevices tests ---
+// --- findUnhealthyDevices tests ---
 
-func TestClient_discoverUnhealthyDevices(t *testing.T) {
+func TestClient_findUnhealthyDevices(t *testing.T) {
 	tests := map[string]struct {
 		devices  []string
 		setupFs  func(afero.Fs)
@@ -1116,7 +1116,7 @@ func TestClient_discoverUnhealthyDevices(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			tc.setupFs(fs)
 			client := &Client{osFs: afero.Afero{Fs: fs}}
-			result := client.discoverUnhealthyDevices(context.Background(), tc.devices)
+			result := client.findUnhealthyDevices(context.Background(), tc.devices)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
@@ -1233,7 +1233,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 
 	t.Run("nil getter", func(t *testing.T) {
 		client := &Client{}
-		err := client.ExpandMultipathDevice(context.Background(), nil, targetSizeBytes)
+		err := client.ExpandMultipathDevice(context.Background(), nil, targetSizeBytes, false)
 		assert.Error(t, err)
 	})
 
@@ -1242,7 +1242,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 			return makeDeviceInfo("dm-0", []string{"sda"}), nil
 		}
 		client := &Client{}
-		err := client.ExpandMultipathDevice(context.Background(), getter, 0)
+		err := client.ExpandMultipathDevice(context.Background(), getter, 0, false)
 		assert.Error(t, err)
 	})
 
@@ -1251,7 +1251,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 			return makeDeviceInfo("dm-0", []string{"sda"}), nil
 		}
 		client := &Client{}
-		err := client.ExpandMultipathDevice(context.Background(), getter, -100)
+		err := client.ExpandMultipathDevice(context.Background(), getter, -100, false)
 		assert.Error(t, err)
 	})
 
@@ -1278,7 +1278,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.NoError(t, err)
 	})
 
@@ -1322,7 +1322,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.NoError(t, err)
 		assert.GreaterOrEqual(t, resizeCount, 1, "should have called multipathd resize at least once")
 	})
@@ -1339,7 +1339,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1356,7 +1356,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1373,7 +1373,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1390,7 +1390,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1416,7 +1416,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1454,7 +1454,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.NoError(t, err)
 		// The info change on call 3 resets stable reads, so convergence takes more than 3 getter calls.
 		assert.Greater(t, callCount, 3)
@@ -1492,7 +1492,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1514,7 +1514,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		// Should be an immediate error, not a context deadline.
 		assert.NotErrorIs(t, err, context.DeadlineExceeded)
@@ -1544,7 +1544,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		// Any unhealthy path must produce an immediate hard error, not a timeout.
 		assert.NotErrorIs(t, err, context.DeadlineExceeded)
@@ -1571,7 +1571,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1597,7 +1597,7 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
@@ -1634,9 +1634,262 @@ func TestClient_ExpandMultipathDevice(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
+	})
+}
+
+func TestEvictFailedPaths(t *testing.T) {
+	makeDeviceInfo := func(devices []string) *models.ScsiDeviceInfo {
+		return &models.ScsiDeviceInfo{
+			ScsiDeviceAddress: models.ScsiDeviceAddress{LUN: "1"},
+			MultipathDevice:   "dm-0",
+			Devices:           devices,
+		}
+	}
+
+	addDeleteFile := func(fs afero.Fs, devs ...string) {
+		for _, dev := range devs {
+			fs.MkdirAll("/sys/block/"+dev+"/device", 0o755)
+			afero.WriteFile(fs, "/sys/block/"+dev+"/device/delete", []byte(""), 0o200)
+		}
+	}
+
+	tests := map[string]struct {
+		allDevices  []string
+		unhealthy   []string
+		setup       func(t *testing.T) *Client
+		assertError assert.ErrorAssertionFunc
+		checkAfter  func(t *testing.T, client *Client)
+	}{
+		"refuses when unhealthy count equals total paths": {
+			allDevices:  []string{"sda", "sdb"},
+			unhealthy:   []string{"sda", "sdb"},
+			setup:       func(t *testing.T) *Client { return &Client{osFs: afero.Afero{Fs: afero.NewMemMapFs()}} },
+			assertError: assert.Error,
+		},
+		"refuses when unhealthy count exceeds total paths": {
+			allDevices:  []string{"sda"},
+			unhealthy:   []string{"sda", "sdb"},
+			setup:       func(t *testing.T) *Client { return &Client{osFs: afero.Afero{Fs: afero.NewMemMapFs()}} },
+			assertError: assert.Error,
+		},
+		"evicts single broken path with one healthy remaining": {
+			allDevices: []string{"sda", "sdb"},
+			unhealthy:  []string{"sdb"},
+			setup: func(t *testing.T) *Client {
+				ctrl := gomock.NewController(t)
+				mockCmd := mockexec.NewMockCommand(ctrl)
+				fs := afero.NewMemMapFs()
+				addDeleteFile(fs, "sdb")
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipathd", gomock.Any(), true, "-kfail path sdb",
+				).Return([]byte("ok"), nil).Times(1)
+				return &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+			},
+			assertError: assert.NoError,
+			checkAfter: func(t *testing.T, client *Client) {
+				contents, err := client.osFs.ReadFile("/sys/block/sdb/device/delete")
+				assert.NoError(t, err)
+				assert.Equal(t, "1", string(contents))
+			},
+		},
+		"evicts single broken path with multiple healthy remaining": {
+			allDevices: []string{"sda", "sdb", "sdc"},
+			unhealthy:  []string{"sdc"},
+			setup: func(t *testing.T) *Client {
+				ctrl := gomock.NewController(t)
+				mockCmd := mockexec.NewMockCommand(ctrl)
+				fs := afero.NewMemMapFs()
+				addDeleteFile(fs, "sdc")
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipathd", gomock.Any(), true, "-kfail path sdc",
+				).Return([]byte("ok"), nil).Times(1)
+				return &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+			},
+			assertError: assert.NoError,
+			checkAfter: func(t *testing.T, client *Client) {
+				contents, err := client.osFs.ReadFile("/sys/block/sdc/device/delete")
+				assert.NoError(t, err)
+				assert.Equal(t, "1", string(contents))
+			},
+		},
+		"evicts multiple broken paths in parallel": {
+			allDevices: []string{"sda", "sdb", "sdc"},
+			unhealthy:  []string{"sdb", "sdc"},
+			setup: func(t *testing.T) *Client {
+				ctrl := gomock.NewController(t)
+				mockCmd := mockexec.NewMockCommand(ctrl)
+				fs := afero.NewMemMapFs()
+				addDeleteFile(fs, "sdb", "sdc")
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipathd", gomock.Any(), true, gomock.Any(),
+				).Return([]byte("ok"), nil).Times(2)
+				return &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+			},
+			assertError: assert.NoError,
+		},
+		"FailMultipathPath error is best-effort and still removes device": {
+			allDevices: []string{"sda", "sdb"},
+			unhealthy:  []string{"sdb"},
+			setup: func(t *testing.T) *Client {
+				ctrl := gomock.NewController(t)
+				mockCmd := mockexec.NewMockCommand(ctrl)
+				fs := afero.NewMemMapFs()
+				addDeleteFile(fs, "sdb")
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipathd", gomock.Any(), true, "-kfail path sdb",
+				).Return(nil, fmt.Errorf("connection refused")).Times(1)
+				return &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+			},
+			assertError: assert.NoError,
+		},
+		"RemoveDevice error is best-effort and does not fail the call": {
+			allDevices: []string{"sda", "sdb"},
+			unhealthy:  []string{"sdb"},
+			setup: func(t *testing.T) *Client {
+				ctrl := gomock.NewController(t)
+				mockCmd := mockexec.NewMockCommand(ctrl)
+				fs := afero.NewMemMapFs()
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipathd", gomock.Any(), true, "-kfail path sdb",
+				).Return([]byte("ok"), nil).Times(1)
+				return &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+			},
+			assertError: assert.NoError,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			client := tc.setup(t)
+			info := makeDeviceInfo(tc.allDevices)
+			err := client.evictFailedPaths(context.Background(), info, tc.unhealthy)
+			tc.assertError(t, err)
+			if tc.checkAfter != nil {
+				tc.checkAfter(t, client)
+			}
+		})
+	}
+}
+
+func TestExpandMultipathDevice_Option2(t *testing.T) {
+	const (
+		targetSizeBytes = int64(107374182400) // 100 GiB
+		sectorCount     = "209715200"         // 100 GiB in 512-byte sectors
+		mapperName      = "3600a098038314865515d4c5a70644636"
+	)
+
+	makeDeviceInfo := func(devices []string) *models.ScsiDeviceInfo {
+		return &models.ScsiDeviceInfo{
+			ScsiDeviceAddress: models.ScsiDeviceAddress{LUN: "1"},
+			MultipathDevice:   "dm-0",
+			Devices:           devices,
+		}
+	}
+
+	// allDevicesUnhealthy: zero healthy paths → VolumeStateError (codes.Aborted), not timeout.
+	t.Run("all paths unhealthy with removeBrokenPaths true returns volume state error", func(t *testing.T) {
+		fs := afero.NewMemMapFs()
+		fs.MkdirAll("/sys/block/sda/device", 0o755)
+		afero.WriteFile(fs, "/sys/block/sda/device/state", []byte("blocked\n"), 0o444)
+
+		getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
+			return makeDeviceInfo([]string{"sda"}), nil
+		}
+
+		client := &Client{osFs: afero.Afero{Fs: fs}}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, true)
+		assert.Error(t, err)
+		assert.True(t, errors.IsVolumeStateError(err))
+		assert.NotErrorIs(t, err, context.DeadlineExceeded)
+	})
+
+	// Option 2: some paths unhealthy, removeBrokenPaths=true → evicts broken path, converges on healthy path.
+	t.Run("partial path eviction evicts broken path and converges on healthy path", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockCmd := mockexec.NewMockCommand(ctrl)
+		fs := afero.NewMemMapFs()
+
+		// sda: healthy at target size.
+		afero.WriteFile(fs, "/sys/block/sda/size", []byte(sectorCount+"\n"), 0o444)
+		afero.WriteFile(fs, "/sys/block/sda/device/state", []byte("running\n"), 0o444)
+
+		// sdb: unhealthy (blocked); delete file present for RemoveDevice.
+		fs.MkdirAll("/sys/block/sdb/device", 0o755)
+		afero.WriteFile(fs, "/sys/block/sdb/device/state", []byte("blocked\n"), 0o444)
+		afero.WriteFile(fs, "/sys/block/sdb/device/delete", []byte(""), 0o200)
+
+		// dm-0 at target size; name file present.
+		afero.WriteFile(fs, "/sys/block/dm-0/size", []byte(sectorCount+"\n"), 0o444)
+		afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte(mapperName+"\n"), 0o444)
+
+		// FailMultipathPath for sdb - called during eviction.
+		mockCmd.EXPECT().ExecuteWithTimeout(
+			gomock.Any(), "multipathd", gomock.Any(), true, "-kfail path sdb",
+		).Return([]byte("ok"), nil).Times(1)
+
+		// Drive the eviction toggle via a call-count gate: the first call returns sda+sdb
+		// so the loop enters partialPathEviction and evicts sdb; subsequent calls return
+		// only sda, so findUnhealthyDevices sees no unhealthy devices and the loop converges.
+		callCount := 0
+		getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
+			callCount++
+			if callCount <= 1 {
+				return makeDeviceInfo([]string{"sda", "sdb"}), nil
+			}
+			return makeDeviceInfo([]string{"sda"}), nil
+		}
+
+		client := &Client{command: mockCmd, osFs: afero.Afero{Fs: fs}}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, true)
+		assert.NoError(t, err)
+	})
+
+	// Option 1 fallback: some paths unhealthy, removeBrokenPaths=false → VolumeStateError (codes.Aborted).
+	t.Run("some paths unhealthy with removeBrokenPaths false returns volume state error", func(t *testing.T) {
+		fs := afero.NewMemMapFs()
+		afero.WriteFile(fs, "/sys/block/sda/device/state", []byte("running\n"), 0o444)
+		afero.WriteFile(fs, "/sys/block/sdb/device/state", []byte("blocked\n"), 0o444)
+
+		getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
+			return makeDeviceInfo([]string{"sda", "sdb"}), nil
+		}
+
+		client := &Client{osFs: afero.Afero{Fs: fs}}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
+		assert.True(t, errors.IsVolumeStateError(err))
+		assert.NotErrorIs(t, err, context.DeadlineExceeded)
+	})
+
+	// allDevicesUnhealthy is handled before the removeBrokenPaths check; verify both modes return VolumeStateError.
+	t.Run("all paths unhealthy with removeBrokenPaths false returns volume state error", func(t *testing.T) {
+		fs := afero.NewMemMapFs()
+		afero.WriteFile(fs, "/sys/block/sda/device/state", []byte("transport-offline\n"), 0o444)
+		afero.WriteFile(fs, "/sys/block/sdb/device/state", []byte("blocked\n"), 0o444)
+
+		getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
+			return makeDeviceInfo([]string{"sda", "sdb"}), nil
+		}
+
+		client := &Client{osFs: afero.Afero{Fs: fs}}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		err := client.ExpandMultipathDevice(ctx, getter, targetSizeBytes, false)
+		assert.True(t, errors.IsVolumeStateError(err))
+		assert.NotErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
 

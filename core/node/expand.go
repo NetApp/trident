@@ -126,10 +126,12 @@ func (c *Core) expandISCSIVolume(
 	}
 
 	// Resize the volume (rescan + resize the SCSI device(s) and multipath map for the LUN).
-	if err := c.iscsi.ExpandVolume(ctx, publishInfo, requiredBytes); err != nil {
+	removeBrokenPaths := c.iSCSISelfHealingInterval > 0 // Only remove failed paths during a resize if self-healing is running.
+	if err := c.iscsi.ExpandVolume(ctx, publishInfo, requiredBytes, removeBrokenPaths); err != nil {
 		Logc(ctx).WithFields(LogFields{
-			"lunID":      publishInfo.IscsiLunNumber,
-			"devicePath": publishInfo.DevicePath,
+			"lunID":             publishInfo.IscsiLunNumber,
+			"devicePath":        publishInfo.DevicePath,
+			"removeBrokenPaths": removeBrokenPaths,
 		}).WithError(err).Error("Unable to resize device(s) for LUN.")
 		return err
 	}

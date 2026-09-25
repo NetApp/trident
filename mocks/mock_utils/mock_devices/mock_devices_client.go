@@ -10,12 +10,12 @@
 package mock_devices
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
-	"context"
-	gomock "go.uber.org/mock/gomock"
 	models "github.com/netapp/trident/utils/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockDevices is a mock of Devices interface.
@@ -40,6 +40,20 @@ func NewMockDevices(ctrl *gomock.Controller) *MockDevices {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDevices) EXPECT() *MockDevicesMockRecorder {
 	return m.recorder
+}
+
+// AddMultipathPath mocks base method.
+func (m *MockDevices) AddMultipathPath(ctx context.Context, blockDevice string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMultipathPath", ctx, blockDevice)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddMultipathPath indicates an expected call of AddMultipathPath.
+func (mr *MockDevicesMockRecorder) AddMultipathPath(ctx, blockDevice any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMultipathPath", reflect.TypeOf((*MockDevices)(nil).AddMultipathPath), ctx, blockDevice)
 }
 
 // ClearFormatting mocks base method.
@@ -113,17 +127,31 @@ func (mr *MockDevicesMockRecorder) EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, l
 }
 
 // ExpandMultipathDevice mocks base method.
-func (m *MockDevices) ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error {
+func (m *MockDevices) ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64, removeBrokenPaths bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExpandMultipathDevice", ctx, getter, targetSizeBytes)
+	ret := m.ctrl.Call(m, "ExpandMultipathDevice", ctx, getter, targetSizeBytes, removeBrokenPaths)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExpandMultipathDevice indicates an expected call of ExpandMultipathDevice.
-func (mr *MockDevicesMockRecorder) ExpandMultipathDevice(ctx, getter, targetSizeBytes any) *gomock.Call {
+func (mr *MockDevicesMockRecorder) ExpandMultipathDevice(ctx, getter, targetSizeBytes, removeBrokenPaths any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandMultipathDevice", reflect.TypeOf((*MockDevices)(nil).ExpandMultipathDevice), ctx, getter, targetSizeBytes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandMultipathDevice", reflect.TypeOf((*MockDevices)(nil).ExpandMultipathDevice), ctx, getter, targetSizeBytes, removeBrokenPaths)
+}
+
+// FailMultipathPath mocks base method.
+func (m *MockDevices) FailMultipathPath(ctx context.Context, blockDevice string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailMultipathPath", ctx, blockDevice)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FailMultipathPath indicates an expected call of FailMultipathPath.
+func (mr *MockDevicesMockRecorder) FailMultipathPath(ctx, blockDevice any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailMultipathPath", reflect.TypeOf((*MockDevices)(nil).FailMultipathPath), ctx, blockDevice)
 }
 
 // FindDevicesForMultipathDevice mocks base method.
@@ -341,34 +369,6 @@ func (m *MockDevices) MultipathFlushDevice(ctx context.Context, deviceInfo *mode
 func (mr *MockDevicesMockRecorder) MultipathFlushDevice(ctx, deviceInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MultipathFlushDevice", reflect.TypeOf((*MockDevices)(nil).MultipathFlushDevice), ctx, deviceInfo)
-}
-
-// AddMultipathPath mocks base method.
-func (m *MockDevices) AddMultipathPath(ctx context.Context, blockDevice string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddMultipathPath", ctx, blockDevice)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddMultipathPath indicates an expected call of AddMultipathPath.
-func (mr *MockDevicesMockRecorder) AddMultipathPath(ctx, blockDevice any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMultipathPath", reflect.TypeOf((*MockDevices)(nil).AddMultipathPath), ctx, blockDevice)
-}
-
-// FailMultipathPath mocks base method.
-func (m *MockDevices) FailMultipathPath(ctx context.Context, blockDevice string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FailMultipathPath", ctx, blockDevice)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FailMultipathPath indicates an expected call of FailMultipathPath.
-func (mr *MockDevicesMockRecorder) FailMultipathPath(ctx, blockDevice any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailMultipathPath", reflect.TypeOf((*MockDevices)(nil).FailMultipathPath), ctx, blockDevice)
 }
 
 // RemoveDevice mocks base method.

@@ -14,9 +14,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "go.uber.org/mock/gomock"
-
 	models "github.com/netapp/trident/utils/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockISCSI is a mock of ISCSI interface.
@@ -113,17 +112,17 @@ func (mr *MockISCSIMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, moun
 }
 
 // ExpandVolume mocks base method.
-func (m *MockISCSI) ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64) error {
+func (m *MockISCSI) ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64, removeBrokenPaths bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExpandVolume", ctx, publishInfo, targetSizeBytes)
+	ret := m.ctrl.Call(m, "ExpandVolume", ctx, publishInfo, targetSizeBytes, removeBrokenPaths)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExpandVolume indicates an expected call of ExpandVolume.
-func (mr *MockISCSIMockRecorder) ExpandVolume(ctx, publishInfo, targetSizeBytes any) *gomock.Call {
+func (mr *MockISCSIMockRecorder) ExpandVolume(ctx, publishInfo, targetSizeBytes, removeBrokenPaths any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVolume", reflect.TypeOf((*MockISCSI)(nil).ExpandVolume), ctx, publishInfo, targetSizeBytes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVolume", reflect.TypeOf((*MockISCSI)(nil).ExpandVolume), ctx, publishInfo, targetSizeBytes, removeBrokenPaths)
 }
 
 // GetDeviceInfoForLUN mocks base method.

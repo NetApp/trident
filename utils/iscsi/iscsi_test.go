@@ -1646,21 +1646,21 @@ func TestClient_ExpandVolume(t *testing.T) {
 
 	t.Run("error when publishInfo is nil", func(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
-		err := client.ExpandVolume(context.TODO(), nil, targetSizeBytes)
+		err := client.ExpandVolume(context.TODO(), nil, targetSizeBytes, false)
 		assert.Error(t, err)
 	})
 
 	t.Run("error when requiredSize is zero", func(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
 		publishInfo := &models.VolumePublishInfo{}
-		err := client.ExpandVolume(context.TODO(), publishInfo, 0)
+		err := client.ExpandVolume(context.TODO(), publishInfo, 0, false)
 		assert.Error(t, err)
 	})
 
 	t.Run("error when requiredSize is negative", func(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
 		publishInfo := &models.VolumePublishInfo{}
-		err := client.ExpandVolume(context.TODO(), publishInfo, -100)
+		err := client.ExpandVolume(context.TODO(), publishInfo, -100, false)
 		assert.Error(t, err)
 	})
 
@@ -1687,7 +1687,7 @@ func TestClient_ExpandVolume(t *testing.T) {
 		).Return(multipathDevice).AnyTimes()
 
 		mockDevicesClient.EXPECT().ExpandMultipathDevice(
-			gomock.Any(), gomock.Any(), targetSizeBytes,
+			gomock.Any(), gomock.Any(), targetSizeBytes, false,
 		).Return(nil)
 
 		publishInfo := &models.VolumePublishInfo{
@@ -1702,7 +1702,7 @@ func TestClient_ExpandVolume(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
 			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes, false)
 		assert.NoError(t, err)
 	})
 
@@ -1712,7 +1712,7 @@ func TestClient_ExpandVolume(t *testing.T) {
 		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
 
 		mockDevicesClient.EXPECT().ExpandMultipathDevice(
-			gomock.Any(), gomock.Any(), targetSizeBytes,
+			gomock.Any(), gomock.Any(), targetSizeBytes, false,
 		).Return(errors.New("expand failed"))
 
 		publishInfo := &models.VolumePublishInfo{
@@ -1727,8 +1727,33 @@ func TestClient_ExpandVolume(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
 			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes, false)
 		assert.Error(t, err)
+	})
+
+	t.Run("delegates removeBrokenPaths=true to ExpandMultipathDevice", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+
+		// Must receive true - mutation to false at the delegation site fails this test.
+		mockDevicesClient.EXPECT().ExpandMultipathDevice(
+			gomock.Any(), gomock.Any(), targetSizeBytes, true,
+		).Return(nil)
+
+		publishInfo := &models.VolumePublishInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiTargetIQN: targetIQN,
+				},
+			},
+		}
+
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes, true)
+		assert.NoError(t, err)
 	})
 
 	t.Run("builds getter with correct LUN ID and target IQN", func(t *testing.T) {
@@ -1740,8 +1765,8 @@ func TestClient_ExpandVolume(t *testing.T) {
 
 		// Verify the getter uses the correct LUN ID and target IQN from publishInfo.
 		mockDevicesClient.EXPECT().ExpandMultipathDevice(
-			gomock.Any(), gomock.Any(), targetSizeBytes,
-		).DoAndReturn(func(ctx context.Context, getter models.SCSIDeviceInfoGetter, size int64) error {
+			gomock.Any(), gomock.Any(), targetSizeBytes, false,
+		).DoAndReturn(func(ctx context.Context, getter models.SCSIDeviceInfoGetter, size int64, removeBrokenPaths bool) error {
 			// The getter should call GetISCSIHostSessionMapForTarget with our target IQN.
 			// Since we return an empty map, the getter will fail — that's fine, we just
 			// want to verify it was called with the right args.
@@ -1765,7 +1790,7 @@ func TestClient_ExpandVolume(t *testing.T) {
 		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
 			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-		_ = client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+		_ = client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes, false)
 	})
 }
 

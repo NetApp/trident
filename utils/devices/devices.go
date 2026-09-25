@@ -89,7 +89,7 @@ type Devices interface {
 	FailMultipathPath(ctx context.Context, blockDevice string) error
 	// ExpandMultipathDevice expands a multipath device by resizing all dm-slaves then
 	// resizing the multipath device-mapper and waiting for all devices sizes to converge.
-	ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error
+	ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64, removeBrokenPaths bool) error
 }
 
 type SizeGetter interface {

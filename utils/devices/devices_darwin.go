@@ -83,7 +83,7 @@ func (c *Client) FailMultipathPath(ctx context.Context, _ string) error {
 }
 
 func (c *Client) ExpandMultipathDevice(
-	ctx context.Context, _ models.SCSIDeviceInfoGetter, _ int64,
+	ctx context.Context, _ models.SCSIDeviceInfoGetter, _ int64, _ bool,
 ) error {
 	Logc(ctx).Debug(">>>> devices_darwin.ExpandMultipathDevice")
 	defer Logc(ctx).Debug("<<<< devices_darwin.ExpandMultipathDevice")

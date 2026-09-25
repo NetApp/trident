@@ -408,7 +408,7 @@ func TestAttachISCSIVolume_GratuitousResizeOnMpathSize(t *testing.T) {
 	).Return(nil)
 	mocks.ISCSI.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 	// The gratuitous resize's own failure must not fail Attach overall (best-effort, logged as a warning).
-	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, int64(2147483648)).
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, int64(2147483648), gomock.Any()).
 		Return(errors.New("resize failed"))
 
 	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, nil, distlock.NewNoopLock())

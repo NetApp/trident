@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 	"unsafe"
@@ -172,10 +173,10 @@ func (c *Client) isRunning(ctx context.Context, device string) bool {
 	return deviceState == scsiDeviceStateRunning
 }
 
-func (c *Client) discoverUnhealthyDevices(ctx context.Context, devices []string) []string {
+func (c *Client) findUnhealthyDevices(ctx context.Context, devices []string) []string {
 	fields := LogFields{"devices": devices}
-	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.discoverUnhealthyDevices")
-	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.discoverUnhealthyDevices")
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.findUnhealthyDevices")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.findUnhealthyDevices")
 
 	unhealthyDevices := make([]string, 0)
 	for _, device := range devices {
@@ -342,14 +343,17 @@ func (c *Client) AddMultipathPath(ctx context.Context, blockDevice string) error
 	return nil
 }
 
-// FailMultipathPath tells multipathd to mark a block device path as failed.
+// failMultipathPath tells multipathd to mark a block device path as failed.
 // This gives multipathd a chance to failover I/O to other paths before the device is removed.
 // The device should be the bare sysfs block device name (e.g. "sda", not "/dev/sda").
-func (c *Client) FailMultipathPath(ctx context.Context, blockDevice string) error {
+func (c *Client) failMultipathPath(ctx context.Context, blockDevice string) error {
 	fields := LogFields{"blockDevice": blockDevice}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.FailMultipathPath")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.FailMultipathPath")
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.failMultipathPath")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.failMultipathPath")
 
+	// Use the single-command form of the multipathd CLI: -k<command>.
+	// This must be a single argv entry so the shell doesn't split it into separate arguments.
+	// "fail path <device>" → fail_map(device)
 	const failPathCmd = "-kfail path %s"
 	failCmd := fmt.Sprintf(failPathCmd, blockDevice)
 	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", defaultMultipathdCmdTimeout, true, failCmd)
@@ -359,9 +363,19 @@ func (c *Client) FailMultipathPath(ctx context.Context, blockDevice string) erro
 		}).WithError(err).Warn("Failed to fail path in multipathd.")
 		return fmt.Errorf("multipathd fail path %s failed: %w", blockDevice, err)
 	}
+	Logc(ctx).WithFields(fields).Debug("Successfully marked multipath path as failed.")
 
-	Logc(ctx).WithFields(fields).Debug("Successfully failed path in multipathd.")
 	return nil
+}
+
+// FailMultipathPath tells multipathd to mark a block device path as failed.
+// This gives multipathd a chance to failover I/O to other paths before the device is removed.
+// The device should be the bare sysfs block device name (e.g. "sda", not "/dev/sda").
+func (c *Client) FailMultipathPath(ctx context.Context, blockDevice string) error {
+	fields := LogFields{"blockDevice": blockDevice}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.FailMultipathPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.FailMultipathPath")
+	return c.failMultipathPath(ctx, blockDevice)
 }
 
 // getDeviceMapperName reads the name of a device mapper from the sysfs block dm-# device name file.
@@ -386,13 +400,104 @@ func (c *Client) getDeviceMapperName(ctx context.Context, device string) (string
 	return strings.TrimSpace(string(dmNameRaw)), nil
 }
 
+// evictFailedPaths fails and removes each unhealthy SCSI device path from multipathd and the kernel
+// to prevent stale-geometry paths from causing a size regression during multipath map reloads.
+// The iSCSI session is NOT torn down. Recovery depends on per-session sysfs LUN detection:
+// PopulateCurrentSessions (via GetISCSIDevices) derives LUN presence from per-session sysfs devices.
+// A deleted SCSI device appears as a missing LUN, causing isNonStalePortal to return Scan and
+// InitiateScanForLuns to re-create the path with correct post-expansion geometry.
+// If LUN presence is ever derived from the multipath map instead, this recovery path breaks silently.
+//
+// Safety invariant: evictFailedPaths refuses to remove all paths. The caller must ensure at least
+// one healthy path exists before calling; this function enforces that invariant as a hard check
+// and returns an error if it would be violated.
+//
+// Both the multipathd fail path and the kernel device removal are best-effort: errors are logged but
+// do not abort the fan-out. The caller should reset its convergence state after this call returns.
+func (c *Client) evictFailedPaths(
+	ctx context.Context, deviceInfo *models.ScsiDeviceInfo, unhealthyDevices []string,
+) error {
+	Logc(ctx).Debug(">>>> devices_linux.evictFailedPaths")
+	defer Logc(ctx).Debug("<<<< devices_linux.evictFailedPaths")
+
+	if deviceInfo == nil {
+		return errors.New("device info is nil")
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"lunID":            deviceInfo.LUN,
+		"multipathDevice":  deviceInfo.MultipathDevice,
+		"unhealthyDevices": unhealthyDevices,
+	}).Info("Evicting unhealthy device paths from multipath device.")
+
+	// Safety invariant: never evict all paths. If unhealthyDevices equals or exceeds the total
+	// device count, at least one path must remain for I/O and for the convergence loop to proceed.
+	if len(unhealthyDevices) >= len(deviceInfo.Devices) {
+		return fmt.Errorf(
+			"refusing to evict all %d path(s) for multipath device '%s'; at least one healthy path must remain",
+			len(deviceInfo.Devices), deviceInfo.MultipathDevice,
+		)
+	}
+
+	healthyCount := len(deviceInfo.Devices) - len(unhealthyDevices)
+	fields := LogFields{
+		"lunID":            deviceInfo.LUN,
+		"multipathDevice":  deviceInfo.MultipathDevice,
+		"allDevices":       deviceInfo.Devices,
+		"unhealthyDevices": unhealthyDevices,
+		"healthyCount":     healthyCount,
+	}
+
+	if healthyCount == 1 {
+		Logc(ctx).WithFields(fields).Warn(
+			"Only 1 healthy path remains after evicting broken paths; " +
+				"if this path fails during resize, I/O will be interrupted. " +
+				"Consider increasing LIF count for redundancy.",
+		)
+	} else {
+		Logc(ctx).WithFields(fields).Warn(
+			"Evicting unhealthy device paths before resize; iSCSI self-healing will recover them asynchronously.",
+		)
+	}
+
+	// Fan out: evict each path concurrently. Per-path sequence:
+	//   1. Fail the path in multipathd (5s deadline) — drains DM I/O routing away from the device.
+	//   2. Delete the SCSI device from the kernel — triggers scsi_remove_device() → udev remove
+	//      event → multipathd ev_remove_path(), atomically purging it from the path vector.
+	// After step 2, multipathd has nothing to reinstate; the geometry-regression race is closed.
+	var wg sync.WaitGroup
+	for _, ud := range unhealthyDevices {
+		blockDev := ud // capture loop variable
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			failCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+			if err := c.FailMultipathPath(failCtx, blockDev); err != nil {
+				Logc(ctx).WithField("device", blockDev).WithError(err).Warn(
+					"Failed to mark multipath path as failed; proceeding with SCSI device removal.",
+				)
+			}
+
+			if err := c.RemoveDevice(ctx, []string{blockDev}, true); err != nil {
+				Logc(ctx).WithField("device", blockDev).WithError(err).Warn(
+					"Failed to remove SCSI device from kernel; path may still be visible to multipathd.",
+				)
+			}
+		}()
+	}
+	wg.Wait()
+	return nil
+}
+
 // ExpandMultipathDevice polls the multipath device for the specified LUN until it reports a size >= targetSizeBytes.
 // On each iteration it rescans any undersized SCSI paths and reloads the multipath device map,
 // then confirms convergence by requiring consecutive stable size reads on the multipath device.
 // It returns nil once convergence is confirmed, or an error if the context deadline is reached first.
 // If the context has no deadline, a default timeout is applied to guarantee bounded execution.
 func (c *Client) ExpandMultipathDevice(
-	ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64,
+	ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64, removeBrokenPaths bool,
 ) error {
 	if getter == nil {
 		return errors.New("device info getter is nil")
@@ -493,16 +598,67 @@ func (c *Client) ExpandMultipathDevice(
 			lastKnownMpathName = deviceInfo.MultipathDevice
 
 			// Discover if there are any unhealthy devices.
-			// If a single device is unhealthy, do not initiate rescans or resize the multipath map.
-			unhealthyDevices := c.discoverUnhealthyDevices(ctx, deviceInfo.Devices)
-			if len(unhealthyDevices) != 0 {
+			// A device is unhealthy if its sysfs state is anything other than "running".
+			unhealthyDevices := c.findUnhealthyDevices(ctx, deviceInfo.Devices)
+			unhealthyDevicesExist := len(unhealthyDevices) > 0
+			allDevicesUnhealthy := len(deviceInfo.Devices) > 0 && len(deviceInfo.Devices) == len(unhealthyDevices)
+			allPathsOrNothing := unhealthyDevicesExist && !allDevicesUnhealthy && !removeBrokenPaths
+			partialPathEviction := unhealthyDevicesExist && !allDevicesUnhealthy && removeBrokenPaths
+
+			switch {
+			case !unhealthyDevicesExist:
+				// No unhealthy device paths exist - proceed normally to rescan and resize.
+
+			case allDevicesUnhealthy:
+				// No healthy paths remain. Returns a transient VolumeStateError so kubelet
+				// retries NodeExpandVolume promptly once self-healing restores a path.
 				Logc(ctx).WithFields(LogFields{
 					"lunID":            deviceInfo.LUN,
 					"multipathDevice":  deviceInfo.MultipathDevice,
 					"allDevices":       deviceInfo.Devices,
 					"unhealthyDevices": unhealthyDevices,
-				}).Warn("Volume expansion cannot proceed while some devices are unhealthy; connection to storage may be unstable.")
-				return fmt.Errorf("volume expansion cannot proceed; some devices %v are unhealthy", unhealthyDevices)
+				}).Warn("No healthy device paths exist for multipath device; resize cannot proceed without healthy paths.")
+
+				return errors.VolumeStateError(
+					"no healthy devices found for multipath device '%s'; cannot proceed with expansion",
+					deviceInfo.MultipathDevice,
+				)
+
+			case allPathsOrNothing:
+				// Option 1 (all-or-nothing): any unhealthy path blocks expansion.
+				// Self-healing is disabled so there is no recovery guarantee; refuse to mutate.
+				Logc(ctx).WithFields(LogFields{
+					"lunID":            deviceInfo.LUN,
+					"multipathDevice":  deviceInfo.MultipathDevice,
+					"allDevices":       deviceInfo.Devices,
+					"unhealthyDevices": unhealthyDevices,
+				}).Warn(
+					"Volume expansion cannot proceed while some devices are unhealthy. " +
+						"Reinstall with self-healing enabled to evict any failed paths for volume expansion.",
+				)
+
+				return errors.VolumeStateError("volume expansion cannot proceed; some devices %v are unhealthy", unhealthyDevices)
+
+			case partialPathEviction:
+				Logc(ctx).WithFields(LogFields{
+					"lunID":            deviceInfo.LUN,
+					"multipathDevice":  deviceInfo.MultipathDevice,
+					"allDevices":       deviceInfo.Devices,
+					"unhealthyDevices": unhealthyDevices,
+				}).Warn("Evicting unhealthy device paths before resize; self-healing will restore them asynchronously.")
+
+				// Option 2 (async path eviction): remove non-running paths so that multipathd
+				// cannot reinstate them with a stale geometry mid-rescan. The iSCSI session
+				// remains intact; self-healing will re-discover the paths after expansion with
+				// the correct post-expansion size.
+				if err := c.evictFailedPaths(ctx, deviceInfo, unhealthyDevices); err != nil {
+					return fmt.Errorf("could not remove unhealthy paths during resize: %w", err)
+				}
+
+				// Reset the convergence counter; the next iteration will re-discover device info
+				// (now without the evicted paths) and proceed from a clean state.
+				stableReads = 0
+				continue
 			}
 
 			// Always rescan undersized dm-slaves.

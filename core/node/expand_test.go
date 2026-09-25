@@ -94,7 +94,7 @@ func TestExpand_ProtocolISCSI_Delegates(t *testing.T) {
 	trackingInfo.VolumePublishInfo.FilesystemType = filesystem.Raw
 	trackingInfo.VolumePublishInfo.DevicePath = ""
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-vol").Return(trackingInfo, nil)
-	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), int64(2048)).Return(nil)
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), int64(2048), gomock.Any()).Return(nil)
 
 	err := core.Expand(context.Background(), "test-vol", ExpandRequest{MountPath: trackingInfo.GlobalMount, RequiredBytes: 2048, Secrets: nil})
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestExpand_ProtocolISCSI_UsesRequestMountPathForFilesystemBaseline(t *testi
 		mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), publishInfo.DevicePath).Return(int64(1000), nil),
 		mocks.Devices.EXPECT().GetDiskSize(gomock.Any(), publishInfo.DevicePath).Return(int64(2000), nil),
 	)
-	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, requiredBytes).Return(nil)
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), publishInfo, requiredBytes, gomock.Any()).Return(nil)
 	mocks.Filesystem.EXPECT().
 		ExpandFilesystemOnNode(
 			gomock.Any(), publishInfo, publishInfo.DevicePath, publishInfo.GlobalMount,
@@ -200,7 +200,7 @@ func TestExpandISCSIVolume_ExpandVolumeErrorPropagates(t *testing.T) {
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = filesystem.Raw
 	pi.DevicePath = ""
-	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024)).Return(errors.New("expand failed"))
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024), gomock.Any()).Return(errors.New("expand failed"))
 
 	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	require.Error(t, err)
@@ -212,10 +212,60 @@ func TestExpandISCSIVolume_Success(t *testing.T) {
 	pi := samplePublishInfo(ISCSI)
 	pi.FilesystemType = filesystem.Raw
 	pi.DevicePath = ""
-	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024)).Return(nil)
+	mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024), gomock.Any()).Return(nil)
 
 	err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
 	assert.NoError(t, err)
+}
+
+func TestExpandISCSIVolume_SelfHealingGate(t *testing.T) {
+	pi := samplePublishInfo(ISCSI)
+	pi.FilesystemType = filesystem.Raw
+	pi.DevicePath = ""
+
+	tests := map[string]struct {
+		coreOpts    []Option
+		mockReturn  error
+		expectArg   bool
+		assertError assert.ErrorAssertionFunc
+	}{
+		"self-healing disabled passes removeBrokenPaths=false": {
+			coreOpts:    nil,
+			mockReturn:  nil,
+			expectArg:   false,
+			assertError: assert.NoError,
+		},
+		"self-healing enabled passes removeBrokenPaths=true": {
+			coreOpts:    []Option{WithISCSISelfHealingInterval(30 * time.Second)},
+			mockReturn:  nil,
+			expectArg:   true,
+			assertError: assert.NoError,
+		},
+		"self-healing enabled expand error propagates": {
+			coreOpts:    []Option{WithISCSISelfHealingInterval(30 * time.Second)},
+			mockReturn:  errors.New("eviction failed"),
+			expectArg:   true,
+			assertError: assert.Error,
+		},
+		"PreconditionError from devices layer propagates as PreconditionError": {
+			coreOpts:   []Option{WithISCSISelfHealingInterval(30 * time.Second)},
+			mockReturn: errors.PreconditionError("no healthy paths"),
+			expectArg:  true,
+			assertError: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+				return assert.True(t, errors.IsPreconditionError(err), msgAndArgs...)
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			core, mocks := newTestCore(t, tc.coreOpts...)
+			mocks.ISCSI.EXPECT().ExpandVolume(gomock.Any(), pi, int64(1024), tc.expectArg).Return(tc.mockReturn)
+
+			err := core.expandISCSIVolume(context.Background(), "test-vol", pi, 1024, "", nil)
+			tc.assertError(t, err)
+		})
+	}
 }
 
 func TestExpandFCPVolume_NotAttached(t *testing.T) {
