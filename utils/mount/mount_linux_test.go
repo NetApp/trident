@@ -413,7 +413,8 @@ func TestLinuxClient_MountNFSPath(t *testing.T) {
 		exportPath  string
 		mountPoint  string
 		options     string
-		getCommand  func(controller *gomock.Controller) exec.Command
+		getOSClient func(controller *gomock.Controller, mountPoint string) oswrapper.OS
+		getCommand  func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command
 		assertError assert.ErrorAssertionFunc
 	}
 
@@ -424,27 +425,53 @@ func TestLinuxClient_MountNFSPath(t *testing.T) {
 
 	const optionsv4 = "rw,nfsvers=4"
 	const inputOptionsv4 = "-o " + optionsv4
+
+	getOSClientMkdirFails := func(controller *gomock.Controller, mkdirPath string) oswrapper.OS {
+		mockOSClient := mock_oswrapper.NewMockOS(controller)
+		mockOSClient.EXPECT().MkdirAll(mkdirPath, fs.FileMode(0o755)).Return(assert.AnError)
+		return mockOSClient
+	}
+
+	getOSClientMkdirOK := func(controller *gomock.Controller, mkdirPath string) oswrapper.OS {
+		mockOSClient := mock_oswrapper.NewMockOS(controller)
+		mockOSClient.EXPECT().MkdirAll(mkdirPath, fs.FileMode(0o755)).Return(nil)
+		return mockOSClient
+	}
+
 	tests := map[string]parameters{
 		"error mounting nfs volume": {
-			exportPath: exportPath,
-			mountPoint: mountPoint,
-			options:    inputOptions,
-			getCommand: func(controller *gomock.Controller) exec.Command {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptions,
+			getOSClient: getOSClientMkdirOK,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
 				mockCommand := mock_exec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "mkdir", "-p", mountPoint).Return(nil, assert.AnError)
 				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs", "-o", options, exportPath,
 					mountPoint).Return(nil, assert.AnError)
 				return mockCommand
 			},
 			assertError: assert.Error,
 		},
-		"nfs mount happy path": {
-			exportPath: exportPath,
-			mountPoint: mountPoint,
-			options:    inputOptions,
-			getCommand: func(controller *gomock.Controller) exec.Command {
+		"nfs mount succeeds when MkdirAll fails": {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptions,
+			getOSClient: getOSClientMkdirFails,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
 				mockCommand := mock_exec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "mkdir", "-p", mountPoint).Return(nil, assert.AnError)
+				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs", "-o", options, exportPath,
+					mountPoint).Return(nil, nil)
+				return mockCommand
+			},
+			assertError: assert.NoError,
+		},
+		"nfs mount happy path": {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptions,
+			getOSClient: getOSClientMkdirOK,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
+				mockCommand := mock_exec.NewMockCommand(controller)
 				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs", "-o", options, exportPath,
 					mountPoint).Return(nil, nil)
 				return mockCommand
@@ -452,25 +479,38 @@ func TestLinuxClient_MountNFSPath(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"error mounting nfs.v4 volume": {
-			exportPath: exportPath,
-			mountPoint: mountPoint,
-			options:    inputOptionsv4,
-			getCommand: func(controller *gomock.Controller) exec.Command {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptionsv4,
+			getOSClient: getOSClientMkdirOK,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
 				mockCommand := mock_exec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "mkdir", "-p", mountPoint).Return(nil, assert.AnError)
 				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs4", "-o", optionsv4, exportPath,
 					mountPoint).Return(nil, assert.AnError)
 				return mockCommand
 			},
 			assertError: assert.Error,
 		},
-		"nfs.v4 mount happy path": {
-			exportPath: exportPath,
-			mountPoint: mountPoint,
-			options:    inputOptionsv4,
-			getCommand: func(controller *gomock.Controller) exec.Command {
+		"nfs.v4 mount succeeds when MkdirAll fails": {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptionsv4,
+			getOSClient: getOSClientMkdirFails,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
 				mockCommand := mock_exec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "mkdir", "-p", mountPoint).Return(nil, assert.AnError)
+				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs4", "-o", optionsv4, exportPath,
+					mountPoint).Return(nil, nil)
+				return mockCommand
+			},
+			assertError: assert.NoError,
+		},
+		"nfs.v4 mount happy path": {
+			exportPath:  exportPath,
+			mountPoint:  mountPoint,
+			options:     inputOptionsv4,
+			getOSClient: getOSClientMkdirOK,
+			getCommand: func(controller *gomock.Controller, exportPath, mountPoint string) exec.Command {
+				mockCommand := mock_exec.NewMockCommand(controller)
 				mockCommand.EXPECT().Execute(gomock.Any(), "mount.nfs4", "-o", optionsv4, exportPath,
 					mountPoint).Return(nil, nil)
 				return mockCommand
@@ -482,7 +522,10 @@ func TestLinuxClient_MountNFSPath(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			client := newOsSpecificClientDetailed(nil, nil, params.getCommand(ctrl))
+			client := newOsSpecificClientDetailed(
+				params.getOSClient(ctrl, params.mountPoint), nil,
+				params.getCommand(ctrl, params.exportPath, params.mountPoint),
+			)
 			err := client.MountNFSPath(context.Background(), params.exportPath, params.mountPoint, params.options)
 			if params.assertError != nil {
 				params.assertError(t, err)
