@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"strings"
 	"syscall"
 
 	. "github.com/netapp/trident/logging"
@@ -72,11 +71,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Print all env variables
-	for _, element := range os.Environ() {
-		v := strings.Split(element, "=")
-		Log().WithField(v[0], v[1]).Debug("Environment")
-	}
+	// Only Trident's own variables carry values here; any other variable's value may be a credential.
+	Log().WithFields(EnvironmentFields(os.Environ())).Debug("Environment")
 
 	Log().WithFields(LogFields{
 		"version":    config.OperatorVersion.String(),

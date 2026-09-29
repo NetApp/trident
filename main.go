@@ -366,11 +366,8 @@ func main() {
 	// Initialize the audit logger.
 	InitAuditLogger(*auditLog)
 
-	// Print all env variables
-	for _, element := range os.Environ() {
-		v := strings.Split(element, "=")
-		Log().WithField(v[0], v[1]).Debug("Environment")
-	}
+	// Only Trident's own variables carry values here; any other variable's value may be a credential.
+	Log().WithFields(EnvironmentFields(os.Environ())).Debug("Environment")
 
 	Log().WithFields(LogFields{
 		"version":    config.OrchestratorVersion.String(),

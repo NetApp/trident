@@ -4,11 +4,11 @@ package csi
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/kubernetes-csi/csi-lib-utils/protosanitizer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -109,8 +109,8 @@ func timeoutInterceptor(
 	plugin, ok := info.Server.(*Plugin)
 	if !ok {
 		Logc(ctx).WithFields(LogFields{
-			"server":  info.Server,
-			"request": req,
+			"server": info.Server,
+			"method": info.FullMethod,
 		}).Warn("gRPC unary server is not a Trident CSI plugin.")
 		return handler(ctx, req)
 	}
@@ -167,14 +167,20 @@ func logGRPCInterceptor(
 	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI, WorkflowNone, LogLayerCSIFrontend)
 	Audit().Logf(ctx, AuditGRPCAccess, LogFields{}, "GRPC call: %s", info.FullMethod)
 	Logc(ctx).WithFields(LogFields{
-		"Request": fmt.Sprintf("GRPC request: %+v", req),
+		// StripSecrets keys off the CSI spec's csi_secret field option rather than the rendered text
+		// shape, which %+v does not offer: protobuf's generated String() changed delimiters between
+		// releases and silently defeated every pattern-based redaction of this line. It is handed over
+		// as a fmt.Stringer rather than formatted here, because the walk and marshal it performs would
+		// otherwise run on every CSI call at every level; the formatter only sees it when debug
+		// logging is on.
+		"Request": protosanitizer.StripSecrets(req),
 	}).Debugf("GRPC call: %s", info.FullMethod)
 
 	resp, err = handler(ctx, req)
 	if err != nil {
 		Logc(ctx).Errorf("GRPC error: %v", err)
 	} else {
-		Logc(ctx).Tracef("GRPC response: %+v", resp)
+		Logc(ctx).Tracef("GRPC response: %s", protosanitizer.StripSecrets(resp))
 	}
 
 	return

@@ -56,23 +56,25 @@ func InvokeRESTAPI(method, url string, requestBody []byte) (*http.Response, []by
 func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	Log().Debug("--------------------------------------------------------------------------------\n")
 	Log().Debugf("Request Method: %s\n", request.Method)
-	Log().Debugf("Request URL: %v\n", request.URL)
-	Log().Debugf("Request headers: %v\n", request.Header)
+	Log().Debugf("Request URL: %v\n", RedactedURL(request.URL))
+	Log().Debugf("Request headers: %v\n", RedactedHeaders(request.Header))
 	if requestBody == nil {
 		requestBody = []byte{}
 	}
-	Log().Debugf("Request body: %s\n", string(requestBody))
+	// The body of `tridentctl create backend -d` is the whole backend config, and the pattern-based
+	// redaction covers only the credential keys it was written for, so walk the decoded body instead.
+	Log().Debugf("Request body: %s\n", RedactJSONBody(requestBody))
 	Log().Debug("................................................................................\n")
 }
 
 func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	if response != nil {
 		Log().Debugf("Response status: %s\n", response.Status)
-		Log().Debugf("Response headers: %v\n", response.Header)
+		Log().Debugf("Response headers: %v\n", RedactedHeaders(response.Header))
 	}
 
 	if responseBody != nil {
-		Log().Debugf("Response body: %s\n", string(responseBody))
+		Log().Debugf("Response body: %s\n", RedactJSONBody(responseBody))
 	}
 
 	Log().Debug("================================================================================\n")

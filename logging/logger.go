@@ -533,6 +533,52 @@ func FormatMessageForLog(msg string) string {
 	return sentenceCased
 }
 
+// sensitiveHeaders carry credentials and are dropped from the copy of a header set that is logged.
+// Cookie and Set-Cookie carry session tokens, X-Auth-Token is the token header used by the NetApp
+// Cloud Manager and OpenStack-style APIs, and Proxy-Authorization survives an origin server that
+// ignores Authorization. Keys are lowercase because a header map assembled without http.Header.Set
+// is not canonicalized, so lookups are lowercased too.
+var sensitiveHeaders = map[string]struct{}{
+	"authorization":       {},
+	"proxy-authorization": {},
+	"api-key":             {},
+	"secret-key":          {},
+	"x-auth-token":        {},
+	"cookie":              {},
+	"set-cookie":          {},
+}
+
+// RedactedHeaders returns a copy of headers without the entries that carry credentials, for logging.
+// The copy keeps the original intact and is safe to render with %v: that rendering is
+// map[key:[value]], which the pattern-based redaction in this package cannot match.
+func RedactedHeaders(headers map[string][]string) map[string][]string {
+	safe := make(map[string][]string, len(headers))
+	for name, values := range headers {
+		safe[name] = values
+	}
+
+	for name := range safe {
+		if _, sensitive := sensitiveHeaders[strings.ToLower(name)]; sensitive {
+			delete(safe, name)
+		}
+	}
+
+	return safe
+}
+
+// RedactedURL returns a copy of u with any userinfo removed, so that a URL carrying credentials in
+// the authority component can be logged. A nil URL returns nil.
+func RedactedURL(u *url.URL) *url.URL {
+	if u == nil {
+		return nil
+	}
+
+	safe := *u
+	safe.User = nil
+
+	return &safe
+}
+
 func RedactedHTTPRequest(request *http.Request, requestBody []byte, driverName string, redactBody, isDriverLog bool) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
@@ -548,15 +594,9 @@ func RedactedHTTPRequest(request *http.Request, requestBody []byte, driverName s
 			Logc(ctx).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
 		}
 	}
-	requestURL.User = nil
+	requestURL = RedactedURL(requestURL)
 
-	headers := make(map[string][]string)
-	for k, v := range request.Header {
-		headers[k] = v
-	}
-	delete(headers, "Authorization")
-	delete(headers, "Api-Key")
-	delete(headers, "Secret-Key")
+	headers := RedactedHeaders(request.Header)
 
 	var body string
 	if requestBody == nil {
@@ -584,13 +624,7 @@ func RedactedHTTPResponse(
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 
-	headers := make(map[string][]string)
-	for k, v := range response.Header {
-		headers[k] = v
-	}
-	delete(headers, "Authorization")
-	delete(headers, "Api-Key")
-	delete(headers, "Secret-Key")
+	headers := RedactedHeaders(response.Header)
 
 	var body string
 	if responseBody == nil {

@@ -14,7 +14,6 @@ type redactedPattern struct {
 // Redacted patterns and their replacements - add additional patterns here
 var redactedPatterns = []redactedPattern{
 	basicAuthorization,
-	csiSecrets,
 	chapAuthorization,
 	chapAuthorizationUser,
 	backendCreateCHAPSecrets,
