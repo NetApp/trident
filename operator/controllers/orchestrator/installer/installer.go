@@ -68,16 +68,17 @@ const (
 var (
 	// CR inputs
 
-	enableForceDetach  bool
-	disableAuditLog    bool
-	debug              bool
-	useIPv6            bool
-	silenceAutosupport bool
-	excludeAutosupport bool
-	windows            bool
-	enableConcurrency  bool
-	httpsMetrics       bool
-	hostNetwork        bool
+	enableForceDetach    bool
+	disableAuditLog      bool
+	debug                bool
+	useIPv6              bool
+	silenceAutosupport   bool
+	excludeAutosupport   bool
+	windows              bool
+	enableConcurrency    bool
+	enableDataLIFRefresh bool
+	httpsMetrics         bool
+	hostNetwork          bool
 
 	logLevel                           string
 	logWorkflows                       string
@@ -635,6 +636,7 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
 	enableConcurrency = cr.Spec.EnableConcurrency
+	enableDataLIFRefresh = cr.Spec.EnableDataLIFRefresh
 	httpsMetrics = cr.Spec.HTTPSMetrics
 
 	// ACP is obsolete now, so log a message and move on.
@@ -1065,6 +1067,7 @@ func (i *Installer) InstallOrPatchTrident(
 		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
 		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
+		EnableDataLIFRefresh:     strconv.FormatBool(enableDataLIFRefresh),
 		Resources:                resourcesValues,
 		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
 		HostNetwork:              hostNetwork,
@@ -1819,6 +1822,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		IdentityLabel:              identityLabel,
 		K8sAPIQPS:                  k8sAPIQPS,
 		EnableConcurrency:          enableConcurrency,
+		EnableDataLIFRefresh:       enableDataLIFRefresh,
 		HTTPSMetrics:               httpsMetrics,
 		CSIFeatureGates:            csiFeatureGateYAMLSnippets,
 		Resources:                  resourcesValues,

@@ -115,6 +115,18 @@ func TestNVMeBackendName(t *testing.T) {
 	assert.Equal(t, d.BackendName(), "ontapsan_0.0.0.0", "Backend name is not correct.")
 }
 
+func TestNVMeBackendName_PinnedAcrossRefresh(t *testing.T) {
+	d := newNVMeDriver(nil, nil, nil)
+	d.Config.BackendName = ""
+	d.ips = []string{"1.1.1.1"}
+	d.backendName = d.generatedBackendName()
+
+	assert.True(t, d.refreshDataLIFs(ctx, []string{"2.2.2.2"}))
+	assert.Equal(t, []string{"2.2.2.2"}, d.DataLIFs())
+	assert.Equal(t, "ontapsan_1.1.1.1", d.BackendName(),
+		"refreshing data LIFs must not rename a generated backend")
+}
+
 func TestNVMeInitialize_ConfigUnmarshalError(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
 	d.Config.CommonStorageDriverConfig = nil
@@ -2050,6 +2062,40 @@ func TestPublish(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPublish_UsesRefreshedDataLIFCopy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mock := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newNVMeDriver(mock, nil, nil)
+	d.Config.DriverContext = tridentconfig.ContextCSI
+	d.ips = []string{"1.1.1.1"}
+	refreshed := []string{"1.1.1.1", "2.2.2.2"}
+	assert.True(t, d.refreshDataLIFs(ctx, refreshed))
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+		FileSystem:   filesystem.Ext4,
+	}
+	publishInfo := &models.VolumePublishInfo{
+		HostName:    "fakeHostName",
+		TridentUUID: "fakeUUID",
+		HostNQN:     "fakeHostNQN",
+	}
+	subsystem := &api.NVMeSubsystem{Name: "fakeSubsysName", NQN: "fakeNQN", UUID: "fakeUUID"}
+
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(&api.Volume{AccessType: VolTypeRW}, nil)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, gomock.Any()).Return(nil)
+
+	err := d.Publish(ctx, volConfig, publishInfo)
+	assert.NoError(t, err)
+	assert.Equal(t, refreshed, publishInfo.VolumeAccessInfo.NVMeTargetIPs)
+
+	publishInfo.VolumeAccessInfo.NVMeTargetIPs[0] = "9.9.9.9"
+	assert.Equal(t, refreshed, d.DataLIFs(), "Publish must hand out a copy, not the cache slice")
+}
+
 func TestUnpublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
@@ -3117,6 +3163,66 @@ func TestGetBackendState(t *testing.T) {
 	assert.NotNil(t, changeMap, "should not be nil")
 }
 
+func TestGetBackendState_DataLIFRefresh(t *testing.T) {
+	tests := []struct {
+		name         string
+		enabled      bool
+		seed         []string
+		observed     []string
+		expectChange bool
+		expectLIFs   []string
+	}{
+		{
+			name:         "enabled_false",
+			enabled:      false,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.2.3.4"},
+			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+		{
+			name:         "enabled_true_change",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.2.3.4"},
+			expectChange: true,
+			expectLIFs:   []string{"1.2.3.4"},
+		},
+		{
+			name:         "enabled_true_unchanged",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.1.1.1"},
+			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := tridentconfig.EnableDataLIFRefresh
+			tridentconfig.EnableDataLIFRefresh = tt.enabled
+			defer func() { tridentconfig.EnableDataLIFRefresh = original }()
+
+			driver, mockAPI := newNVMeDriverAndMockApi(t)
+			driver.ips = tt.seed
+
+			mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("running", nil).Times(1)
+			mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data", "pool1"}, nil).Times(1)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(tt.observed, nil).Times(1)
+			mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+			mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+
+			reason, changeMap := driver.GetBackendState(ctx)
+
+			assert.Empty(t, reason)
+			assert.Equal(t, tt.expectChange, changeMap.Contains(storage.BackendStateDataLIFsChange))
+			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
+		})
+	}
+}
+
 func TestEnablePublishEnforcement(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
 	vol := storage.Volume{Config: new(getVolumeConfig())}
@@ -3143,27 +3249,66 @@ func TestNVMeGetTelemetry(t *testing.T) {
 }
 
 func TestNVMeString(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// String method panics due to nil dependencies - this is acceptable
-			t.Log("String method panicked as expected due to nil dependencies")
+	d := newNVMeDriver(nil, nil, nil)
+	d.Config.Username = "admin"
+	d.Config.Password = "secret"
+	d.Config.ClientPrivateKey = "privateKey"
+
+	s := d.String()
+	assert.NotContains(t, s, "<panic> in convert#ToStringRedacted")
+	assert.Contains(t, s, "Username:"+tridentconfig.REDACTED)
+	assert.Contains(t, s, "Password:"+tridentconfig.REDACTED)
+	assert.Contains(t, s, "ClientPrivateKey:"+tridentconfig.REDACTED)
+	assert.Contains(t, s, `ManagementLIF:"`+d.Config.ManagementLIF+`"`)
+	assert.Contains(t, s, `SVM:"`+d.Config.SVM+`"`)
+}
+
+func TestNVMeString_SnapshotsDataLIFs(t *testing.T) {
+	d := newNVMeDriver(nil, nil, nil)
+	d.ips = []string{"1.2.3.4", "5.6.7.8"}
+
+	formatted := d.String()
+	assert.Contains(t, formatted, "1.2.3.4")
+	assert.Contains(t, formatted, "5.6.7.8")
+	assert.NotContains(t, formatted, "<panic>")
+	assert.Contains(t, d.GoString(), "1.2.3.4")
+
+	// refreshDataLIFCache writes ips while String formats a snapshot of it.
+	var readers, writer sync.WaitGroup
+	stop := make(chan struct{})
+	writer.Add(1)
+	go func() {
+		defer writer.Done()
+		for i := 0; ; i++ {
+			select {
+			case <-stop:
+				return
+			default:
+			}
+			d.refreshDataLIFs(context.Background(), []string{"1.2.3.4", fmt.Sprintf("10.0.0.%d", i%8)})
 		}
 	}()
-
-	d := newNVMeDriver(nil, nil, nil)
-	_ = d.String() // Just verify it doesn't crash unexpectedly
+	for i := 0; i < 4; i++ {
+		readers.Add(1)
+		go func() {
+			defer readers.Done()
+			for j := 0; j < 200; j++ {
+				formatted := d.String()
+				assert.Contains(t, formatted, "1.2.3.4")
+				assert.NotContains(t, formatted, "<panic>")
+			}
+		}()
+	}
+	readers.Wait()
+	close(stop)
+	writer.Wait()
 }
 
 func TestNVMeGoString(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// GoString method panics due to nil dependencies - this is acceptable
-			t.Log("GoString method panicked as expected due to nil dependencies")
-		}
-	}()
-
 	d := newNVMeDriver(nil, nil, nil)
-	_ = d.GoString() // Just verify it doesn't crash unexpectedly
+	s := d.GoString()
+	assert.NotContains(t, s, "<panic> in convert#ToStringRedacted")
+	assert.Contains(t, s, "Username:"+tridentconfig.REDACTED)
 }
 
 func TestNVMeGetExternalConfig(t *testing.T) {

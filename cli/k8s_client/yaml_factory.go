@@ -734,6 +734,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_CONCURRENCY}", strconv.FormatBool(args.EnableConcurrency))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_DATALIF_REFRESH}",
+		strconv.FormatBool(args.EnableDataLIFRefresh))
 	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_TRIDENT_MAIN_RESOURCES}", args.Resources.Controller[commonconfig.TridentControllerMain])
 	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_PROVISIONER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarProvisioner])
 	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_ATTACHER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarAttacher])
@@ -807,6 +809,7 @@ spec:
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--enable_concurrency={ENABLE_CONCURRENCY}"
+        - "--enable_datalif_refresh={ENABLE_DATALIF_REFRESH}"
         {METRICS}
         {HTTPS_METRICS}
         {ENABLE_ACP}

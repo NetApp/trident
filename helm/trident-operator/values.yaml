@@ -199,6 +199,9 @@ ontapConfigurator:
 # enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
 enableConcurrency: false
 
+# enableDataLIFRefresh enables refreshing NVMe data LIFs during backend reconciliation.
+enableDataLIFRefresh: false
+
 # Resource requests and limits for Trident components (controller, node, operator).
 # Configure CPU and memory for each container and sidecar to manage resource allocation in Kubernetes.
 #

@@ -1664,6 +1664,20 @@ func TestSetInstallationParams(t *testing.T) {
 		assert.NoError(t, err, "Should not error when setting installation params with audit log enabled (false)")
 	})
 
+	t.Run("test DataLIF refresh setting", func(t *testing.T) {
+		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
+
+		cr := netappv1.TridentOrchestrator{
+			Spec: netappv1.TridentOrchestratorSpec{
+				EnableDataLIFRefresh: true,
+			},
+		}
+
+		_, _, _, err := installer.setInstallationParams(cr, "")
+		assert.NoError(t, err)
+		assert.True(t, enableDataLIFRefresh)
+	})
+
 	t.Run("test ACP obsolete message handling", func(t *testing.T) {
 		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
 

@@ -84,6 +84,7 @@ spec:
     - {{.}} {{- end }}
   {{- end }}
   enableConcurrency: {{ .Values.enableConcurrency }}
+  enableDataLIFRefresh: {{ .Values.enableDataLIFRefresh }}
   {{- if .Values.skipCRDsToObliviate }}
   skipCRDsToObliviate: {{- range .Values.skipCRDsToObliviate }}
     - {{.}} {{- end }}

@@ -144,6 +144,7 @@ var (
 	k8sAPIQPS                    int
 	fsGroupPolicy                string
 	enableConcurrency            bool
+	enableDataLIFRefresh         bool
 	hostNetwork                  bool
 
 	// CLI-based K8S client
@@ -286,6 +287,8 @@ func init() {
 	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
 		"to set on Trident's CSIDriver resource.")
 	installCmd.Flags().BoolVar(&enableConcurrency, "enable-concurrency", false, "Enable concurrency for Trident's controller **TECH PREVIEW**")
+	installCmd.Flags().BoolVar(&enableDataLIFRefresh, "enable-datalif-refresh", false,
+		"Enable refreshing NVMe data LIFs during backend reconciliation.")
 	installCmd.Flags().BoolVar(&hostNetwork, "host-network", false, "Use the host network for the Trident controller.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
@@ -304,6 +307,9 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("fs-group-policy"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("enable-datalif-refresh"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -760,6 +766,7 @@ func prepareYAMLFiles() error {
 		IdentityLabel:           identityLabel,
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
+		EnableDataLIFRefresh:    enableDataLIFRefresh,
 		HTTPSMetrics:            httpsMetrics,
 		HostNetwork:             hostNetwork,
 	}
@@ -1158,6 +1165,7 @@ func installTrident() (returnError error) {
 			IdentityLabel:           identityLabel,
 			K8sAPIQPS:               k8sAPIQPS,
 			EnableConcurrency:       enableConcurrency,
+			EnableDataLIFRefresh:    enableDataLIFRefresh,
 			HTTPSMetrics:            httpsMetrics,
 			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
 			HostNetwork:             hostNetwork,

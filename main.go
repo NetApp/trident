@@ -140,6 +140,8 @@ var (
 	// NVMe
 	nvmeSelfHealingInterval = flag.Duration("nvme_self_healing_interval", config.NVMeSelfHealingInterval,
 		"Interval at which the NVMe self-healing thread is invoked")
+	enableDataLIFRefresh = flag.Bool("enable_datalif_refresh", false,
+		"Enable refreshing NVMe data LIFs during backend reconciliation.")
 
 	// core
 	enableConcurrency          = flag.Bool("enable_concurrency", false, "Enable Concurrency in trident.")
@@ -441,6 +443,7 @@ func main() {
 	}).Info("Running Trident storage orchestrator.")
 
 	processCmdLineArgs(ctx)
+	config.EnableDataLIFRefresh = *enableDataLIFRefresh
 
 	var orchestrator core.Orchestrator
 	if *enableConcurrency || enableDocker {

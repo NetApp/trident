@@ -9995,6 +9995,159 @@ func TestValidateDataLIF(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestReconcileDataLIFs_AddsNewLIFsImmediately(t *testing.T) {
+	current := []string{"1.1.1.1"}
+	observed := []string{"1.1.1.1", "2.2.2.2"}
+
+	next, added, removed := reconcileDataLIFs(current, observed)
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, next, "new LIF should be adopted on the first pass")
+	assert.Equal(t, []string{"2.2.2.2"}, added)
+	assert.Empty(t, removed)
+}
+
+func TestReconcileDataLIFs_RemovesAbsentLIFImmediately(t *testing.T) {
+	// A LIF that ONTAP no longer reports as up is out of service, and the cache follows the
+	// observation directly.
+	current := []string{"1.1.1.1", "2.2.2.2"}
+	observed := []string{"1.1.1.1"}
+
+	next, added, removed := reconcileDataLIFs(current, observed)
+
+	assert.Equal(t, []string{"1.1.1.1"}, next, "an absent LIF should be dropped on the first pass")
+	assert.Empty(t, added)
+	assert.Equal(t, []string{"2.2.2.2"}, removed)
+}
+
+func TestReconcileDataLIFs_ReaddsReappearingLIF(t *testing.T) {
+	// A LIF that vanishes and comes back is dropped and then re-adopted, each on the first pass.
+	// A LIF that goes down for a takeover or an upgrade follows this same path, since only
+	// operationally-up LIFs are observed.
+	current := []string{"1.1.1.1", "2.2.2.2"}
+	absent := []string{"1.1.1.1"}
+	both := []string{"1.1.1.1", "2.2.2.2"}
+
+	current, _, removed := reconcileDataLIFs(current, absent)
+	assert.Equal(t, []string{"1.1.1.1"}, current)
+	assert.Equal(t, []string{"2.2.2.2"}, removed)
+
+	current, added, _ := reconcileDataLIFs(current, both)
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, current)
+	assert.Equal(t, []string{"2.2.2.2"}, added)
+}
+
+func TestReconcileDataLIFs_EmptyObservationIsNeverAdopted(t *testing.T) {
+	// An empty result means the query failed or every LIF is down. It is not evidence that the
+	// SVM lost every data LIF, and adopting it would strip portals from every subsequent publish.
+	// This is the only guard left against a degraded response, so it carries more weight now that
+	// a genuinely absent LIF is dropped on the first pass. Blank addresses are the same case:
+	// they are skipped later, so treating [""] as a real observation would empty the cache.
+	current := []string{"1.1.1.1", "2.2.2.2"}
+
+	for _, observed := range [][]string{nil, {}, {""}, {"", ""}} {
+		for i := 0; i < 5; i++ {
+			next, added, removed := reconcileDataLIFs(current, observed)
+			assert.Equal(t, current, next, "observed=%q pass %d", observed, i)
+			assert.Empty(t, added)
+			assert.Empty(t, removed)
+		}
+	}
+}
+
+func TestReconcileDataLIFs_PreservesOrderOfRetainedLIFs(t *testing.T) {
+	// The first entry becomes the primary target portal, so retained LIFs must not be reordered
+	// by a refresh or every republish would move it.
+	current := []string{"3.3.3.3", "1.1.1.1", "2.2.2.2"}
+	observed := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"}
+
+	next, added, _ := reconcileDataLIFs(current, observed)
+
+	assert.Equal(t, []string{"3.3.3.3", "1.1.1.1", "2.2.2.2", "4.4.4.4"}, next)
+	assert.Equal(t, []string{"4.4.4.4"}, added)
+}
+
+func TestReconcileDataLIFs_DeduplicatesInput(t *testing.T) {
+	current := []string{"1.1.1.1", "1.1.1.1"}
+	observed := []string{"1.1.1.1", "2.2.2.2", "2.2.2.2"}
+
+	next, added, _ := reconcileDataLIFs(current, observed)
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, next)
+	assert.Equal(t, []string{"2.2.2.2"}, added)
+}
+
+func TestReconcileDataLIFs_IgnoresEmptyAddresses(t *testing.T) {
+	observed := []string{"1.1.1.1", ""}
+
+	next, _, _ := reconcileDataLIFs(nil, observed)
+
+	assert.Equal(t, []string{"1.1.1.1"}, next)
+}
+
+func TestRefreshDataLIFCache_ReportsChange(t *testing.T) {
+	ctx := context.Background()
+	cache := []string{"1.1.1.1"}
+
+	changed := refreshDataLIFCache(ctx, "backend", &cache, []string{"1.1.1.1", "2.2.2.2"})
+	assert.True(t, changed, "adding a LIF is a change")
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, cache)
+
+	changed = refreshDataLIFCache(ctx, "backend", &cache, []string{"1.1.1.1", "2.2.2.2"})
+	assert.False(t, changed, "a steady state is not a change")
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, cache)
+
+	changed = refreshDataLIFCache(ctx, "backend", &cache, []string{"1.1.1.1"})
+	assert.True(t, changed, "removing a LIF is a change")
+	assert.Equal(t, []string{"1.1.1.1"}, cache)
+}
+
+func TestReadDataLIFCache_ReturnsCopy(t *testing.T) {
+	cache := []string{"1.1.1.1"}
+
+	got := readDataLIFCache(&cache)
+	got[0] = "9.9.9.9"
+
+	assert.Equal(t, []string{"1.1.1.1"}, cache, "callers must not be able to mutate the cache")
+}
+
+// TestDataLIFCache_ConcurrentAccess exercises the path that made synchronization necessary in the
+// first place: the reconcile loop writing the cache while publish operations read it.
+func TestDataLIFCache_ConcurrentAccess(t *testing.T) {
+	ctx := context.Background()
+	cache := []string{"1.1.1.1"}
+
+	var readers, writer sync.WaitGroup
+	stop := make(chan struct{})
+
+	writer.Add(1)
+	go func() {
+		defer writer.Done()
+		for i := 0; ; i++ {
+			select {
+			case <-stop:
+				return
+			default:
+			}
+			observed := []string{"1.1.1.1", fmt.Sprintf("10.0.0.%d", i%8)}
+			refreshDataLIFCache(ctx, "backend", &cache, observed)
+		}
+	}()
+
+	for i := 0; i < 8; i++ {
+		readers.Add(1)
+		go func() {
+			defer readers.Done()
+			for j := 0; j < 500; j++ {
+				assert.NotEmpty(t, readDataLIFCache(&cache), "the cache must never be observed empty")
+			}
+		}()
+	}
+
+	readers.Wait()
+	close(stop)
+	writer.Wait()
+}
+
 func TestValidateStoragePrefixEconomy(t *testing.T) {
 	// Test1: Valid storage prefix
 	storagePrefix := "this-is-a-valid-prefix"

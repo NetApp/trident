@@ -176,6 +176,18 @@ func TestBackendNameASANVMe(t *testing.T) {
 	}
 }
 
+func TestBackendNameASANVMe_PinnedAcrossRefresh(t *testing.T) {
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.BackendName = ""
+	driver.ips = []string{"1.1.1.1"}
+	driver.backendName = driver.generatedBackendName()
+
+	assert.True(t, driver.refreshDataLIFs(ctx, []string{"2.2.2.2"}))
+	assert.Equal(t, []string{"2.2.2.2"}, driver.DataLIFs())
+	assert.Equal(t, "ontapasanvme_1.1.1.1", driver.BackendName(),
+		"refreshing data LIFs must not rename a generated backend")
+}
+
 func TestGetExternalConfigASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
@@ -1821,6 +1833,38 @@ func TestPublishASANVMe(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPublishASANVMe_UsesRefreshedDataLIFCopy(t *testing.T) {
+	mockAPI, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+	driver.ips = []string{"1.1.1.1"}
+	refreshed := []string{"1.1.1.1", "2.2.2.2"}
+	assert.True(t, driver.refreshDataLIFs(ctx, refreshed))
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+		FileSystem:   filesystem.Ext4,
+	}
+	publishInfo := &models.VolumePublishInfo{
+		HostName:    "fakeHostName",
+		TridentUUID: "fakeUUID",
+		HostNQN:     "fakeHostNQN",
+	}
+	subsystem := &api.NVMeSubsystem{Name: "fakeSubsysName", NQN: "fakeNQN", UUID: "fakeUUID"}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(&api.Volume{AccessType: VolTypeRW}, nil)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(subsystem, nil)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, gomock.Any()).Return(nil)
+
+	err := driver.Publish(ctx, volConfig, publishInfo)
+	assert.NoError(t, err)
+	assert.Equal(t, refreshed, publishInfo.VolumeAccessInfo.NVMeTargetIPs)
+
+	publishInfo.VolumeAccessInfo.NVMeTargetIPs[0] = "9.9.9.9"
+	assert.Equal(t, refreshed, driver.DataLIFs(), "Publish must hand out a copy, not the cache slice")
+}
+
 func TestUnpublishASANVMe(t *testing.T) {
 	mockAPI, driver := newMockOntapASANVMeDriver(t)
 
@@ -2924,6 +2968,47 @@ func TestGoStringASANVMe(t *testing.T) {
 	assert.Contains(t, actualGoString, "SVM:"+`"`+config.SVM+`"`, "The SVM should be present")
 }
 
+func TestASANVMeString_SnapshotsDataLIFs(t *testing.T) {
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.ips = []string{"1.2.3.4", "5.6.7.8"}
+
+	formatted := driver.String()
+	assert.Contains(t, formatted, "1.2.3.4")
+	assert.Contains(t, formatted, "5.6.7.8")
+	assert.NotContains(t, formatted, "<panic>")
+	assert.Contains(t, driver.GoString(), "1.2.3.4")
+
+	// refreshDataLIFCache writes ips while String formats a snapshot of it.
+	var readers, writer sync.WaitGroup
+	stop := make(chan struct{})
+	writer.Add(1)
+	go func() {
+		defer writer.Done()
+		for i := 0; ; i++ {
+			select {
+			case <-stop:
+				return
+			default:
+			}
+			driver.refreshDataLIFs(context.Background(), []string{"1.2.3.4", fmt.Sprintf("10.0.0.%d", i%8)})
+		}
+	}()
+	for i := 0; i < 4; i++ {
+		readers.Add(1)
+		go func() {
+			defer readers.Done()
+			for j := 0; j < 200; j++ {
+				formatted := driver.String()
+				assert.Contains(t, formatted, "1.2.3.4")
+				assert.NotContains(t, formatted, "<panic>")
+			}
+		}()
+	}
+	readers.Wait()
+	close(stop)
+	writer.Wait()
+}
+
 func TestReconcileNodeAccessASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
@@ -3003,31 +3088,75 @@ func TestGetStorageBackendPhysicalPoolNamesASANVMe(t *testing.T) {
 }
 
 func TestGetBackendStateASANVMe(t *testing.T) {
-	mockAPI, driver := newMockOntapASANVMeDriver(t)
-	dataLIFs := []string{"1.2.3.4"}
-	derivedPools := []string{ONTAPTEST_VSERVER_AGGR_NAME}
+	tests := []struct {
+		name         string
+		enabled      bool
+		seed         []string
+		observed     []string
+		expectChange bool
+		expectLIFs   []string
+	}{
+		{
+			name:         "DataLIFRefresh_false",
+			enabled:      false,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.2.3.4"},
+			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+		{
+			name:         "DataLIFRefresh_true_change",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.2.3.4"},
+			expectChange: true,
+			expectLIFs:   []string{"1.2.3.4"},
+		},
+		{
+			name:         "DataLIFRefresh_true_unchanged",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.1.1.1"},
+			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+	}
 
-	pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
-	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
-	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
-	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
-	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
-	driver.managedPool = pool1
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := tridentconfig.EnableDataLIFRefresh
+			tridentconfig.EnableDataLIFRefresh = tt.enabled
+			defer func() { tridentconfig.EnableDataLIFRefresh = original }()
 
-	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
-	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
-	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
-	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
-	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+			mockAPI, driver := newMockOntapASANVMeDriver(t)
+			driver.ips = tt.seed
+			derivedPools := []string{ONTAPTEST_VSERVER_AGGR_NAME}
 
-	state, code := driver.GetBackendState(ctx)
-	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
-	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
-	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
-	assert.Equal(t, "", state, "Reason should be empty")
+			pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
+			pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
+			pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+			pool1.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+			pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
+			driver.managedPool = pool1
+
+			mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
+			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(tt.observed, nil).Times(1)
+			mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+			mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+
+			state, code := driver.GetBackendState(ctx)
+			assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
+			assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
+			assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
+			assert.Equal(t, tt.expectChange, code.Contains(storage.BackendStateDataLIFsChange))
+			assert.Equal(t, "", state, "Reason should be empty")
+			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
+		})
+	}
 }
 
 func TestEnablePublishEnforcementASANVMe(t *testing.T) {

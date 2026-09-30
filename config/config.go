@@ -408,6 +408,7 @@ var (
 
 	UsingPassthroughStore bool
 	CurrentDriverContext  DriverContext
+	EnableDataLIFRefresh  bool
 	OrchestratorTelemetry = Telemetry{TridentVersion: OrchestratorVersion.String()}
 
 	// CSIAccessModes are defined by CSI

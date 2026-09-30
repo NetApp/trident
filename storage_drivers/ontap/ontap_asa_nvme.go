@@ -36,6 +36,7 @@ type ASANVMeStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
+	backendName string
 	API         api.OntapAPI
 	telemetry   *Telemetry
 
@@ -71,22 +72,42 @@ func (d *ASANVMeStorageDriver) GetTelemetry() *Telemetry {
 }
 
 // Name is for returning the name of this driver
-func (d ASANVMeStorageDriver) Name() string {
+func (d *ASANVMeStorageDriver) Name() string {
 	return tridentconfig.OntapSANStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
 func (d *ASANVMeStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
-		// Use the old naming scheme if no name is specified
-		lif0 := "noLIFs"
-		if len(d.ips) > 0 {
-			lif0 = d.ips[0]
+		// Use the old naming scheme if no name is specified. The name is pinned during
+		// Initialize so that refreshing the data LIFs cannot rename the backend.
+		if d.backendName != "" {
+			return d.backendName
 		}
-		return CleanBackendName("ontapasanvme_" + lif0)
+		return d.generatedBackendName()
 	} else {
 		return d.Config.BackendName
 	}
+}
+
+// generatedBackendName derives a backend name from the first known data LIF.
+func (d *ASANVMeStorageDriver) generatedBackendName() string {
+	lif0 := "noLIFs"
+	if ips := d.DataLIFs(); len(ips) > 0 {
+		lif0 = ips[0]
+	}
+	return CleanBackendName("ontapasanvme_" + lif0)
+}
+
+// DataLIFs returns the driver's current view of the backend's NVMe data LIFs.
+func (d *ASANVMeStorageDriver) DataLIFs() []string {
+	return readDataLIFCache(&d.ips)
+}
+
+// refreshDataLIFs folds a freshly observed LIF set into the driver's cache, reporting whether
+// anything changed.
+func (d *ASANVMeStorageDriver) refreshDataLIFs(ctx context.Context, observed []string) bool {
+	return refreshDataLIFCache(ctx, d.BackendName(), &d.ips, observed)
 }
 
 // Initialize from the provided config
@@ -145,6 +166,9 @@ func (d *ASANVMeStorageDriver) Initialize(
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 
+	// Pin the generated backend name now, before the reconcile loop can alter the LIF list.
+	d.backendName = d.generatedBackendName()
+
 	d.managedPool, _, d.virtualPools, err = initializeManagedStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
@@ -200,7 +224,7 @@ func (d *ASANVMeStorageDriver) validate(ctx context.Context) error {
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
-	if err := ValidateSANDriver(ctx, &d.Config, d.ips, nil); err != nil {
+	if err := ValidateSANDriver(ctx, &d.Config, d.DataLIFs(), nil); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -948,7 +972,7 @@ func (d *ASANVMeStorageDriver) Publish(
 		return err
 	}
 
-	publishInfo.VolumeAccessInfo.NVMeTargetIPs = d.ips
+	publishInfo.VolumeAccessInfo.NVMeTargetIPs = d.DataLIFs()
 
 	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
 	if publishInfo.FilesystemType == filesystem.Xfs {
@@ -1474,12 +1498,28 @@ func (d *ASANVMeStorageDriver) GetBackendState(ctx context.Context) (string, *ro
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
+	if !tridentconfig.EnableDataLIFRefresh {
+		return getSVMState(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
+	}
+
+	reason, changeMap, dataLIFs := getSVMStateWithDataLIFs(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
+
+	// Only refresh once the backend looks healthy. There is nothing to learn from an SVM that is
+	// unreachable, stopped, or reporting all of its data LIFs down, and a degraded answer must
+	// not be mistaken for a LIF change.
+	if reason == "" && d.refreshDataLIFs(ctx, dataLIFs) {
+		changeMap.Add(storage.BackendStateDataLIFsChange)
+	}
+	return reason, changeMap
 }
 
 // String makes ASANVMeStorageDriver satisfy the Stringer interface.
-func (d ASANVMeStorageDriver) String() string {
-	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+// ips is copied under dataLIFMutex before ToStringRedacted walks the snapshot.
+// Pointer receiver: a value receiver would copy ips before the lock is taken.
+func (d *ASANVMeStorageDriver) String() string {
+	snapshot, ips := copyDriverWithDataLIFs(d, &d.ips)
+	snapshot.ips = ips
+	return convert.ToStringRedacted(&snapshot, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes ASANVMeStorageDriver satisfy the GoStringer interface.
@@ -1488,7 +1528,7 @@ func (d *ASANVMeStorageDriver) GoString() string {
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d ASANVMeStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d *ASANVMeStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
 

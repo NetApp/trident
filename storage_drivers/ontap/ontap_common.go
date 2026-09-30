@@ -784,6 +784,17 @@ func reconcileExportPolicyRules(
 func getSVMState(
 	ctx context.Context, client api.OntapAPI, protocol string, pools []string, configAggrs ...string,
 ) (string, *roaring.Bitmap) {
+	reason, changeMap, _ := getSVMStateWithDataLIFs(ctx, client, protocol, pools, configAggrs...)
+	return reason, changeMap
+}
+
+// getSVMStateWithDataLIFs is getSVMState that also returns the up data LIFs it read, so callers
+// don't re-query the backend. LIFs are non-empty only when the reason is empty.
+// TODO: once all drivers support the datalif refresh feature, getSVMState replaces getSVMStateWithDataLIFs
+// (returning data LIFs as well) and this function should be removed.
+func getSVMStateWithDataLIFs(
+	ctx context.Context, client api.OntapAPI, protocol string, pools []string, configAggrs ...string,
+) (string, *roaring.Bitmap, []string) {
 	changeMap := roaring.New()
 
 	stateCtx, cancel := context.WithTimeout(ctx, getSVMStateTimeout)
@@ -794,11 +805,11 @@ func getSVMState(
 		// Could not get the SVM info or SVM is unreachable. Just log it.
 		// Set state offline and reason as unreachable.
 		Logc(ctx).WithField("error", err).Debug("Error getting SVM information.")
-		return StateReasonSVMUnreachable, changeMap
+		return StateReasonSVMUnreachable, changeMap, nil
 	}
 
 	if svmState != models.SvmStateRunning {
-		return StateReasonSVMStopped, changeMap
+		return StateReasonSVMStopped, changeMap, nil
 	}
 
 	// Get Aggregates list and verify if there is any change.
@@ -811,7 +822,7 @@ func getSVMState(
 		} else {
 			if len(aggrList) == 0 {
 				changeMap.Add(storage.BackendStatePoolsChange)
-				return StateReasonNoAggregates, changeMap
+				return StateReasonNoAggregates, changeMap, nil
 			}
 			sort.Strings(aggrList)
 			sort.Strings(pools)
@@ -821,7 +832,7 @@ func getSVMState(
 				// it will be passed as []string{""}.
 				if strings.Join(configAggrs, "") != "" {
 					if containsAll, _ := collection.ContainsElements(aggrList, configAggrs); !containsAll {
-						return StateReasonMissingAggregate, changeMap
+						return StateReasonMissingAggregate, changeMap, nil
 					}
 				}
 			}
@@ -844,7 +855,7 @@ func getSVMState(
 			Logc(ctx).WithFields(fields).Warn("Error getting list of data LIFs from backend.")
 		}
 		// No data LIFs with state 'up' found.
-		return StateReasonDataLIFsDown, changeMap
+		return StateReasonDataLIFsDown, changeMap, nil
 	}
 
 	// Get ONTAP version
@@ -852,14 +863,14 @@ func getSVMState(
 	if err != nil {
 		// Could not get the ONTAP version. Just log it.
 		Logc(ctx).WithError(err).Debug("Error getting cached ONTAP version.")
-		return "", changeMap
+		return "", changeMap, upDataLIFs
 	}
 
 	ontapVerCurrent, err := client.APIVersion(ctx, false)
 	if err != nil {
 		// Could not get the ONTAP version. Just log it.
 		Logc(ctx).WithError(err).Debug("Error getting ONTAP version.")
-		return "", changeMap
+		return "", changeMap, upDataLIFs
 	}
 
 	var parsedOntapVerCurrent, parsedOntapVerCached *version.Version
@@ -870,24 +881,24 @@ func getSVMState(
 		parsedOntapVerCached, err = version.ParseMajorMinorVersion(ontapVerCached)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error parsing cached ONTAP version.")
-			return "", changeMap
+			return "", changeMap, upDataLIFs
 		}
 		parsedOntapVerCurrent, err = version.ParseMajorMinorVersion(ontapVerCurrent)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error parsing ONTAP version.")
-			return "", changeMap
+			return "", changeMap, upDataLIFs
 		}
 
 	default:
 		parsedOntapVerCached, err = version.ParseSemantic(ontapVerCached)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error parsing cached ONTAP version.")
-			return "", changeMap
+			return "", changeMap, upDataLIFs
 		}
 		parsedOntapVerCurrent, err = version.ParseSemantic(ontapVerCurrent)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error parsing ONTAP version.")
-			return "", changeMap
+			return "", changeMap, upDataLIFs
 		}
 	}
 
@@ -896,7 +907,7 @@ func getSVMState(
 		changeMap.Add(storage.BackendStateAPIVersionChange)
 	}
 
-	return "", changeMap
+	return "", changeMap, upDataLIFs
 }
 
 // resizeValidation performs needed validation checks prior to the resize operation.
@@ -5266,6 +5277,111 @@ func sanitizeDataLIF(dataLIF string) string {
 	result := strings.TrimPrefix(dataLIF, "[")
 	result = strings.TrimSuffix(result, "]")
 	return result
+}
+
+// dataLIFMutex guards an NVMe driver's cached data LIF list (d.ips), which the backend reconcile
+// loop now refreshes while publish operations read it. All access outside Initialize must go
+// through the helpers below.
+var dataLIFMutex sync.RWMutex
+
+// readDataLIFCache returns a copy of a cached LIF list.
+func readDataLIFCache(cache *[]string) []string {
+	dataLIFMutex.RLock()
+	defer dataLIFMutex.RUnlock()
+	return slices.Clone(*cache)
+}
+
+// copyDriverWithDataLIFs shallow-copies driver under dataLIFMutex and clones cache in that
+// same critical section. The copy reads the ips slice header, which refreshDataLIFCache
+// writes, so it cannot happen outside the lock. Callers store the clone on the copy before
+// formatting it.
+func copyDriverWithDataLIFs[T any](driver *T, cache *[]string) (T, []string) {
+	dataLIFMutex.RLock()
+	defer dataLIFMutex.RUnlock()
+	return *driver, slices.Clone(*cache)
+}
+
+// refreshDataLIFCache folds a freshly observed set of LIFs into a driver's cache, logs any drift,
+// and reports whether the cache changed.
+func refreshDataLIFCache(
+	ctx context.Context, backendName string, cache *[]string, observed []string,
+) bool {
+	dataLIFMutex.Lock()
+	updated, added, removed := reconcileDataLIFs(*cache, observed)
+	*cache = updated
+	dataLIFMutex.Unlock()
+
+	if len(added) == 0 && len(removed) == 0 {
+		return false
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"backend":  backendName,
+		"added":    added,
+		"removed":  removed,
+		"dataLIFs": updated,
+	}).Info("Data LIF change detected on backend; refreshed the cached data LIFs.")
+
+	return true
+}
+
+// reconcileDataLIFs folds the LIFs just observed on an SVM into a driver's cached LIF list.
+//
+//	cached   - the LIF addresses currently in the driver's cache
+//	observed - the LIF addresses ONTAP just reported as operationally up
+//	updated  - the new cache contents, which replace cached
+//	added    - addresses in updated but not in cached, sorted
+//	removed  - addresses in cached that ONTAP no longer reports, sorted
+//
+// A LIF counts as present while ONTAP reports it as up, so one that goes down for a takeover or an
+// upgrade leaves the cache and rejoins it when it comes back. Retained LIFs keep their order.
+func reconcileDataLIFs(cached, observed []string) (updated, added, removed []string) {
+	present := make(map[string]struct{}, len(observed))
+	for _, address := range observed {
+		if address != "" {
+			present[address] = struct{}{}
+		}
+	}
+
+	// No usable address means the query failed or every LIF is down, not that the SVM lost
+	// every data LIF. Length alone is not enough: [""] is a non-empty slice with nothing to
+	// adopt. Callers only refresh a healthy backend, so there is nothing to learn here.
+	if len(present) == 0 {
+		return slices.Clone(cached), nil, nil
+	}
+
+	updated = make([]string, 0, len(cached)+len(present))
+	retained := make(map[string]struct{}, len(cached))
+
+	for _, address := range cached {
+		if _, seen := retained[address]; seen {
+			continue
+		}
+		retained[address] = struct{}{}
+
+		if _, ok := present[address]; ok {
+			updated = append(updated, address)
+			continue
+		}
+		removed = append(removed, address)
+	}
+
+	for _, address := range observed {
+		if address == "" {
+			continue
+		}
+		if _, ok := retained[address]; ok {
+			continue
+		}
+		retained[address] = struct{}{}
+		updated = append(updated, address)
+		added = append(added, address)
+	}
+
+	sort.Strings(added)
+	sort.Strings(removed)
+
+	return updated, added, removed
 }
 
 // GetEncryptionValue: Returns "true"/"false" if encryption is explicitely mentioned in the

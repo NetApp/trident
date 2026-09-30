@@ -1124,6 +1124,7 @@ const (
 	BackendStateReasonChange = iota
 	BackendStatePoolsChange
 	BackendStateAPIVersionChange
+	BackendStateDataLIFsChange
 )
 
 func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {

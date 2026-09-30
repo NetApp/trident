@@ -5,6 +5,7 @@ package k8sclient
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -340,6 +341,23 @@ func TestGetCSIDeploymentYAML(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected valid YAML for version %s", versionString)
 		}
+	}
+}
+
+func TestGetCSIDeploymentYAML_DataLIFRefresh(t *testing.T) {
+	version := versionutils.MustParseSemantic("1.26.0")
+
+	for _, enabled := range []bool{false, true} {
+		t.Run(strconv.FormatBool(enabled), func(t *testing.T) {
+			deploymentArgs := &DeploymentYAMLArguments{
+				Version:              version,
+				EnableDataLIFRefresh: enabled,
+			}
+
+			yamlData := GetCSIDeploymentYAML(deploymentArgs)
+			assert.Contains(t, yamlData,
+				fmt.Sprintf(`- "--enable_datalif_refresh=%t"`, enabled))
+		})
 	}
 }
 
