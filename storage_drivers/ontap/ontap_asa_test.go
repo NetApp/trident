@@ -2516,7 +2516,9 @@ func TestGetUpdateType(t *testing.T) {
 	}
 
 	var driver storage.Driver
-	_, driver = newMockOntapASADriver(t)
+	mockDriver, asaDriver := newMockOntapASADriver(t)
+	mockDriver.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
+	driver = asaDriver
 
 	tests := []testCase{
 		{
@@ -2531,7 +2533,8 @@ func TestGetUpdateType(t *testing.T) {
 		{
 			name: "Password change",
 			driverOrig: func() storage.Driver {
-				_, drivOrig := newMockOntapASADriver(t)
+				mockOrig, drivOrig := newMockOntapASADriver(t)
+				mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 				drivOrig.Config.Password = "other-password"
 				return drivOrig
 			}(),
@@ -2544,7 +2547,8 @@ func TestGetUpdateType(t *testing.T) {
 		{
 			name: "Username change",
 			driverOrig: func() storage.Driver {
-				_, drivOrig := newMockOntapASADriver(t)
+				mockOrig, drivOrig := newMockOntapASADriver(t)
+				mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 				drivOrig.Config.Username = "other-username"
 				return drivOrig
 			}(),
@@ -2557,7 +2561,8 @@ func TestGetUpdateType(t *testing.T) {
 		{
 			name: "Credentials change",
 			driverOrig: func() storage.Driver {
-				_, drivOrig := newMockOntapASADriver(t)
+				mockOrig, drivOrig := newMockOntapASADriver(t)
+				mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 				drivOrig.Config.Credentials = map[string]string{"key": "oldValue"}
 				return drivOrig
 			}(),
@@ -2570,7 +2575,8 @@ func TestGetUpdateType(t *testing.T) {
 		{
 			name: "Storage prefix change",
 			driverOrig: func() storage.Driver {
-				_, drivOrig := newMockOntapASADriver(t)
+				mockOrig, drivOrig := newMockOntapASADriver(t)
+				mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 				drivOrig.Config.StoragePrefix = new("oldPrefix")
 				return drivOrig
 			}(),
@@ -2583,7 +2589,8 @@ func TestGetUpdateType(t *testing.T) {
 		{
 			name: "No change",
 			driverOrig: func() storage.Driver {
-				_, drivOrig := newMockOntapASADriver(t)
+				mockOrig, drivOrig := newMockOntapASADriver(t)
+				mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 				return drivOrig
 			}(),
 			expected: roaring.New(),
@@ -2601,6 +2608,34 @@ func TestGetUpdateType(t *testing.T) {
 			assert.True(t, tt.expected.Equals(actual), "Expected and actual bitmaps should be equal")
 		})
 	}
+}
+
+func TestASAGetUpdateType_SVMChange(t *testing.T) {
+	_, oldDriver := newMockOntapASADriver(t)
+	oldDriver.Config.SVM = "svm1"
+
+	_, newDriver := newMockOntapASADriver(t)
+	newDriver.Config.SVM = "svm2"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
+func TestASAGetUpdateType_SVMUUIDChange(t *testing.T) {
+	mockOrig, oldDriver := newMockOntapASADriver(t)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
+	oldDriver.Config.SVM = "svm1"
+
+	mockNew, newDriver := newMockOntapASADriver(t)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-2")
+	newDriver.Config.SVM = "svm1"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM UUID change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
 }
 
 func TestGetVolumeExternalWrappersASA(t *testing.T) {

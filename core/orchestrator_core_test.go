@@ -10151,15 +10151,34 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 			wantErr: assert.Error,
 		},
 		{
-			name:             "UpdateNonOrphanVolumeError",
+			name:             "NonMaterialUpdateSkipsOrphanScan",
 			backendName:      bName,
 			newBackendConfig: bConfig,
 			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
-					gomock.Any()).Return(errors.New("error updating non-orphan volume"))
 			},
-			wantErr: assert.Error,
+			wantErr: assert.NoError,
+		},
+		{
+			name:        "SVMChangeTriggersOrphanScan",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       bName,
+				"protocol":          config.File,
+				"autoExportPolicy":  true,
+				"svm":               "updated-svm",
+			},
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(_ context.Context, vol *storage.Volume) error {
+						assert.True(t, vol.Orphaned)
+						return nil
+					}).Times(1)
+			},
+			wantErr: assert.NoError,
 		},
 		{
 			name:             "BackendUpdateSuccess",
@@ -10213,7 +10232,7 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 					t.Fatal("unable to create mock backend: ", err)
 				}
 				backendUUID = oldBackendExt.BackendUUID
-				if tt.name == "UpdateNonOrphanVolumeError" {
+				if tt.name == "NonMaterialUpdateSkipsOrphanScan" || tt.name == "SVMChangeTriggersOrphanScan" {
 					o.volumes["vol1"] = &storage.Volume{
 						Config:      &storage.VolumeConfig{InternalName: "vol1"},
 						BackendUUID: backendUUID, Orphaned: false,

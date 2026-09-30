@@ -3427,6 +3427,7 @@ func TestOntapSANStorageDriverGetVolumeExternalWrappers_Failure(t *testing.T) {
 
 func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	mockAPI, oldDriver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 
 	oldDriver.API = mockAPI
 	oldDriver.Config.StoragePrefix = new("test_")
@@ -3466,8 +3467,38 @@ func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	assert.Equal(t, expectedBitmap, result, "bitmap mismatch")
 }
 
+func TestOntapSANStorageDriverGetUpdateType_SVMChange(t *testing.T) {
+	mockAPI, oldDriver := newMockOntapSANDriver(t)
+	oldDriver.Config.SVM = "svm1"
+
+	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver.API = mockAPI
+	newDriver.Config.SVM = "svm2"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
+func TestOntapSANStorageDriverGetUpdateType_SVMUUIDChange(t *testing.T) {
+	mockOrig, oldDriver := newMockOntapSANDriver(t)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
+	oldDriver.Config.SVM = "svm1"
+
+	mockNew, newDriver := newMockOntapSANDriver(t)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-2")
+	newDriver.Config.SVM = "svm1"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM UUID change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
 func TestOntapSANStorageDriverGetUpdateType_NilDataLIF(t *testing.T) {
 	mockAPI, oldDriver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 	oldDriver.Config.DataLIF = "1.2.3.1"
 
 	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)

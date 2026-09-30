@@ -1629,6 +1629,10 @@ func (d *NVMeStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.
 		bitmap.Add(storage.PrefixChange)
 	}
 
+	if svmChanged(d.Config.SVM, dOrig.Config.SVM, d.API, dOrig.API) {
+		bitmap.Add(storage.SVMChange)
+	}
+
 	return bitmap
 }
 

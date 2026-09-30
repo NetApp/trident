@@ -2543,7 +2543,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateNonOrphanVolumeError",
+			name: "NonMaterialUpdateSkipsOrphanScan",
 			newBackendConfig: map[string]interface{}{
 				"version":           1,
 				"storageDriverName": "fake",
@@ -2553,8 +2553,6 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			},
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
-					gomock.Any()).Return(errors.New("error updating non-orphan volume"))
 
 				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
 				addBackendsToCache(t, fakeBackend)
@@ -2569,7 +2567,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateNonOrphanVolumeSuccess",
+			name: "NonMaterialUpdatePreservesVolumes",
 			newBackendConfig: map[string]interface{}{
 				"version":           1,
 				"storageDriverName": "fake",
@@ -2579,8 +2577,6 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			},
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
-					gomock.Any()).Return(nil).Times(1)
 
 				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
 				addBackendsToCache(t, fakeBackend)
@@ -2589,6 +2585,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 					BackendUUID: existingBackendUuid, Orphaned: false,
 				}
 				addVolumesToCache(t, vol)
+				fakeBackend.Volumes().Store("vol1", vol)
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -2603,7 +2600,45 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 				require.Equal(t, 1, volCount)
 				vol, ok := backendInCache.Volumes().Load("vol1")
 				assert.True(t, ok)
+				assert.False(t, vol.(*storage.Volume).Orphaned)
+			},
+		},
+		{
+			name: "SVMChangeTriggersOrphanScan",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+				"svm":               "updated-svm",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(_ context.Context, vol *storage.Volume) error {
+						assert.True(t, vol.Orphaned)
+						return nil
+					}).Times(1)
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: existingBackendUuid, Orphaned: false,
+				}
+				addVolumesToCache(t, vol)
+				fakeBackend.Volumes().Store("vol1", vol)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				backendInCache := getBackendByUuidFromCache(t, backend.BackendUUID)
+				vol, ok := backendInCache.Volumes().Load("vol1")
+				require.True(t, ok)
 				assert.True(t, vol.(*storage.Volume).Orphaned)
+				assert.True(t, getVolumeByNameFromCache(t, "vol1").Orphaned)
 			},
 		},
 		{
@@ -2918,7 +2953,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateNonOrphanVolumeError",
+			name: "NonMaterialUpdateSkipsOrphanScan",
 			newBackendConfig: map[string]interface{}{
 				"version":           1,
 				"storageDriverName": "fake",
@@ -2928,8 +2963,6 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 			},
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
-					gomock.Any()).Return(errors.New("error updating non-orphan volume"))
 
 				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
 				addBackendsToCache(t, fakeBackend)
@@ -2944,7 +2977,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "UpdateNonOrphanVolumeSuccess",
+			name: "NonMaterialUpdatePreservesVolumes",
 			newBackendConfig: map[string]interface{}{
 				"version":           1,
 				"storageDriverName": "fake",
@@ -2954,8 +2987,6 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 			},
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
-					gomock.Any()).Return(nil).Times(1)
 
 				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
 				addBackendsToCache(t, fakeBackend)
@@ -2964,6 +2995,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 					BackendUUID: existingBackendUuid, Orphaned: false,
 				}
 				addVolumesToCache(t, vol)
+				fakeBackend.Volumes().Store("vol1", vol)
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
@@ -2978,7 +3010,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 				require.Equal(t, 1, volCount)
 				vol, ok := backendInCache.Volumes().Load("vol1")
 				assert.True(t, ok)
-				assert.True(t, vol.(*storage.Volume).Orphaned)
+				assert.False(t, vol.(*storage.Volume).Orphaned)
 			},
 		},
 		{
@@ -3126,7 +3158,7 @@ func TestUpsertBackend_NodeAccessReconciledBeforeVolumesRestored(t *testing.T) {
 	defer unlocker()
 	require.NoError(t, err)
 
-	newBackend, err := o.upsertBackend(lockCtx, string(newBackendConfigJSON), results[0], "")
+	newBackend, _, err := o.upsertBackend(lockCtx, string(newBackendConfigJSON), results[0], "")
 	require.NoError(t, err)
 	require.NotSame(t, originalBackend, newBackend, "updateBackend() should have built a brand-new backend object")
 

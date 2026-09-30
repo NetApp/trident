@@ -3619,7 +3619,8 @@ func TestConvertDiskLimitToBytes(t *testing.T) {
 
 func TestGetUpdateType_Success(t *testing.T) {
 	// Create and initialize old driver
-	_, oldDriver := newMockOntapNasQtreeDriver(t)
+	mockOrig, oldDriver := newMockOntapNasQtreeDriver(t)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
 	oldDriver.Config.StoragePrefix = new("test_")
 	oldDriver.Config.Username = "user1"
 	oldDriver.Config.Password = "password1"
@@ -3629,7 +3630,8 @@ func TestGetUpdateType_Success(t *testing.T) {
 	}
 
 	// Create a new driver
-	_, newDriver := newMockOntapNasQtreeDriver(t)
+	mockNew, newDriver := newMockOntapNasQtreeDriver(t)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
 	newDriver.Config.StoragePrefix = new("storage_")
 	newDriver.Config.Username = "user2"
 	newDriver.Config.Password = "password2"
@@ -3647,6 +3649,38 @@ func TestGetUpdateType_Success(t *testing.T) {
 	expectedBitmap.Add(storage.CredentialsChange)
 
 	assert.Equal(t, expectedBitmap, result, "Bitmap mismatch")
+}
+
+func TestOntapNasQtreeGetUpdateType_SVMChange(t *testing.T) {
+	// Create and initialize old driver
+	_, oldDriver := newMockOntapNasQtreeDriver(t)
+	oldDriver.Config.SVM = "svm1"
+
+	// Create a new driver
+	_, newDriver := newMockOntapNasQtreeDriver(t)
+	newDriver.Config.SVM = "svm2"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
+func TestOntapNasQtreeGetUpdateType_SVMUUIDChange(t *testing.T) {
+	// Create and initialize old driver
+	mockOrig, oldDriver := newMockOntapNasQtreeDriver(t)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
+	oldDriver.Config.SVM = "svm1"
+
+	// Create a new driver
+	mockNew, newDriver := newMockOntapNasQtreeDriver(t)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-2")
+	newDriver.Config.SVM = "svm1"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM UUID change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
 }
 
 func TestGetUpdateType_InvalidOldDriver(t *testing.T) {

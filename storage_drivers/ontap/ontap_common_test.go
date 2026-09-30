@@ -13642,3 +13642,97 @@ func TestCreateFlexvol_NonManagedPool_Disaggregated(t *testing.T) {
 	err := createFlexvol(ctx, mockAPI, volume)
 	assert.NoError(t, err)
 }
+
+func TestSVMChanged(t *testing.T) {
+	newAPIWithUUID := func(t *testing.T, svmUUID string) api.OntapAPI {
+		mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+		mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return(svmUUID)
+		return mockAPI
+	}
+
+	tests := map[string]struct {
+		svmNew, svmOrig   string
+		uuidNew, uuidOrig string
+		nilNewAPI         bool
+		nilOrigAPI        bool
+		expected          bool
+	}{
+		"SVM renamed": {
+			svmNew:     "svm2",
+			svmOrig:    "svm1",
+			nilNewAPI:  true,
+			nilOrigAPI: true,
+			expected:   true,
+		},
+		"SVM renamed, same UUID": {
+			svmNew:   "svm2",
+			svmOrig:  "svm1",
+			uuidNew:  "svm-uuid-1",
+			uuidOrig: "svm-uuid-1",
+			expected: true,
+		},
+		"nothing changed": {
+			svmNew:   "svm1",
+			svmOrig:  "svm1",
+			uuidNew:  "svm-uuid-1",
+			uuidOrig: "svm-uuid-1",
+			expected: false,
+		},
+		"SVM-DR failover, same name different UUID": {
+			svmNew:   "svm1",
+			svmOrig:  "svm1",
+			uuidNew:  "svm-uuid-2",
+			uuidOrig: "svm-uuid-1",
+			expected: true,
+		},
+		"same name, new UUID unknown": {
+			svmNew:   "svm1",
+			svmOrig:  "svm1",
+			uuidNew:  "",
+			uuidOrig: "svm-uuid-1",
+			expected: false,
+		},
+		"same name, original UUID unknown": {
+			svmNew:   "svm1",
+			svmOrig:  "svm1",
+			uuidNew:  "svm-uuid-1",
+			uuidOrig: "",
+			expected: false,
+		},
+		"same name, both UUIDs unknown": {
+			svmNew:   "svm1",
+			svmOrig:  "svm1",
+			uuidNew:  "",
+			uuidOrig: "",
+			expected: false,
+		},
+		"same name, no new API client": {
+			svmNew:    "svm1",
+			svmOrig:   "svm1",
+			uuidOrig:  "svm-uuid-1",
+			nilNewAPI: true,
+			expected:  false,
+		},
+		"same name, no original API client": {
+			svmNew:     "svm1",
+			svmOrig:    "svm1",
+			uuidNew:    "svm-uuid-1",
+			nilOrigAPI: true,
+			expected:   false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			var apiNew, apiOrig api.OntapAPI
+			if !test.nilNewAPI {
+				apiNew = newAPIWithUUID(t, test.uuidNew)
+			}
+			if !test.nilOrigAPI {
+				apiOrig = newAPIWithUUID(t, test.uuidOrig)
+			}
+
+			assert.Equal(t, test.expected, svmChanged(test.svmNew, test.svmOrig, apiNew, apiOrig))
+		})
+	}
+}

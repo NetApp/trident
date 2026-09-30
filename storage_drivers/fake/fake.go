@@ -1411,6 +1411,11 @@ func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driv
 		bitmap.Add(storage.InvalidVolumeAccessInfoChange)
 	}
 
+	// Added for Unit test coverage
+	if d.Config.SVM != dOrig.Config.SVM {
+		bitmap.Add(storage.SVMChange)
+	}
+
 	return bitmap
 }
 

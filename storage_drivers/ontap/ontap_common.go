@@ -173,6 +173,23 @@ var (
 	duringVolCloneAfterSnapCreation2 = fiji.Register("duringVolCloneAfterSnapCreation2", "ontap_common")
 )
 
+// svmChanged reports whether the SVM backing a driver changed across a backend update.
+// A name change is sufficient. When the name is unchanged, the SVM UUIDs are compared so
+// an SVM-DR failover (management LIF moves to the DR cluster, same SVM name) or a
+// same-name SVM delete/recreate is still detected. UUID comparison is skipped when either
+// API client is nil or either UUID is unknown, preserving behavior for drivers without a
+// client, such as those constructed directly in unit tests.
+func svmChanged(svmNew, svmOrig string, apiNew, apiOrig api.OntapAPI) bool {
+	if svmNew != svmOrig {
+		return true
+	}
+	if apiNew == nil || apiOrig == nil {
+		return false
+	}
+	uuidNew, uuidOrig := apiNew.GetSVMUUID(), apiOrig.GetSVMUUID()
+	return uuidNew != "" && uuidOrig != "" && uuidNew != uuidOrig
+}
+
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
 func CleanBackendName(backendName string) string {
 	backendName = strings.ReplaceAll(backendName, "[", "")

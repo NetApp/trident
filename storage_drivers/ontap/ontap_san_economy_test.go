@@ -5075,6 +5075,7 @@ func TestGetVolumeExternalWrappers_VolumeAttachedWithLUN(t *testing.T) {
 func TestGetUpdateType_OtherChanges(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.API = mockAPI
@@ -5109,9 +5110,45 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 	assert.Equal(t, expectedBitmap, result, "bitmap mismatch")
 }
 
+func TestOntapSanEcoGetUpdateType_SVMChange(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	oldDriver.Config.SVM = "svm1"
+
+	newDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver.Config.SVM = "svm2"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
+func TestOntapSanEcoGetUpdateType_SVMUUIDChange(t *testing.T) {
+	mockOrigCtrl := gomock.NewController(t)
+	mockOrig := mockapi.NewMockOntapAPI(mockOrigCtrl)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
+	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockOrig)
+	oldDriver.Config.SVM = "svm1"
+
+	mockNewCtrl := gomock.NewController(t)
+	mockNew := mockapi.NewMockOntapAPI(mockNewCtrl)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-2")
+	newDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockNew)
+	newDriver.Config.SVM = "svm1"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM UUID change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
 func TestGetUpdateType_NilDataLIF(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid")
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.Config.DataLIF = "10.0.2.11"
