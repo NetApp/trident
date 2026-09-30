@@ -1561,21 +1561,21 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	// 3) Updates to fields other than the name and IP address
 	//    This scenario is the same as the AddBackend
 	// 4) Some combination of above scenarios
-	updateCode := backend.GetUpdateType(ctx, originalBackend)
+	updateTypes := backend.GetUpdateType(ctx, originalBackend)
 	switch {
-	case updateCode.Contains(storage.InvalidUpdate):
+	case updateTypes.Contains(storage.InvalidUpdate):
 		err := errors.New("invalid backend update")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
-	case updateCode.Contains(storage.InvalidVolumeAccessInfoChange):
+	case updateTypes.Contains(storage.InvalidVolumeAccessInfoChange):
 		err := errors.New("updating the data plane IP address isn't currently supported")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
-	case updateCode.Contains(storage.PrefixChange):
+	case updateTypes.Contains(storage.PrefixChange):
 		err := errors.UnsupportedConfigError("updating the storage prefix isn't currently supported")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
-	case updateCode.Contains(storage.BackendRename):
+	case updateTypes.Contains(storage.BackendRename):
 		checkingBackend, lookupErr := o.getBackendByBackendName(backend.Name())
 		if lookupErr == nil {
 			// Don't rename if the name is already in use
@@ -1612,6 +1612,14 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	originalBackend.Terminate(ctx)
 	o.backends[backend.BackendUUID()] = backend
 
+	// Copy volumes forward from the original backend to the new backend object,
+	// which starts with an empty Volumes() cache. This ensures the per-backend
+	// volume cache is populated even when the orphan scan below is skipped.
+	originalBackend.Volumes().Range(func(key, value any) bool {
+		backend.Volumes().Store(key, value)
+		return true
+	})
+
 	// Update the volume state in memory
 	// Identify orphaned volumes (i.e., volumes that are not present on the
 	// new backend). Such a scenario can happen if a subset of volumes are
@@ -1619,38 +1627,49 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	// such volumes are likely to fail, so here we just warn the users about
 	// such volumes and mark them as orphaned. This is a best effort activity,
 	// so it doesn't have to be part of the persistent store transaction.
-	for volName, vol := range o.volumes {
-		if vol.BackendUUID == originalBackend.BackendUUID() {
-			vol.BackendUUID = backend.BackendUUID()
-			updatePersistentStore := false
-			volumeExists := backend.Driver().Get(ctx, vol.Config) == nil
-			if !volumeExists {
-				if !vol.Orphaned {
-					vol.Orphaned = true
-					updatePersistentStore = true
-					Logc(ctx).WithFields(LogFields{
-						"volume":                  volName,
-						"vol.Config.InternalName": vol.Config.InternalName,
-						"backend":                 backend.Name(),
-					}).Warn("Backend update resulted in an orphaned volume.")
+	// Only changes that could make existing volumes unreachable trigger the per-volume orphan scan.
+	// Updates that don't affect volume reachability (credentials, QoS, etc.)
+	// skip the per-volume Driver().Get() calls that block CSI operations on large backends.
+	requiresOrphanScan := storage.RequiresOrphanScan(updateTypes)
+	Logc(ctx).WithFields(LogFields{
+		"backend":            backend.Name(),
+		"updateTypes":        updateTypes,
+		"requiresOrphanScan": requiresOrphanScan,
+	}).Info("Evaluated backend update for an orphan volume scan.")
+	if requiresOrphanScan {
+		for volName, vol := range o.volumes {
+			if vol.BackendUUID == originalBackend.BackendUUID() {
+				vol.BackendUUID = backend.BackendUUID()
+				updatePersistentStore := false
+				volumeExists := backend.Driver().Get(ctx, vol.Config) == nil
+				if !volumeExists {
+					if !vol.Orphaned {
+						vol.Orphaned = true
+						updatePersistentStore = true
+						Logc(ctx).WithFields(LogFields{
+							"volume":                  volName,
+							"vol.Config.InternalName": vol.Config.InternalName,
+							"backend":                 backend.Name(),
+						}).Warn("Backend update resulted in an orphaned volume.")
+					}
+				} else {
+					if vol.Orphaned {
+						vol.Orphaned = false
+						updatePersistentStore = true
+						Logc(ctx).WithFields(LogFields{
+							"volume":                  volName,
+							"vol.Config.InternalName": vol.Config.InternalName,
+							"backend":                 backend.Name(),
+						}).Debug("The volume is no longer orphaned as a result of the backend update.")
+					}
 				}
-			} else {
-				if vol.Orphaned {
-					vol.Orphaned = false
-					updatePersistentStore = true
-					Logc(ctx).WithFields(LogFields{
-						"volume":                  volName,
-						"vol.Config.InternalName": vol.Config.InternalName,
-						"backend":                 backend.Name(),
-					}).Debug("The volume is no longer orphaned as a result of the backend update.")
+				if updatePersistentStore {
+					if err := o.updateVolumeOnPersistentStore(ctx, vol); err != nil {
+						return nil, err
+					}
 				}
+				o.backends[backend.BackendUUID()].Volumes().Store(volName, vol)
 			}
-			if updatePersistentStore {
-				if err := o.updateVolumeOnPersistentStore(ctx, vol); err != nil {
-					return nil, err
-				}
-			}
-			o.backends[backend.BackendUUID()].Volumes().Store(volName, vol)
 		}
 	}
 

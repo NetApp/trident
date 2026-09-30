@@ -1118,6 +1118,7 @@ const (
 	PasswordChange
 	PrefixChange
 	CredentialsChange
+	SVMChange
 )
 
 const (
@@ -1127,12 +1128,25 @@ const (
 	BackendStateDataLIFsChange
 )
 
-func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {
-	updateCode := b.driver.GetUpdateType(ctx, origBackend.Driver())
-	if b.name != origBackend.Name() {
-		updateCode.Add(BackendRename)
+// RequiresOrphanScan reports whether the update types include a change that
+// could affect volume existence on the backend.
+// A nil bitmap means there was no original backend to compare against, as on the
+// add path of upsertBackend, and requires no scan.
+// PrefixChange is rejected earlier in the update flow; it is included here
+// defensively to ensure the scan runs if that rejection is ever relaxed.
+func RequiresOrphanScan(updateTypes *roaring.Bitmap) bool {
+	if updateTypes == nil {
+		return false
 	}
-	return updateCode
+	return updateTypes.Contains(PrefixChange) || updateTypes.Contains(SVMChange)
+}
+
+func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {
+	updateTypes := b.driver.GetUpdateType(ctx, origBackend.Driver())
+	if b.name != origBackend.Name() {
+		updateTypes.Add(BackendRename)
+	}
+	return updateTypes
 }
 
 // HasVolumes returns true if the Backend has one or more volumes

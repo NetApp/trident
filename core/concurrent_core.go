@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
@@ -1368,7 +1369,7 @@ func (o *ConcurrentTridentOrchestrator) AddBackend(
 		return nil, err
 	}
 
-	backend, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
+	backend, _, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
 	if err != nil {
 		Logc(ctx).WithError(err).WithFields(LogFields{
 			"backendName": newBackendName,
@@ -1662,7 +1663,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackend(
 		return nil, errors.NotFoundError("backend %v was not found", backendName)
 	}
 
-	backend, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
+	backend, updateTypes, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"err":         err.Error(),
@@ -1672,13 +1673,22 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackend(
 		return nil, err
 	}
 
-	err = o.updateBackendVolumes(lockCtx, backend)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"err":         err.Error(),
-			"backendName": backend.Name(),
-			"configRef":   configRef,
-		}).Warn("Update of backend volumes failed.")
+	// Only changes that could make existing volumes unreachable trigger the per-volume orphan scan.
+	requiresOrphanScan := storage.RequiresOrphanScan(updateTypes)
+	Logc(ctx).WithFields(LogFields{
+		"backend":            backend.Name(),
+		"updateTypes":        updateTypes,
+		"requiresOrphanScan": requiresOrphanScan,
+	}).Info("Evaluated backend update for an orphan volume scan.")
+	if requiresOrphanScan {
+		err = o.updateBackendVolumes(lockCtx, backend)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"err":         err.Error(),
+				"backendName": backend.Name(),
+				"configRef":   configRef,
+			}).Warn("Update of backend volumes failed.")
+		}
 	}
 
 	return backend.ConstructExternalWithPoolMap(ctx,
@@ -1715,7 +1725,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 		return nil, errors.NotFoundError("backend %v was not found", backendName)
 	}
 
-	backend, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
+	backend, updateTypes, err := o.upsertBackend(lockCtx, configJSON, results[0], configRef)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"backendName": backendName,
@@ -1727,13 +1737,22 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 	// TODO: Ideally we would like to keep holding the backend write lock we acquired in upsertBackend() and call
 	//  updateBackendVolumes(). But currently, the locking mechanism does not support sub-locks. We have to revisit
 	//  this code if and when we implement sub-locks.
-	err = o.updateBackendVolumes(lockCtx, backend)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"err":         err.Error(),
-			"backendName": backend.Name(),
-			"configRef":   configRef,
-		}).Warn("Update of backend volumes failed.")
+	// Only changes that could make existing volumes unreachable trigger the per-volume orphan scan.
+	requiresOrphanScan := storage.RequiresOrphanScan(updateTypes)
+	Logc(ctx).WithFields(LogFields{
+		"backend":            backend.Name(),
+		"updateTypes":        updateTypes,
+		"requiresOrphanScan": requiresOrphanScan,
+	}).Info("Evaluated backend update for an orphan volume scan.")
+	if requiresOrphanScan {
+		err = o.updateBackendVolumes(lockCtx, backend)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"err":         err.Error(),
+				"backendName": backend.Name(),
+				"configRef":   configRef,
+			}).Warn("Update of backend volumes failed.")
+		}
 	}
 
 	return backend.ConstructExternalWithPoolMap(ctx,
@@ -1746,8 +1765,9 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 // lockless (inconsistent) cache reads may be performed in this function.
 func (o *ConcurrentTridentOrchestrator) upsertBackend(
 	ctx context.Context, configJSON string, upsertResult db.Result, callingConfigRef string,
-) (storage.Backend, error) {
+) (storage.Backend, *roaring.Bitmap, error) {
 	var backend storage.Backend
+	var updateTypes *roaring.Bitmap
 
 	Logc(ctx).Debug(">>>>>> upsertBackend")
 	defer Logc(ctx).Debug("<<<<<< upsertBackend")
@@ -1755,7 +1775,7 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 	_, results, unlocker, err := db.NestedLock(ctx, db.Query(db.ListVolumePublications(), db.ListNodes()))
 	defer unlocker()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	originalBackend := upsertResult.Backend.Read
@@ -1764,14 +1784,14 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 		backend, err = o.addBackend(ctx, configJSON, uuid.New().String(), callingConfigRef)
 		if err != nil {
 			if backend != nil && backend.State().IsFailed() {
-				return backend, err
+				return backend, nil, err
 			}
-			return nil, err
+			return nil, nil, err
 		}
 	} else {
-		backend, err = o.updateBackend(ctx, configJSON, originalBackend, callingConfigRef)
+		backend, updateTypes, err = o.updateBackend(ctx, configJSON, originalBackend, callingConfigRef)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -1779,7 +1799,7 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 	backend.InvalidateNodeAccess()
 	err = o.reconcileNodeAccessOnBackend(ctx, backend, results[0].VolumePublications, results[0].Nodes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// For update backend request, terminate the old backend and update the volumes in backend
@@ -1795,7 +1815,7 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 
 	Logc(ctx).WithField("backend", backend).Debug("Backend upserted.")
 
-	return backend, nil
+	return backend, updateTypes, nil
 }
 
 func (o *ConcurrentTridentOrchestrator) addBackend(
@@ -1841,7 +1861,7 @@ func (o *ConcurrentTridentOrchestrator) addBackend(
 
 func (o *ConcurrentTridentOrchestrator) updateBackend(
 	ctx context.Context, configJSON string, originalBackend storage.Backend, callingConfigRef string,
-) (storage.Backend, error) {
+) (storage.Backend, *roaring.Bitmap, error) {
 	var backend storage.Backend
 	backendName := originalBackend.Name()
 	backendUUID := originalBackend.BackendUUID()
@@ -1867,7 +1887,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 			}).Error("Cannot update backend created using TridentBackendConfig CR; please update the" +
 				" TridentBackendConfig CR instead.")
 
-			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; "+
+			return nil, nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; "+
 				"please update the TridentBackendConfig CR", backendName)
 		}
 	}
@@ -1890,7 +1910,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 				"originalConfigRef":   originalConfigRef,
 				"invalidConfigRef":    callingConfigRef,
 			}).Errorf("Backend update initiated using an invalid ConfigRef.")
-			return nil, errors.UnsupportedConfigError(
+			return nil, nil, errors.UnsupportedConfigError(
 				"backend '%v' update initiated using an invalid configRef, it is associated with configRef "+
 					"'%v' and not '%v'", originalBackend.Name(), originalConfigRef, callingConfigRef)
 		}
@@ -1910,7 +1930,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 	// Second, validate the update.
 	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, callingConfigRef, backendUUID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// We're updating a backend, there can be two scenarios (related to userState):
@@ -1923,7 +1943,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 	}
 
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	Logc(ctx).WithFields(LogFields{
 		"originalBackend.Name":        originalBackend.Name(),
@@ -1944,32 +1964,32 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 	// 3) Updates to fields other than the name and IP address
 	//    This scenario is the same as the AddBackend
 	// 4) Some combination of above scenarios
-	updateCode := backend.GetUpdateType(ctx, originalBackend)
+	updateTypes := backend.GetUpdateType(ctx, originalBackend)
 	switch {
-	case updateCode.Contains(storage.InvalidUpdate):
+	case updateTypes.Contains(storage.InvalidUpdate):
 		err = errors.New("invalid backend update")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
-		return nil, err
-	case updateCode.Contains(storage.InvalidVolumeAccessInfoChange):
+		return nil, nil, err
+	case updateTypes.Contains(storage.InvalidVolumeAccessInfoChange):
 		err = errors.New("updating the data plane IP address isn't currently supported")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
-		return nil, err
-	case updateCode.Contains(storage.PrefixChange):
+		return nil, nil, err
+	case updateTypes.Contains(storage.PrefixChange):
 		err = errors.UnsupportedConfigError("updating the storage prefix isn't currently supported")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
-		return nil, err
-	case updateCode.Contains(storage.BackendRename):
+		return nil, nil, err
+	case updateTypes.Contains(storage.BackendRename):
 		if err = o.storeClient.ReplaceBackendAndUpdateVolumes(ctx, originalBackend, backend); err != nil {
 			Logc(ctx).WithField("error", err).Errorf(
 				"Could not rename backend from %v to %v", originalBackend.Name(), backend.Name())
-			return nil, err
+			return nil, nil, err
 		}
 	default:
 		// Update backend information
 		if err = o.updateBackendOnPersistentStore(ctx, backend, false); err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not persist renamed backend from %v to %v",
 				originalBackend.Name(), backend.Name())
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -1992,7 +2012,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 		return true
 	})
 
-	return backend, nil
+	return backend, updateTypes, nil
 }
 
 func (o *ConcurrentTridentOrchestrator) checkForBackendNameChange(configJSON, backendName string) (string, error) {
@@ -7804,7 +7824,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 				return configErr
 			}
 
-			_, err := o.upsertBackend(lockCtx, string(configBytes), results[0], backend.ConfigRef())
+			_, _, err := o.upsertBackend(lockCtx, string(configBytes), results[0], backend.ConfigRef())
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"err":         err.Error(),

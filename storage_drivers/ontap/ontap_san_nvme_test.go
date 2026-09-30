@@ -694,6 +694,34 @@ func TestNVMeGetUpdateType_OtherUpdates(t *testing.T) {
 	assert.True(t, bMap.Contains(storage.PrefixChange), "Unchanged prefix.")
 }
 
+func TestNVMeGetUpdateType_SVMChange(t *testing.T) {
+	oldDriver := newNVMeDriver(nil, nil, nil)
+	oldDriver.Config.SVM = "svm1"
+
+	newDriver := newNVMeDriver(nil, nil, nil)
+	newDriver.Config.SVM = "svm2"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
+func TestNVMeGetUpdateType_SVMUUIDChange(t *testing.T) {
+	oldDriver, mockOrig := newNVMeDriverAndMockApi(t)
+	mockOrig.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-1")
+	oldDriver.Config.SVM = "svm1"
+
+	newDriver, mockNew := newNVMeDriverAndMockApi(t)
+	mockNew.EXPECT().GetSVMUUID().AnyTimes().Return("svm-uuid-2")
+	newDriver.Config.SVM = "svm1"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.True(t, result.Contains(storage.SVMChange), "SVM UUID change should be detected")
+	assert.Equal(t, uint64(1), result.GetCardinality(), "only SVMChange should be set")
+}
+
 func TestNVMeGetUpdateType_NilDataLIF(t *testing.T) {
 	d1 := newNVMeDriver(nil, nil, nil)
 	d2 := newNVMeDriver(nil, nil, nil)

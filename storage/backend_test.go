@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -3795,4 +3796,64 @@ func TestStorageBackend_StateManagement(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestRequiresOrphanScan(t *testing.T) {
+	newBitmap := func(updateTypes ...uint32) *roaring.Bitmap {
+		bitmap := roaring.New()
+		bitmap.AddMany(updateTypes)
+		return bitmap
+	}
+
+	tests := map[string]struct {
+		updateTypes *roaring.Bitmap
+		expected    bool
+	}{
+		"nil bitmap, as on the add path": {
+			updateTypes: nil,
+			expected:    false,
+		},
+		"no changes": {
+			updateTypes: newBitmap(),
+			expected:    false,
+		},
+		"SVM change": {
+			updateTypes: newBitmap(SVMChange),
+			expected:    true,
+		},
+		"prefix change": {
+			updateTypes: newBitmap(PrefixChange),
+			expected:    true,
+		},
+		"SVM change with other changes": {
+			updateTypes: newBitmap(SVMChange, CredentialsChange, BackendRename),
+			expected:    true,
+		},
+		"credentials change": {
+			updateTypes: newBitmap(CredentialsChange),
+			expected:    false,
+		},
+		"username and password change": {
+			updateTypes: newBitmap(UsernameChange, PasswordChange),
+			expected:    false,
+		},
+		"backend rename": {
+			updateTypes: newBitmap(BackendRename),
+			expected:    false,
+		},
+		"invalid update": {
+			updateTypes: newBitmap(InvalidUpdate),
+			expected:    false,
+		},
+		"data plane IP change": {
+			updateTypes: newBitmap(InvalidVolumeAccessInfoChange),
+			expected:    false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, RequiresOrphanScan(test.updateTypes))
+		})
+	}
 }
