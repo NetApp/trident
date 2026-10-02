@@ -62,19 +62,6 @@ func (s *NVMeSubsystem) updatePaths(ctx context.Context) error {
 	return nil
 }
 
-// GetConnectionStatus checks if subsystem is connected to the k8s node.
-func (s *NVMeSubsystem) GetConnectionStatus() NVMeSubsystemConnectionStatus {
-	if len(s.Paths) == MaxSessionsPerSubsystem {
-		return NVMeSubsystemConnected
-	}
-
-	if len(s.Paths) > 0 {
-		return NVMeSubsystemPartiallyConnected
-	}
-
-	return NVMeSubsystemDisconnected
-}
-
 // IsNetworkPathPresent checks if there is a path present in the subsystem corresponding to the LIF.
 func (s *NVMeSubsystem) IsNetworkPathPresent(ip string) bool {
 	for _, path := range s.Paths {
@@ -86,8 +73,30 @@ func (s *NVMeSubsystem) IsNetworkPathPresent(ip string) bool {
 	return false
 }
 
+// MissingNetworkPaths returns the target IPs that have no corresponding path on this host.
+func (s *NVMeSubsystem) MissingNetworkPaths(targetIPs []string) []string {
+	var missing []string
+	for _, targetIP := range targetIPs {
+		if !s.IsNetworkPathPresent(targetIP) {
+			missing = append(missing, targetIP)
+		}
+	}
+	return missing
+}
+
+// AnyNetworkPathPresent reports whether at least one of the target IPs has a path on this host.
+func (s *NVMeSubsystem) AnyNetworkPathPresent(targetIPs []string) bool {
+	for _, targetIP := range targetIPs {
+		if s.IsNetworkPathPresent(targetIP) {
+			return true
+		}
+	}
+	return false
+}
+
 // Connect creates paths corresponding to all the targetIPs for the subsystem
-// and updates the in-memory subsystem path details.
+// and updates the in-memory subsystem path details. ONTAP NVMe subsystems expose at most two
+// data LIFs; the desired target IP list is authoritative when deciding which paths are needed.
 func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, connectOnly bool) error {
 	updatePaths := false
 	var connectErrors error
@@ -120,7 +129,7 @@ func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, con
 		return nil
 	}
 
-	if s.GetConnectionStatus() != NVMeSubsystemDisconnected {
+	if s.AnyNetworkPathPresent(nvmeTargetIps) {
 		// We can arrive in this case for the below use case -
 		// LIF1 is up and LIF2 is down. After creating first pod, we connect a path for subsystem using
 		// LIF1 successfully while for LIF2 it fails. So updatePaths will update the new path for the
@@ -138,27 +147,15 @@ func (s *NVMeSubsystem) Disconnect(ctx context.Context) error {
 	return s.DisconnectSubsystemFromHost(ctx)
 }
 
-// GetNamespaceCount returns the number of namespaces mapped to the subsystem.
-func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
-	credibility := false
+// hasLivePath reports whether at least one subsystem path is live, which is the precondition for
+// trusting host-side namespace enumeration.
+func (s *NVMeSubsystem) hasLivePath() bool {
 	for _, path := range s.Paths {
 		if path.State == "live" {
-			credibility = true
-			break
+			return true
 		}
 	}
-
-	if !credibility {
-		return 0, errors.New("nvme paths are down, couldn't get the number of namespaces")
-	}
-
-	count, err := s.GetNVMeDeviceCountAt(ctx, s.Name)
-	if err != nil {
-		Logc(ctx).Errorf("Failed to get namespace count: %v", err)
-		return 0, err
-	}
-
-	return count, nil
+	return false
 }
 
 func (s *NVMeSubsystem) GetNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
@@ -289,9 +286,11 @@ func (nh *NVMeHandler) AttachNVMeVolume(
 	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolume")
 	defer Logc(ctx).Debug("<<<< nvme.AttachNVMeVolume")
 	nvmeSubsys := nh.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
-	connectionStatus := nvmeSubsys.GetConnectionStatus()
 
-	if connectionStatus != NVMeSubsystemConnected {
+	if missingTargetIPs := nvmeSubsys.MissingNetworkPaths(publishInfo.NVMeTargetIPs); len(missingTargetIPs) > 0 {
+		Logc(ctx).WithField("missingTargetIPs", missingTargetIPs).Debug(
+			"NVMe subsystem is missing desired target paths; connecting.",
+		)
 		// connect to the subsystem from this host -> nvme connect call
 		if err := nvmeSubsys.Connect(ctx, publishInfo.NVMeTargetIPs, false); err != nil {
 			return err
@@ -435,7 +434,7 @@ func (nh *NVMeHandler) EnsureVolumeFormattedAndMounted(
 func NewNVMeSessionData(subsystem NVMeSubsystem, targetIPs []string) *NVMeSessionData {
 	return &NVMeSessionData{
 		Subsystem:      subsystem,
-		NVMeTargetIPs:  targetIPs,
+		NVMeTargetIPs:  append([]string(nil), targetIPs...),
 		LastAccessTime: time.Now(),
 		Remediation:    NoOp,
 	}
@@ -457,6 +456,63 @@ func (sd *NVMeSessionData) IsTargetIPPresent(ip string) bool {
 
 func (sd *NVMeSessionData) AddTargetIP(ip string) {
 	sd.NVMeTargetIPs = append(sd.NVMeTargetIPs, ip)
+}
+
+// RemoveTargetIP removes all occurrences of an NVMe target IP.
+func (sd *NVMeSessionData) RemoveTargetIP(ip string) {
+	targetIPs := make([]string, 0, len(sd.NVMeTargetIPs))
+	for _, existingIP := range sd.NVMeTargetIPs {
+		if existingIP != ip {
+			targetIPs = append(targetIPs, existingIP)
+		}
+	}
+	sd.NVMeTargetIPs = targetIPs
+}
+
+// claimTargetIPs records the target IPs a namespace was published with.
+func (sd *NVMeSessionData) claimTargetIPs(nsUUID string, targetIPs []string) {
+	if sd.namespaceTargetIPs == nil {
+		sd.namespaceTargetIPs = make(map[string][]string)
+	}
+	previousClaim := sd.namespaceTargetIPs[nsUUID]
+	sd.namespaceTargetIPs[nsUUID] = append([]string(nil), targetIPs...)
+
+	// Drop any previously claimed IP this namespace no longer declares and no other namespace needs.
+	for _, ip := range previousClaim {
+		if sd.isTargetIPClaimed(ip) {
+			continue
+		}
+		sd.RemoveTargetIP(ip)
+	}
+}
+
+// releaseTargetIPs drops a namespace's target IP claims and removes every released IP that no
+// remaining namespace still claims.
+func (sd *NVMeSessionData) releaseTargetIPs(nsUUID string) {
+	released, ok := sd.namespaceTargetIPs[nsUUID]
+	if !ok {
+		return
+	}
+	delete(sd.namespaceTargetIPs, nsUUID)
+
+	for _, ip := range released {
+		if sd.isTargetIPClaimed(ip) {
+			continue
+		}
+		sd.RemoveTargetIP(ip)
+	}
+}
+
+// isTargetIPClaimed reports whether any published namespace still needs the given target IP.
+func (sd *NVMeSessionData) isTargetIPClaimed(ip string) bool {
+	for _, claimedIPs := range sd.namespaceTargetIPs {
+		for _, claimedIP := range claimedIPs {
+			if claimedIP == ip {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // NewNVMeSessions initializes and returns empty NVMeSession object pointer.
@@ -486,8 +542,9 @@ func (s *NVMeSessions) AddNVMeSession(subsystem NVMeSubsystem, targetIPs []strin
 	}
 }
 
-// AddNamespaceToSession adds the Namespace UUID to the list of Namespaces for session.
-func (s *NVMeSessions) AddNamespaceToSession(subNQN, nsUUID string) bool {
+// AddNamespaceToSession adds the Namespace UUID to the list of Namespaces for session and records the target IPs it
+// was published with, so RemoveNamespaceFromSession can release them.
+func (s *NVMeSessions) AddNamespaceToSession(subNQN, nsUUID string, targetIPs []string) bool {
 	if s == nil || s.IsEmpty() {
 		return false
 	}
@@ -502,6 +559,7 @@ func (s *NVMeSessions) AddNamespaceToSession(subNQN, nsUUID string) bool {
 		session.Namespaces = make(map[string]bool)
 	}
 	session.Namespaces[nsUUID] = true
+	session.claimTargetIPs(nsUUID, targetIPs)
 	return true
 }
 
@@ -518,7 +576,7 @@ func (s *NVMeSessions) RemoveNamespaceFromSession(subNQN, nsUUID string) {
 	}
 	// Remove namespace from the list to the session
 	delete(session.Namespaces, nsUUID)
-	return
+	session.releaseTargetIPs(nsUUID)
 }
 
 // GetNamespaceCountForSession Gets the number of Namespaces associated with the given session.
@@ -579,7 +637,8 @@ func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publis
 
 	pubSessions.AddNVMeSession(*NewNVMeSubsystem(publishInfo.NVMeSubsystemNQN, nh.command, nh.osFs),
 		publishInfo.NVMeTargetIPs)
-	pubSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID)
+	pubSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
+		publishInfo.NVMeTargetIPs)
 }
 
 // RemovePublishedNVMeSession deletes the namespace from the published NVMeSession. If the number of namespaces
@@ -667,22 +726,25 @@ func (nh *NVMeHandler) InspectNVMeSessions(
 			continue
 		}
 
-		switch currSessionData.Subsystem.GetConnectionStatus() {
-		case NVMeSubsystemDisconnected:
+		missingTargetIPs := currSessionData.Subsystem.MissingNetworkPaths(pubSessionData.NVMeTargetIPs)
+		if len(missingTargetIPs) == 0 {
+			// All desired paths are present for the subsystem.
+			pubSessionData.LastAccessTime = time.Now()
+			continue
+		}
+
+		if len(currSessionData.Subsystem.Paths) == 0 {
 			// We can reconnect with all the subsystem paths in this case, but that leads to change in the NVMe device
 			// names which are already mounted. So, we don't do self-healing in this case. It is better that the Admin
 			// takes care of this issue and then restart the node.
 			Logc(ctx).Warnf("All the paths to %s subsystem are down. Please check the network connectivity to"+
 				" these IPs %v.", pubNQN, pubSessionData.NVMeTargetIPs)
-		case NVMeSubsystemPartiallyConnected:
-			// At least one path of the subsystem is connected. We should try to connect with other remaining paths.
-			pubSessionData.SetRemediation(ConnectOp)
-			subsToFix = append(subsToFix, currSessionData.Subsystem)
 			continue
 		}
 
-		// All/None of the paths are present for the subsystem
-		pubSessionData.LastAccessTime = time.Now()
+		// At least one path of the subsystem is connected. We should try to connect with other remaining paths.
+		pubSessionData.SetRemediation(ConnectOp)
+		subsToFix = append(subsToFix, currSessionData.Subsystem)
 	}
 
 	SortSubsystemsUsingSessions(subsToFix, pubSessions)

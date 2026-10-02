@@ -22,9 +22,7 @@ const (
 	tridentDeviceInfoPath = "/var/lib/trident/tracking"
 	volumeLockTimeout     = 60 * time.Second
 
-	// nvmeSubsystemDisconnectLock is the LockID for the self-healing global lock serializing
-	// GetNamespaceCount() and Disconnect() in disconnectNVMeSubsystemIfNeeded below.
-	nvmeSubsystemDisconnectLock = "nvmeSubsystemDisconnectLock"
+	nvmeSubsystemOperationLockPrefix = "nvmeSubsystemOperation:"
 )
 
 // acquireVolumeLock serializes per-volume node operations. It mirrors the legacy CSI frontend
@@ -50,6 +48,10 @@ func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout ti
 		return false
 	}
 	return true
+}
+
+func nvmeSubsystemOperationLockID(subsystemNQN string) string {
+	return nvmeSubsystemOperationLockPrefix + subsystemNQN
 }
 
 func ensureLUKSVolumePassphrase(
@@ -181,26 +183,53 @@ func (c *Core) readAllTrackingFiles(ctx context.Context) []models.VolumePublishI
 	return publishInfos
 }
 
-// disconnectNVMeSubsystemIfNeeded checks if the subsystem should be disconnected and performs the disconnect
-// operation under lock to prevent race conditions with concurrent unstage operations.
-// This lock serializes GetNamespaceCount() and Disconnect() operations to ensure accurate namespace counting
-// and prevent race conditions where multiple threads might see the same count simultaneously.
+// disconnectNVMeSubsystemIfNeeded checks if the subsystem should be disconnected and performs the disconnect.
+// The per-subsystem lock orders disconnect against attach and session registration for the same NQN.
 func (c *Core) disconnectNVMeSubsystemIfNeeded(
 	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo,
 ) error {
-	lockContext := "disconnectNVMeSubsystemIfNeeded"
-	if !attemptLock(ctx, lockContext, nvmeSubsystemDisconnectLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
-		return errors.MaxWaitExceededError("request waited too long for the lock")
+	return c.disconnectNVMeSubsystem(ctx, nvmeSubsys, publishInfo, nvmeDisconnectUnstage)
+}
+
+// disconnectNVMeSubsystemForAttachCleanup disconnects a subsystem after failed attach work has
+// released its in-memory owner.
+func (c *Core) disconnectNVMeSubsystemForAttachCleanup(
+	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo,
+) error {
+	return c.disconnectNVMeSubsystem(ctx, nvmeSubsys, publishInfo, nvmeDisconnectAttachCleanup)
+}
+
+type nvmeDisconnectMode int
+
+const (
+	nvmeDisconnectUnstage nvmeDisconnectMode = iota
+	nvmeDisconnectAttachCleanup
+)
+
+func (c *Core) disconnectNVMeSubsystem(
+	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo,
+	mode nvmeDisconnectMode,
+) error {
+	lockContext := "disconnectNVMeSubsystem"
+	subsystemLockID := nvmeSubsystemOperationLockID(publishInfo.NVMeSubsystemNQN)
+	if !attemptLock(ctx, lockContext, subsystemLockID, sharedLocksNodeLockTimeout) {
+		Logc(ctx).Warn("NVMe disconnect check waited longer than expected for the subsystem lock.")
+		if mode == nvmeDisconnectUnstage {
+			locks.Unlock(ctx, lockContext, subsystemLockID)
+			return errors.MaxWaitExceededError("request waited too long for the lock")
+		}
 	}
-	defer locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
+	defer locks.Unlock(ctx, lockContext, subsystemLockID)
 
 	// publishedNVMeSessions is mutated (Add/Remove) under nvmeSelfHealingSessionLock so this read must
 	// take that same lock to avoid a concurrent map read/write with NodeStage, NodeUnstage, or self-healing.
-	sessionLockContext := "disconnectNVMeSubsystemIfNeeded.SessionRead"
+	sessionLockContext := "disconnectNVMeSubsystem.SessionRead"
 	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
-		return errors.MaxWaitExceededError("request waited too long for the lock")
+		Logc(ctx).Warn("NVMe disconnect check waited longer than expected for the session lock.")
+		if mode == nvmeDisconnectUnstage {
+			locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
+			return errors.MaxWaitExceededError("request waited too long for the lock")
+		}
 	}
 	numNs := publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN)
 	locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
@@ -214,17 +243,14 @@ func (c *Core) disconnectNVMeSubsystemIfNeeded(
 		return nil
 	}
 
-	// In-memory sessions show none left, but a concurrent NodeStage may have already attached a namespace
-	// for a new pod without recording its session yet (recorded only after format/mount). Checking the
-	// host's ground-truth namespace count; if it's >1, another namespace is active, we don't disconnect.
-	if hostNsCount, err := nvmeSubsys.GetNamespaceCount(ctx); err != nil {
+	// In-memory state shows no active work, so confirm the host has no namespace for this subsystem
+	// besides the one being released before tearing the whole subsystem down.
+	if otherNamespaces, err := nvmeSubsys.HasNamespacesOtherThan(ctx, publishInfo.NVMeNamespaceUUID); err != nil {
 		Logc(ctx).WithField("subsystem", publishInfo.NVMeSubsystemNQN).WithError(err).Debug(
-			"Could not determine host namespace count; proceeding with disconnect based on published sessions.")
-	} else if hostNsCount > 1 {
-		Logc(ctx).WithFields(LogFields{
-			"subsystem":      publishInfo.NVMeSubsystemNQN,
-			"hostNamespaces": hostNsCount,
-		}).Info("Subsystem still has namespace devices attached on host; skipping disconnect.")
+			"Could not determine host namespaces; proceeding with disconnect based on published sessions.")
+	} else if otherNamespaces {
+		Logc(ctx).WithField("subsystem", publishInfo.NVMeSubsystemNQN).Info(
+			"Subsystem still has other namespace devices attached on host; skipping disconnect.")
 		return nil
 	}
 

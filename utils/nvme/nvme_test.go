@@ -46,6 +46,41 @@ func TestNVMeSessions_AddNVMeSession(t *testing.T) {
 	assert.True(t, sd.IsTargetIPPresent("2.2.2.2"), "Target IP not found.")
 }
 
+func TestNVMeSessionData_RemoveTargetIP(t *testing.T) {
+	sessionData := &NVMeSessionData{NVMeTargetIPs: []string{"1.1.1.1", "2.2.2.2", "1.1.1.1"}}
+
+	sessionData.RemoveTargetIP("1.1.1.1")
+
+	assert.Equal(t, []string{"2.2.2.2"}, sessionData.NVMeTargetIPs)
+}
+
+// RemoveTargetIP must build a new slice rather than compact in place, because any other holder of
+// the session's target IP slice would otherwise observe shifted entries.
+func TestNVMeSessionData_RemoveTargetIPLeavesExistingReferenceIntact(t *testing.T) {
+	sessionData := NewNVMeSessionData(testSubsystem1, []string{"1.1.1.1", "2.2.2.2"})
+	existingReference := sessionData.NVMeTargetIPs
+
+	sessionData.RemoveTargetIP("1.1.1.1")
+
+	assert.Equal(t, []string{"2.2.2.2"}, sessionData.NVMeTargetIPs)
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, existingReference,
+		"compacting in place corrupted a pre-existing reference to the target IP slice")
+}
+
+// NewNVMeSessionData must copy the caller's slice. Retaining it lets a later AddTargetIP append
+// into the caller's spare capacity and overwrite memory the caller still owns.
+func TestNVMeSessionData_NewNVMeSessionDataCopiesTargetIPs(t *testing.T) {
+	callerIPs := make([]string, 1, 4)
+	callerIPs[0] = "1.1.1.1"
+
+	sessionData := NewNVMeSessionData(testSubsystem1, callerIPs)
+	sessionData.AddTargetIP("2.2.2.2")
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, sessionData.NVMeTargetIPs)
+	assert.Equal(t, "", callerIPs[:cap(callerIPs)][1],
+		"AddTargetIP wrote into the caller's spare capacity, so the constructor retained its slice")
+}
+
 func TestNVMeSessions_RemoveNVMeSession(t *testing.T) {
 	ns := NVMeSessions{}
 	assert.False(t, ns.CheckNVMeSessionExists(testSubsystem1.NQN), "NVMe session found.")
@@ -112,7 +147,7 @@ func TestNVMeHandler_AddPublishedNVMeSession(t *testing.T) {
 func TestNVMeSessions_AddNamespaceToSession(t *testing.T) {
 	var pubSessions *NVMeSessions
 	// Uninitialized published session case.
-	pubSessions.AddNamespaceToSession("testNQN", "testUUID")
+	pubSessions.AddNamespaceToSession("testNQN", "testUUID", nil)
 	c := pubSessions.GetNamespaceCountForSession("testNQN")
 	assert.Equal(t, c, 0, "unexpected namespaces surfaced")
 
@@ -125,12 +160,12 @@ func TestNVMeSessions_AddNamespaceToSession(t *testing.T) {
 		LastAccessTime: time.Time{},
 		Remediation:    0,
 	}
-	pubSessions.AddNamespaceToSession("testNQN-nonexistent", "testUUID")
+	pubSessions.AddNamespaceToSession("testNQN-nonexistent", "testUUID", nil)
 	c = pubSessions.GetNamespaceCountForSession("testNQN-nonexistent")
 	assert.Zero(t, c, "expected no namespaces.")
 
 	// add namespace case
-	pubSessions.AddNamespaceToSession("testNQN", "testUUID")
+	pubSessions.AddNamespaceToSession("testNQN", "testUUID", nil)
 	c = pubSessions.GetNamespaceCountForSession("testNQN")
 	assert.Equal(t, c, 1, "expected only one namespace")
 }
@@ -167,6 +202,170 @@ func TestNVMeHandler_RemovePublishedNVMeSession(t *testing.T) {
 
 	assert.False(t, pubSessions.CheckNVMeSessionExists(testSubsystem1.NQN), "NVMe session not deleted.")
 	assert.True(t, disconnect, "Disconnect subsystem.")
+}
+
+// A published namespace's target IPs must outlive another namespace's removal, since
+// NVMeTargetIPs is a subsystem-wide set that several namespaces can claim independently.
+func TestNVMeHandler_RemovePublishedNVMeSession_TargetIPOwnership(t *testing.T) {
+	tests := map[string]struct {
+		remainingTargetIPs []string
+		expectedTargetIPs  []string
+		expectDisconnect   bool
+	}{
+		"target IP claimed by a remaining namespace is kept": {
+			remainingTargetIPs: []string{"1.1.1.1", "2.2.2.2"},
+			expectedTargetIPs:  []string{"1.1.1.1", "2.2.2.2"},
+		},
+		"target IP claimed only by the departing namespace is dropped": {
+			remainingTargetIPs: []string{"1.1.1.1"},
+			expectedTargetIPs:  []string{"1.1.1.1"},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			nh := NewNVMeHandler()
+			pubSessions := NewNVMeSessions()
+
+			remaining := &models.VolumePublishInfo{}
+			remaining.NVMeSubsystemNQN = testSubsystem1.NQN
+			remaining.NVMeNamespaceUUID = "remaining-namespace"
+			remaining.NVMeTargetIPs = params.remainingTargetIPs
+			nh.AddPublishedNVMeSession(pubSessions, remaining)
+
+			departing := &models.VolumePublishInfo{}
+			departing.NVMeSubsystemNQN = testSubsystem1.NQN
+			departing.NVMeNamespaceUUID = "departing-namespace"
+			departing.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
+			nh.AddPublishedNVMeSession(pubSessions, departing)
+
+			disconnect := nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, departing.NVMeNamespaceUUID)
+
+			assert.False(t, disconnect, "A remaining namespace must prevent disconnect.")
+			assert.Equal(t, params.expectedTargetIPs, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
+		})
+	}
+}
+
+// Removing the last namespace drops the whole session, target IP claims included.
+func TestNVMeHandler_RemovePublishedNVMeSession_LastNamespaceRemovesSession(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+
+	volPubInfo := &models.VolumePublishInfo{}
+	volPubInfo.NVMeSubsystemNQN = testSubsystem1.NQN
+	volPubInfo.NVMeNamespaceUUID = "only-namespace"
+	volPubInfo.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
+	nh.AddPublishedNVMeSession(pubSessions, volPubInfo)
+
+	disconnect := nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, volPubInfo.NVMeNamespaceUUID)
+
+	assert.True(t, disconnect, "Removing the last namespace must signal disconnect.")
+	assert.False(t, pubSessions.CheckNVMeSessionExists(testSubsystem1.NQN))
+}
+
+func TestNVMeSessionData_RemoveTargetIPDoesNotMutateCallerSlice(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+	targetIPs := []string{"1.1.1.1", "2.2.2.2"}
+
+	departing := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NVMeAccessInfo: models.NVMeAccessInfo{
+				NVMeSubsystemNQN:  testSubsystem1.NQN,
+				NVMeNamespaceUUID: "departing-namespace",
+				NVMeTargetIPs:     targetIPs,
+			},
+		},
+	}
+	remaining := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NVMeAccessInfo: models.NVMeAccessInfo{
+				NVMeSubsystemNQN:  testSubsystem1.NQN,
+				NVMeNamespaceUUID: "remaining-namespace",
+				NVMeTargetIPs:     []string{"2.2.2.2"},
+			},
+		},
+	}
+	nh.AddPublishedNVMeSession(pubSessions, departing)
+	nh.AddPublishedNVMeSession(pubSessions, remaining)
+
+	nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, departing.NVMeNamespaceUUID)
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, targetIPs)
+	assert.Equal(t, []string{"2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
+}
+
+func TestNVMeHandler_AddPublishedNVMeSession_ShrinkingClaimDropsUnusedTargetIP(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+	publishInfo := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NVMeAccessInfo: models.NVMeAccessInfo{
+				NVMeSubsystemNQN:  testSubsystem1.NQN,
+				NVMeNamespaceUUID: "namespace",
+				NVMeTargetIPs:     []string{"1.1.1.1", "2.2.2.2"},
+			},
+		},
+	}
+	nh.AddPublishedNVMeSession(pubSessions, publishInfo)
+
+	publishInfo.NVMeTargetIPs = []string{"1.1.1.1"}
+	nh.AddPublishedNVMeSession(pubSessions, publishInfo)
+
+	assert.Equal(t, []string{"1.1.1.1"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
+}
+
+func TestNVMeHandler_AddPublishedNVMeSession_ShrinkingClaimKeepsSharedTargetIP(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+	first := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NVMeAccessInfo: models.NVMeAccessInfo{
+				NVMeSubsystemNQN:  testSubsystem1.NQN,
+				NVMeNamespaceUUID: "first-namespace",
+				NVMeTargetIPs:     []string{"1.1.1.1", "2.2.2.2"},
+			},
+		},
+	}
+	second := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NVMeAccessInfo: models.NVMeAccessInfo{
+				NVMeSubsystemNQN:  testSubsystem1.NQN,
+				NVMeNamespaceUUID: "second-namespace",
+				NVMeTargetIPs:     []string{"1.1.1.1", "2.2.2.2"},
+			},
+		},
+	}
+	nh.AddPublishedNVMeSession(pubSessions, first)
+	nh.AddPublishedNVMeSession(pubSessions, second)
+
+	first.NVMeTargetIPs = []string{"1.1.1.1"}
+	nh.AddPublishedNVMeSession(pubSessions, first)
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
+}
+
+// A re-published namespace replaces its own claim, so a target IP it no longer declares is
+// dropped once no other namespace claims it.
+func TestNVMeHandler_AddPublishedNVMeSession_ReplacesNamespaceTargetIPClaim(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+
+	volPubInfo := &models.VolumePublishInfo{}
+	volPubInfo.NVMeSubsystemNQN = testSubsystem1.NQN
+	volPubInfo.NVMeNamespaceUUID = "namespace"
+	volPubInfo.NVMeTargetIPs = []string{"1.1.1.1"}
+	nh.AddPublishedNVMeSession(pubSessions, volPubInfo)
+
+	volPubInfo.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
+	nh.AddPublishedNVMeSession(pubSessions, volPubInfo)
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
+
+	pubSessions.RemoveNamespaceFromSession(testSubsystem1.NQN, volPubInfo.NVMeNamespaceUUID)
+
+	assert.Empty(t, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs)
 }
 
 func TestNVMeHandler_InspectNVMeSessions_EmptyPublishedSessions(t *testing.T) {
@@ -215,7 +414,7 @@ func TestNVMeHandler_InspectNVMeSessions_DisconnectedSubsystem(t *testing.T) {
 	nh := NewNVMeHandler()
 	pubSessions := NewNVMeSessions()
 	currSessions := NewNVMeSessions()
-	pubSessions.AddNVMeSession(testSubsystem1, []string{})
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"1.1.1.1"})
 	currSessions.AddNVMeSession(NVMeSubsystem{NQN: testSubsystem1.NQN}, []string{})
 
 	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
@@ -227,7 +426,7 @@ func TestNVMeHandler_InspectNVMeSessions_PartiallyConnectedSubsystem(t *testing.
 	nh := NewNVMeHandler()
 	pubSessions := NewNVMeSessions()
 	currSessions := NewNVMeSessions()
-	pubSessions.AddNVMeSession(testSubsystem1, []string{})
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"1.1.1.1", "2.2.2.2"})
 	currSessions.AddNVMeSession(testSubsystem1, []string{})
 
 	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
@@ -235,6 +434,38 @@ func TestNVMeHandler_InspectNVMeSessions_PartiallyConnectedSubsystem(t *testing.
 	assert.Equal(t, 1, len(subs), "No subsystems found.")
 	assert.Equal(t, testSubsystem1, subs[0], "No subsystems found which needs remediation.")
 	assert.Equal(t, ConnectOp, pubSessions.Info[testSubsystem1.NQN].Remediation, "Remediation not set.")
+}
+
+func TestNVMeHandler_InspectNVMeSessions_AllDesiredPathsPresent(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+	currSessions := NewNVMeSessions()
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"1.1.1.1"})
+	currSessions.AddNVMeSession(testSubsystem1, []string{})
+
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
+
+	assert.Empty(t, subs, "A subsystem with all desired paths should not need remediation.")
+}
+
+func TestNVMeHandler_InspectNVMeSessions_UnrelatedPathPresent(t *testing.T) {
+	nh := NewNVMeHandler()
+	pubSessions := NewNVMeSessions()
+	currSessions := NewNVMeSessions()
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"2.2.2.2"})
+	currSessions.AddNVMeSession(
+		NVMeSubsystem{
+			NQN:   testSubsystem1.NQN,
+			Paths: []Path{{Address: "traddr=3.3.3.3,trsvcid=4420"}},
+		},
+		[]string{},
+	)
+
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
+
+	assert.Len(t, subs, 1, "An established subsystem should heal missing desired paths.")
+	assert.Equal(t, currSessions.Info[testSubsystem1.NQN].Subsystem, subs[0])
+	assert.Equal(t, ConnectOp, pubSessions.Info[testSubsystem1.NQN].Remediation)
 }
 
 func TestNVMeHandler_RectifyNVMeSession(t *testing.T) {
@@ -269,31 +500,47 @@ func TestNVMeHandler_PopulateCurrentNVMeSessions_NilCurrentSessions(t *testing.T
 		"Populated current sessions successfully.")
 }
 
-func TestGetConnectionStatus(t *testing.T) {
+func TestNVMeSubsystem_NetworkPathComparisons(t *testing.T) {
 	tests := map[string]struct {
-		subsystem NVMeSubsystem
-		expect    NVMeSubsystemConnectionStatus
+		paths           []Path
+		targetIPs       []string
+		expectedMissing []string
+		expectedAny     bool
 	}{
-		"Partially connected subsystem": {
-			subsystem: NVMeSubsystem{NQN: "mock-nqn", Paths: []Path{{Address: "mock-address"}}},
-			expect:    NVMeSubsystemPartiallyConnected,
-		},
-		"Connected subsystem": {
-			subsystem: NVMeSubsystem{
-				NQN:   "mock-nqn",
-				Paths: []Path{{Address: "mock-address"}, {Address: "mock-address2"}},
+		"all desired paths present": {
+			paths: []Path{
+				{Address: "traddr=10.193.108.74,trsvcid=4420"},
+				{Address: "traddr=10.193.108.75,trsvcid=4420"},
 			},
-			expect: NVMeSubsystemConnected,
+			targetIPs:   []string{"10.193.108.74", "10.193.108.75"},
+			expectedAny: true,
 		},
-		"Disconnected subsystem": {
-			subsystem: NVMeSubsystem{NQN: "mock-nqn", Paths: nil},
-			expect:    NVMeSubsystemDisconnected,
+		"stale extra path and missing desired path": {
+			paths: []Path{
+				{Address: "traddr=10.193.108.74,trsvcid=4420"},
+				{Address: "traddr=10.193.108.76,trsvcid=4420"},
+			},
+			targetIPs:       []string{"10.193.108.74", "10.193.108.75"},
+			expectedMissing: []string{"10.193.108.75"},
+			expectedAny:     true,
+		},
+		"no desired path present": {
+			paths:           []Path{{Address: "traddr=10.193.108.76,trsvcid=4420"}},
+			targetIPs:       []string{"10.193.108.74", "10.193.108.75"},
+			expectedMissing: []string{"10.193.108.74", "10.193.108.75"},
+		},
+		"no desired paths": {
+			paths:     []Path{{Address: "traddr=10.193.108.74,trsvcid=4420"}},
+			targetIPs: nil,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, params.expect, params.subsystem.GetConnectionStatus(), "Unexpected connection status found.")
+			subsystem := NVMeSubsystem{Paths: params.paths}
+
+			assert.Equal(t, params.expectedMissing, subsystem.MissingNetworkPaths(params.targetIPs))
+			assert.Equal(t, params.expectedAny, subsystem.AnyNetworkPathPresent(params.targetIPs))
 		})
 	}
 }

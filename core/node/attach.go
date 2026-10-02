@@ -379,7 +379,7 @@ func (c *Core) ensureAttachFCPVolume(
 
 func (c *Core) attachNVMeVolume(
 	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-) error {
+) (err error) {
 	Logc(ctx).Debug(">>>> attachNVMeVolume")
 	defer Logc(ctx).Debug("<<<< attachNVMeVolume")
 
@@ -395,8 +395,22 @@ func (c *Core) attachNVMeVolume(
 	defer nvmeSelfHealingLock.RUnlock()
 	nvmeNodeOperationWaitingCount.Add(-1)
 
-	err = c.nvme.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
+	addedNamespace, err := c.registerNVMeSessionForAttach(ctx, publishInfo)
 	if err != nil {
+		return err
+	}
+	// Once the volume is formatted and mounted, the namespace is in use on this node. A later failure
+	// leaves it published, so self-healing keeps its paths up and NodeUnstageVolume (which reads the
+	// tracking info Attach always writes) tears it down. Disconnecting the subsystem here would pull the
+	// device out from under the mount.
+	mounted := false
+	defer func() {
+		if addedNamespace && err != nil && !mounted {
+			c.removePublishedNVMeSessionAfterAttachError(ctx, publishInfo)
+		}
+	}()
+
+	if err = c.nvme.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout); err != nil {
 		return err
 	}
 
@@ -414,6 +428,7 @@ func (c *Core) attachNVMeVolume(
 	); err != nil {
 		return err
 	}
+	mounted = true
 
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
@@ -428,12 +443,60 @@ func (c *Core) attachNVMeVolume(
 		}
 	}
 
-	lockContext := "nodeStageNVMeVolume.AddSession"
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-		return errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
-	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
 	return nil
+}
+
+// registerNVMeSessionForAttach makes attach ownership visible before connect work begins. It
+// reports whether this call published the namespace, so a failed attach removes only what it
+// added; the published session tracks which target IPs that namespace claimed.
+func (c *Core) registerNVMeSessionForAttach(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+) (bool, error) {
+	lockContext := "registerNVMeSessionForAttach"
+	subsystemLockID := nvmeSubsystemOperationLockID(publishInfo.NVMeSubsystemNQN)
+	if !attemptLock(ctx, lockContext, subsystemLockID, sharedLocksNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, subsystemLockID)
+		return false, errors.MaxWaitExceededError("request waited too long for the lock")
+	}
+	defer locks.Unlock(ctx, lockContext, subsystemLockID)
+
+	sessionLockContext := "registerNVMeSessionForAttach.AddSession"
+	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
+		locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
+		return false, errors.MaxWaitExceededError("request waited too long for the lock")
+	}
+	defer locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
+
+	sessionData := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]
+	addedNamespace := sessionData == nil || !sessionData.Namespaces[publishInfo.NVMeNamespaceUUID]
+	c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
+	return addedNamespace, nil
+}
+
+func (c *Core) removePublishedNVMeSessionAfterAttachError(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+) {
+	subsystemLockContext := "removePublishedNVMeSessionAfterAttachError"
+	subsystemLockID := nvmeSubsystemOperationLockID(publishInfo.NVMeSubsystemNQN)
+	if !attemptLock(ctx, subsystemLockContext, subsystemLockID, sharedLocksNodeLockTimeout) {
+		Logc(ctx).Warn("NVMe session cleanup waited longer than expected for the subsystem lock.")
+	}
+
+	sessionLockContext := "removePublishedNVMeSessionAfterAttachError.RemoveSession"
+	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
+		Logc(ctx).Warn("NVMe session cleanup waited longer than expected for the session lock.")
+	}
+
+	requiresDisconnectCheck := c.nvme.RemovePublishedNVMeSession(
+		&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
+	)
+	locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
+	locks.Unlock(ctx, subsystemLockContext, subsystemLockID)
+
+	if requiresDisconnectCheck {
+		nvmeSubsys := c.nvme.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
+		if err := c.disconnectNVMeSubsystemForAttachCleanup(ctx, nvmeSubsys, publishInfo); err != nil {
+			Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check after attach cleanup.")
+		}
+	}
 }

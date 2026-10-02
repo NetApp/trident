@@ -17,25 +17,11 @@ import (
 
 //go:generate mockgen -destination=../../mocks/mock_utils/nvme/mock_nvme_utils.go github.com/netapp/trident/utils/nvme NVMeInterface
 
-// MaxSessionsPerSubsystem represents the total number of paths from host to ONTAP subsystem.
-// NVMe subsystem can have maximum 2 dataLIFs, so it is capped to 2.
-const MaxSessionsPerSubsystem = 2
-
 // TransportAddressEqualTo is a part of Path.Address string. It is used to extract IP address.
 const TransportAddressEqualTo = "traddr="
 
 // NVMeListCmdTimeoutInSeconds is the default timeout supplied to NVMe cli command.
 const NVMeListCmdTimeoutInSeconds = 10
-
-// NVMeSubsystemConnectionStatus is a data structure which reflects NVMe subsystem connection status.
-type NVMeSubsystemConnectionStatus int8
-
-// NVMe subsystem connection states
-const (
-	NVMeSubsystemConnected NVMeSubsystemConnectionStatus = iota
-	NVMeSubsystemDisconnected
-	NVMeSubsystemPartiallyConnected
-)
 
 type NVMeDevices struct {
 	Devices []NVMeDevice `json:"ONTAPdevices"`
@@ -121,11 +107,15 @@ const (
 // In the future, we can add DH-HMAC-CHAP to this structure once we start supporting CHAP for NVMe. Also, if we realise
 // at any point that we have a namespace missing use case to handle, we need to store that too in this structure.
 type NVMeSessionData struct {
-	Subsystem      NVMeSubsystem
-	Namespaces     map[string]bool
-	NVMeTargetIPs  []string
-	LastAccessTime time.Time
-	Remediation    NVMeOperation
+	Subsystem  NVMeSubsystem
+	Namespaces map[string]bool
+	// namespaceTargetIPs records the target IPs each published namespace was published with.
+	// NVMeTargetIPs is a subsystem-wide set, so removing a namespace may only drop the IPs that
+	// no remaining namespace still claims.
+	namespaceTargetIPs map[string][]string
+	NVMeTargetIPs      []string
+	LastAccessTime     time.Time
+	Remediation        NVMeOperation
 }
 
 // NVMeSessions is a map of subsystem NQN and NVMeSessionData used for tracking self-healing information.
@@ -134,17 +124,16 @@ type NVMeSessions struct {
 }
 
 type NVMeSubsystemInterface interface {
-	GetConnectionStatus() NVMeSubsystemConnectionStatus
+	MissingNetworkPaths(targetIPs []string) []string
 	Connect(ctx context.Context, nvmeTargetIps []string, connectOnly bool) error
 	Disconnect(ctx context.Context) error
-	GetNamespaceCount(ctx context.Context) (int, error)
+	HasNamespacesOtherThan(ctx context.Context, nsUUID string) (bool, error)
 	IsNetworkPathPresent(ip string) bool
 	ConnectSubsystemToHost(ctx context.Context, IP string) error
 	DisconnectSubsystemFromHost(ctx context.Context) error
 	GetNamespaceCountForSubsDevice(ctx context.Context) (int, error)
 	GetNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error)
 	GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error)
-	GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error)
 }
 
 type NVMeDeviceInterface interface {

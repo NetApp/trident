@@ -786,8 +786,15 @@ func (c *Core) detachNVMeVolume(
 
 	// Disconnect the subsystem if needed (handled under lock to prevent race conditions).
 	if err = c.disconnectNVMeSubsystemIfNeeded(ctx, nvmeSubsys, publishInfo); err != nil {
+		if errors.IsMaxWaitExceededError(err) {
+			// Disconnect safety could not be checked in time. Return without disconnecting rather than risk
+			// tearing down a subsystem a concurrent attach is using. The published-session state is already
+			// released above; the temporary-mount unmount, LUKS close and tracking-info deletion are skipped
+			// and run when kubelet retries NodeUnstageVolume.
+			return err
+		}
 		Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check.")
-		// Continue with cleanup even if disconnect fails.
+		// Any other disconnect failure is logged and cleanup continues.
 	}
 
 	if err = afterNvmeDisconnect.Inject(); err != nil {

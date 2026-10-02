@@ -351,15 +351,18 @@ func TestReadAllTrackingFiles_NoTrackingDirReturnsEmpty(t *testing.T) {
 
 // fakeNVMeSubsystem is a minimal hand-rolled fake for nvme.NVMeSubsystemInterface: no gomock
 // mock exists for this interface under mocks/mock_utils/nvme, only for NVMeInterface. Any method
-// besides Disconnect and GetNamespaceCount is intentionally left unimplemented (nil-embedded) since
-// disconnectNVMeSubsystemIfNeeded never calls them; using any of them would panic, which is the
-// desired failure mode if the code under test changes to call something unexpected.
+// besides Disconnect and HasNamespacesOtherThan is intentionally left unimplemented (nil-embedded)
+// since disconnectNVMeSubsystemIfNeeded never calls them; using any of them would panic, which is
+// the desired failure mode if the code under test changes to call something unexpected.
 type fakeNVMeSubsystem struct {
 	nvme.NVMeSubsystemInterface
-	disconnectErr   error
-	disconnectCalls int
-	hostNsCount     int
-	hostNsCountErr  error
+	disconnectErr      error
+	disconnectCalls    int
+	otherNamespaces    bool
+	otherNamespacesErr error
+	// queriedNsUUID records the namespace identity the code under test excluded from the host
+	// enumeration, so tests can pin that the namespace being released is the one exempted.
+	queriedNsUUID string
 }
 
 func (f *fakeNVMeSubsystem) Disconnect(_ context.Context) error {
@@ -367,8 +370,9 @@ func (f *fakeNVMeSubsystem) Disconnect(_ context.Context) error {
 	return f.disconnectErr
 }
 
-func (f *fakeNVMeSubsystem) GetNamespaceCount(_ context.Context) (int, error) {
-	return f.hostNsCount, f.hostNsCountErr
+func (f *fakeNVMeSubsystem) HasNamespacesOtherThan(_ context.Context, nsUUID string) (bool, error) {
+	f.queriedNsUUID = nsUUID
+	return f.otherNamespaces, f.otherNamespacesErr
 }
 
 // withCleanPublishedNVMeSessions snapshots and restores the package-level publishedNVMeSessions
@@ -384,8 +388,8 @@ func TestDisconnectNVMeSubsystemIfNeeded_PublishedNamespacePresent_NoDisconnect(
 	core, _ := newTestCore(t, WithNVMeSelfHealingInterval(5*time.Second))
 	pi := samplePublishInfo(NVMe)
 	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: pi.NVMeSubsystemNQN}, nil)
-	publishedNVMeSessions.AddNamespaceToSession(pi.NVMeSubsystemNQN, "ns-1")
-	fakeSubsys := &fakeNVMeSubsystem{hostNsCount: 1}
+	publishedNVMeSessions.AddNamespaceToSession(pi.NVMeSubsystemNQN, "ns-1", nil)
+	fakeSubsys := &fakeNVMeSubsystem{}
 
 	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
 
@@ -393,22 +397,18 @@ func TestDisconnectNVMeSubsystemIfNeeded_PublishedNamespacePresent_NoDisconnect(
 	assert.Equal(t, 0, fakeSubsys.disconnectCalls)
 }
 
-// Once no published sessions remain, the host namespace count is the tie-breaker: a count above one
-// means a concurrent NodeStage already attached a namespace it hasn't recorded a session for yet, so
-// disconnecting would pull that device out from under the new pod. Any other outcome, including an
-// unreadable count, falls through to the disconnect.
-func TestDisconnectNVMeSubsystemIfNeeded_NoPublishedNamespaces_HostCountDecides(t *testing.T) {
+// Once no published sessions remain, host namespace identity is the tie-breaker: another namespace
+// means a concurrent NodeStage still owns the subsystem, while no other namespace permits disconnect.
+func TestDisconnectNVMeSubsystemIfNeeded_NoPublishedNamespaces_HostNamespacesDecide(t *testing.T) {
 	tests := map[string]struct {
-		hostNsCount         int
-		hostNsCountErr      error
+		otherNamespaces     bool
+		otherNamespacesErr  error
 		wantDisconnectCalls int
 	}{
-		"another namespace still attached on host": {hostNsCount: 2, wantDisconnectCalls: 0},
-		"several namespaces still attached":        {hostNsCount: 5, wantDisconnectCalls: 0},
-		"only our own namespace attached":          {hostNsCount: 1, wantDisconnectCalls: 1},
-		"no namespaces attached":                   {hostNsCount: 0, wantDisconnectCalls: 1},
-		"host count unreadable": {
-			hostNsCountErr:      errors.New("failed to read namespace count"),
+		"another namespace still attached on host": {otherNamespaces: true, wantDisconnectCalls: 0},
+		"only our own namespace attached":          {wantDisconnectCalls: 1},
+		"host namespaces unreadable": {
+			otherNamespacesErr:  errors.New("failed to enumerate namespaces"),
 			wantDisconnectCalls: 1,
 		},
 	}
@@ -419,16 +419,30 @@ func TestDisconnectNVMeSubsystemIfNeeded_NoPublishedNamespaces_HostCountDecides(
 			core, _ := newTestCore(t)
 			pi := samplePublishInfo(NVMe)
 			fakeSubsys := &fakeNVMeSubsystem{
-				hostNsCount:    test.hostNsCount,
-				hostNsCountErr: test.hostNsCountErr,
+				otherNamespaces:    test.otherNamespaces,
+				otherNamespacesErr: test.otherNamespacesErr,
 			}
 
 			err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
 
 			require.NoError(t, err)
 			assert.Equal(t, test.wantDisconnectCalls, fakeSubsys.disconnectCalls)
+			assert.Equal(t, pi.NVMeNamespaceUUID, fakeSubsys.queriedNsUUID)
 		})
 	}
+}
+
+func TestDisconnectNVMeSubsystemForAttachCleanup_SkipsWhenOtherNamespacePresent(t *testing.T) {
+	withCleanPublishedNVMeSessions(t)
+	core, _ := newTestCore(t)
+	pi := samplePublishInfo(NVMe)
+	fakeSubsys := &fakeNVMeSubsystem{otherNamespaces: true}
+
+	err := core.disconnectNVMeSubsystemForAttachCleanup(context.Background(), fakeSubsys, pi)
+
+	require.NoError(t, err)
+	assert.Zero(t, fakeSubsys.disconnectCalls)
+	assert.Equal(t, pi.NVMeNamespaceUUID, fakeSubsys.queriedNsUUID)
 }
 
 func TestDisconnectNVMeSubsystemIfNeeded_DisconnectErrorPropagates(t *testing.T) {
@@ -441,4 +455,37 @@ func TestDisconnectNVMeSubsystemIfNeeded_DisconnectErrorPropagates(t *testing.T)
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disconnect failed")
+}
+
+func TestDisconnectNVMeSubsystemIfNeeded_LockTimeoutReturnsError(t *testing.T) {
+	withCleanPublishedNVMeSessions(t)
+	core, _ := newTestCore(t)
+	pi := samplePublishInfo(NVMe)
+	fakeSubsys := &fakeNVMeSubsystem{}
+
+	previousTimeout := sharedLocksNodeLockTimeout
+	sharedLocksNodeLockTimeout = -time.Nanosecond
+	t.Cleanup(func() { sharedLocksNodeLockTimeout = previousTimeout })
+
+	err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), fakeSubsys, pi)
+
+	require.Error(t, err)
+	assert.True(t, errors.IsMaxWaitExceededError(err))
+	assert.Zero(t, fakeSubsys.disconnectCalls)
+}
+
+func TestDisconnectNVMeSubsystemForAttachCleanup_LockTimeoutStillDisconnects(t *testing.T) {
+	withCleanPublishedNVMeSessions(t)
+	core, _ := newTestCore(t)
+	pi := samplePublishInfo(NVMe)
+	fakeSubsys := &fakeNVMeSubsystem{}
+
+	previousTimeout := sharedLocksNodeLockTimeout
+	sharedLocksNodeLockTimeout = -time.Nanosecond
+	t.Cleanup(func() { sharedLocksNodeLockTimeout = previousTimeout })
+
+	err := core.disconnectNVMeSubsystemForAttachCleanup(context.Background(), fakeSubsys, pi)
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, fakeSubsys.disconnectCalls)
 }

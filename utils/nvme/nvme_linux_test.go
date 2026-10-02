@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
@@ -452,13 +453,14 @@ func TestNewNVMeSubsystem(t *testing.T) {
 
 func TestAttachNVMeVolumeRetry(t *testing.T) {
 	tests := map[string]struct {
-		name        string
-		mountpoint  string
-		publishInfo *models.VolumePublishInfo
-		secrets     map[string]string
-		timeout     time.Duration
-		getFs       func() (afero.Fs, error)
-		expectErr   bool
+		name           string
+		mountpoint     string
+		publishInfo    *models.VolumePublishInfo
+		secrets        map[string]string
+		timeout        time.Duration
+		getFs          func() (afero.Fs, error)
+		getMockCommand func(ctrl *gomock.Controller) exec.Command
+		expectErr      bool
 	}{
 		"Attach success on retry": {
 			name:       "/sys/class/nvme-subsystem/subsystem0/nvme123n456",
@@ -485,13 +487,63 @@ func TestAttachNVMeVolumeRetry(t *testing.T) {
 			},
 			expectErr: false,
 		},
+		"Attach connects a missing desired path despite a stale path": {
+			name:       "/sys/class/nvme-subsystem/subsystem0/nvme123n456",
+			mountpoint: "/mock/mountpoint",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  mockNqn,
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+						NVMeTargetIPs:     []string{"10.193.156.237", "10.193.156.239"},
+					},
+				},
+			},
+			secrets: map[string]string{},
+			timeout: 5 * time.Second,
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().Execute(gomock.Any(), "nvme", "connect", "-t", "tcp", "-n", mockNqn,
+					"-a", "10.193.156.239", "-s", "4420", "-l", "-1").Return([]byte{}, nil)
+				return mockCommand
+			},
+			getFs: func() (afero.Fs, error) {
+				fs := afero.NewMemMapFs()
+				if err := createMockNvmeSubsystem(fs); err != nil {
+					return nil, err
+				}
+
+				nvmePath := NVME_PATH + "/nvme-subsys0/nvme2"
+				if err := fs.MkdirAll(nvmePath, 0o755); err != nil {
+					return nil, err
+				}
+				for filePath, content := range map[string][]byte{
+					nvmePath + "/state":     []byte("live"),
+					nvmePath + "/transport": []byte("tcp"),
+					nvmePath + "/address":   []byte("traddr=10.193.156.238,trsvcid=4420"),
+				} {
+					if err := afero.WriteFile(fs, filePath, content, 0o644); err != nil {
+						return nil, err
+					}
+				}
+				return fs, nil
+			},
+			expectErr: false,
+		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			fs, err := params.getFs()
 			assert.NoError(t, err)
-			handler := NewNVMeHandlerDetailed(nil, nil, nil, nil, fs)
+			ctrl := gomock.NewController(t)
+			var command exec.Command
+			if params.getMockCommand != nil {
+				command = params.getMockCommand(ctrl)
+			}
+			handler := NewNVMeHandlerDetailed(command, nil, nil, nil, fs)
 			err = handler.AttachNVMeVolumeRetry(context.Background(), params.publishInfo, params.timeout)
 			if params.expectErr {
 				assert.Error(t, err)
@@ -978,6 +1030,23 @@ func TestConnect(t *testing.T) {
 			connectOnly: true,
 			expectErr:   true,
 		},
+		"Fail to connect with only an unrelated path": {
+			nvmeTargetIps: []string{"1.2.3.4"},
+			paths: []Path{
+				{Address: "traddr=10.193.108.74,trsvcid=4420"},
+			},
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().Execute(gomock.Any(), "nvme", "connect", "-t", "tcp", "-n", mockNqn,
+					"-a", "1.2.3.4", "-s", "4420", "-l", "-1").Return([]byte{}, errors.New("error"))
+				return mockCommand
+			},
+			getFs: func() (afero.Fs, error) {
+				return afero.NewMemMapFs(), nil
+			},
+			connectOnly: false,
+			expectErr:   true,
+		},
 		"Connect and update RHEL": {
 			nvmeTargetIps: []string{"10.193.108.74"},
 			paths:         []Path{},
@@ -1122,74 +1191,64 @@ func TestGetNVMeSubsystemPaths(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGetNVMeDeviceCountAt(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	osFs := afero.NewMemMapFs()
-	filePath := "/sys/class/nvme-subsystem/test"
-	fileContent := []byte("This is a test file")
-	err := afero.WriteFile(osFs, filePath, fileContent, 0o644)
-	if err != nil {
-		t.Errorf("Failed to create test file: %v", err)
-	}
-	subsys := NewNVMeSubsystemDetailed("mock-nqn", "mock-name", []Path{{Address: "mock-address"}}, nil, osFs)
-	_, err = subsys.GetNVMeDeviceCountAt(context.Background(), "transport")
-	assert.NotNil(t, err)
-}
-
-func TestGetNamespaceCount(t *testing.T) {
+func TestHasNamespacesOtherThan(t *testing.T) {
 	tests := map[string]struct {
-		getFs       func() (afero.Fs, error)
-		paths       []Path
-		expectCount int
-		expectErr   bool
+		namespaceUUID string
+		paths         []Path
+		getFs         func() (afero.Fs, error)
+		expectOther   bool
+		expectErr     bool
 	}{
-		"Happy path": {
+		"only requested namespace": {
+			namespaceUUID: "1234",
+			paths:         []Path{{State: "live"}},
 			getFs: func() (afero.Fs, error) {
 				fs := afero.NewMemMapFs()
-				err := createMockNvmeSubsystem(fs)
-				return fs, err
+				return fs, createMockNvmeSubsystem(fs)
 			},
-			paths: []Path{
-				{
-					Address: "traddr=10.193.108.74,trsvcid=4420",
-					State:   "live",
-				},
-			},
-			expectCount: 1,
-			expectErr:   false,
 		},
-		"Path not live": {
+		"different namespace": {
+			namespaceUUID: "9999",
+			paths:         []Path{{State: "live"}},
 			getFs: func() (afero.Fs, error) {
 				fs := afero.NewMemMapFs()
-				err := createMockNvmeSubsystem(fs)
-				return fs, err
+				return fs, createMockNvmeSubsystem(fs)
 			},
-			paths: []Path{
-				{
-					Address: "traddr=10.193.108.74,trsvcid=4420",
-					State:   "disconnected",
-				},
+			expectOther: true,
+		},
+		"unreadable namespace UUID": {
+			namespaceUUID: "1234",
+			paths:         []Path{{State: "live"}},
+			getFs: func() (afero.Fs, error) {
+				fs := afero.NewMemMapFs()
+				if err := createMockNvmeSubsystem(fs); err != nil {
+					return nil, err
+				}
+				return fs, fs.MkdirAll(NVME_PATH+"/nvme-subsys0/nvme0n2", 0o755)
 			},
-			expectCount: 0,
-			expectErr:   true,
+			expectOther: true,
+		},
+		"no live path": {
+			namespaceUUID: "1234",
+			paths:         []Path{{State: "connecting"}},
+			getFs: func() (afero.Fs, error) {
+				fs := afero.NewMemMapFs()
+				return fs, createMockNvmeSubsystem(fs)
+			},
+			expectErr: true,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			fs, err := params.getFs()
-			assert.NoError(t, err)
-			subsystem := NewNVMeSubsystemDetailed(mockNqn, "/sys/class/nvme-subsystem/nvme-subsys0", params.paths,
-				nil, fs)
-			count, err := subsystem.GetNamespaceCount(context.Background())
-			if params.expectErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, params.expectCount, count)
+			require.NoError(t, err)
+			subsystem := NewNVMeSubsystemDetailed(mockNqn, NVME_PATH+"/nvme-subsys0", params.paths, nil, fs)
+
+			other, err := subsystem.HasNamespacesOtherThan(context.Background(), params.namespaceUUID)
+
+			assert.Equal(t, params.expectOther, other)
+			assert.Equal(t, params.expectErr, err != nil)
 		})
 	}
 }

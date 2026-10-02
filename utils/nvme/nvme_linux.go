@@ -300,26 +300,6 @@ func getSessionFileContent(sessionFileName, pathName string, fs afero.Fs) (strin
 	return strings.TrimSpace(string(fileBytes)), nil
 }
 
-func (s *NVMeSubsystem) GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error) {
-	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceCountAt")
-	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceCountAt")
-
-	count := 0
-
-	pathDirContents, err := afero.ReadDir(s.osFs, path)
-	if err != nil {
-		return count, fmt.Errorf("failed to open %s directory, %v", path, err)
-	}
-
-	for _, pathDirContent := range pathDirContents {
-		if nvmeNQNRegex.MatchString(pathDirContent.Name()) {
-			count++
-		}
-	}
-
-	return count, nil
-}
-
 func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceAt")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceAt")
@@ -349,6 +329,45 @@ func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NV
 	}
 
 	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
+}
+
+// HasNamespacesOtherThan reports whether the subsystem has a namespace attached on this host other
+// than the given one. A namespace whose UUID cannot be read counts as another namespace, since
+// disconnecting the subsystem would tear down a device this host may still be using.
+func (s *NVMeSubsystem) HasNamespacesOtherThan(ctx context.Context, nsUUID string) (bool, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.HasNamespacesOtherThan")
+	defer Logc(ctx).Trace("<<<< nvme_linux.HasNamespacesOtherThan")
+
+	if !s.hasLivePath() {
+		return false, errors.New("nvme paths are down, couldn't enumerate namespaces")
+	}
+
+	pathContents, err := afero.ReadDir(s.osFs, s.Name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, errors.NotFoundError("NVMe directory %s not found: %v", s.Name, err)
+		}
+		return false, fmt.Errorf("failed to open %s directory, %v", s.Name, err)
+	}
+
+	for _, pathContent := range pathContents {
+		if !nvmeNQNRegex.MatchString(pathContent.Name()) {
+			continue
+		}
+		uuidPath := s.Name + "/" + pathContent.Name() + "/uuid"
+		fileBytes, err := afero.ReadFile(s.osFs, uuidPath)
+		if err != nil {
+			Logc(ctx).WithField("namespace", pathContent.Name()).WithError(err).Debug(
+				"Could not read namespace UUID; treating it as another namespace.",
+			)
+			return true, nil
+		}
+		if strings.TrimSpace(string(fileBytes)) != nsUUID {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.

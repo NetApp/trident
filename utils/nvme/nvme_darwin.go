@@ -66,16 +66,16 @@ func InitializeNVMeSubsystemPath(ctx context.Context, path *Path) error {
 	return errors.UnsupportedError("InitializeNVMeSubsystemPath is not supported for darwin")
 }
 
-func (s *NVMeSubsystem) GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error) {
-	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceCountAt")
-	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceCountAt")
-	return 0, errors.UnsupportedError("GetNVMeDeviceCountAt is not supported for darwin")
-}
-
 func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceAt")
 	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceAt")
 	return nil, errors.UnsupportedError("GetNVMeDeviceAt is not supported for darwin")
+}
+
+func (s *NVMeSubsystem) HasNamespacesOtherThan(ctx context.Context, nsUUID string) (bool, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.HasNamespacesOtherThan")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.HasNamespacesOtherThan")
+	return false, errors.UnsupportedError("HasNamespacesOtherThan is not supported for darwin")
 }
 
 // GetNamespaceCountForSubsDevice returns the number of namespaces present in a given subsystem device.

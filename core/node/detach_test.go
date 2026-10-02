@@ -912,11 +912,13 @@ func TestDetachISCSIVolume_LUKS_PostBlockDeviceRemoval_LockDeleteFailed(t *testi
 // pattern already used by utils_test.go's fakeNVMeSubsystem.
 type fakeDetachNVMeSubsystem struct {
 	nvme.NVMeSubsystemInterface
-	getDeviceErr    error
-	disconnectErr   error
-	disconnectCalls int
-	hostNsCount     int
-	hostNsCountErr  error
+	getDeviceErr       error
+	disconnectErr      error
+	disconnectCalls    int
+	otherNamespaces    bool
+	otherNamespacesErr error
+	// queriedNsUUID records the namespace identity excluded from the host enumeration.
+	queriedNsUUID string
 }
 
 func (f *fakeDetachNVMeSubsystem) Disconnect(context.Context) error {
@@ -924,11 +926,11 @@ func (f *fakeDetachNVMeSubsystem) Disconnect(context.Context) error {
 	return f.disconnectErr
 }
 
-// GetNamespaceCount feeds disconnectNVMeSubsystemIfNeeded's host-level check, which only skips the
-// disconnect when the count exceeds one; the zero value therefore leaves the disconnect decision to
-// the published session count that each test below sets up.
-func (f *fakeDetachNVMeSubsystem) GetNamespaceCount(context.Context) (int, error) {
-	return f.hostNsCount, f.hostNsCountErr
+// HasNamespacesOtherThan feeds disconnectNVMeSubsystemIfNeeded's host-level identity check; the
+// zero value therefore leaves the disconnect decision to the published session count.
+func (f *fakeDetachNVMeSubsystem) HasNamespacesOtherThan(_ context.Context, nsUUID string) (bool, error) {
+	f.queriedNsUUID = nsUUID
+	return f.otherNamespaces, f.otherNamespacesErr
 }
 
 // GetNVMeDevice/GetNVMeDeviceAt always report "no device found" (nil, getDeviceErr): every
@@ -961,6 +963,8 @@ func TestDetachNVMeVolume_NoDeviceFound_Success(t *testing.T) {
 	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, subsystem.disconnectCalls, "numNs==0 by default, so Disconnect must be invoked")
+	assert.Equal(t, publishInfo.NVMeNamespaceUUID, subsystem.queriedNsUUID,
+		"the namespace being detached must be the one excluded from the host enumeration")
 }
 
 func TestDetachNVMeVolume_GetNVMeDeviceNonNotFoundError(t *testing.T) {
@@ -1071,7 +1075,7 @@ func TestDetachNVMeVolume_DisconnectSkippedWhenNamespacesRemain(t *testing.T) {
 	// Pre-populate the package-level published session map with a namespace still attached to
 	// this subsystem, so disconnectNVMeSubsystemIfNeeded's numNs>0 check skips Disconnect().
 	publishedNVMeSessions.AddNVMeSession(*nvme.NewNVMeSubsystem(publishInfo.NVMeSubsystemNQN, mocks.Command, afero.NewMemMapFs()), nil)
-	publishedNVMeSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, "some-other-namespace-uuid")
+	publishedNVMeSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, "some-other-namespace-uuid", nil)
 	t.Cleanup(func() { publishedNVMeSessions.RemoveNVMeSession(publishInfo.NVMeSubsystemNQN) })
 
 	subsystem := &fakeDetachNVMeSubsystem{}
@@ -1101,4 +1105,30 @@ func TestDetachNVMeVolume_DisconnectErrorIsNonFatal(t *testing.T) {
 	// with the rest of cleanup and return success.
 	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
 	assert.NoError(t, err)
+}
+
+func TestDetachNVMeVolume_DisconnectLockTimeoutPropagates(t *testing.T) {
+	clearNVMeFlushRetryMap(t)
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(NVMe)
+	subsystem := &fakeDetachNVMeSubsystem{}
+
+	previousTimeout := sharedLocksNodeLockTimeout
+	t.Cleanup(func() { sharedLocksNodeLockTimeout = previousTimeout })
+
+	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
+		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
+	).DoAndReturn(func(*nvme.NVMeSessions, string, string) bool {
+		// The initial session-lock operation has completed. Make the following disconnect
+		// lock attempt report a timeout without relying on wall-clock scheduling.
+		sharedLocksNodeLockTimeout = -time.Nanosecond
+		return false
+	})
+	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
+
+	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+
+	require.Error(t, err)
+	assert.True(t, errors.IsMaxWaitExceededError(err))
+	assert.Zero(t, subsystem.disconnectCalls)
 }
