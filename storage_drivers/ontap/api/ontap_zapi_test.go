@@ -1353,13 +1353,13 @@ func TestZAPI_Priority1_CoreInfrastructure(t *testing.T) {
 		// Test with all parameters
 		volResult, err := client.VolumeCreate(ctx, "test-vol", "aggr1", "1g", "none",
 			"default", "755", "default", "unix", "none", "test comment",
-			qosPolicy, new(true), 20, false)
+			qosPolicy, new(true), 20, false, 0)
 		assert.NoError(t, err, "expected no error creating volume with fake server")
 		assert.NotNil(t, volResult, "volume result should not be nil when creation succeeds")
 
 		// Test with DP volume (different code path)
 		dpResult, err := client.VolumeCreate(ctx, "dp-vol", "aggr1", "1g", "none",
-			"default", "", "default", "unix", "none", "", qosPolicy, nil, -1, true)
+			"default", "", "default", "unix", "none", "", qosPolicy, nil, -1, true, 0)
 		assert.NoError(t, err, "expected no error creating DP volume with fake server")
 		assert.NotNil(t, dpResult, "DP volume result should not be nil when creation succeeds")
 
@@ -1367,7 +1367,7 @@ func TestZAPI_Priority1_CoreInfrastructure(t *testing.T) {
 		adaptiveQos, err := NewQosPolicyGroup("", "adaptive-policy")
 		assert.NoError(t, err, "expected no error creating adaptive QoS policy")
 		adaptiveResult, err := client.VolumeCreate(ctx, "test-vol2", "aggr1", "1g", "none",
-			"default", "755", "default", "unix", "none", "", adaptiveQos, nil, -1, false)
+			"default", "755", "default", "unix", "none", "", adaptiveQos, nil, -1, false, 0)
 		assert.NoError(t, err, "expected no error creating volume with adaptive QoS")
 		assert.NotNil(t, adaptiveResult, "adaptive volume result should not be nil when creation succeeds")
 	})
@@ -1408,13 +1408,13 @@ func TestZAPI_Priority1_FlexGroupOperations(t *testing.T) {
 
 		// Test with all parameters (fixed signature)
 		_, err := client.FlexGroupCreate(ctx, "test-flexgroup", 2, aggrList, "none",
-			"default", "755", "default", "unix", "none", "test comment", qosPolicy, new(true), 20)
+			"default", "755", "default", "unix", "none", "test comment", qosPolicy, new(true), 20, 0)
 		assert.NoError(t, err) // Fake server supports this operation
 
 		// Test with adaptive QoS (fixed signature)
 		adaptiveQos, _ := NewQosPolicyGroup("", "adaptive-policy")
 		_, err = client.FlexGroupCreate(ctx, "test-flexgroup2", 4, aggrList, "none",
-			"default", "755", "default", "unix", "backup", "", adaptiveQos, nil, -1)
+			"default", "755", "default", "unix", "backup", "", adaptiveQos, nil, -1, 0)
 		assert.NoError(t, err) // Fake server supports this operation
 	})
 

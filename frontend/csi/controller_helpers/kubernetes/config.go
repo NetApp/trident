@@ -87,6 +87,9 @@ const (
 	AnnTieringPolicy             = prefix + "/tieringPolicy"
 	AnnTieringMinimumCoolingDays = prefix + "/tieringMinimumCoolingDays"
 
+	// AnnUnixGroupID sets the UNIX group ownership (GID) of an ONTAP NAS volume at provisioning time.
+	AnnUnixGroupID = prefix + "/unixGroupID"
+
 	// Pod remediation policy annotation and values
 	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"
 	PodRemediationPolicyDelete        = "delete"

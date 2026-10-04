@@ -253,18 +253,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) FcpNodeGetNameRequest() *gomock.C
 }
 
 // FlexGroupCreate mocks base method.
-func (m *MockZapiClientInterface) FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int) (*azgo.VolumeCreateAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, unixGroupID int) (*azgo.VolumeCreateAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupCreate", ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
+	ret := m.ctrl.Call(m, "FlexGroupCreate", ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, unixGroupID)
 	ret0, _ := ret[0].(*azgo.VolumeCreateAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupCreate indicates an expected call of FlexGroupCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupCreate(ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupCreate(ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, unixGroupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupCreate), ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupCreate), ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, unixGroupID)
 }
 
 // FlexGroupDestroy mocks base method.
@@ -2082,18 +2082,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneSplitStart(name any) *
 }
 
 // VolumeCreate mocks base method.
-func (m *MockZapiClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (*azgo.VolumeCreateResponse, error) {
+func (m *MockZapiClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool, unixGroupID int) (*azgo.VolumeCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, unixGroupID)
 	ret0, _ := ret[0].(*azgo.VolumeCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCreate indicates an expected call of VolumeCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, unixGroupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, unixGroupID)
 }
 
 // VolumeDestroy mocks base method.

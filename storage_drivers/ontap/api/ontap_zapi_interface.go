@@ -112,7 +112,7 @@ type ZapiClientInterface interface {
 	LunSize(lunPath string) (int, error)
 	// FlexGroupCreate creates a FlexGroup with the specified options
 	// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-	FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int) (*azgo.VolumeCreateAsyncResponse, error)
+	FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, unixGroupID int) (*azgo.VolumeCreateAsyncResponse, error)
 	// FlexGroupDestroy destroys a FlexGroup
 	FlexGroupDestroy(ctx context.Context, name string, force bool) (*azgo.VolumeDestroyAsyncResponse, error)
 	// FlexGroupExists tests for the existence of a FlexGroup
@@ -138,7 +138,7 @@ type ZapiClientInterface interface {
 	JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error)
 	// VolumeCreate creates a volume with the specified options
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (*azgo.VolumeCreateResponse, error)
+	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool, unixGroupID int) (*azgo.VolumeCreateResponse, error)
 	VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error)
 	VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error)
 	// VolumeCloneCreate clones a volume from a snapshot

@@ -1570,7 +1570,8 @@ func TestVolumeCreate(t *testing.T) {
 	// case 1: Create volume, returned No error
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		int64(0)).
 		Return("", nil)
 	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume")
@@ -1578,7 +1579,8 @@ func TestVolumeCreate(t *testing.T) {
 	// case 2: Create volume, volume creation failed
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		int64(0)).
 		Return("", errors.New("Volume create failed"))
 	_, err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
@@ -1620,7 +1622,8 @@ func TestVolumeCreateBalanced(t *testing.T) {
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
 	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		int64(0)).
 		Return("uuid-1", nil)
 	volumeUUID, err := oapi.VolumeCreateBalanced(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume balanced")
@@ -1630,7 +1633,8 @@ func TestVolumeCreateBalanced(t *testing.T) {
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
 	rsi.EXPECT().VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		int64(0)).
 		Return("", errors.New("Volume create balanced failed"))
 	_, err = oapi.VolumeCreateBalanced(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume balanced")
@@ -1818,7 +1822,7 @@ func TestFlexgroupCreate(t *testing.T) {
 	// case 1: Flexgroup create, positive test case
 	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, int64(0)).
 		Return(nil)
 	err := oapi.FlexgroupCreate(ctx, volume)
 	assert.NoError(t, err, "error returned while creating a flexgroup volume")
@@ -1826,7 +1830,7 @@ func TestFlexgroupCreate(t *testing.T) {
 	// case 2: Flexgroup create, negative test case
 	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, int64(0)).
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a flexgroup volume")
@@ -1866,7 +1870,7 @@ func TestFlexgroupCreateBalanced(t *testing.T) {
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
 	rsi.EXPECT().FlexGroupCreateBalanced(ctx, volume.Name, 1073741824000, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, int64(0)).
 		Return(nil)
 	err = oapi.FlexgroupCreateBalanced(ctx, volume)
 	assert.NoError(t, err, "error returned while creating a balanced flexgroup volume")
@@ -1875,7 +1879,7 @@ func TestFlexgroupCreateBalanced(t *testing.T) {
 	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
 	rsi.EXPECT().FlexGroupCreateBalanced(ctx, volume.Name, 1073741824000, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, int64(0)).
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreateBalanced(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a balanced flexgroup volume")

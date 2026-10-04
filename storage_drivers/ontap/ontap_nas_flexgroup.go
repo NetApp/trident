@@ -451,6 +451,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 			SnapshotReserve: snapshotReserveInt,
 			TieringPolicy:   tieringPolicy,
 			UnixPermissions: unixPermissions,
+			UnixGroupID:     volConfig.UnixGroupID,
 			DPVolume:        volConfig.IsMirrorDestination,
 		}, useBalancedPlacement)
 	if err != nil {

@@ -51,6 +51,7 @@ type Volume struct {
 	UnixPermissions   string
 	UUID              string
 	DPVolume          bool
+	UnixGroupID       string
 }
 
 type (
