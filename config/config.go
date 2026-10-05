@@ -11,7 +11,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
-	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -276,7 +275,7 @@ const (
 	WindowsPathSeparator = `\`
 	UnixPathSeparator    = "/"
 
-	// Minimum and maximum supported Kubernetes versions
+	// Kubernetes version range used by `tridentctl images`
 	KubernetesVersionMin = "v1.27"
 	KubernetesVersionMax = "v1.36"
 
@@ -584,29 +583,6 @@ func version() string {
 	}
 
 	return version
-}
-
-func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *versionutils.Version) error {
-	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
-	minSupportedMMVersion := versionutils.MustParseMajorMinorVersion(k8sMinVersion)
-	maxSupportedMMVersion := versionutils.MustParseMajorMinorVersion(KubernetesVersionMax)
-
-	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
-		return versionutils.UnsupportedKubernetesVersionError(
-			fmt.Errorf("Trident supports Kubernetes versions in the range [%s, %s]",
-				minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString()))
-	}
-
-	return nil
-}
-
-func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sversion.Info) error {
-	k8sVersion, err := versionutils.ParseSemantic(versionInfo.GitVersion)
-	if err != nil {
-		return err
-	}
-
-	return ValidateKubernetesVersion(k8sMinVersion, k8sVersion)
 }
 
 // IsValidContainerName checks if the container name is a valid Trident container including both controller and node pods.

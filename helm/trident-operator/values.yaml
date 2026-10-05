@@ -133,9 +133,6 @@ tridentImageTag: ""
 # (Deprecated) tridentEnableNodePrep attempts to automatically install required packages on nodes.
 tridentEnableNodePrep: false
 
-# (Deprecated) tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.
-tridentSkipK8sVersionCheck: false
-
 # tridentProbePort allows overriding the default port used for k8s liveness/readiness probes.
 tridentProbePort: ""
 

@@ -8,24 +8,14 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
-// validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.
+// validateKubeVersion ensures the detected Kubernetes version is parseable.
 func (h *helper) validateKubeVersion() error {
-	// Parse Kubernetes version into a SemVer object for simple comparisons
-	if version, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion); err != nil {
-		return err
-	} else if !version.AtLeast(versionutils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
-		Log().Warningf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
-			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
-			config.OrchestratorName, config.OrchestratorVersion, h.kubeVersion.Major, h.kubeVersion.Minor,
-			h.kubeVersion.GitVersion, config.KubernetesVersionMin, config.KubernetesVersionMax,
-			config.KubernetesVersionMax)
-	}
-	return nil
+	_, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion)
+	return err
 }
 
 // getStorageClassForPVC returns StorageClassName from a PVC. If no storage class was requested, it returns "".

@@ -61,13 +61,13 @@ func TestValidateKubeVersion(t *testing.T) {
 			assertErr: assert.NoError,
 		},
 		{
-			name: "Unsupported version",
+			name: "Older version",
 			kubeVersion: &version.Info{
-				GitVersion: "v1.15.0", // Below supported version, triggers warning
+				GitVersion: "v1.15.0",
 				Major:      "1",
 				Minor:      "15",
 			},
-			assertErr: assert.NoError, // Warning is logged, but no error returned
+			assertErr: assert.NoError,
 		},
 		{
 			name: "Invalid semantic version",

@@ -23,7 +23,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/clients"
 	"github.com/netapp/trident/operator/controllers/orchestrator/installer"
@@ -52,10 +51,6 @@ const (
 	TridentOrchestratorCRDName = "tridentorchestrators.trident.netapp.io"
 
 	UninstallationNote = ". NOTE: This CR has uninstalled status; delete this CR to allow new Trident installation."
-
-	K8sVersionCheckSupportWarning = "Warning: Trident is running on an unsupported version of Kubernetes; %s. " +
-		"NetApp will not take Support calls or open Support tickets when using Trident with an unsupported version " +
-		"of Kubernetes."
 )
 
 var (
@@ -628,23 +623,6 @@ func (c *Controller) daemonsetUpdated(oldObj, newObj interface{}) {
 	c.workqueue.Add(keyItem)
 }
 
-/********************************************
- * Checks pre- and post- Trident installation
- ********************************************/
-
-// k8sVersionPreinstallationCheck identifies if K8s version is valid or not
-func (c *Controller) k8sVersionPreinstallationCheck() error {
-	isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion()
-
-	if !isCurrentK8sVersionValid {
-		if crErr := c.updateAllCRs(warningMessage); crErr != nil {
-			Log().Error(crErr)
-		}
-	}
-
-	return nil
-}
-
 /**********************
  * Reconciliation Logic
  **********************/
@@ -677,15 +655,6 @@ func (c *Controller) reconcile(key KeyItem) error {
 		return c.reconcileTridentPresent(key, torcCSIDeployments, torcCSIDeploymentNamespace,
 			controllingCRBasedOnStatus)
 	} else {
-
-		// These are the pre-installation checks that have different behavior depending upon Trident via Operator is
-		// already installed or not.
-
-		// Before the installation ensure K8s version is valid
-		if err := c.k8sVersionPreinstallationCheck(); err != nil {
-			return err
-		}
-
 		return c.reconcileTridentNotPresent()
 	}
 }
@@ -761,7 +730,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 		newTridentCR.Spec.Namespace = metav1.NamespaceDefault
 	}
 
-	if err := c.installTridentAndUpdateStatus(*newTridentCR, "", "", false); err != nil {
+	if err := c.installTridentAndUpdateStatus(*newTridentCR, "", false); err != nil {
 		// Install failed, so fail the reconcile loop
 		return errors.ReconcileFailedError(
 			"error installing Trident using CR '%v' in namespace '%v'; err: %v",
@@ -1006,20 +975,12 @@ func (c *Controller) controllingCRBasedReconcile(
 			return errors.ReconcileFailedError(errorMessage)
 		}
 
-		// Check: Current K8s version should be supported, if not is there a warning message to notify users
-		isCurrentK8sVersionSupported, warningMessage := c.validateCurrentK8sVersion()
-		eventType := corev1.EventTypeNormal
-		if warningMessage != "" {
-			eventType = corev1.EventTypeWarning
-		}
-
-		// Check: If we have a valid K8s version
+		// Check: If we could determine the current K8s version
 		// Unfortunately, it is not possible to verify tridentImage version at this stage,
 		// until we are inside the installation code we cannot perform some of the checks.
 		// This only identifies changes in the K8s version
-		// If we are skipping k8s version check, isCurrentK8sVersionSupported is irrelevant
 		var shouldUpdate bool
-		if isCurrentK8sVersionSupported {
+		if c.validateCurrentK8sVersion() {
 			shouldUpdate = c.tridentUpgradeNeeded(tridentK8sConfigVersion)
 		}
 
@@ -1032,14 +993,14 @@ func (c *Controller) controllingCRBasedReconcile(
 			controllingCR, err = c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage,
 				string(operatorV1.AppStatusUpdating), currentInstalledTridentVersion, currentInstalledACPVersion,
 				currentInstallationNamespace,
-				eventType, &controllingCR.Status.CurrentInstallationParams)
+				corev1.EventTypeNormal, &controllingCR.Status.CurrentInstallationParams)
 			if err != nil {
 				return errors.ReconcileFailedError(
 					"unable to update status of the CR '%v' to installing", controllingCRName)
 			}
 		}
 
-		if err := c.installTridentAndUpdateStatus(*controllingCR, currentInstalledTridentVersion, warningMessage,
+		if err := c.installTridentAndUpdateStatus(*controllingCR, currentInstalledTridentVersion,
 			shouldUpdate); err != nil {
 			// Install failed, so fail the reconcile loop
 			return errors.ReconcileFailedError("error re-installing Trident '%v' ; err: %v",
@@ -1057,7 +1018,7 @@ func (c *Controller) controllingCRBasedReconcile(
 // installTridentAndUpdateStatus installs Trident and updates status of the ControllingCR accordingly
 // based on success or failure
 func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrchestrator,
-	currentInstalledTridentVersion, warningMessage string, shouldUpdate bool,
+	currentInstalledTridentVersion string, shouldUpdate bool,
 ) error {
 	var identifiedTridentVersion, identifiedACPVersion string
 	var identifiedSpecValues *netappv1.TridentOrchestratorSpecValues
@@ -1073,10 +1034,6 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		// Update status of the tridentCR  to `Failed`
 		debugMessage := "Updating Trident Orchestrator CR after failed installation."
 		statusMessage := fmt.Sprintf("Failed to install Trident; err: %s", err.Error())
-
-		if warningMessage != "" {
-			statusMessage = fmt.Sprintf("%s; %s", statusMessage, warningMessage)
-		}
 
 		if _, crErr := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage,
 			string(operatorV1.AppStatusFailed), "", "", tridentCR.Spec.Namespace, corev1.EventTypeWarning,
@@ -1094,15 +1051,9 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 	debugMessage := "Updating TridentOrchestrator CR after installation."
 	statusMessage := "Trident installed"
 
-	eventType := corev1.EventTypeNormal
-	if warningMessage != "" {
-		statusMessage = fmt.Sprintf("%s; %s", statusMessage, warningMessage)
-		eventType = corev1.EventTypeWarning
-	}
-
 	// TODO: may need to check if ACP version needs to be bumped
 	_, err = c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(operatorV1.AppStatusInstalled),
-		identifiedTridentVersion, identifiedACPVersion, tridentCR.Spec.Namespace, eventType,
+		identifiedTridentVersion, identifiedACPVersion, tridentCR.Spec.Namespace, corev1.EventTypeNormal,
 		identifiedSpecValues)
 
 	return err
@@ -1322,26 +1273,6 @@ func (c *Controller) identifyControllingCRForTridentDeployments(
 	}
 
 	return deploymentCR, nil
-}
-
-// updateAllCRs get called only when no ControllingCR exist to report a configuration error
-func (c *Controller) updateAllCRs(message string) error {
-	allCRs, err := c.getTridentOrchestratorCRsAll()
-	if err != nil {
-		return errors.ReconcileFailedError(
-			"unable to get list of all the TridentOrchestrator CRs; err: %v", err)
-	}
-
-	// Update status on all the TridentOrchestrator CR(s)
-	var debugMessage string
-	for _, cr := range allCRs {
-		debugMessage = "Updating " + cr.Name + " TridentOrchestrator CR."
-		_, err = c.updateTorcEventAndStatus(cr, debugMessage, message, string(operatorV1.AppStatusError), "", "",
-			cr.Spec.Namespace,
-			corev1.EventTypeWarning, nil)
-	}
-
-	return nil
 }
 
 // updateOtherCRs get called only when a ControllingCR exist to set error state on the non-ControllingCRs
@@ -1601,36 +1532,33 @@ func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentO
 	return currentTridentVersionString, currentK8sVersionString, currentACPVersionString, nil
 }
 
-// validateCurrentK8sVersion identifies any changes in the K8s version, if it is valid, and if not valid should
-// user be warned about it
-func (c *Controller) validateCurrentK8sVersion() (bool, string) {
-	var isValid bool
-	var warning string
-
+// validateCurrentK8sVersion identifies any changes in the K8s version and reports whether it could be determined
+func (c *Controller) validateCurrentK8sVersion() bool {
 	currentK8sVersion, err := c.Clients.KubeClient.Discovery().ServerVersion()
 
 	if err != nil {
 		Log().WithField("err", err).Error("Could not get Kubernetes version; unable to verify if update is required.")
-		return isValid, ""
+		return false
 	} else if currentK8sVersion == nil {
 		Log().WithField("currentK8sVersion", "nil").
 			Error("Could not identify Kubernetes version; unable to verify if update is required.")
-		return isValid, ""
+		return false
+	}
+
+	if _, err = versionutils.ParseSemantic(currentK8sVersion.GitVersion); err != nil {
+		Log().WithFields(LogFields{
+			"gitVersion": currentK8sVersion.GitVersion,
+			"err":        err,
+		}).Error("Could not parse Kubernetes version; unable to verify if update is required.")
+		return false
 	}
 
 	if currentK8sVersion != c.K8SVersion {
 		c.K8SVersion = currentK8sVersion
 	}
-	// Validate the Kubernetes server version
-	if err := commonconfig.ValidateKubernetesVersionFromInfo(commonconfig.KubernetesVersionMin, currentK8sVersion); err != nil {
-		Log().Warningf(K8sVersionCheckSupportWarning, c.K8SVersion.String())
-		warning = fmt.Sprintf(K8sVersionCheckSupportWarning, c.K8SVersion.String())
-	} else {
-		Log().WithField("version", currentK8sVersion.String()).Debugf("Kubernetes version is supported.")
-		isValid = true
-	}
+	Log().WithField("version", currentK8sVersion.String()).Debug("Detected Kubernetes version.")
 
-	return isValid, warning
+	return true
 }
 
 // tridentUpgradeNeeded compares the K8's version as per which Trident is installed with the current K8s version,

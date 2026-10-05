@@ -27,9 +27,8 @@ var (
 	logFormat = flag.String("log-format", "text", "Logging format (text, json)")
 
 	// Kubernetes
-	k8sAPIServer        = flag.String("k8s-api-server", "", "Kubernetes API server address")
-	k8sConfigPath       = flag.String("k8s-config-path", "", "Path to KubeConfig file")
-	skipK8sVersionCheck = flag.Bool("skip-k8s-version-check", false, "(Deprecated) Skip Kubernetes version check for Trident compatibility")
+	k8sAPIServer  = flag.String("k8s-api-server", "", "Kubernetes API server address")
+	k8sConfigPath = flag.String("k8s-config-path", "", "Path to KubeConfig file")
 
 	configuratorReconcileInterval = flag.Duration("configurator-reconcile-interval",
 		config.ConfiguratorReconcileInterval, "Set resource refresh rate for the auto generated backends")

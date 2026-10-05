@@ -30,7 +30,6 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
-	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -112,7 +111,6 @@ var (
 	silenceAutosupport           bool
 	excludeAutosupport           bool
 	nodePrep                     []string
-	skipK8sVersionCheck          bool
 	windows                      bool
 	enableForceDetach            bool
 	disableAuditLog              bool
@@ -223,8 +221,6 @@ func init() {
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false,
 		"Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
-	installCmd.Flags().BoolVar(&skipK8sVersionCheck, "skip-k8s-version-check", false,
-		"(Deprecated) Skip Kubernetes version check for Trident compatibility")
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable",
 		"Don't send autosupport bundles to NetApp automatically.")
@@ -291,9 +287,6 @@ func init() {
 		"Enable refreshing NVMe data LIFs during backend reconciliation.")
 	installCmd.Flags().BoolVar(&hostNetwork, "host-network", false, "Use the host network for the Trident controller.")
 
-	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-	}
 	if err := installCmd.Flags().MarkHidden("autosupport-custom-url"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
@@ -412,18 +405,6 @@ func discoverInstallationEnvironment() error {
 	// Create the Kubernetes client
 	if client, err = initClientfunc(); err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	// Before the installation ensure K8s version is valid
-	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
-	if err != nil {
-		if versionutils.IsUnsupportedKubernetesVersionError(err) {
-			Log().Errorf("Kubernetes version %s is an %v. NetApp will not take Support calls or "+
-				"open Support tickets when using Trident with an unsupported Kubernetes version.",
-				client.ServerVersion().String(), err)
-		} else {
-			return err
-		}
 	}
 
 	// Prepare input file paths
