@@ -191,7 +191,7 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, 
 	}
 
 	volumeUUID, creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
 		return "", fmt.Errorf("error creating volume: %v", creationErr)
@@ -217,7 +217,7 @@ func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) (
 	}
 
 	volumeUUID, creationErr := d.api.VolumeCreateBalanced(ctx, volume.Name, volume.Size, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
 		return "", fmt.Errorf("error creating volume: %v", creationErr)
@@ -734,8 +734,8 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	}
 
 	creationErr := d.api.FlexGroupCreate(ctx, volume.Name, volumeSize, volume.Aggregates, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -765,8 +765,8 @@ func (d OntapAPIREST) FlexgroupCreateBalanced(ctx context.Context, volume Volume
 	}
 
 	creationErr := d.api.FlexGroupCreateBalanced(ctx, volume.Name, volumeSize, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}

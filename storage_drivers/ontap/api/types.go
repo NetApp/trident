@@ -49,6 +49,7 @@ type Volume struct {
 	SpaceReserve      string
 	TieringPolicy     string
 	UnixPermissions   string
+	UnixGroupID       string
 	UUID              string
 	DPVolume          bool
 }

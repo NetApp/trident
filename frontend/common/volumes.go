@@ -153,6 +153,7 @@ func GetVolumeConfig(
 		SnapshotDir:         snapshotDir,
 		ExportPolicy:        collection.GetV(opts, "exportPolicy", ""),
 		UnixPermissions:     collection.GetV(opts, "unixPermissions", ""),
+		UnixGroupID:         collection.GetV(opts, "unixGroupID", ""),
 		BlockSize:           collection.GetV(opts, "blocksize", ""),
 		Qos:                 collection.GetV(opts, "qos", ""),
 		QosType:             collection.GetV(opts, "type", ""),

@@ -395,6 +395,13 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for useBalancedPlacement: %v", err)
 	}
 
+	// The Unix group ID (owner GID) is owned by the application and supplied via the PVC annotation.
+	// Validate it up front so a malformed value fails fast with a clear error before any ONTAP call.
+	unixGroupID := volConfig.UnixGroupID
+	if _, _, err = api.ParseUnixGroupID(unixGroupID); err != nil {
+		return err
+	}
+
 	// Update config to reflect values used to create volume
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.SpaceReserve = spaceReserve
@@ -416,6 +423,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"snapshotPolicy":    snapshotPolicy,
 		"snapshotReserve":   snapshotReserveInt,
 		"unixPermissions":   unixPermissions,
+		"unixGroupID":       unixGroupID,
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
 		"aggregates":        d.Config.FlexGroupAggregateList,
@@ -451,6 +459,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 			SnapshotReserve: snapshotReserveInt,
 			TieringPolicy:   tieringPolicy,
 			UnixPermissions: unixPermissions,
+			UnixGroupID:     unixGroupID,
 			DPVolume:        volConfig.IsMirrorDestination,
 		}, useBalancedPlacement)
 	if err != nil {

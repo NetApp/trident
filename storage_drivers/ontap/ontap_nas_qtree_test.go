@@ -5087,6 +5087,30 @@ func addCommonExpectForQtreeCreate(
 	mockAPI.EXPECT().QuotaEntryList(ctx, flexvolName).AnyTimes().Return(api.QuotaEntries{}, nil)
 }
 
+func TestCreate_UnixGroupIDNotSupported(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		FileSystem:   "nfs",
+		Name:         "qtree1",
+		InternalName: "qtree1",
+		UnixGroupID:  "1001",
+	}
+
+	sb := storage.NewTestStorageBackend()
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volAttrs := map[string]sa.Request{}
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.Error(t, result, "expected create to fail when unixGroupID is set")
+	assert.True(t, errors.IsInvalidInputError(result), "expected an InvalidInputError")
+	assert.Contains(t, result.Error(), "unixGroupID")
+	assert.Contains(t, result.Error(), driver.Name())
+}
+
 func TestCreate_WithInvalidInternalID(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	volConfig := &storage.VolumeConfig{

@@ -406,7 +406,7 @@ func TestOntapAPIZAPI_VolumeCreate_Success(t *testing.T) {
 
 	mock.EXPECT().VolumeCreate(
 		ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy,
 		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos,
 		volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
 	).Return(volumeCreateResponse, nil).Times(1)
@@ -432,7 +432,7 @@ func TestOntapAPIZAPI_VolumeCreate_Error(t *testing.T) {
 
 	// Test API error
 	mock.EXPECT().VolumeCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(nil, errors.New("API error")).Times(1)
 
@@ -465,7 +465,7 @@ func TestOntapAPIZAPI_VolumeCreate_JobExists(t *testing.T) {
 	}
 
 	mock.EXPECT().VolumeCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(volumeCreateResponse, nil).Times(1)
 
@@ -2906,7 +2906,7 @@ func TestOntapAPIZAPI_FlexgroupCreate(t *testing.T) {
 				sizeBytes, _ := convert.ToPositiveInt(tt.volume.Size)
 				mock.EXPECT().FlexGroupCreate(ctx, tt.volume.Name, sizeBytes, tt.volume.Aggregates,
 					tt.volume.SpaceReserve, tt.volume.SnapshotPolicy, tt.volume.UnixPermissions,
-					tt.volume.ExportPolicy, tt.volume.SecurityStyle, tt.volume.TieringPolicy,
+					tt.volume.UnixGroupID, tt.volume.ExportPolicy, tt.volume.SecurityStyle, tt.volume.TieringPolicy,
 					tt.volume.Comment, tt.volume.Qos, tt.volume.Encrypt, tt.volume.SnapshotReserve).
 					Return(tt.mockResponse, tt.mockError).Times(1)
 			}

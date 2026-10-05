@@ -49,12 +49,12 @@ type RestClientInterface interface {
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 	// -encrypt false
 	VolumeCreate(
-		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 		snapshotReserve int, dpVolume bool,
 	) (string, error)
 	VolumeCreateBalanced(
-		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
+		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 		snapshotReserve int, dpVolume bool,
 	) (string, error)
@@ -279,13 +279,13 @@ type RestClientInterface interface {
 	// -security-style unix -encrypt false
 	FlexGroupCreate(
 		ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int,
+		unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
+		encrypt *bool, snapshotReserve int,
 	) error
 	FlexGroupCreateBalanced(
 		ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int,
+		unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
+		encrypt *bool, snapshotReserve int,
 	) error
 	// FlexgroupModify modifies one or more volume attributes
 	FlexgroupModify(ctx context.Context, volume Volume) error
