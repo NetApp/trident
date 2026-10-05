@@ -345,6 +345,13 @@ func (d *NASQtreeStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
+	// unixGroupID maps to ONTAP volume nas.gid / group-id, which qtrees do not support.
+	// Fail create when the annotation is set so the request is not silently ignored.
+	if volConfig.UnixGroupID != "" {
+		return errors.InvalidInputError(fmt.Sprintf(
+			"unixGroupID is not supported by backend type %s", d.Name()))
+	}
+
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
 

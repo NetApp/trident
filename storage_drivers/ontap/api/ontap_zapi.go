@@ -776,7 +776,7 @@ func (c Client) LunSize(lunPath string) (int, error) {
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (c Client) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy,
-	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
+	unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
 	encrypt *bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 	junctionPath := fmt.Sprintf("/%s", name)
@@ -803,6 +803,13 @@ func (c Client) FlexGroupCreate(
 	// Set Unix permission for NFS volume only.
 	if unixPermissions != "" {
 		request.SetUnixPermissions(unixPermissions)
+	}
+
+	// Set the volume group ID (owner GID) when the application requested one.
+	if gid, gidSet, gidErr := ParseUnixGroupID(unixGroupID); gidErr != nil {
+		return nil, gidErr
+	} else if gidSet {
+		request.SetGroupId(gid)
 	}
 	// For encrypt == nil - we don't explicitely set the encrypt argument.
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
@@ -1177,7 +1184,7 @@ func (c Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // VolumeCreate creates a volume with the specified options
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (c Client) VolumeCreate(
-	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, dpVolume bool,
 ) (*azgo.VolumeCreateResponse, error) {
@@ -1206,6 +1213,18 @@ func (c Client) VolumeCreate(
 		request.SetVolumeType("DP")
 	} else if unixPermissions != "" {
 		request.SetUnixPermissions(unixPermissions)
+	}
+
+	// Set the volume group ID (owner GID) when the application requested one. A DP volume mirrors its
+	// source, so ownership is inherited and the GID must not be set here.
+	if !dpVolume {
+		gid, gidSet, gidErr := ParseUnixGroupID(unixGroupID)
+		if gidErr != nil {
+			return nil, gidErr
+		}
+		if gidSet {
+			request.SetGroupId(gid)
+		}
 	}
 
 	// Allowed ONTAP tiering Policy values

@@ -29,6 +29,7 @@ type VolumeConfig struct {
 	SnapshotDir     string                  `json:"snapshotDirectory,omitempty"`
 	ExportPolicy    string                  `json:"exportPolicy,omitempty"`
 	UnixPermissions string                  `json:"unixPermissions,omitempty"`
+	UnixGroupID     string                  `json:"unixGroupID,omitempty"`
 	StorageClass    string                  `json:"storageClass,omitempty"`
 	AccessMode      config.AccessMode       `json:"accessMode,omitempty"`
 	VolumeMode      config.VolumeMode       `json:"volumeMode,omitempty"`

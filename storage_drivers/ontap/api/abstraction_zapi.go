@@ -79,7 +79,7 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) (string, 
 	// than an asynchronous name index, so it is not exposed to the create/delete propagation race.
 	// Callers therefore always delete ZAPI-created volumes by name.
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
-		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
+		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy,
 		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt,
 		volume.SnapshotReserve, volume.DPVolume)
 	if err != nil {
@@ -1364,8 +1364,8 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	}
 
 	flexgroupCreateResponse, err := d.api.FlexGroupCreate(ctx, volume.Name, sizeBytes, volume.Aggregates,
-		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy,
+		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	}
