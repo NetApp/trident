@@ -97,6 +97,7 @@ var (
 	imagePullPolicy                    string
 	cloudProvider                      string
 	cloudIdentity                      string
+	gcpWIFAudience                     string
 	resourcesValues                    *commonconfig.Resources
 
 	acpImage  string
@@ -235,6 +236,14 @@ func (i *Installer) cloudIdentityPrechecks() error {
 	if cloudProvider == "" && cloudIdentity != "" {
 		return fmt.Errorf("cloud provider must be specified for the cloud identity '%s'", cloudIdentity)
 	}
+	var audienceErr error
+	gcpWIFAudience, audienceErr = k8sclient.NormalizeGCPWIFAudience(gcpWIFAudience)
+	if audienceErr != nil {
+		return audienceErr
+	}
+	if gcpWIFAudience != "" && !strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) {
+		return fmt.Errorf("GCP WIF audience requires cloud provider '%s'", k8sclient.CloudProviderGCP)
+	}
 
 	// Validate the cloud provider and cloud identity for Azure.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
@@ -253,8 +262,16 @@ func (i *Installer) cloudIdentityPrechecks() error {
 	}
 
 	// Validate the cloud provider and cloud identity for GCP.
-	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
-		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) {
+		if cloudIdentity != "" && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
+			return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
+		}
+		hasGKEIdentity := strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey)
+		hasOCPWIF := gcpWIFAudience != ""
+		if hasGKEIdentity && hasOCPWIF {
+			return fmt.Errorf(
+				"GCP does not support both a GKE cloud identity and an OCP WIF audience")
+		}
 	}
 
 	return nil
@@ -800,6 +817,7 @@ func (i *Installer) setInstallationParams(
 	}
 	cloudProvider = cr.Spec.CloudProvider
 	cloudIdentity = cr.Spec.CloudIdentity
+	gcpWIFAudience = cr.Spec.GCPWIFAudience
 
 	k8sAPIQPS = cr.Spec.K8sAPIQPS
 	fsGroupPolicy = cr.Spec.FSGroupPolicy
@@ -1071,6 +1089,7 @@ func (i *Installer) InstallOrPatchTrident(
 		Resources:                resourcesValues,
 		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
 		HostNetwork:              hostNetwork,
+		GCPWIFAudience:           gcpWIFAudience,
 	}
 
 	Log().WithFields(LogFields{
@@ -1817,6 +1836,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ImagePullPolicy:            imagePullPolicy,
 		EnableForceDetach:          enableForceDetach,
 		CloudProvider:              cloudProvider,
+		GCPWIFAudience:             gcpWIFAudience,
 		ACPImage:                   acpImage,
 		EnableACP:                  enableACP,
 		IdentityLabel:              identityLabel,

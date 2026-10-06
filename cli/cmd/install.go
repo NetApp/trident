@@ -137,6 +137,7 @@ var (
 	httpsMetrics                 bool
 	cloudProvider                string
 	cloudIdentity                string
+	gcpWIFAudience               string
 	iscsiSelfHealingInterval     time.Duration
 	iscsiSelfHealingWaitTime     time.Duration
 	k8sAPIQPS                    int
@@ -277,6 +278,7 @@ func init() {
 
 	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
 	installCmd.Flags().StringVar(&cloudIdentity, "cloud-identity", "", "Cloud identity to be set on service account")
+	installCmd.Flags().StringVar(&gcpWIFAudience, "gcp-wif-audience", "", "GCP Workload Identity Federation audience for the controller service-account token")
 
 	installCmd.Flags().IntVar(&k8sAPIQPS, "k8s-api-qps", 0, "The QPS used by the controller while talking "+
 		"with the Kubernetes API server. The Burst value is automatically set as a function of the QPS value.")
@@ -494,6 +496,11 @@ func validateInstallationArguments() error {
 	if cloudProvider == "" && cloudIdentity != "" {
 		return fmt.Errorf("cloud provider must be specified for the cloud identity '%s'", cloudIdentity)
 	}
+	var audienceErr error
+	gcpWIFAudience, audienceErr = k8sclient.NormalizeGCPWIFAudience(gcpWIFAudience)
+	if audienceErr != nil {
+		return audienceErr
+	}
 
 	// Validate the cloud provider and cloud identity for Azure.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
@@ -506,14 +513,25 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAzure)
 	}
 
+	// Validate the cloud provider and cloud identity for GCP.
+	// A WIF audience on any other provider is rejected here, before the AWS identity
+	// check, so the audience error is not hidden by a missing AWS role annotation.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) {
+		if cloudIdentity != "" && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
+			return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
+		}
+		hasGKEIdentity := strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey)
+		hasOCPWIF := gcpWIFAudience != ""
+		if hasGKEIdentity && hasOCPWIF {
+			return fmt.Errorf("GCP does not support both a GKE cloud identity and an OCP WIF audience")
+		}
+	} else if gcpWIFAudience != "" {
+		return fmt.Errorf("GCP WIF audience requires cloud provider '%s'", k8sclient.CloudProviderGCP)
+	}
+
 	// Validate the cloud provider and cloud identity for AWS.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS) && !strings.Contains(cloudIdentity, k8sclient.AWSCloudIdentityKey) {
 		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAWS)
-	}
-
-	// Validate the cloud provider and cloud identity for GCP.
-	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
-		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
 	}
 
 	// Validate the fsGroupPolicy
@@ -745,6 +763,7 @@ func prepareYAMLFiles() error {
 		EnableACP:               enableACP,
 		CloudProvider:           cloudProvider,
 		IdentityLabel:           identityLabel,
+		GCPWIFAudience:          gcpWIFAudience,
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
 		EnableDataLIFRefresh:    enableDataLIFRefresh,
@@ -1144,6 +1163,7 @@ func installTrident() (returnError error) {
 			EnableACP:               enableACP,
 			CloudProvider:           cloudProvider,
 			IdentityLabel:           identityLabel,
+			GCPWIFAudience:          gcpWIFAudience,
 			K8sAPIQPS:               k8sAPIQPS,
 			EnableConcurrency:       enableConcurrency,
 			EnableDataLIFRefresh:    enableDataLIFRefresh,

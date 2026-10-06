@@ -67,6 +67,7 @@ spec:
   windows: {{ .Values.windows }}
   cloudProvider: {{ .Values.cloudProvider }}
   cloudIdentity: {{ .Values.cloudIdentity }}
+  gcpWIFAudience: {{ .Values.gcpWIFAudience | quote }}
   enableACP: {{ .Values.enableACP }}
   acpImage: {{ .Values.acpImage }}
   httpsMetrics: {{ .Values.httpsMetrics }}

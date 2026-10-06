@@ -232,6 +232,69 @@ func TestGetCSIDeploymentYAML_WithExcludeAutosupport(t *testing.T) {
 	assert.NotContains(t, deploymentYAML, getCSIDeploymentAutosupportVolumeYAML(installASUPDeploymentArgs))
 }
 
+func TestGetCSIDeploymentYAML_WithGCPWIFAudience(t *testing.T) {
+	const audience = "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc"
+
+	deploymentYAML := GetCSIDeploymentYAML(&DeploymentYAMLArguments{
+		CloudProvider:  CloudProviderGCP,
+		GCPWIFAudience: audience,
+		Version:        versionutils.MustParseSemantic("1.25.0"),
+	})
+
+	var deployment appsv1.Deployment
+	require.NoError(t, yaml.Unmarshal([]byte(deploymentYAML), &deployment))
+
+	var tokenVolume *v1.Volume
+	for index := range deployment.Spec.Template.Spec.Volumes {
+		volume := &deployment.Spec.Template.Spec.Volumes[index]
+		if volume.Name == "trident-wif-token" {
+			tokenVolume = volume
+			break
+		}
+	}
+	require.NotNil(t, tokenVolume)
+	require.Len(t, tokenVolume.Projected.Sources, 1)
+	require.NotNil(t, tokenVolume.Projected.Sources[0].ServiceAccountToken)
+	assert.Equal(t, audience, tokenVolume.Projected.Sources[0].ServiceAccountToken.Audience)
+	require.NotNil(t, tokenVolume.Projected.Sources[0].ServiceAccountToken.ExpirationSeconds)
+	assert.Equal(t, int64(3600), *tokenVolume.Projected.Sources[0].ServiceAccountToken.ExpirationSeconds)
+	assert.Equal(t, "token", tokenVolume.Projected.Sources[0].ServiceAccountToken.Path)
+
+	var controller *v1.Container
+	for index := range deployment.Spec.Template.Spec.Containers {
+		container := &deployment.Spec.Template.Spec.Containers[index]
+		if container.Name == "trident-main" {
+			controller = container
+			break
+		}
+	}
+	require.NotNil(t, controller)
+	var tokenMount *v1.VolumeMount
+	for index := range controller.VolumeMounts {
+		volumeMount := &controller.VolumeMounts[index]
+		if volumeMount.Name == "trident-wif-token" {
+			tokenMount = volumeMount
+			break
+		}
+	}
+	require.NotNil(t, tokenMount)
+	assert.Equal(t, "/var/run/secrets/wif-token", tokenMount.MountPath)
+	assert.True(t, tokenMount.ReadOnly)
+	assert.NotContains(t, deploymentYAML, "{GCP_WIF_TOKEN_VOLUME}")
+	assert.NotContains(t, deploymentYAML, "{GCP_WIF_TOKEN_VOLUME_MOUNT}")
+}
+
+func TestGetCSIDeploymentYAML_WithoutGCPWIFAudience(t *testing.T) {
+	deploymentYAML := GetCSIDeploymentYAML(&DeploymentYAMLArguments{
+		CloudProvider: CloudProviderGCP,
+		Version:       versionutils.MustParseSemantic("1.25.0"),
+	})
+
+	assert.NotContains(t, deploymentYAML, "trident-wif-token")
+	assert.NotContains(t, deploymentYAML, "{GCP_WIF_TOKEN_VOLUME}")
+	assert.NotContains(t, deploymentYAML, "{GCP_WIF_TOKEN_VOLUME_MOUNT}")
+}
+
 // Simple validation of the CSI Deployment YAML
 func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 	labels := make(map[string]string)

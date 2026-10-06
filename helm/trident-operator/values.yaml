@@ -148,6 +148,9 @@ cloudProvider: ""
 # cloudIdentity indicates the identity that needs to be set on service account.
 cloudIdentity: ""
 
+# gcpWIFAudience projects a GCP WIF-audience service-account token into the Trident controller.
+gcpWIFAudience: ""
+
 # enableACP allows enabling the Trident-ACP container to run.
 enableACP: false
 

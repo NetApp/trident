@@ -20,6 +20,6 @@ spec:
     plural: tridentorchestrators
     singular: tridentorchestrator
     shortNames:
-    - torc
-    - torchestrator
+      - torc
+      - torchestrator
   scope: Cluster

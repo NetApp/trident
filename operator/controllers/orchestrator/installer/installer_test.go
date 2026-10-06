@@ -13,6 +13,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -288,7 +289,7 @@ func TestCloudIdentityPrechecks(t *testing.T) {
 		{k8sclient.CloudProviderAzure, " rruuunu89-9933-49bd-134423", false, "Azure with invalid identity format"},
 		{k8sclient.CloudProviderAWS, "", false, "AWS with empty identity"},
 		{k8sclient.CloudProviderAWS, "invalid-aws-identity", false, "AWS with invalid identity format"},
-		{k8sclient.CloudProviderGCP, "", false, "GCP with empty identity"},
+		{k8sclient.CloudProviderGCP, "", true, "GCP with empty identity"},
 		{k8sclient.CloudProviderGCP, "invalid-gcp-identity", false, "GCP with invalid identity format"},
 	}
 
@@ -297,18 +298,69 @@ func TestCloudIdentityPrechecks(t *testing.T) {
 			// Store original values
 			originalCloudProvider := cloudProvider
 			originalCloudIdentity := cloudIdentity
+			originalGCPWIFAudience := gcpWIFAudience
 			defer func() {
 				cloudProvider = originalCloudProvider
 				cloudIdentity = originalCloudIdentity
+				gcpWIFAudience = originalGCPWIFAudience
 			}()
 
 			cloudProvider = test.cloudProvider
 			cloudIdentity = test.cloudIdentity
+			gcpWIFAudience = ""
 			err := installer.cloudIdentityPrechecks()
 			if test.Valid {
 				assert.NoError(t, err, "should be valid for %s", test.Description)
 			} else {
 				assert.Error(t, err, "should be invalid for %s", test.Description)
+			}
+		})
+	}
+}
+
+func TestCloudIdentityPrechecksGCPWIF(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+	audience := "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc"
+
+	tests := []struct {
+		name           string
+		cloudProvider  string
+		cloudIdentity  string
+		gcpWIFAudience string
+		valid          bool
+		expectedError  string
+	}{
+		{name: "GCP", cloudProvider: k8sclient.CloudProviderGCP, gcpWIFAudience: audience, valid: true},
+		{name: "AWS", cloudProvider: k8sclient.CloudProviderAWS, gcpWIFAudience: audience, valid: false, expectedError: "GCP WIF audience requires cloud provider 'GCP'"},
+		{name: "Azure", cloudProvider: k8sclient.CloudProviderAzure, gcpWIFAudience: audience, valid: false, expectedError: "GCP WIF audience requires cloud provider 'GCP'"},
+		{name: "empty provider", gcpWIFAudience: audience, valid: false, expectedError: "GCP WIF audience requires cloud provider 'GCP'"},
+		{name: "invalid audience", cloudProvider: k8sclient.CloudProviderGCP, gcpWIFAudience: "not-an-audience", valid: false, expectedError: "'not-an-audience' is not a valid GCP WIF audience"},
+		{name: "trimmed audience", cloudProvider: k8sclient.CloudProviderGCP, gcpWIFAudience: "  " + audience + "  ", valid: true},
+		{name: "whitespace is empty", cloudProvider: k8sclient.CloudProviderGCP, gcpWIFAudience: "   ", valid: true},
+		{name: "permits neither workload identity mode", cloudProvider: k8sclient.CloudProviderGCP, cloudIdentity: "", gcpWIFAudience: "", valid: true},
+		{name: "rejects both identity modes", cloudProvider: k8sclient.CloudProviderGCP, cloudIdentity: k8sclient.GCPCloudIdentityKey + "projects/123456/serviceAccounts/test@example.iam.gserviceaccount.com", gcpWIFAudience: audience, valid: false, expectedError: "GCP does not support both a GKE cloud identity and an OCP WIF audience"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			originalCloudProvider := cloudProvider
+			originalCloudIdentity := cloudIdentity
+			originalGCPWIFAudience := gcpWIFAudience
+			defer func() {
+				cloudProvider = originalCloudProvider
+				cloudIdentity = originalCloudIdentity
+				gcpWIFAudience = originalGCPWIFAudience
+			}()
+
+			cloudProvider = test.cloudProvider
+			cloudIdentity = test.cloudIdentity
+			gcpWIFAudience = test.gcpWIFAudience
+			err := installer.cloudIdentityPrechecks()
+			if test.valid {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, test.expectedError)
 			}
 		})
 	}
@@ -1987,6 +2039,63 @@ func TestCreateOrPatchTridentDeployment(t *testing.T) {
 		err := installer.createOrPatchTridentDeployment(controllingCRDetails, labels, false, reuseServiceAccountMap)
 
 		assert.NoError(t, err, "Should not error when creating or patching Trident deployment")
+	})
+
+	t.Run("deployment creation projects the WIF token", func(t *testing.T) {
+		originalCloudProvider := cloudProvider
+		originalGCPWIFAudience := gcpWIFAudience
+		defer func() {
+			cloudProvider = originalCloudProvider
+			gcpWIFAudience = originalGCPWIFAudience
+		}()
+		cloudProvider = k8sclient.CloudProviderGCP
+		gcpWIFAudience = "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc"
+
+		mockK8sClient.EXPECT().GetDeploymentInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, []appsv1.Deployment{}, true, nil)
+		mockK8sClient.EXPECT().RemoveMultipleDeployments(gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().CheckCRDExists(gomock.AssignableToTypeOf("")).Return(false, nil).AnyTimes()
+		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
+		mockK8sClient.EXPECT().PutDeployment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+			func(_ *appsv1.Deployment, _ bool, deploymentYAML string, _ string) error {
+				var deployment appsv1.Deployment
+				require.NoError(t, yaml.Unmarshal([]byte(deploymentYAML), &deployment))
+				var controller *corev1.Container
+				for index := range deployment.Spec.Template.Spec.Containers {
+					if deployment.Spec.Template.Spec.Containers[index].Name == "trident-main" {
+						controller = &deployment.Spec.Template.Spec.Containers[index]
+						break
+					}
+				}
+				require.NotNil(t, controller)
+				var tokenMount *corev1.VolumeMount
+				for index := range controller.VolumeMounts {
+					volumeMount := &controller.VolumeMounts[index]
+					if volumeMount.Name == "trident-wif-token" {
+						tokenMount = volumeMount
+						break
+					}
+				}
+				require.NotNil(t, tokenMount)
+				assert.Equal(t, "/var/run/secrets/wif-token", tokenMount.MountPath)
+				assert.True(t, tokenMount.ReadOnly)
+				var wifVolume *corev1.Volume
+				for index := range deployment.Spec.Template.Spec.Volumes {
+					if deployment.Spec.Template.Spec.Volumes[index].Name == "trident-wif-token" {
+						wifVolume = &deployment.Spec.Template.Spec.Volumes[index]
+						break
+					}
+				}
+				require.NotNil(t, wifVolume)
+				require.NotNil(t, wifVolume.Projected)
+				require.Len(t, wifVolume.Projected.Sources, 1)
+				require.NotNil(t, wifVolume.Projected.Sources[0].ServiceAccountToken)
+				assert.Equal(t, gcpWIFAudience,
+					wifVolume.Projected.Sources[0].ServiceAccountToken.Audience)
+				return nil
+			})
+
+		err := installer.createOrPatchTridentDeployment(controllingCRDetails, labels, false, reuseServiceAccountMap)
+		assert.NoError(t, err)
 	})
 
 	t.Run("failure getting deployment information", func(t *testing.T) {

@@ -178,6 +178,7 @@ type DeploymentYAMLArguments struct {
 	EnableACP                  bool                    `json:"enableACP"` // TODO: Remove after 26.04.
 	CloudProvider              string                  `json:"cloudProvider"`
 	IdentityLabel              bool                    `json:"identityLabel"`
+	GCPWIFAudience             string                  `json:"gcpWIFAudience"`
 	K8sAPIQPS                  int                     `json:"k8sAPIQPS"`
 	EnableConcurrency          bool                    `json:"enableConcurrency"`
 	EnableDataLIFRefresh       bool                    `json:"enableDataLIFRefresh"`

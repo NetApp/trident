@@ -83,6 +83,7 @@ type TridentOrchestratorSpec struct {
 	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
 	CloudProvider                string            `json:"cloudProvider,omitempty"`
 	CloudIdentity                string            `json:"cloudIdentity,omitempty"`
+	GCPWIFAudience               string            `json:"gcpWIFAudience,omitempty"`
 	EnableACP                    bool              `json:"enableACP,omitempty"`
 	ACPImage                     string            `json:"acpImage,omitempty"`
 	EnableAutoBackendConfig      bool              `json:"enableAutoBackendConfig,omitempty"`
@@ -203,6 +204,7 @@ type TridentOrchestratorSpecValues struct {
 	Resources                *config.Resources `json:"resources,omitempty"`
 	HTTPSMetrics             string            `json:"httpsMetrics"`
 	HostNetwork              bool              `json:"hostNetwork"`
+	GCPWIFAudience           string            `json:"gcpWIFAudience,omitempty"`
 }
 
 /************************

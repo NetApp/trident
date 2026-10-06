@@ -72,6 +72,8 @@ const (
 	AzureWorkloadIdentityLabel = "azure.workload.identity/use: 'true'"
 	AWSCloudIdentityKey        = "eks.amazonaws.com/role-arn:"
 	GCPCloudIdentityKey        = "iam.gke.io/gcp-service-account:"
+	// #nosec G101 -- Regex fragment validating GCP WIF pool/provider resource IDs; not a credential.
+	gcpWIFResourceIDPattern = `[a-z0-9](?:[a-z0-9-]{2,30}[a-z0-9])`
 )
 
 type LogLineCallback func(string)
@@ -86,11 +88,28 @@ var (
 	ctx    = GenerateRequestContext(nil, "", "", WorkflowK8sClientAPI, LogLayerNone)
 	reqCtx = context.Background
 
-	yamlToJSON     = yaml.YAMLToJSON
-	jsonMarshal    = json.Marshal
-	jsonUnmarshal  = json.Unmarshal
-	jsonMergePatch = jsonpatch.MergePatch
+	yamlToJSON            = yaml.YAMLToJSON
+	jsonMarshal           = json.Marshal
+	jsonUnmarshal         = json.Unmarshal
+	jsonMergePatch        = jsonpatch.MergePatch
+	gcpWIFAudiencePattern = regexp.MustCompile(
+		`^//iam\.googleapis\.com/projects/[0-9]+/locations/global/workloadIdentityPools/` +
+			gcpWIFResourceIDPattern +
+			`/providers/` +
+			gcpWIFResourceIDPattern +
+			`$`,
+	)
 )
+
+// NormalizeGCPWIFAudience accepts the provider resource-name audience form
+// used by the validated OSD WIF configuration.
+func NormalizeGCPWIFAudience(audience string) (string, error) {
+	audience = strings.TrimSpace(audience)
+	if audience != "" && !gcpWIFAudiencePattern.MatchString(audience) {
+		return "", fmt.Errorf("'%s' is not a valid GCP WIF audience", audience)
+	}
+	return audience, nil
+}
 
 type KubeClient struct {
 	clientset    kubernetes.Interface

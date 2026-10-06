@@ -44,6 +44,48 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+func TestNormalizeGCPWIFAudience(t *testing.T) {
+	valid := "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc"
+
+	tests := []struct {
+		name      string
+		input     string
+		want      string
+		wantError bool
+	}{
+		{name: "valid", input: valid, want: valid},
+		{name: "trims whitespace", input: "  " + valid + "  ", want: valid},
+		{name: "empty", input: "   ", want: ""},
+		{name: "invalid", input: "not-an-audience", wantError: true},
+		{name: "rejects unsupported URL-form audience", input: "https://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc", wantError: true},
+		{name: "rejects uppercase resource ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/Pool/providers/oidc", wantError: true},
+		{name: "rejects underscore in resource ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/my_pool/providers/oidc", wantError: true},
+		{name: "accepts pool starting with digit", input: "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/2s00or6795s5p714n8hddk6vhcfk7hn1/providers/oidc", want: "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/2s00or6795s5p714n8hddk6vhcfk7hn1/providers/oidc", wantError: false},
+		{name: "accepts provider starting with digit", input: "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/pool-id/providers/1provider", want: "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/pool-id/providers/1provider"},
+		{name: "rejects pool starting with hyphen", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/-pool/providers/oidc", wantError: true},
+		{name: "rejects pool ending with hyphen", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-/providers/oidc", wantError: true},
+		{name: "rejects provider starting with hyphen", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/-oidc", wantError: true},
+		{name: "rejects provider ending with hyphen", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc-", wantError: true},
+		{name: "rejects short pool ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/abc/providers/oidc", wantError: true},
+		{name: "rejects short provider ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/abc", wantError: true},
+		{name: "rejects uppercase provider resource ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/Oidc", wantError: true},
+		{name: "rejects underscore in provider resource ID", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/my_oidc", wantError: true},
+		{name: "accepts hyphens in pool", input: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/my-pool-1/providers/my-oidc", want: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/my-pool-1/providers/my-oidc"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := NormalizeGCPWIFAudience(test.input)
+			if test.wantError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 var mockError = errors.New("mock error")
 
 // testKubeClientTimeout keeps unit-test error paths fast; production uses 30s (client_factory.k8sTimeout).

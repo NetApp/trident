@@ -1762,10 +1762,12 @@ func TestCreateRBACObjects(t *testing.T) {
 	originalUseYAML := useYAML
 	originalWindows := windows
 	originalCloudIdentity := cloudIdentity
+	originalGCPWIFAudience := gcpWIFAudience
 	defer func() {
 		useYAML = originalUseYAML
 		windows = originalWindows
 		cloudIdentity = originalCloudIdentity
+		gcpWIFAudience = originalGCPWIFAudience
 	}()
 
 	tests := []struct {
@@ -3539,6 +3541,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 	originalImagePullPolicy := imagePullPolicy
 	originalCloudProvider := cloudProvider
 	originalCloudIdentity := cloudIdentity
+	originalGCPWIFAudience := gcpWIFAudience
 	originalIdentityLabel := identityLabel
 	originalFsGroupPolicy := fsGroupPolicy
 
@@ -3549,6 +3552,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 		imagePullPolicy = originalImagePullPolicy
 		cloudProvider = originalCloudProvider
 		cloudIdentity = originalCloudIdentity
+		gcpWIFAudience = originalGCPWIFAudience
 		identityLabel = originalIdentityLabel
 		fsGroupPolicy = originalFsGroupPolicy
 	}()
@@ -3561,6 +3565,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 		imagePullPolicy       string
 		cloudProvider         string
 		cloudIdentity         string
+		gcpWIFAudience        string
 		fsGroupPolicy         string
 		expectedError         string
 		expectedIdentityLabel bool
@@ -3710,7 +3715,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 			expectedCloudProvider: "aws",
 		},
 		{
-			name:                  "gcp_cloud_provider_requires_identity",
+			name:                  "gcp_cloud_provider_allows_gcp_wif_audience",
 			tridentPodNamespace:   "trident",
 			nodePrep:              []string{"iscsi"},
 			logFormat:             "text",
@@ -3718,9 +3723,97 @@ func TestValidateInstallationArguments(t *testing.T) {
 			cloudProvider:         "GCP",
 			cloudIdentity:         "",
 			fsGroupPolicy:         "",
-			expectedError:         "'' is not a valid cloud identity for the cloud provider 'GCP'",
+			gcpWIFAudience:        "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc",
+			expectedError:         "",
 			expectedIdentityLabel: false,
 			expectedCloudProvider: "GCP",
+		},
+		{
+			name:                  "gcp_cloud_provider_rejects_both_identity_modes",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "GCP",
+			cloudIdentity:         k8sclient.GCPCloudIdentityKey + "projects/123456/serviceAccounts/test@example.iam.gserviceaccount.com",
+			gcpWIFAudience:        "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc",
+			fsGroupPolicy:         "",
+			expectedError:         "GCP does not support both a GKE cloud identity and an OCP WIF audience",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "GCP",
+		},
+		{
+			name:                  "gcp_wif_rejects_invalid_audience",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "GCP",
+			gcpWIFAudience:        "not-an-audience",
+			fsGroupPolicy:         "",
+			expectedError:         "is not a valid GCP WIF audience",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "GCP",
+		},
+		{
+			name:                  "gcp_wif_trims_audience",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "GCP",
+			gcpWIFAudience:        "  //iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc  ",
+			expectedError:         "",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "GCP",
+		},
+		{
+			name:                  "gcp_wif_whitespace_is_empty",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "GCP",
+			gcpWIFAudience:        "   ",
+			expectedError:         "",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "GCP",
+		},
+		{
+			name:                  "gcp_wif_rejects_aws_provider",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "AWS",
+			gcpWIFAudience:        "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc",
+			expectedError:         "GCP WIF audience requires cloud provider 'GCP'",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "AWS",
+		},
+		{
+			name:                  "gcp_wif_rejects_azure_provider",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "Azure",
+			gcpWIFAudience:        "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc",
+			expectedError:         "GCP WIF audience requires cloud provider 'GCP'",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "Azure",
+		},
+		{
+			name:                  "gcp_wif_rejects_empty_provider",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "",
+			gcpWIFAudience:        "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/oidc",
+			expectedError:         "GCP WIF audience requires cloud provider 'GCP'",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "",
 		},
 		{
 			name:                  "cloud_identity_without_provider",
@@ -3892,6 +3985,20 @@ func TestValidateInstallationArguments(t *testing.T) {
 			expectedIdentityLabel: false,
 			expectedCloudProvider: "",
 		},
+		{
+			name:                  "gcp_cloud_provider_allows_neither_identity_mode",
+			tridentPodNamespace:   "trident",
+			nodePrep:              []string{"iscsi"},
+			logFormat:             "text",
+			imagePullPolicy:       "IfNotPresent",
+			cloudProvider:         "GCP",
+			cloudIdentity:         "",
+			gcpWIFAudience:        "",
+			fsGroupPolicy:         "",
+			expectedError:         "",
+			expectedIdentityLabel: false,
+			expectedCloudProvider: "GCP",
+		},
 	}
 
 	for _, tt := range tests {
@@ -3903,6 +4010,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 			imagePullPolicy = tt.imagePullPolicy
 			cloudProvider = tt.cloudProvider
 			cloudIdentity = tt.cloudIdentity
+			gcpWIFAudience = tt.gcpWIFAudience
 			fsGroupPolicy = tt.fsGroupPolicy
 			identityLabel = false // Reset before each test
 

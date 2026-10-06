@@ -118,40 +118,9 @@ func withOptionalTimeout(ctx context.Context, timeout time.Duration) (context.Co
 
 // NewDriver is a factory method for creating a new SDK interface.
 func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
-	var credentials *google.Credentials
-	var err error
-	if config.WIPCredentialConfig != nil {
-		Logc(ctx).Debug("Using GCP Workload Identity pool credentials from backend config")
-
-		if err := validateWIPCredentialConfig(config.WIPCredentialConfig); err != nil {
-			return nil, fmt.Errorf("invalid WIP credential configuration: %v", err)
-		}
-
-		credBytes, jsonErr := json.Marshal(config.WIPCredentialConfig)
-		if jsonErr != nil {
-			return nil, fmt.Errorf("failed to marshal WIP credential config: %v", jsonErr)
-		}
-
-		credentials, err = google.CredentialsFromJSON(ctx, credBytes, netapp.DefaultAuthScopes()...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create credentials from WIP credential config: %v", err)
-		}
-	} else if reflect.ValueOf(*config.APIKey).IsZero() {
-		credentials, err = google.FindDefaultCredentials(ctx)
-		if err != nil {
-			return nil, err
-		}
-	} else if config.APIKey != nil {
-		keyBytes, jsonErr := json.Marshal(config.APIKey) //nolint:gosec // serialized for google.CredentialsFromJSON only
-		if jsonErr != nil {
-			return nil, jsonErr
-		}
-		credentials, err = google.CredentialsFromJSON(ctx, keyBytes, netapp.DefaultAuthScopes()...)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, errors.New("apiKey in config must be specified")
+	credentials, err := resolveCredentials(ctx, config)
+	if err != nil {
+		return nil, err
 	}
 
 	computeClient, computeErr := compute.NewRegionZonesRESTClient(ctx, option.WithCredentials(credentials))
@@ -189,6 +158,53 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 		config:    config,
 		sdkClient: sdkClient,
 	}, nil
+}
+
+// resolveCredentials resolves GCP credentials in priority order:
+//  1. Workload Identity Pool (WIP) credential config
+//  2. Service account key (GCPPrivateKey)
+//  3. Application Default Credentials (ADC) - GKE workload identity, metadata server, etc.
+func resolveCredentials(ctx context.Context, config *ClientConfig) (*google.Credentials, error) {
+	if config.WIPCredentialConfig != nil {
+		Logc(ctx).Debug("Using GCP Workload Identity pool credentials from backend config")
+
+		if err := validateWIPCredentialConfig(config.WIPCredentialConfig); err != nil {
+			return nil, fmt.Errorf("invalid WIP credential configuration: %v", err)
+		}
+
+		credBytes, jsonErr := json.Marshal(config.WIPCredentialConfig)
+		if jsonErr != nil {
+			return nil, fmt.Errorf("failed to marshal WIP credential config: %v", jsonErr)
+		}
+
+		credentials, err := google.CredentialsFromJSONWithType(ctx, credBytes, google.ExternalAccount, netapp.DefaultAuthScopes()...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create credentials from WIP credential config: %v", err)
+		}
+		return credentials, nil
+	}
+
+	if config.APIKey == nil {
+		return nil, errors.New("apiKey in config must be specified")
+	}
+
+	if reflect.ValueOf(*config.APIKey).IsZero() {
+		credentials, err := google.FindDefaultCredentials(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return credentials, nil
+	}
+
+	keyBytes, jsonErr := json.Marshal(config.APIKey) //nolint:gosec // serialized for google.CredentialsFromJSONWithType only
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+	credentials, err := google.CredentialsFromJSONWithType(ctx, keyBytes, google.ServiceAccount, netapp.DefaultAuthScopes()...)
+	if err != nil {
+		return nil, err
+	}
+	return credentials, nil
 }
 
 func validateWIPCredentialConfig(config *drivers.GCPWIPCredential) error {

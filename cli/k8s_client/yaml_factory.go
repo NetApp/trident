@@ -585,6 +585,21 @@ func getCSIDeploymentAutosupportVolumeYAML(args *DeploymentYAMLArguments) string
 	return deploymentAutosupportVolumeYAML
 }
 
+const (
+	// #nosec G101 -- This YAML fragment describes a projected token mount; it contains no token value.
+	gcpWIFTokenVolumeMountYAML = `- name: trident-wif-token
+          mountPath: /var/run/secrets/wif-token
+          readOnly: true`
+	// #nosec G101 -- This YAML fragment describes token projection; it contains no credential value.
+	gcpWIFTokenVolumeYAML = `- name: trident-wif-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: %s
+              expirationSeconds: 3600
+              path: token`
+)
+
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, httpsMetrics, metrics, K8sAPISidecarThrottle, K8sAPITridentThrottle string
 	Log().WithFields(LogFields{
@@ -672,6 +687,16 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_ENV}", "")
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME}", "")
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "")
+	}
+
+	if args.GCPWIFAudience != "" {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{GCP_WIF_TOKEN_VOLUME_MOUNT}",
+			gcpWIFTokenVolumeMountYAML)
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{GCP_WIF_TOKEN_VOLUME}",
+			fmt.Sprintf(gcpWIFTokenVolumeYAML, strconv.Quote(args.GCPWIFAudience)))
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{GCP_WIF_TOKEN_VOLUME_MOUNT}", "")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{GCP_WIF_TOKEN_VOLUME}", "")
 	}
 
 	qpsTrident := commonconfig.DefaultK8sAPIQPS
@@ -860,6 +885,7 @@ spec:
           mountPath: /certs
           readOnly: true
         {AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}
+        {GCP_WIF_TOKEN_VOLUME_MOUNT}
       {AUTOSUPPORT_YAML}
       - name: csi-provisioner
         image: {CSI_SIDECAR_PROVISIONER_IMAGE}
@@ -983,6 +1009,7 @@ spec:
               name: trident-encryption-keys
       {AUTOSUPPORT_VOLUME_YAML}
       {AZURE_CREDENTIAL_FILE_VOLUME}
+      {GCP_WIF_TOKEN_VOLUME}
 `
 
 func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
@@ -2477,8 +2504,8 @@ spec:
                   type: string
                   format: duration
                   description: >-
-                    When set, this CR will be automatically deleted after this interval after the move is 
-                    completed successfully (for example 10m or 30s). If set to 0, the CR is deleted 
+                    When set, this CR will be automatically deleted after this interval after the move is
+                    completed successfully (for example 10m or 30s). If set to 0, the CR is deleted
                     immediately. If omitted, the CR is retained. Failed moves are not deleted.
             status:
               type: object
@@ -2543,7 +2570,7 @@ spec:
           description: Current move state
           jsonPath: .status.state
           priority: 0
-        - name: Age 
+        - name: Age
           type: date
           description: Time since creation
           jsonPath: .metadata.creationTimestamp
