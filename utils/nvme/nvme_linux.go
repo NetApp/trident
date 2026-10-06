@@ -29,8 +29,9 @@ var (
 )
 
 const (
-	NVME_PATH = "/sys/class/nvme-subsystem"
-	SUBSYSNQN = "/subsysnqn"
+	NVME_PATH  = "/sys/class/nvme-subsystem"
+	SUBSYSNQN  = "/subsysnqn"
+	nvmeTCPDir = "/sys/module/nvme_tcp"
 )
 
 // GetHostNqn returns the Nqn string of the k8s node.
@@ -59,6 +60,15 @@ func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("failed to get hostnqn: %v", err)
 	}
 
+	// /sys/module/nvme_tcp exists for a loaded module and for a transport built
+	// into the kernel. A stat failure is not fatal; lsmod still runs below.
+	switch present, statErr := nh.nvmeTCPDirPresent(); {
+	case statErr != nil:
+		Logc(ctx).WithError(statErr).Warn("Could not inspect the NVMe/TCP kernel module in sysfs.")
+	case present:
+		return true, nil
+	}
+
 	out, err := nh.command.ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second, false)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Could not read the modules loaded on the host.")
@@ -73,6 +83,19 @@ func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	}
 
 	return false, fmt.Errorf("NVMe driver is not loaded on the host")
+}
+
+// nvmeTCPDirPresent reports whether the nvme_tcp sysfs directory exists.
+// A missing path is false with a nil error. Non-directories are treated as absent.
+func (nh *NVMeHandler) nvmeTCPDirPresent() (bool, error) {
+	info, err := nh.osFs.Stat(nvmeTCPDir)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir(), nil
 }
 
 func (nh *NVMeHandler) listSubsystemsFromSysFs(ctx context.Context) (Subsystems, error) {

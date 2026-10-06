@@ -56,9 +56,7 @@ func TestGetHostNQN(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestNVMeActiveOnHost(t *testing.T) {
-	// Test1: Success - NVMe is active on host
-	expectedValue := true
+func TestNVMeActiveOnHostLoadedModule(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
@@ -67,44 +65,72 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
 		false).Return([]byte("nvme_tcp"), nil)
 
-	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, nil)
-	gotValue, err := handler.NVMeActiveOnHost(ctx)
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, afero.NewMemMapFs())
+	active, err := handler.NVMeActiveOnHost(ctx)
 
-	assert.Equal(t, expectedValue, gotValue)
+	assert.True(t, active)
 	assert.NoError(t, err)
+}
 
-	// Test2: Error - NVMe cli is not installed on host
-	expectedValue = false
+func TestNVMeActiveOnHostBuiltinTransport(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	fs := afero.NewMemMapFs()
+	assert.NoError(t, fs.MkdirAll(nvmeTCPDir, 0o755))
+	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
+		false, "version").Return([]byte(""), nil)
+
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, fs)
+	active, err := handler.NVMeActiveOnHost(ctx)
+
+	assert.True(t, active)
+	assert.NoError(t, err)
+}
+
+func TestNVMeActiveOnHostCLIMissing(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), errors.New("NVMe CLI not installed"))
 
-	gotValue, err = handler.NVMeActiveOnHost(ctx)
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, afero.NewMemMapFs())
+	active, err := handler.NVMeActiveOnHost(ctx)
 
-	assert.Equal(t, expectedValue, gotValue)
+	assert.False(t, active)
 	assert.Error(t, err)
+}
 
-	// Test3: Error - Unable to get driver info
-	expectedValue = false
+func TestNVMeActiveOnHostLsmodFails(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
 		false).Return([]byte(""), errors.New("error getting NVMe driver info"))
 
-	gotValue, err = handler.NVMeActiveOnHost(ctx)
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, afero.NewMemMapFs())
+	active, err := handler.NVMeActiveOnHost(ctx)
 
-	assert.Equal(t, expectedValue, gotValue)
+	assert.False(t, active)
 	assert.Error(t, err)
+}
 
-	// Test4: Error - NVMe/tcp module not loaded on the host
-	expectedValue = false
+func TestNVMeActiveOnHostTransportAbsent(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
 		false).Return([]byte(""), nil)
 
-	gotValue, err = handler.NVMeActiveOnHost(ctx)
+	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, afero.NewMemMapFs())
+	active, err := handler.NVMeActiveOnHost(ctx)
 
-	assert.Equal(t, expectedValue, gotValue)
+	assert.False(t, active)
 	assert.Error(t, err)
 }
 
