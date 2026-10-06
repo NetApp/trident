@@ -2163,6 +2163,126 @@ func TestCreate_VolumeExists(t *testing.T) {
 
 	assert.Error(t, result, "create did not fail")
 	assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
+	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestReconcileExistingVolume(t *testing.T) {
+	tests := []struct {
+		name         string
+		state        string
+		deleteErr    error
+		wantDelete   bool
+		wantAdopt    bool
+		wantContains string
+	}{
+		{name: "ready", state: api.VolumeStateReady, wantAdopt: true, wantContains: "already exists"},
+		{name: "error delete succeeds", state: api.VolumeStateError, wantDelete: true, wantContains: "error state and was deleted"},
+		{name: "error delete fails", state: api.VolumeStateError, deleteErr: errFailed, wantDelete: true, wantContains: "failed to delete volume"},
+		{name: "creating", state: api.VolumeStateCreating},
+		{name: "deleting", state: api.VolumeStateDeleting},
+		{name: "disabled", state: api.VolumeStateDisabled},
+		{name: "updating", state: api.VolumeStateUpdating},
+		{name: "restoring", state: api.VolumeStateRestoring},
+		{name: "unspecified", state: api.VolumeStateUnspecified},
+		{name: "unknown", state: "Unknown"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{}
+			volume := &api.Volume{
+				Name:     "test-volume",
+				FullName: "projects/test-project/locations/us-central1/volumes/test-volume",
+				State:    test.state,
+			}
+			deleteCalls := 0
+			result := reconcileExistingVolume(ctx, volume.Name, volConfig, volume, func() error {
+				deleteCalls++
+				return test.deleteErr
+			})
+
+			if assert.Error(t, result) {
+				if test.wantContains != "" {
+					assert.Contains(t, result.Error(), test.wantContains)
+				} else {
+					assert.Contains(t, result.Error(), test.state)
+				}
+			}
+			if test.wantDelete {
+				assert.Equal(t, 1, deleteCalls)
+			} else {
+				assert.Zero(t, deleteCalls)
+			}
+			if test.wantAdopt {
+				assert.IsType(t, drivers.NewVolumeExistsError(""), result)
+				assert.Equal(t, volume.FullName, volConfig.InternalID)
+			} else {
+				assert.IsType(t, errors.VolumeCreatingError(""), result)
+				assert.Empty(t, volConfig.InternalID)
+			}
+			if test.deleteErr != nil {
+				assert.Contains(t, result.Error(), "failed to delete volume")
+				assert.Contains(t, result.Error(), test.deleteErr.Error())
+			}
+		})
+	}
+}
+
+func TestCreate_VolumeExistsErrorStateDeletesAndRetries(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	volConfig, _, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volume.State = api.VolumeStateError
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, volume, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create did not fail")
+	assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestCreate_VolumeExistsDeletingRetriesWithoutAdopting(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	volConfig, _, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volume.State = api.VolumeStateDeleting
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create did not fail")
+	assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.Contains(t, result.Error(), "Deleting")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -3878,7 +3998,66 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 
 	assert.Error(t, result, "expected error")
 	assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
+	assert.Equal(t, cloneVolume.FullName, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreateClone_VolumeExistsErrorStateDeletesAndRetries(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	cloneVolume.State = api.VolumeStateError
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(true, cloneVolume, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, cloneVolume, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.Error(t, result, "expected error")
+	assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestCreateClone_VolumeExistsDeletingRetriesWithoutAdopting(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	cloneVolume.State = api.VolumeStateDeleting
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(true, cloneVolume, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.Error(t, result, "expected error")
+	assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.Contains(t, result.Error(), api.VolumeStateDeleting)
+	assert.Empty(t, cloneVolConfig.InternalID, "internal ID should not be set for a deleting clone")
 }
 
 func TestCreateClone_SnapshotNotFound(t *testing.T) {

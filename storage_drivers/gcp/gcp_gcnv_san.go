@@ -633,18 +633,9 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"name":  name,
-			"state": extantVolume.State,
-		}).Debug("Volume already exists.")
-
-		return drivers.NewVolumeExistsError(name)
+		return reconcileExistingVolume(ctx, name, volConfig, extantVolume, func() error {
+			return d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout())
+		})
 	}
 
 	// Parse size
@@ -872,12 +863,9 @@ func (d *SANStorageDriver) CreateClone(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-		return drivers.NewVolumeExistsError(name)
+		return reconcileExistingVolume(ctx, name, cloneVolConfig, extantVolume, func() error {
+			return d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout())
+		})
 	}
 
 	var sourceSnapshot *api.Snapshot

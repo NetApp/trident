@@ -1601,6 +1601,51 @@ func TestSANDriver_Create_VolumeExists(t *testing.T) {
 	err := driver.Create(ctx, volConfig, pool, nil)
 	assert.Error(t, err, "Create should fail when volume exists")
 	assert.Contains(t, err.Error(), "already exists")
+	assert.Equal(t, getTestVolume().FullName, volConfig.InternalID, "InternalID should be the existing volume")
+}
+
+func TestSANDriver_Create_VolumeExistsErrorStateDeletesAndRetries(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Name:         testVolumeName,
+		InternalName: "test_volume",
+		Size:         testVolumeSizeStr,
+		FileSystem:   "ext4",
+	}
+	existing := getTestVolume()
+	existing.State = api.VolumeStateError
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, existing, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, existing, gomock.Any()).Return(nil).Times(1)
+
+	err := driver.Create(ctx, volConfig, driver.pools["test-pool"], nil)
+	assert.Error(t, err)
+	assert.IsType(t, errors.VolumeCreatingError(""), err)
+	assert.Equal(t, "", volConfig.InternalID, "InternalID should not be set for an error volume")
+}
+
+func TestSANDriver_Create_VolumeExistsDeletingRetriesWithoutAdopting(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Name:         testVolumeName,
+		InternalName: "test_volume",
+		Size:         testVolumeSizeStr,
+		FileSystem:   "ext4",
+	}
+	existing := getTestVolume()
+	existing.State = api.VolumeStateDeleting
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, existing, nil).Times(1)
+
+	err := driver.Create(ctx, volConfig, driver.pools["test-pool"], nil)
+	assert.Error(t, err)
+	assert.IsType(t, errors.VolumeCreatingError(""), err)
+	assert.Contains(t, err.Error(), "Deleting")
+	assert.Equal(t, "", volConfig.InternalID, "InternalID should not be set for a deleting volume")
 }
 
 func TestSANDriver_Create_InvalidVolumeName(t *testing.T) {
@@ -3505,7 +3550,11 @@ func TestSANDriver_CreateClone_CloneExistsReady(t *testing.T) {
 		Size:                        testVolumeSizeStr,
 	}
 
-	existing := &api.Volume{Name: "test_clone", State: api.VolumeStateReady}
+	existing := &api.Volume{
+		Name:     "test_clone",
+		FullName: "projects/test-project/locations/us-central1/volumes/test_clone",
+		State:    api.VolumeStateReady,
+	}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
@@ -3514,6 +3563,67 @@ func TestSANDriver_CreateClone_CloneExistsReady(t *testing.T) {
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already exists")
+	assert.Equal(t, existing.FullName, cloneConfig.InternalID, "InternalID should be the existing clone")
+}
+
+func TestSANDriver_CreateClone_CloneExistsDeletingRetriesWithoutAdopting(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	sourceVolConfig := &storage.VolumeConfig{
+		InternalName: testVolumeName,
+	}
+	cloneConfig := &storage.VolumeConfig{
+		Name:                        "test_clone",
+		InternalName:                "test_clone",
+		CloneSourceVolumeInternal:   testVolumeName,
+		CloneSourceSnapshotInternal: "test-snap",
+		Size:                        testVolumeSizeStr,
+	}
+	existing := &api.Volume{
+		Name:     "test_clone",
+		FullName: "projects/test-project/locations/us-central1/volumes/test_clone",
+		State:    api.VolumeStateDeleting,
+	}
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(true, existing, nil).Times(1)
+
+	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
+	assert.Error(t, err)
+	assert.IsType(t, errors.VolumeCreatingError(""), err)
+	assert.Contains(t, err.Error(), api.VolumeStateDeleting)
+	assert.Empty(t, cloneConfig.InternalID, "InternalID should not be set for a deleting clone")
+}
+
+func TestSANDriver_CreateClone_CloneExistsErrorStateDeletesAndRetries(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	sourceVolConfig := &storage.VolumeConfig{
+		InternalName: testVolumeName,
+	}
+	cloneConfig := &storage.VolumeConfig{
+		Name:                        "test_clone",
+		InternalName:                "test_clone",
+		CloneSourceVolumeInternal:   testVolumeName,
+		CloneSourceSnapshotInternal: "test-snap",
+		Size:                        testVolumeSizeStr,
+	}
+	existing := &api.Volume{
+		Name:     "test_clone",
+		FullName: "projects/test-project/locations/us-central1/volumes/test_clone",
+		State:    api.VolumeStateError,
+	}
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(true, existing, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, existing, gomock.Any()).Return(nil).Times(1)
+
+	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
+	assert.Error(t, err)
+	assert.IsType(t, errors.VolumeCreatingError(""), err)
+	assert.Equal(t, "", cloneConfig.InternalID, "InternalID should not be set for an error clone")
 }
 
 func TestSANDriver_CreateClone_SourceVolumeError(t *testing.T) {

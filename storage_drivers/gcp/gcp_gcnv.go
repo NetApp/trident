@@ -196,6 +196,36 @@ func (d *NASStorageDriver) deleteTimeout() time.Duration {
 	return 0
 }
 
+// reconcileExistingVolume handles a GCNV volume that already exists during Create or CreateClone.
+// InternalID is set on volConfig only when the volume is Ready. Error-state volumes are
+// deleted to unblock the name for retry. All other non-Ready states return a retryable
+// error without adoption.
+func reconcileExistingVolume(
+	ctx context.Context, name string, volConfig *storage.VolumeConfig, extantVolume *api.Volume, deleteVolume func() error,
+) error {
+	fields := LogFields{"name": name, "state": extantVolume.State}
+
+	switch extantVolume.State {
+	case api.VolumeStateReady:
+		Logc(ctx).WithFields(fields).Debug("Volume already exists.")
+		volConfig.InternalID = extantVolume.FullName
+		return drivers.NewVolumeExistsError(name)
+	case api.VolumeStateError:
+		Logc(ctx).WithFields(fields).Warn("Existing volume is in error state; deleting it so create can retry.")
+		if err := deleteVolume(); err != nil {
+			return errors.VolumeCreatingError(
+				fmt.Sprintf("failed to delete volume %s in error state: %v", name, err))
+		}
+		return errors.VolumeCreatingError(fmt.Sprintf("volume %s was in error state and was deleted", name))
+	default:
+		// Only Ready volumes are adopted. Transient states may resolve on retry, but
+		// terminal or unexpected states must not bind the PVC to unusable storage.
+		Logc(ctx).WithFields(fields).Debug("Volume exists but is not ready; not adopting.")
+		return errors.VolumeCreatingError(
+			fmt.Sprintf("volume state is still %s, not %s", extantVolume.State, api.VolumeStateReady))
+	}
+}
+
 // Initialize initializes this driver from the provided config.
 func (d *NASStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
@@ -747,18 +777,9 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"name":  name,
-			"state": extantVolume.State,
-		}).Debug("Volume already exists.")
-
-		return drivers.NewVolumeExistsError(name)
+		return reconcileExistingVolume(ctx, name, volConfig, extantVolume, func() error {
+			return d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout())
+		})
 	}
 
 	// Take service level from volume config first (handles Docker case), then from pool.
@@ -1210,12 +1231,9 @@ func (d *NASStorageDriver) CreateClone(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-		return drivers.NewVolumeExistsError(name)
+		return reconcileExistingVolume(ctx, name, cloneVolConfig, extantVolume, func() error {
+			return d.API.DeleteVolume(ctx, extantVolume, d.deleteTimeout())
+		})
 	}
 
 	var sourceSnapshot *api.Snapshot
