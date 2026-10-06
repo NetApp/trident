@@ -7294,19 +7294,31 @@ func TestGCNVGet(t *testing.T) {
 
 	driver.Config.StoragePrefix = new("myPrefix-")
 
-	volumes := &api.Volume{}
-
-	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeByName(ctx, "volume1").Return(volumes, nil).Times(1)
-
-	volConfig1 := &storage.VolumeConfig{
-		Name:         "volume1",
-		InternalName: "volume1",
+	// Deliberately include all identifiers.  Get must pass the entire
+	// VolumeConfig to API.Volume so the API layer can prefer InternalID
+	// and use Flex Unified name fallback when required.
+	volConfig := &storage.VolumeConfig{
+		Name:         "pvc-dead-beef",
+		InternalName: "trident-pvc-dead-beef",
+		InternalID:   "projects/123456789/locations/us-central1/volumes/pvc_dead_beef",
 	}
 
-	result := driver.Get(ctx, volConfig1)
+	volume := &api.Volume{
+		Name:     "pvc_dead_beef",
+		FullName: volConfig.InternalID,
+		State:    api.VolumeStateReady,
+	}
 
-	assert.Nil(t, result, "not nil")
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+
+	// Regression assertion: use the VolumeConfig-aware resolver. The old
+	// implementation called VolumeByName(ctx, volConfig.InternalName),
+	// bypassing InternalID and Flex Unified name handling.
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
+
+	err := driver.Get(ctx, volConfig)
+
+	assert.NoError(t, err)
 }
 
 func TestGet_DiscoveryFailed(t *testing.T) {
@@ -7326,22 +7338,48 @@ func TestGet_DiscoveryFailed(t *testing.T) {
 	assert.Error(t, result, "expected error")
 }
 
-func TestGet_NotFound(t *testing.T) {
+func TestGet_VolumeLookupFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
 	driver.Config.StoragePrefix = new("myPrefix-")
 
-	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeByName(ctx, "volume1").Return(nil, errFailed).Times(1)
-
-	volConfig1 := &storage.VolumeConfig{
+	volConfig := &storage.VolumeConfig{
 		Name:         "volume1",
 		InternalName: "volume1",
 	}
 
-	result := driver.Get(ctx, volConfig1)
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errFailed).Times(1)
+
+	result := driver.Get(ctx, volConfig)
 
 	assert.Error(t, result, "expected error")
+	assert.ErrorIs(t, result, errFailed)
+}
+
+// TestGet_DelegatesToCanonicalResolver pins that Get hands the VolumeConfig to
+// API.Volume. Hyphen-to-underscore fallback is covered by TestGCNVVolumeFallbackNames.
+// SAN delegation is covered by TestSANDriver_Get_Success.
+func TestGet_DelegatesToCanonicalResolver(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+	driver.Config.StoragePrefix = new("myPrefix-")
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "pvc-dead-beef",
+		InternalName: "pvc-dead-beef", // hyphens
+		// InternalID intentionally empty
+	}
+
+	volume := &api.Volume{
+		Name:  "pvc_dead_beef", // underscores (Unified)
+		State: api.VolumeStateReady,
+	}
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
+
+	err := driver.Get(ctx, volConfig)
+	assert.NoError(t, err)
 }
 
 func TestResize(t *testing.T) {

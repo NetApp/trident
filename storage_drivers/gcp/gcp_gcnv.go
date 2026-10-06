@@ -2237,8 +2237,8 @@ func (d *NASStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeCon
 		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	if _, err := d.API.VolumeByName(ctx, name); err != nil {
-		return fmt.Errorf("could not get volume %s; %v", name, err)
+	if _, err := d.API.Volume(ctx, volConfig); err != nil {
+		return fmt.Errorf("could not get volume %s; %w", name, err)
 	}
 
 	return nil
