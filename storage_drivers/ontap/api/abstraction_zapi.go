@@ -2004,7 +2004,7 @@ func (d OntapAPIZAPI) QtreeRename(ctx context.Context, path, newPath string) err
 
 func (d OntapAPIZAPI) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
 	response, err := d.api.QtreeModifyExportPolicy(name, volumeName, newExportPolicyName)
-	if zerr := azgo.GetError(ctx, *response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, response, err); zerr != nil {
 		apiError, message, code := ExtractError(zerr)
 		if apiError == "failed" && code == azgo.EAPIERROR {
 			return errors.NotFoundError(message)

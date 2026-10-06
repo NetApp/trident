@@ -3,6 +3,7 @@
 package storagedrivers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -728,6 +729,16 @@ func (t TestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t(req)
 }
 
+type closeTrackingBody struct {
+	io.Reader
+	closed bool
+}
+
+func (b *closeTrackingBody) Close() error {
+	b.closed = true
+	return nil
+}
+
 func TestLimitedRetryTransport(t *testing.T) {
 	newFastTransport := func(base TestTransport, target ContextRequestTarget) *LimitedRetryTransport {
 		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), base, target)
@@ -840,6 +851,110 @@ func TestLimitedRetryTransport(t *testing.T) {
 		_, err = tr.RoundTrip(req)
 		assert.NoError(t, err, "LimitedRetryTransport must retry when EOF is wrapped inside ServerBackPressureError")
 		assert.Equal(t, eofRetries+1, calls)
+	})
+	t.Run("retries EOF with replayable body", func(t *testing.T) {
+		const body = `{"key":"value"}`
+		var firstBody []byte
+		calls := 0
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if req.Body != nil {
+				got, err := io.ReadAll(req.Body)
+				assert.NoError(t, err)
+				req.Body.Close()
+				if calls == 1 {
+					firstBody = got
+					return nil, io.EOF
+				}
+				assert.Equal(t, firstBody, got, "retry must replay the same request body")
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+			}, nil
+		}), "")
+		req, err := http.NewRequest(http.MethodPost, "http://localhost", bytes.NewReader([]byte(body)))
+		assert.NoError(t, err)
+		assert.NotNil(t, req.GetBody, "bytes.Reader requests must be replayable")
+		_, err = tr.RoundTrip(req)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, calls, "EOF with a replayable body should be retried")
+		assert.Equal(t, []byte(body), firstBody)
+	})
+	t.Run("does not retry EOF with non-replayable body", func(t *testing.T) {
+		calls := 0
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			return nil, io.EOF
+		}), "")
+		body := []byte(`{"key":"value"}`)
+		req, err := http.NewRequest(http.MethodPost, "http://localhost", io.NopCloser(bytes.NewReader(body)))
+		assert.NoError(t, err)
+		req.ContentLength = int64(len(body))
+		req.GetBody = nil
+		_, err = tr.RoundTrip(req)
+		assert.ErrorIs(t, err, io.EOF)
+		assert.Equal(t, 1, calls, "EOF with a non-replayable body must not be retried")
+	})
+	t.Run("does not retry EOF with unknown-length non-replayable body", func(t *testing.T) {
+		calls := 0
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			return nil, io.EOF
+		}), "")
+		req, err := http.NewRequest(http.MethodPost, "http://localhost",
+			io.NopCloser(bytes.NewReader([]byte(`{"key":"value"}`))))
+		assert.NoError(t, err)
+		assert.Nil(t, req.GetBody)
+		assert.Zero(t, req.ContentLength, "unknown length, not empty")
+		_, err = tr.RoundTrip(req)
+		assert.ErrorIs(t, err, io.EOF)
+		assert.Equal(t, 1, calls, "unknown-length non-replayable body must not be retried")
+	})
+	t.Run("retries EOF when body is http.NoBody", func(t *testing.T) {
+		// http.Client sets Body to http.NoBody for empty requests. GetBody stays nil.
+		calls := 0
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if calls == 1 {
+				return nil, io.EOF
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+			}, nil
+		}), "")
+		req, err := http.NewRequest(http.MethodGet, "http://localhost", http.NoBody)
+		assert.NoError(t, err)
+		assert.Nil(t, req.GetBody)
+		_, err = tr.RoundTrip(req)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, calls, "empty http.NoBody requests must still retry EOF")
+	})
+	t.Run("closes original body when GetBody supplies each attempt", func(t *testing.T) {
+		calls := 0
+		tr := newFastTransport(TestTransport(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if calls == 1 {
+				return nil, io.EOF
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+			}, nil
+		}), "")
+		req, err := http.NewRequest(http.MethodPost, "http://localhost", bytes.NewReader([]byte(`{"key":"value"}`)))
+		assert.NoError(t, err)
+		assert.NotNil(t, req.GetBody)
+		original := &closeTrackingBody{Reader: strings.NewReader(`{"key":"value"}`)}
+		req.Body = original
+		_, err = tr.RoundTrip(req)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, calls)
+		assert.True(t, original.closed, "RoundTrip must close the caller's body when GetBody supplies each attempt")
 	})
 }
 

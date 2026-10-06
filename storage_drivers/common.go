@@ -501,30 +501,50 @@ func cloneExponentialBackOff(src *backoff.ExponentialBackOff) *backoff.Exponenti
 	return &clone
 }
 
+// requestBodyReplayable reports whether an EOF retry can send the same request
+// body again. Without GetBody, only a nil Body or http.NoBody is known to be empty:
+// for client requests, ContentLength 0 with a non-nil Body means unknown length.
+func requestBodyReplayable(req *http.Request) bool {
+	return req.GetBody != nil || req.Body == nil || req.Body == http.NoBody
+}
+
 func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
+	rClone := req.Clone(req.Context())
+	// RoundTrip must close the caller's body; attempts only send fresh copies from GetBody.
+	if req.GetBody != nil && req.Body != nil {
+		_ = req.Body.Close()
+	}
 	f := func() error {
 		waitStart := time.Now()
-		if err := lrt.sem.Acquire(req.Context(), 1); err != nil {
+		if err := lrt.sem.Acquire(rClone.Context(), 1); err != nil {
 			return backoff.Permanent(err)
 		}
 		defer lrt.sem.Release(1)
 
 		// Capture how long the request was waiting for a semaphore lock.
-		CaptureOutgoingAPIRequestTokenDuration(req.Context(), lrt.t, req.URL.Host, req.Method, time.Since(waitStart))
+		CaptureOutgoingAPIRequestTokenDuration(rClone.Context(), lrt.t, rClone.URL.Host, rClone.Method, time.Since(waitStart))
 
-		r, err := lrt.base.RoundTrip(req)
+		if req.GetBody != nil {
+			body, err := req.GetBody()
+			if err != nil {
+				return backoff.Permanent(err)
+			}
+			rClone.Body = body
+		}
+		r, err := lrt.base.RoundTrip(rClone)
 		resp = r
 		if err == nil {
 			return nil
 		}
 
-		if !errors.Is(err, io.EOF) {
+		// Retry only on EOF, and only when the body can be sent again.
+		if !errors.Is(err, io.EOF) || !requestBodyReplayable(req) {
 			return backoff.Permanent(err)
 		}
 
 		// If we hit an EOF, we can retry and increment the total.
-		CaptureOutgoingAPIRequestRetryTotal(req.Context(), lrt.t, req.URL.Host, req.Method)
+		CaptureOutgoingAPIRequestRetryTotal(rClone.Context(), lrt.t, rClone.URL.Host, rClone.Method)
 		return err
 	}
 	// Build a fresh per-request backoff instance so concurrent requests do not
