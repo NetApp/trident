@@ -149,7 +149,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "26.06.1"
+	DefaultOrchestratorVersion       = "26.06.2"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -282,8 +282,8 @@ const (
 	CSISidecarAttacherImageTag            = "csi-attacher:v4.11.0"
 	CSISidecarResizerImageTag             = "csi-resizer:v2.1.0"
 	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.6.0"
-	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.17.0"
-	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.19.0"
+	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.18.0"
+	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.20.0"
 
 	DefaultK8sAPIQPS   = 100.0
 	MinimumK8sAPIQPS   = 10.0
