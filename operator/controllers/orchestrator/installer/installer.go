@@ -745,6 +745,25 @@ func (i *Installer) setInstallationParams(
 		}
 	}
 
+	if cr.Spec.CSISidecarProvisionerImage != "" {
+		csiSidecarProvisionerImage = cr.Spec.CSISidecarProvisionerImage
+	}
+	if cr.Spec.CSISidecarAttacherImage != "" {
+		csiSidecarAttacherImage = cr.Spec.CSISidecarAttacherImage
+	}
+	if cr.Spec.CSISidecarResizerImage != "" {
+		csiSidecarResizerImage = cr.Spec.CSISidecarResizerImage
+	}
+	if cr.Spec.CSISidecarSnapshotterImage != "" {
+		csiSidecarSnapshotterImage = cr.Spec.CSISidecarSnapshotterImage
+	}
+	if cr.Spec.CSISidecarNodeDriverRegistrarImage != "" {
+		csiSidecarNodeDriverRegistrarImage = cr.Spec.CSISidecarNodeDriverRegistrarImage
+	}
+	if cr.Spec.CSISidecarLivenessProbeImage != "" {
+		csiSidecarLivenessProbeImage = cr.Spec.CSISidecarLivenessProbeImage
+	}
+
 	// Setting up the resources
 	if returnError = i.populateResources(cr); returnError != nil {
 		return nil, nil, false, fmt.Errorf("failed parsing resources list specified: \n%w", returnError)
