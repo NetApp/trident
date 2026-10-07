@@ -967,6 +967,75 @@ func TestControllerPublishVolume(t *testing.T) {
 			expErrCode:       codes.OK,
 		},
 		{
+			name: "Success - controller publish volume with backend mount options",
+			req: &csi.ControllerPublishVolumeRequest{
+				VolumeId: "vol-id",
+				NodeId:   "Node-id",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{FsType: "ext4"},
+					},
+					AccessMode: &csi.VolumeCapability_AccessMode{
+						Mode: csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+					},
+				},
+			},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{
+				PublishContext: map[string]string{
+					"accessMode":     "ReadWriteMany",
+					"filesystemType": "",
+					"formatOptions":  "",
+					"mountOptions":   "nfsvers=3",
+					"nfsPath":        "",
+					"nfsServerIp":    "",
+					"protocol":       "file",
+					"backendUUID":    "",
+					"pool":           "",
+					"storageClass":   "",
+				},
+			},
+			publishInfo: models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{MountOptions: "nfsvers=3"},
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "Success - controller publish volume CSI mount flags override backend mount options",
+			req: &csi.ControllerPublishVolumeRequest{
+				VolumeId: "vol-id",
+				NodeId:   "Node-id",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType:     "ext4",
+							MountFlags: []string{"nfsvers=4.1"},
+						},
+					},
+					AccessMode: &csi.VolumeCapability_AccessMode{
+						Mode: csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+					},
+				},
+			},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{
+				PublishContext: map[string]string{
+					"accessMode":     "ReadWriteMany",
+					"filesystemType": "",
+					"formatOptions":  "",
+					"mountOptions":   "nfsvers=4.1",
+					"nfsPath":        "",
+					"nfsServerIp":    "",
+					"protocol":       "file",
+					"backendUUID":    "",
+					"pool":           "",
+					"storageClass":   "",
+				},
+			},
+			publishInfo: models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{MountOptions: "nfsvers=3"},
+			},
+			expErrCode: codes.OK,
+		},
+		{
 			name: "Error - no volume id provided",
 			req: &csi.ControllerPublishVolumeRequest{
 				VolumeId: "",

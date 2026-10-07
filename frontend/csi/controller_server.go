@@ -400,7 +400,13 @@ func (p *Plugin) ControllerPublishVolume(
 
 	// accessMode must not change for the lifecycle of the attachment; set once at ControllerPublish.
 	publishInfo["accessMode"] = capturedAccessMode
-	publishInfo["mountOptions"] = capturedMountOptions
+	if capturedMountOptions != "" {
+		// CSI request options take precedence over backend options.
+		publishInfo["mountOptions"] = capturedMountOptions
+	} else {
+		// The storage driver resolves backend mount options during PublishVolume.
+		publishInfo["mountOptions"] = volumePublishInfo.MountOptions
+	}
 	publishInfo["formatOptions"] = volumePublishInfo.FormatOptions
 	publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 	publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
