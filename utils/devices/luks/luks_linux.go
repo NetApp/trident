@@ -43,6 +43,19 @@ var (
 	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
 	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange",
 		"devices_linux")
+
+	// afterCryptSetupFormat fires after `cryptsetup luksFormat` succeeded but before the device is opened.
+	// The device is LUKS formatted yet unmapped; a retry must detect the existing header (not re-format)
+	// and open it. The injected error is deliberately not a FormatError so the header is not cleared.
+	afterCryptSetupFormat = fiji.Register("afterCryptSetupFormat", "devices_linux")
+	// afterCryptSetupOpen fires after `cryptsetup open` succeeded but before Open returns. The mapping
+	// exists on the host while the caller sees a failure; a retry must treat the open device as success.
+	afterCryptSetupOpen = fiji.Register("afterCryptSetupOpen", "devices_linux")
+	// duringRotatePassphraseAfterLuksKeyChange fires after `cryptsetup luksChangeKey` succeeded but before
+	// RotatePassphrase returns. The on-disk passphrase has changed while the caller sees a failure; a retry
+	// must find the new passphrase already current.
+	duringRotatePassphraseAfterLuksKeyChange = fiji.Register("duringRotatePassphraseAfterLuksKeyChange",
+		"devices_linux")
 )
 
 // GetUnderlyingDevicePathForDevice returns the device mapped to the LUKS device
@@ -111,6 +124,10 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 			"output": string(output),
 		}).WithError(err).Error("Failed to format LUKS device.")
 		return errors.FormatError(fmt.Errorf("could not format LUKS device; %w; %v", err, string(output)))
+	}
+
+	if err := afterCryptSetupFormat.Inject(); err != nil {
+		return err
 	}
 
 	return nil
@@ -253,6 +270,11 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 	}
 
 	Logc(ctx).WithFields(fields).Debug("Opened LUKS device.")
+
+	if err = afterCryptSetupOpen.Inject(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -347,6 +369,11 @@ func (d *LUKSDevice) RotatePassphrase(
 		"device":           d.RawDevicePath(),
 		"mappedDevicePath": d.MappedDevicePath(),
 	}).Info("Rotated LUKS passphrase for encrypted volume.")
+
+	if err = duringRotatePassphraseAfterLuksKeyChange.Inject(); err != nil {
+		return err
+	}
+
 	return nil
 }
 

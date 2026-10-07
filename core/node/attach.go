@@ -28,6 +28,11 @@ var (
 	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_core")
 	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_core")
 	beforeTrackingInfoWrite        = fiji.Register("beforeTrackingInfoWrite", "node_core")
+
+	// afterLuksMapBeforeFormatAndMount fires after the LUKS format/map lease section completed and the Lease was
+	// released, but before the filesystem step and the passphrase lease section. The dm mapping is open on
+	// this host, the passphrase has not been verified/rotated, and other hosts may now take the Lease.
+	afterLuksMapBeforeFormatAndMount = fiji.Register("afterLuksMapBeforeFormatAndMount", "node_core")
 )
 
 // AttachRequest holds inputs for staging a volume on the node (CSI NodeStageVolume).
@@ -208,6 +213,12 @@ func (c *Core) attachISCSIVolume(
 		return luksErr
 	}); err != nil {
 		return fmt.Errorf("could not map LUKS volume on host; %w", orchestratorErrorForLockError(err))
+	}
+
+	if convert.ToBool(publishInfo.LUKSEncryption) {
+		if err = afterLuksMapBeforeFormatAndMount.Inject(); err != nil {
+			return err
+		}
 	}
 
 	if err = c.iscsi.EnsureVolumeFormattedAndMounted(

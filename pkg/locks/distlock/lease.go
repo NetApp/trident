@@ -16,11 +16,24 @@ import (
 	coordv1client "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	"k8s.io/client-go/util/retry"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
 )
 
 var (
+	// afterLeaseAcquire fires once the Lease is held but before the critical section runs.
+	// An error/exit here leaves a sticky Lease with no work done; the same host must be able to re-enter
+	// and other hosts must get ErrLockAcquireConflict.
+	afterLeaseAcquire = fiji.Register("afterLeaseAcquire", "distlock")
+	// afterCriticalSectionBeforeLeaseRelease fires after the critical section succeeded but before the
+	// Lease is deleted. An error/exit here leaves a sticky Lease for work that actually completed, which
+	// blocks other hosts until the holder re-enters and releases it.
+	afterCriticalSectionBeforeLeaseRelease = fiji.Register("afterCriticalSectionBeforeLeaseRelease", "distlock")
+	// duringLeaseDelete fires on every Lease delete attempt (inside the retry loop). Use error-n-times with
+	// n below the retry budget to exercise backoff, and at/above it to force ErrLockDeleteFailed.
+	duringLeaseDelete = fiji.Register("duringLeaseDelete", "distlock")
+
 	_ Locker = &LeaseLock{}
 
 	ErrLockInvalidArgument   = errors.New("invalid argument for lock")
@@ -94,6 +107,12 @@ func (l *LeaseLock) WithLock(ctx context.Context, fn func(context.Context) error
 		return acquireErr
 	}
 
+	// The Lease is held at this point. Failing here mimics a crash between acquire and the critical
+	// section: the Lease is intentionally left in place (sticky).
+	if injectErr := afterLeaseAcquire.Inject(); injectErr != nil {
+		return injectErr
+	}
+
 	if fnErr := fn(ctx); fnErr != nil {
 		Logc(ctx).WithError(fnErr).Warnf(
 			"Failed to execute critical section while holding lease: %s uid: %s. "+
@@ -104,6 +123,13 @@ func (l *LeaseLock) WithLock(ctx context.Context, fn func(context.Context) error
 		)
 		return fmt.Errorf("%w: %w", ErrCriticalSectionFailed, fnErr)
 	}
+
+	// The critical section completed but the Lease has not been released. Failing here mimics a crash
+	// between the work finishing and the Lease being deleted: the Lease is intentionally left in place.
+	if injectErr := afterCriticalSectionBeforeLeaseRelease.Inject(); injectErr != nil {
+		return injectErr
+	}
+
 	return l.release(ctx)
 }
 
@@ -171,6 +197,9 @@ func (l *LeaseLock) release(ctx context.Context) error {
 		return true
 	}
 	fn := func() error {
+		if injectErr := duringLeaseDelete.Inject(); injectErr != nil {
+			return injectErr
+		}
 		err := l.client.Delete(ctx, l.lockID, metav1.DeleteOptions{
 			Preconditions: &metav1.Preconditions{
 				UID: new(types.UID(l.leaseUID)),

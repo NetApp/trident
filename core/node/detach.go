@@ -51,6 +51,15 @@ var (
 	duringIscsiLogout         = fiji.Register("duringIscsiLogout", "node_core")
 	afterNvmeLuksDeviceClosed = fiji.Register("afterNvmeLuksDeviceClosed", "node_core")
 	afterNvmeDisconnect       = fiji.Register("afterNvmeDisconnect", "node_core")
+
+	// afterLuksCloseBeforeDeviceRemoval fires in iSCSI detach after the lease-protected LUKS close succeeded
+	// (Lease released) but before the SCSI/multipath devices are removed. The dm-crypt mapping is gone while the
+	// tracking file and underlying devices remain; a retry must tolerate the missing LUKS mapper.
+	afterLuksCloseBeforeDeviceRemoval = fiji.Register("afterLuksCloseBeforeDeviceRemoval", "node_core")
+	// beforeLuksCloseAfterIscsiLogout fires in iSCSI detach after the sessions were logged out but before the
+	// leftover LUKS mapper is closed under the Lease. The block devices are gone and the LUKS mapping is stale;
+	// a retry takes the "no sessions" recovery path, which must close the mapping under the Lease.
+	beforeLuksCloseAfterIscsiLogout = fiji.Register("beforeLuksCloseAfterIscsiLogout", "node_core")
 )
 
 // DetachRequest holds inputs for unstaging a volume (CSI NodeUnstageVolume).
@@ -548,6 +557,10 @@ func (c *Core) detachISCSIVolume(
 				}
 				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
 			}
+
+			if err = afterLuksCloseBeforeDeviceRemoval.Inject(); err != nil {
+				return err
+			}
 		}
 
 		// Set device path to dm device to correctly verify legacy volumes.
@@ -653,6 +666,10 @@ func (c *Core) detachISCSIVolume(
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point. It needs
 	// to be removed prior to removing the 'mpathDevicePath' device below.
 	if luksMapperPath != "" {
+		if err = beforeLuksCloseAfterIscsiLogout.Inject(); err != nil {
+			return err
+		}
+
 		if err = locker.WithLock(ctx, func(ctx context.Context) error {
 			return c.dev.EnsureLUKSDeviceClosed(ctx, luksMapperPath)
 		}); err != nil {
