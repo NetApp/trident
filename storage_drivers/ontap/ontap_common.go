@@ -1655,10 +1655,15 @@ func InitializeOntapAPI(
 	if config.UseREST != nil {
 		useRESTValue = strconv.FormatBool(*config.UseREST)
 	}
+	useRESTSQLBypassValue := "<nil>"
+	if config.UseRESTSQLBypass != nil {
+		useRESTSQLBypassValue = strconv.FormatBool(*config.UseRESTSQLBypass)
+	}
 	fields := LogFields{
-		"Method":  "InitializeOntapAPI",
-		"Type":    "ontap_common",
-		"useREST": useRESTValue,
+		"Method":           "InitializeOntapAPI",
+		"Type":             "ontap_common",
+		"useREST":          useRESTValue,
+		"useRESTSQLBypass": useRESTSQLBypassValue,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapAPI")
@@ -4074,6 +4079,9 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	// and during the decoding phase, if the default value is encountered, it is assigned as nil.
 	if config.UseREST != nil {
 		cloneConfig.UseREST = convert.ToPtr(*config.UseREST)
+	}
+	if config.UseRESTSQLBypass != nil {
+		cloneConfig.UseRESTSQLBypass = convert.ToPtr(*config.UseRESTSQLBypass)
 	}
 
 	return cloneConfig

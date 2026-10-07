@@ -52,5 +52,6 @@ func clientConfigFromOntapConfig(
 		TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:         ontapConfig.DebugTraceFlags,
 		StorageAPITimeout:       storageAPITimeout,
+		SQLBypass:               ontapConfig.UseRESTSQLBypass != nil && *ontapConfig.UseRESTSQLBypass,
 	}, nil
 }

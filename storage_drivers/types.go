@@ -139,6 +139,7 @@ type OntapStorageDriverConfig struct {
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
 	UseREST                   *bool                    `json:"useREST"`
+	UseRESTSQLBypass          *bool                    `json:"useRESTSQLBypass"`
 	ChapUsername              string                   `json:"chapUsername"`
 	ChapInitiatorSecret       string                   `json:"chapInitiatorSecret"`
 	ChapTargetUsername        string                   `json:"chapTargetUsername"`

@@ -193,6 +193,10 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 			RootCAs:            caCertPool,
 		},
 	}
+	// When enabled, ask ONTAP to bypass its SQL-backed name lookup on name-filtered GETs.
+	if config.SQLBypass {
+		transport = NewSQLBypassTransport(transport)
+	}
 	// Create a metrics transport that captures request metrics.
 	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	// Create a retry transport round tripper that uses semaphores for rate limiting.
