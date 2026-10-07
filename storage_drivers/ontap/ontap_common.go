@@ -979,16 +979,27 @@ func resizeValidation(
 		return 0, nil
 	}
 
-	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, volumeInfo)
-	if err != nil {
+	snapshotReserveInt, snapshotReserveErr := getSnapshotReserveFromOntap(ctx, name, volumeInfo)
+	if snapshotReserveErr != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	// Ensure the final effective volume size is larger than the current volume size
+	// The volume may already have been grown on ONTAP past what this request needs. Never shrink it, and
+	// don't fail the request either, because the CSI resizer retries a failed expand indefinitely.
 	newFlexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	if newFlexvolSize < volSizeBytes {
-		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("effective volume size %d including any "+
-			"snapshot reserve is less than the existing volume size %d", newFlexvolSize, volSizeBytes))
+		// Without the snapshot reserve, the volume may still be too small. Fail so CSI retries the expand.
+		if snapshotReserveErr != nil {
+			return 0, fmt.Errorf("could not get the snapshot reserve for volume %s: %w", name, snapshotReserveErr)
+		}
+		Logc(ctx).WithFields(LogFields{
+			"name":          name,
+			"requestedSize": requestedSizeBytes,
+			"effectiveSize": newFlexvolSize,
+			"volumeSize":    volSizeBytes,
+		}).Debug("Existing volume is larger than the requested size including snapshot reserve; skipping resize.")
+		volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
+		return 0, nil
 	}
 
 	return newFlexvolSize, nil

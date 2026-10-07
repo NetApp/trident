@@ -3965,6 +3965,30 @@ func TestOntapNasFlexgroupStorageDriverResize(t *testing.T) {
 	assert.NoError(t, result)
 }
 
+func TestOntapNasFlexgroupStorageDriverResize_FlexgroupAlreadyLargeEnough(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	flexgroup := api.Volume{
+		Name:            "flexgroup",
+		SnapshotPolicy:  "default",
+		SnapshotReserve: 75,
+	}
+	volConfig := &storage.VolumeConfig{
+		Size:         "45449389376",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
+	mockAPI.EXPECT().FlexgroupSize(ctx, "vol1").Return(uint64(181797560320), nil)
+	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
+
+	result := driver.Resize(ctx, volConfig, 45449389377)
+
+	assert.NoError(t, result)
+	assert.Equal(t, "45449389377", volConfig.Size)
+}
+
 func TestOntapNasFlexgroupStorageDriverResize_VolumeDoesNotExist(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	volConfig := &storage.VolumeConfig{

@@ -6872,6 +6872,108 @@ func TestResizeValidation(t *testing.T) {
 	assert.Equal(t, uint64(sizeBytes*100), newSize)
 }
 
+func TestResizeValidation_FlexvolAlreadyLargeEnough(t *testing.T) {
+	ctx := context.Background()
+
+	// The existing FlexVol is 4x the stored size (75% snapshot reserve) rounded up to 4 KiB,
+	// so a 1-byte expand still fits without growing it.
+	const (
+		storedSize   = "45449389376"
+		requested    = uint64(45449389377)
+		existingSize = uint64(181797560320)
+	)
+	volumeInfo := func(_ context.Context, name string) (*api.Volume, error) {
+		return &api.Volume{
+			Name:            name,
+			SnapshotPolicy:  "default",
+			SnapshotReserve: 75,
+		}, nil
+	}
+	flexvolSize := func(_ context.Context, _ string) (uint64, error) {
+		return existingSize, nil
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "test",
+		InternalName: "testinternal",
+		Size:         storedSize,
+	}
+
+	newSize, err := resizeValidation(ctx, volConfig, requested, mockVolumeExists, flexvolSize, volumeInfo)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(0), newSize)
+	assert.Equal(t, strconv.FormatUint(requested, 10), volConfig.Size)
+}
+
+func TestResizeValidation_FlexvolAlreadyLargeEnoughWithoutSnapshotReserve(t *testing.T) {
+	ctx := context.Background()
+
+	// No snapshot reserve, so the required size equals the request (2048), and the FlexVol (10000)
+	// was already grown past it on ONTAP.
+	volConfig := &storage.VolumeConfig{
+		Name:         "test",
+		InternalName: "testinternal",
+		Size:         "1024",
+	}
+
+	newSize, err := resizeValidation(ctx, volConfig, 2048, mockVolumeExists, mockVolumeSizeLarger, mockVolumeInfo)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(0), newSize)
+	assert.Equal(t, "2048", volConfig.Size)
+}
+
+func TestResizeValidation_PVCSmallerThanFlexvolStillGrowsWhenReserveRequiresIt(t *testing.T) {
+	ctx := context.Background()
+
+	// Requested PVC is below the current FlexVol, but snapshot reserve makes the required
+	// FlexVol larger. That is a real expand and must not be treated as a no-op.
+	volumeInfo := func(_ context.Context, name string) (*api.Volume, error) {
+		return &api.Volume{
+			Name:            name,
+			SnapshotPolicy:  "default",
+			SnapshotReserve: 50,
+		}, nil
+	}
+	flexvolSize := func(_ context.Context, _ string) (uint64, error) {
+		return 10000, nil
+	}
+	volConfig := &storage.VolumeConfig{
+		Name:         "test",
+		InternalName: "testinternal",
+		Size:         "1024",
+	}
+
+	newSize, err := resizeValidation(ctx, volConfig, 8000, mockVolumeExists, flexvolSize, volumeInfo)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(16000), newSize)
+	assert.Equal(t, "1024", volConfig.Size)
+}
+
+func TestResizeValidation_FailsWhenSnapshotReserveUnknown(t *testing.T) {
+	ctx := context.Background()
+
+	// With the reserve unknown, 8000 appears to fit in the 10000 volume, but a 50% reserve would need
+	// 16000. The resize must fail so it is retried, not recorded as done.
+	volumeInfoError := func(_ context.Context, _ string) (*api.Volume, error) {
+		return nil, errors.New("VolumeInfoError")
+	}
+	flexvolSize := func(_ context.Context, _ string) (uint64, error) {
+		return 10000, nil
+	}
+	volConfig := &storage.VolumeConfig{
+		Name:         "test",
+		InternalName: "testinternal",
+		Size:         "1024",
+	}
+
+	newSize, err := resizeValidation(ctx, volConfig, 8000, mockVolumeExists, flexvolSize, volumeInfoError)
+	assert.ErrorContains(t, err, "snapshot reserve")
+	ok, _ := errors.HasUnsupportedCapacityRangeError(err)
+	assert.False(t, ok)
+	assert.Equal(t, uint64(0), newSize)
+	assert.Equal(t, "1024", volConfig.Size)
+}
+
 func TestGetISCSITargetInfo(t *testing.T) {
 	// Test1: Positive flow
 	ctx := context.Background()
