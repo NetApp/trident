@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -269,6 +270,167 @@ func TestDisconnectSubsystemFromHost(t *testing.T) {
 	err = subsystem.Disconnect(ctx)
 
 	assert.Error(t, err)
+}
+
+func TestDisconnectPathFromHost(t *testing.T) {
+	ctx := context.Background()
+
+	// `nvme disconnect` takes the controller device name, which is the last element of the path's
+	// sysfs directory, and not the whole directory.
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeDisconnectPathTimeoutInSeconds*time.Second,
+		false, "disconnect", "-d", "nvme3").Return([]byte(""), nil)
+
+	subsystem := NewNVMeSubsystemDetailed("fakeNqn", "fakeSubsysDevice", nil, mockCommand, nil)
+	err := subsystem.DisconnectPathFromHost(ctx, Path{Name: "/sys/class/nvme-subsystem/nvme-subsys0/nvme3"})
+
+	assert.NoError(t, err)
+
+	// A failure to disconnect is reported so that the caller can leave the path alone and retry.
+	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeDisconnectPathTimeoutInSeconds*time.Second,
+		false, "disconnect", "-d", "nvme3").Return([]byte(""), errors.New("error disconnecting path"))
+
+	err = subsystem.DisconnectPathFromHost(ctx, Path{Name: "/sys/class/nvme-subsystem/nvme-subsys0/nvme3"})
+
+	assert.Error(t, err)
+
+	// A path with no name at all would disconnect nothing, or worse be interpreted by the CLI as
+	// something else, so it is rejected before running anything.
+	err = subsystem.DisconnectPathFromHost(ctx, Path{})
+
+	assert.Error(t, err)
+}
+
+func TestPrunePaths_KeepsPathOfALIFThatIsStillDesired(t *testing.T) {
+	// A data LIF that is briefly unreachable, flapping, or down for maintenance is still part of
+	// the desired set, so its path must be left alone for the kernel to recover in place.
+	ctrl := gomock.NewController(t)
+	subsystem, _ := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: PathStateLive, ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: "connecting", ip: "2.2.2.2"})
+
+	subsystem.PrunePaths(context.Background(), []string{"1.1.1.1", "2.2.2.2"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pathIPs(subsystem.Paths), "A desired path was removed.")
+}
+
+func TestPrunePaths_RemovesAnUndesiredPathEvenWhenLive(t *testing.T) {
+	// The controller is the authority on whether a data LIF still exists. Liveness does not keep
+	// an undesired path when another path can still carry I/O.
+	ctrl := gomock.NewController(t)
+	subsystem, command := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: PathStateLive, ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: PathStateLive, ip: "2.2.2.2"})
+	expectPathDisconnect(subsystem, command, "nvme1")
+
+	subsystem.PrunePaths(context.Background(), []string{"1.1.1.1"})
+
+	assert.Equal(t, []string{"1.1.1.1"}, pathIPs(subsystem.Paths),
+		"The path of a data LIF that is no longer desired should have been removed.")
+}
+
+func TestPrunePaths_KeepsTheOnlyLivePathUntilADesiredPathIsLive(t *testing.T) {
+	// The desired replacement is not yet able to carry I/O. Removing the live path now would stop
+	// a subsystem that is degraded but still serving; a later prune removes it once the desired
+	// path is live.
+	ctrl := gomock.NewController(t)
+	subsystem, _ := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: PathStateLive, ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: "connecting", ip: "2.2.2.2"})
+
+	subsystem.PrunePaths(context.Background(), []string{"2.2.2.2"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pathIPs(subsystem.Paths),
+		"The only live path was removed while no desired path was live.")
+}
+
+func TestPrunePaths_IsANoOpWhenNoLIFHasChanged(t *testing.T) {
+	// The steady state: every path matches a desired data LIF, including one that is down but
+	// still served by the array. Nothing is executed and nothing is removed.
+	ctrl := gomock.NewController(t)
+	subsystem, _ := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: PathStateLive, ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: "connecting", ip: "2.2.2.2"})
+
+	subsystem.PrunePaths(context.Background(), []string{"1.1.1.1", "2.2.2.2"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pathIPs(subsystem.Paths), "Paths changed.")
+}
+
+func TestPrunePaths_NeverRemovesTheLastPath(t *testing.T) {
+	// Emptying a subsystem renames the NVMe devices under volumes that are already mounted.
+	// However many of a subsystem's data LIFs have gone away, one path always survives.
+	ctrl := gomock.NewController(t)
+	subsystem, command := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: "connecting", ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: "connecting", ip: "2.2.2.2"})
+	expectPathDisconnect(subsystem, command, "nvme0")
+
+	subsystem.PrunePaths(context.Background(), nil)
+
+	assert.Equal(t, []string{"2.2.2.2"}, pathIPs(subsystem.Paths),
+		"The subsystem should have been left with exactly one path.")
+}
+
+func TestPrunePaths_KeepsPathWhenTheDisconnectFails(t *testing.T) {
+	// Nothing is assumed about host state that the disconnect did not actually change; the path
+	// stays and the next data LIF change tries again.
+	ctrl := gomock.NewController(t)
+	subsystem, command := newFakeSubsystem(t, ctrl,
+		fakePath{controller: "nvme0", state: PathStateLive, ip: "1.1.1.1"},
+		fakePath{controller: "nvme1", state: "connecting", ip: "2.2.2.2"})
+	command.EXPECT().ExecuteWithTimeout(gomock.Any(), "nvme", gomock.Any(), false, "disconnect", "-d", "nvme1").
+		Return([]byte(""), errors.New("nvme disconnect failed"))
+
+	subsystem.PrunePaths(context.Background(), []string{"1.1.1.1"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pathIPs(subsystem.Paths),
+		"The path was dropped from the subsystem even though the disconnect failed.")
+}
+
+// fakePath describes one path of a subsystem as the kernel would present it under sysfs.
+type fakePath struct {
+	controller, state, ip string
+}
+
+const fakeSubsystemDir = NVME_PATH + "/nvme-subsys0"
+
+// newFakeSubsystem builds a subsystem backed by a fake sysfs, so that a path the code under test
+// disconnects really does disappear from the subsystem's own view of itself when it re-reads.
+func newFakeSubsystem(t *testing.T, ctrl *gomock.Controller, paths ...fakePath) (*NVMeSubsystem, *mockexec.MockCommand) {
+	fs := afero.NewMemMapFs()
+	for _, path := range paths {
+		dir := fmt.Sprintf("%s/%s", fakeSubsystemDir, path.controller)
+		require.NoError(t, afero.WriteFile(fs, dir+"/state", []byte(path.state), 0o600))
+		require.NoError(t, afero.WriteFile(fs, dir+"/address",
+			[]byte(fmt.Sprintf("traddr=%s,trsvcid=4420", path.ip)), 0o600))
+		require.NoError(t, afero.WriteFile(fs, dir+"/transport", []byte("tcp"), 0o600))
+	}
+
+	command := mockexec.NewMockCommand(ctrl)
+	subsystem := NewNVMeSubsystemDetailed("nqn-reap", fakeSubsystemDir, nil, command, fs)
+	require.NoError(t, subsystem.updatePaths(context.Background()))
+
+	return subsystem, command
+}
+
+// expectPathDisconnect expects one disconnect of the given controller, and makes it take effect in
+// the fake sysfs the way a real one would.
+func expectPathDisconnect(subsystem *NVMeSubsystem, command *mockexec.MockCommand, controller string) {
+	command.EXPECT().ExecuteWithTimeout(gomock.Any(), "nvme", gomock.Any(), false, "disconnect", "-d", controller).
+		DoAndReturn(func(_ context.Context, _ string, _ time.Duration, _ bool, _ ...string) ([]byte, error) {
+			return []byte(""), subsystem.osFs.RemoveAll(fmt.Sprintf("%s/%s", fakeSubsystemDir, controller))
+		})
+}
+
+func pathIPs(paths []Path) []string {
+	ips := make([]string, 0, len(paths))
+	for _, path := range paths {
+		ips = append(ips, extractIPFromNVMeAddress(path.Address))
+	}
+
+	return ips
 }
 
 func TestGetNamespaceCountForSubsDevice(t *testing.T) {

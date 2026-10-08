@@ -87,10 +87,12 @@ type Backend interface {
 	ConstructExternalWithPoolMap(ctx context.Context, poolMap map[string][]string) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
+	CanRefreshDataAccess() bool
 	SmartCopy() interface{}
 	DeepCopyType() Backend
 	GetUniqueKey() string
 	Mirrorer
+	DataAccessRefresher
 	CanMoveVolume() bool
 	VolumeMover
 	ChapEnabled

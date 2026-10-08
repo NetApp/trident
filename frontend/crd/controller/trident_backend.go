@@ -4,13 +4,23 @@ package controller
 
 import (
 	"context"
+	"slices"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
 )
+
+// addTridentBackendHandler replays published data LIFs when the informer first lists a
+// TridentBackend, so a change the core persisted before a controller restart still reaches the
+// VolumeAttachments. Nothing goes onto the main workqueue here; see the informer registration.
+func (c *TridentCrdController) addTridentBackendHandler(obj interface{}) {
+	c.enqueueTridentBackendDataLIFsChange(nil, obj)
+}
 
 func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{}) {
 	// When a CR has a finalizer those come as update events and not deletes,
@@ -20,6 +30,49 @@ func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{})
 	if err := c.removeFinalizers(ctx, new, false); err != nil {
 		Logx(ctx).WithError(err).Error("Error removing finalizers")
 	}
+
+	// Data LIF reconciliation never writes the TridentBackend, so reacting to its updates cannot loop.
+	c.enqueueTridentBackendDataLIFsChange(old, new)
+}
+
+// enqueueTridentBackendDataLIFsChange queues a backend for data LIF reconciliation when the core
+// has published a data LIF snapshot on it that differs from the previous one.
+func (c *TridentCrdController) enqueueTridentBackendDataLIFsChange(old, new interface{}) {
+	// Data LIF refresh is opt-in and off by default. Nodes ignore DataLIFs still stored on the CR
+	// while it is disabled, and VolumeAttachments are left alone as well.
+	if !config.EnableDataLIFRefresh {
+		return
+	}
+
+	newBackend, ok := new.(*tridentv1.TridentBackend)
+	if !ok || newBackend.BackendUUID == "" || newBackend.PublishedDataLIFs() == nil {
+		return
+	}
+	if oldBackend, ok := old.(*tridentv1.TridentBackend); ok && oldBackend.PublishedDataLIFs() != nil &&
+		slices.Equal(*oldBackend.PublishedDataLIFs(), *newBackend.PublishedDataLIFs()) {
+		return
+	}
+
+	c.dataLIFWorkqueue.Add(newBackend.BackendUUID)
+}
+
+// publishedTridentBackendDataLIFs returns the data LIFs the core published on the TridentBackend
+// with the given UUID, read from the informer cache. A nil slice means none have been published.
+func (c *TridentCrdController) publishedTridentBackendDataLIFs(backendUUID string) ([]string, error) {
+	backends, err := c.backendsLister.TridentBackends(c.tridentNamespace).List(labels.Everything())
+	if err != nil {
+		return nil, err
+	}
+	for _, backend := range backends {
+		if backend.BackendUUID == backendUUID {
+			published := backend.PublishedDataLIFs()
+			if published == nil {
+				return nil, nil
+			}
+			return slices.Clone(*published), nil
+		}
+	}
+	return nil, nil
 }
 
 // deleteTridentBackendHandler takes a TridentBackend resource and converts it into a namespace/name

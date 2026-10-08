@@ -101,6 +101,13 @@ type Mirrorer interface {
 	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 }
 
+// DataAccessRefresher is implemented by drivers that can refresh their backend's data access.
+// A driver that reports BackendStateDataAccessChange keeps the LIF set that changed here.
+// A nil slice means the LIFs are unknown. An empty non-nil slice means none remain.
+type DataAccessRefresher interface {
+	DataLIFs() []string
+}
+
 type GroupSnapshotter interface {
 	GetGroupSnapshotTarget(ctx context.Context, volConfigs []*VolumeConfig) (*GroupSnapshotTargetInfo, error)
 	CreateGroupSnapshot(ctx context.Context, config *GroupSnapshotConfig, target *GroupSnapshotTargetInfo) error
@@ -1125,7 +1132,7 @@ const (
 	BackendStateReasonChange = iota
 	BackendStatePoolsChange
 	BackendStateAPIVersionChange
-	BackendStateDataLIFsChange
+	BackendStateDataAccessChange
 )
 
 // RequiresOrphanScan reports whether the update types include a change that
@@ -1440,6 +1447,9 @@ type BackendPersistent struct {
 	UserState   UserBackendState               `json:"userState"`
 	StateReason string                         `json:"stateReason"`
 	ConfigRef   string                         `json:"configRef"`
+	// DataLIFs is the driver's data LIF snapshot. A nil pointer means there is no snapshot to
+	// publish, and the store must keep whatever it already holds.
+	DataLIFs *[]string `json:"dataLIFs,omitempty"`
 }
 
 func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersistent {
@@ -1456,6 +1466,11 @@ func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersis
 		StateReason: b.stateReason,
 		BackendUUID: b.backendUUID,
 		ConfigRef:   b.configRef,
+	}
+	if tridentconfig.EnableDataLIFRefresh {
+		if dataLIFs := b.DataLIFs(); dataLIFs != nil {
+			persistentBackend.DataLIFs = &dataLIFs
+		}
 	}
 	b.driver.StoreConfig(ctx, &persistentBackend.Config)
 	return persistentBackend
@@ -1618,6 +1633,22 @@ func (b *StorageBackend) GetMirrorStatus(
 func (b *StorageBackend) CanMirror() bool {
 	_, ok := b.driver.(Mirrorer)
 	return ok
+}
+
+// CanRefreshDataAccess reports whether this backend's driver can refresh its data access.
+func (b *StorageBackend) CanRefreshDataAccess() bool {
+	_, ok := b.driver.(DataAccessRefresher)
+	return ok
+}
+
+// DataLIFs returns the driver's current data LIF snapshot.
+// A nil slice means the driver does not report data LIFs, or the LIFs are unknown.
+func (b *StorageBackend) DataLIFs() []string {
+	reporter, ok := b.driver.(DataAccessRefresher)
+	if !ok {
+		return nil
+	}
+	return reporter.DataLIFs()
 }
 
 func (b *StorageBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {

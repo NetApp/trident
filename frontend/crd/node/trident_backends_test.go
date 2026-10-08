@@ -4,15 +4,19 @@ package crd
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
 
+	"github.com/netapp/trident/config"
 	mockFrontendAutogrow "github.com/netapp/trident/mocks/mock_frontend/mock_autogrow"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	v1 "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
 )
 
 func TestHandleTridentBackends_Success(t *testing.T) {
@@ -517,4 +521,179 @@ func TestHandleTridentBackends_MultipleConcurrentEvents(t *testing.T) {
 		err = controller.handleTridentBackends(keyItem)
 		assert.NoError(t, err, "should handle backend %s successfully", backend.Name)
 	}
+}
+
+func TestReconcilePublishedDataLIFs_PassesTargetIPsForThisNodeAndBackend(t *testing.T) {
+	orchestrator := &fakeNodeOrchestrator{}
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	for _, tvp := range []*tridentv1.TridentVolumePublication{
+		{
+			ObjectMeta:  metav1.ObjectMeta{Name: "vol1." + testNodeName, Namespace: testNamespace},
+			VolumeID:    "vol1",
+			NodeID:      testNodeName,
+			BackendUUID: "backend-uuid",
+		},
+		{
+			ObjectMeta:  metav1.ObjectMeta{Name: "vol2.other-node", Namespace: testNamespace},
+			VolumeID:    "vol2",
+			NodeID:      "other-node",
+			BackendUUID: "backend-uuid",
+		},
+		{
+			ObjectMeta:  metav1.ObjectMeta{Name: "vol3." + testNodeName, Namespace: testNamespace},
+			VolumeID:    "vol3",
+			NodeID:      testNodeName,
+			BackendUUID: "other-backend-uuid",
+		},
+	} {
+		require.NoError(t, indexer.Add(tvp))
+	}
+	controller := &TridentNodeCrdController{
+		orchestrator:                   orchestrator,
+		nodeName:                       testNodeName,
+		tridentVolumePublicationLister: v1.NewTridentVolumePublicationLister(indexer),
+	}
+	desired := []string{"192.0.2.11", "192.0.2.12"}
+
+	err := controller.reconcilePublishedDataLIFs(context.Background(), "backend-uuid", desired)
+
+	require.NoError(t, err)
+	require.Len(t, orchestrator.reconcileCalls, 1)
+	assert.Equal(t, "vol1", orchestrator.reconcileVolumes[0])
+	assert.Equal(t, desired, orchestrator.reconcileCalls[0].TargetIPs)
+}
+
+func TestReconcilePublishedDataLIFs_ContinuesPastPerVolumeFailures(t *testing.T) {
+	pruneErr := errors.New("subsystem lookup failed")
+	graftErr := errors.New("connect failed")
+	orchestrator := &fakeNodeOrchestrator{
+		reconcileErrs: map[string]error{"vol-prune-fails": pruneErr, "vol-graft-fails": graftErr},
+	}
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	for _, volumeID := range []string{"vol-prune-fails", "vol-graft-fails", "vol-ok"} {
+		require.NoError(t, indexer.Add(&tridentv1.TridentVolumePublication{
+			ObjectMeta:  metav1.ObjectMeta{Name: volumeID + "." + testNodeName, Namespace: testNamespace},
+			VolumeID:    volumeID,
+			NodeID:      testNodeName,
+			BackendUUID: "backend-uuid",
+		}))
+	}
+	controller := &TridentNodeCrdController{
+		orchestrator:                   orchestrator,
+		nodeName:                       testNodeName,
+		tridentVolumePublicationLister: v1.NewTridentVolumePublicationLister(indexer),
+	}
+
+	err := controller.reconcilePublishedDataLIFs(context.Background(), "backend-uuid", []string{"192.0.2.11"})
+
+	require.Error(t, err)
+	assert.ErrorIs(t, err, pruneErr)
+	assert.ErrorIs(t, err, graftErr)
+	assert.ElementsMatch(t, []string{"vol-prune-fails", "vol-graft-fails", "vol-ok"}, orchestrator.reconcileVolumes)
+}
+
+func TestHandleTridentBackends_DataLIFRefreshDisabledIgnoresStoredLIFs(t *testing.T) {
+	config.EnableDataLIFRefresh = false
+	t.Cleanup(func() { config.EnableDataLIFRefresh = false })
+
+	controller, orchestrator := newDataLIFBackendController(t, []string{"192.0.2.10", "192.0.2.11"})
+
+	err := controller.handleTridentBackends(&KeyItem{
+		key:        testNamespace + "/test-backend",
+		objectType: ObjectTypeTridentBackend,
+		event:      EventUpdate,
+		ctx:        context.Background(),
+	})
+
+	require.NoError(t, err)
+	assert.Empty(t, orchestrator.reconcileCalls)
+}
+
+func TestHandleTridentBackends_DataLIFRefreshEnabledReconcilesStoredLIFs(t *testing.T) {
+	config.EnableDataLIFRefresh = true
+	t.Cleanup(func() { config.EnableDataLIFRefresh = false })
+
+	controller, orchestrator := newDataLIFBackendController(t, []string{"192.0.2.11", "192.0.2.12"})
+
+	err := controller.handleTridentBackends(&KeyItem{
+		key:        testNamespace + "/test-backend",
+		objectType: ObjectTypeTridentBackend,
+		event:      EventUpdate,
+		ctx:        context.Background(),
+	})
+
+	require.NoError(t, err)
+	require.Len(t, orchestrator.reconcileCalls, 1)
+	assert.Equal(t, "vol1", orchestrator.reconcileVolumes[0])
+	assert.Equal(t, []string{"192.0.2.11", "192.0.2.12"}, orchestrator.reconcileCalls[0].TargetIPs)
+}
+
+func TestHandleTridentBackends_NilDataLIFsIgnored(t *testing.T) {
+	config.EnableDataLIFRefresh = true
+	t.Cleanup(func() { config.EnableDataLIFRefresh = false })
+
+	controller, orchestrator := newDataLIFBackendController(t, nil)
+
+	err := controller.handleTridentBackends(&KeyItem{
+		key:        testNamespace + "/test-backend",
+		objectType: ObjectTypeTridentBackend,
+		event:      EventUpdate,
+		ctx:        context.Background(),
+	})
+
+	require.NoError(t, err)
+	assert.Empty(t, orchestrator.reconcileCalls)
+}
+
+func TestHandleTridentBackends_EmptyDataLIFSnapshotPrunesAllTargets(t *testing.T) {
+	config.EnableDataLIFRefresh = true
+	t.Cleanup(func() { config.EnableDataLIFRefresh = false })
+
+	controller, orchestrator := newDataLIFBackendController(t, []string{})
+
+	err := controller.handleTridentBackends(&KeyItem{
+		key:        testNamespace + "/test-backend",
+		objectType: ObjectTypeTridentBackend,
+		event:      EventUpdate,
+		ctx:        context.Background(),
+	})
+
+	require.NoError(t, err)
+	require.Len(t, orchestrator.reconcileCalls, 1)
+	assert.Equal(t, "vol1", orchestrator.reconcileVolumes[0])
+	assert.Empty(t, orchestrator.reconcileCalls[0].TargetIPs)
+}
+
+func newDataLIFBackendController(
+	t *testing.T, dataLIFs []string,
+) (*TridentNodeCrdController, *fakeNodeOrchestrator) {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	mockOrchestrator := mockFrontendAutogrow.NewMockAutogrowOrchestrator(ctrl)
+	mockOrchestrator.EXPECT().HandleTBEEvent(gomock.Any(), EventUpdate, testNamespace+"/test-backend").Times(1)
+
+	backendIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	backend := createTestTridentBackend("test-backend", testNamespace, "backend-uuid")
+	if dataLIFs != nil {
+		cloned := append([]string{}, dataLIFs...)
+		backend.DiscoveredState = &tridentv1.TridentBackendDiscoveredState{DataLIFs: &cloned}
+	}
+	require.NoError(t, backendIndexer.Add(backend))
+
+	publicationIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	require.NoError(t, publicationIndexer.Add(&tridentv1.TridentVolumePublication{
+		ObjectMeta:  metav1.ObjectMeta{Name: "vol1.test-node", Namespace: testNamespace},
+		VolumeID:    "vol1",
+		NodeID:      testNodeName,
+		BackendUUID: "backend-uuid",
+	}))
+
+	orchestrator := &fakeNodeOrchestrator{}
+	return &TridentNodeCrdController{
+		orchestrator:                   orchestrator,
+		nodeName:                       testNodeName,
+		autogrowOrchestrator:           mockOrchestrator,
+		tridentBackendLister:           v1.NewTridentBackendLister(backendIndexer),
+		tridentVolumePublicationLister: v1.NewTridentVolumePublicationLister(publicationIndexer),
+	}, orchestrator
 }

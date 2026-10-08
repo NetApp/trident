@@ -46,6 +46,13 @@ func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	return errors.UnsupportedError("DisconnectSubsystemFromHost is not supported for darwin")
 }
 
+// DisconnectPathFromHost removes a single path of the subsystem from the k8s node.
+func (s *NVMeSubsystem) DisconnectPathFromHost(ctx context.Context, path Path) error {
+	Logc(ctx).Debug(">>>> nvme_darwin.DisconnectPathFromHost")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.DisconnectPathFromHost")
+	return errors.UnsupportedError("DisconnectPathFromHost is not supported for darwin")
+}
+
 func (nh *NVMeHandler) GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem,
 	error,
 ) {

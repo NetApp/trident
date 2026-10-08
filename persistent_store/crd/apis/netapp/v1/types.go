@@ -339,8 +339,30 @@ type TridentBackend struct {
 	UserState string `json:"userState"`
 	// StateReason records the reason if TridentBackend's state is offline
 	StateReason string `json:"stateReason,omitempty"`
+	// DiscoveredState is what the core has discovered about the storage system for this backend,
+	// as opposed to configured state. A nil pointer means nothing has been published.
+	DiscoveredState *TridentBackendDiscoveredState `json:"discoveredState,omitempty"`
 	// ConfigRef is a reference to the TridentBackendConfig object
 	ConfigRef string `json:"configRef"`
+}
+
+// TridentBackendDiscoveredState holds state the core discovers from a backend's storage system
+// and publishes through the persistent store. Each field is published independently, so a nil
+// field means that piece of state has not been published and must not be read as empty.
+type TridentBackendDiscoveredState struct {
+	// DataLIFs is the core's latest data LIF snapshot for this backend. A nil pointer means no
+	// snapshot has been published. A non-nil empty slice means the core observed that no data
+	// LIFs remain.
+	DataLIFs *[]string `json:"dataLIFs,omitempty"`
+}
+
+// PublishedDataLIFs returns the backend's published data LIF snapshot, or nil if none has been
+// published.
+func (in *TridentBackend) PublishedDataLIFs() *[]string {
+	if in == nil || in.DiscoveredState == nil {
+		return nil
+	}
+	return in.DiscoveredState.DataLIFs
 }
 
 // TridentBackendList is a list of TridentBackend objects.

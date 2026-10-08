@@ -52,7 +52,17 @@ func getFakeTridentClientset() *faketridentclient.Clientset {
 // fakeNodeOrchestrator is a minimal no-op node.Orchestrator, used only to satisfy
 // newTridentNodeCrdController's orchestrator parameter in tests that construct a controller
 // but don't exercise node-side volume operations (Attach/Detach/Mount/Unmount/Expand/Graft/Prune).
-type fakeNodeOrchestrator struct{}
+type fakeNodeOrchestrator struct {
+	graftCalls       []node.GraftRequest
+	pruneCalls       []node.PruneRequest
+	reconcileCalls   []node.ReconcileAttachmentRequest
+	graftVolumes     []string
+	pruneVolumes     []string
+	reconcileVolumes []string
+	graftErrs        map[string]error
+	pruneErrs        map[string]error
+	reconcileErrs    map[string]error
+}
 
 func (f *fakeNodeOrchestrator) Bootstrap(context.Context) error { return nil }
 
@@ -77,15 +87,34 @@ func (f *fakeNodeOrchestrator) Unmount(context.Context, string, node.UnmountRequ
 }
 
 func (f *fakeNodeOrchestrator) Graft(
-	context.Context, string, node.GraftRequest,
+	_ context.Context, volumeID string, req node.GraftRequest,
 ) (*models.GraftAttachmentResponse, error) {
+	f.graftCalls = append(f.graftCalls, req)
+	f.graftVolumes = append(f.graftVolumes, volumeID)
+	if err := f.graftErrs[volumeID]; err != nil {
+		return nil, err
+	}
 	return &models.GraftAttachmentResponse{}, nil
 }
 
 func (f *fakeNodeOrchestrator) Prune(
-	context.Context, string, node.PruneRequest,
+	_ context.Context, volumeID string, req node.PruneRequest,
 ) (*models.PruneAttachmentResponse, error) {
+	f.pruneCalls = append(f.pruneCalls, req)
+	f.pruneVolumes = append(f.pruneVolumes, volumeID)
+	if err := f.pruneErrs[volumeID]; err != nil {
+		return nil, err
+	}
 	return &models.PruneAttachmentResponse{}, nil
+}
+
+func (f *fakeNodeOrchestrator) ReconcileAttachment(
+	_ context.Context, volumeID string, req node.ReconcileAttachmentRequest,
+) error {
+	req.TargetIPs = append([]string{}, req.TargetIPs...)
+	f.reconcileCalls = append(f.reconcileCalls, req)
+	f.reconcileVolumes = append(f.reconcileVolumes, volumeID)
+	return f.reconcileErrs[volumeID]
 }
 
 var _ node.Orchestrator = (*fakeNodeOrchestrator)(nil)

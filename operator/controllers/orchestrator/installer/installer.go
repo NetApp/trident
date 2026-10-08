@@ -1920,6 +1920,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		Labels:                             labels,
 		ControllingCRDetails:               controllingCRDetails,
 		EnableForceDetach:                  enableForceDetach,
+		EnableDataLIFRefresh:               enableDataLIFRefresh,
 		Version:                            i.client.ServerVersion(),
 		HTTPRequestTimeout:                 httpTimeout,
 		NodeSelector:                       nodePluginNodeSelector,

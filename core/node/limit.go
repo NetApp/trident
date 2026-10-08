@@ -57,9 +57,13 @@ const (
 
 	graftISCSIAttachmentKey = "GraftISCSIAttachment"
 	pruneISCSIAttachmentKey = "PruneISCSIAttachment"
+	graftNVMeAttachmentKey  = "GraftNVMeAttachment"
+	pruneNVMeAttachmentKey  = "PruneNVMeAttachment"
 
 	maxGraftISCSIAttachmentOperations = 10
 	maxPruneISCSIAttachmentOperations = 10
+	maxGraftNVMeAttachmentOperations  = 10
+	maxPruneNVMeAttachmentOperations  = 10
 )
 
 func (c *Core) initializeLimiters(ctx context.Context) error {
@@ -90,6 +94,8 @@ func (c *Core) initializeLimiters(ctx context.Context) error {
 
 		graftISCSIAttachmentKey: maxGraftISCSIAttachmentOperations,
 		pruneISCSIAttachmentKey: maxPruneISCSIAttachmentOperations,
+		graftNVMeAttachmentKey:  maxGraftNVMeAttachmentOperations,
+		pruneNVMeAttachmentKey:  maxPruneNVMeAttachmentOperations,
 	}
 
 	sharedMap := make(map[string]limiter.Limiter, len(limiterSizes))

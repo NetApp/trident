@@ -159,6 +159,20 @@ func (mr *MockBackendMockRecorder) CanMoveVolume() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanMoveVolume", reflect.TypeOf((*MockBackend)(nil).CanMoveVolume))
 }
 
+// CanRefreshDataAccess mocks base method.
+func (m *MockBackend) CanRefreshDataAccess() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanRefreshDataAccess")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CanRefreshDataAccess indicates an expected call of CanRefreshDataAccess.
+func (mr *MockBackendMockRecorder) CanRefreshDataAccess() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanRefreshDataAccess", reflect.TypeOf((*MockBackend)(nil).CanRefreshDataAccess))
+}
+
 // CanSnapshot mocks base method.
 func (m *MockBackend) CanSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
@@ -296,6 +310,20 @@ func (m *MockBackend) ConstructPersistent(ctx context.Context) *storage.BackendP
 func (mr *MockBackendMockRecorder) ConstructPersistent(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructPersistent", reflect.TypeOf((*MockBackend)(nil).ConstructPersistent), ctx)
+}
+
+// DataLIFs mocks base method.
+func (m *MockBackend) DataLIFs() []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DataLIFs")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// DataLIFs indicates an expected call of DataLIFs.
+func (mr *MockBackendMockRecorder) DataLIFs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataLIFs", reflect.TypeOf((*MockBackend)(nil).DataLIFs))
 }
 
 // CreateGroupSnapshot mocks base method.

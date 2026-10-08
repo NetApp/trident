@@ -183,6 +183,33 @@ func TestNVMeSessions_RemoveNamespaceFromSession(t *testing.T) {
 	pubSessions.RemoveNamespaceFromSession("testNQN", "testUUID")
 }
 
+func TestNVMeSessions_RemoveTargetIPsFromSession(t *testing.T) {
+	var pubSessions *NVMeSessions
+	// Uninitialized published session case.
+	pubSessions.RemoveTargetIPsFromSession("testNQN", []string{"1.1.1.1"})
+
+	// Subsystem not found case.
+	pubSessions = NewNVMeSessions()
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"1.1.1.1", "2.2.2.2"})
+	pubSessions.RemoveTargetIPsFromSession("testNQN-nonexistent", []string{"1.1.1.1"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs,
+		"Removed a target IP from the wrong subsystem.")
+
+	// An IP that was never recorded is a no-op rather than an error.
+	pubSessions.RemoveTargetIPsFromSession(testSubsystem1.NQN, []string{"9.9.9.9"})
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs,
+		"Removing an absent target IP changed the list.")
+
+	// Removing leaves the surviving IPs, in order.
+	pubSessions.AddNVMeSession(testSubsystem1, []string{"3.3.3.3"})
+	pubSessions.RemoveTargetIPsFromSession(testSubsystem1.NQN, []string{"1.1.1.1", "3.3.3.3"})
+
+	assert.Equal(t, []string{"2.2.2.2"}, pubSessions.Info[testSubsystem1.NQN].NVMeTargetIPs,
+		"Unexpected target IPs remain.")
+}
+
 func TestNVMeHandler_RemovePublishedNVMeSession(t *testing.T) {
 	nh := NewNVMeHandler()
 	volPubInfo := &models.VolumePublishInfo{}

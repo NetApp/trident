@@ -46,6 +46,13 @@ func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	return errors.UnsupportedError("DisconnectSubsystemFromHost is not supported for windows")
 }
 
+// DisconnectPathFromHost removes a single path of the subsystem from the k8s node.
+func (s *NVMeSubsystem) DisconnectPathFromHost(ctx context.Context, path Path) error {
+	Logc(ctx).Debug(">>>> nvme_windows.DisconnectPathFromHost")
+	defer Logc(ctx).Debug("<<<< nvme_windows.DisconnectPathFromHost")
+	return errors.UnsupportedError("DisconnectPathFromHost is not supported for windows")
+}
+
 func (nh *NVMeHandler) GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error) {
 	Logc(ctx).Debug(">>>> nvme_windows.GetNVMeSubsystem")
 	defer Logc(ctx).Debug("<<<< nvme_windows.GetNVMeSubsystem")

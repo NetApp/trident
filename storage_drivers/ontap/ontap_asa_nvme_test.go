@@ -3122,6 +3122,19 @@ func TestGetStorageBackendPhysicalPoolNamesASANVMe(t *testing.T) {
 	assert.Equal(t, expectedPhysicalPoolsName, actualPhysicalPoolsName, "Should be equal")
 }
 
+func TestASANVMeStorageDriverDataLIFs(t *testing.T) {
+	d := &ASANVMeStorageDriver{}
+	assert.Nil(t, d.DataLIFs())
+
+	d.ips = []string{}
+	got := d.DataLIFs()
+	assert.NotNil(t, got)
+	assert.Empty(t, got)
+
+	d.ips = []string{"192.0.2.10", "192.0.2.11"}
+	assert.Equal(t, []string{"192.0.2.10", "192.0.2.11"}, d.DataLIFs())
+}
+
 func TestGetBackendStateASANVMe(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -3187,7 +3200,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 			assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 			assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 			assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
-			assert.Equal(t, tt.expectChange, code.Contains(storage.BackendStateDataLIFsChange))
+			assert.Equal(t, tt.expectChange, code.Contains(storage.BackendStateDataAccessChange))
 			assert.Equal(t, "", state, "Reason should be empty")
 			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
 		})

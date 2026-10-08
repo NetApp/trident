@@ -54,6 +54,7 @@ type Orchestrator interface {
 	Unmount(ctx context.Context, volumeID string, req UnmountRequest) error
 	Graft(ctx context.Context, volumeID string, req GraftRequest) (*models.GraftAttachmentResponse, error)
 	Prune(ctx context.Context, volumeID string, req PruneRequest) (*models.PruneAttachmentResponse, error)
+	ReconcileAttachment(ctx context.Context, volumeID string, req ReconcileAttachmentRequest) error
 }
 
 type Core struct {

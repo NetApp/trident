@@ -76,6 +76,10 @@ const (
 	tagriWorkqueueQPS        = 8.0
 	tagriWorkqueueBucketSize = 100
 
+	dataLIFWorkqueueName       = "trident-datalif-workqueue"
+	dataLIFWorkqueueQPS        = 1.0
+	dataLIFWorkqueueBucketSize = 10
+
 	transactionSyncPeriod = 60 * time.Second
 )
 
@@ -106,7 +110,8 @@ func Logx(ctx context.Context) LogEntry {
 // TridentCrdController is the controller implementation for Trident's CRD resources
 type TridentCrdController struct {
 	// orchestrator is a reference to the core orchestrator
-	orchestrator core.Orchestrator
+	orchestrator     core.Orchestrator
+	tridentNamespace string
 
 	// kubeClientset is a standard kubernetes clientset
 	kubeClientset     kubernetes.Interface
@@ -200,6 +205,15 @@ type TridentCrdController struct {
 
 	// K8s Indexers
 	indexers indexers.Indexers
+
+	// dataLIFWorkqueue is a dedicated rate-limited queue for data LIF changes the core published on
+	// TridentBackend CRs. They are kept off the main CR workqueue, whose TridentBackend handling is
+	// limited to deletion. Reconciling a backend fans out to every registered-protocol
+	// VolumeAttachment on it, so this queue is deliberately slower than the main one; the client-go
+	// throttle bounds the fan-out itself. Items are backend UUID strings, which coalesce in the queue
+	// when a backend's LIFs change repeatedly before the worker runs, and the worker reads the latest
+	// snapshot from the informer cache rather than replaying a stale one.
+	dataLIFWorkqueue workqueue.RateLimitingInterface
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -309,6 +323,7 @@ func newTridentCrdControllerImpl(
 	)
 	controller := &TridentCrdController{
 		orchestrator:                  orchestrator,
+		tridentNamespace:              tridentNamespace,
 		kubeClientset:                 kubeClientset,
 		snapshotClientSet:             snapshotClientset,
 		crdClientset:                  crdClientset,
@@ -357,8 +372,14 @@ func newTridentCrdControllerImpl(
 		volumeMoveSynced:              volumeMoveInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(crdWorkqueueRateLimiterFactory(),
 			crdControllerQueueName),
-		tagriRateLimiter:     tagriRateLimiter,
-		tagriWorkqueue:       workqueue.NewNamedRateLimitingQueue(tagriRateLimiter, tagriWorkqueueName),
+		tagriRateLimiter: tagriRateLimiter,
+		tagriWorkqueue:   workqueue.NewNamedRateLimitingQueue(tagriRateLimiter, tagriWorkqueueName),
+		dataLIFWorkqueue: workqueue.NewNamedRateLimitingQueue(workqueue.NewMaxOfRateLimiter(
+			workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 1000*time.Second),
+			&workqueue.BucketRateLimiter{
+				Limiter: rate.NewLimiter(rate.Limit(dataLIFWorkqueueQPS), dataLIFWorkqueueBucketSize),
+			},
+		), dataLIFWorkqueueName),
 		recorder:             recorder,
 		indexers:             indexers,
 		nodeRemediationUtils: nodeRemediationUtils,
@@ -374,9 +395,10 @@ func newTridentCrdControllerImpl(
 	})
 
 	_, _ = backendInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		// Do not handle add backends here, otherwise it may result in continuous
-		// reconcile loops esp. in cases where backends are created as a result
-		// of a backend config.
+		// Do not put added backends on the main workqueue, otherwise it may result
+		// in continuous reconcile loops esp. in cases where backends are created as
+		// a result of a backend config. Adds only feed the data LIF workqueue.
+		AddFunc:    controller.addTridentBackendHandler,
 		UpdateFunc: controller.updateTridentBackendHandler,
 		DeleteFunc: controller.deleteTridentBackendHandler,
 	})
@@ -522,6 +544,7 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
 	defer c.tagriWorkqueue.ShutDown()
+	defer c.dataLIFWorkqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
 	Log().Info("Starting Trident CRD controller.")
@@ -556,6 +579,8 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 	}
 	// One dedicated worker for the TAGRI queue so TAGRI processing is isolated and does not block other CRs.
 	go wait.Until(c.runTagriWorker, time.Second, stopCh)
+	// One dedicated worker for backend data LIF changes, which are not CR events.
+	go wait.Until(c.runDataLIFWorker, time.Second, stopCh)
 
 	Logx(ctx).Debug("Started workers.")
 	<-stopCh
@@ -569,6 +594,14 @@ func (c *TridentCrdController) runWorker() {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).Trace("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
+	}
+}
+
+// runDataLIFWorker processes backend data LIF changes from the dedicated workqueue only.
+func (c *TridentCrdController) runDataLIFWorker() {
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController runDataLIFWorker started.")
+	for c.processNextDataLIFWorkItem() {
 	}
 }
 
@@ -951,6 +984,48 @@ func (c *TridentCrdController) processNextTagriWorkItem() bool {
 	if err != nil {
 		Logx(ctx).Error(err)
 		return true
+	}
+	return true
+}
+
+// processNextDataLIFWorkItem reads one backend UUID from the data LIF workqueue and reconciles
+// attached Trident VolumeAttachments on that backend. All requeues stay on dataLIFWorkqueue.
+func (c *TridentCrdController) processNextDataLIFWorkItem() bool {
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController#processNextDataLIFWorkItem")
+
+	obj, shutdown := c.dataLIFWorkqueue.Get()
+	if shutdown {
+		Logx(ctx).Trace("TridentCrdController#processNextDataLIFWorkItem shutting down")
+		return false
+	}
+
+	err := func(obj interface{}) error {
+		defer c.dataLIFWorkqueue.Done(obj)
+
+		backendUUID, ok := obj.(string)
+		if !ok || backendUUID == "" {
+			c.dataLIFWorkqueue.Forget(obj)
+			return fmt.Errorf("expected a backend UUID in the data LIF workqueue but got %#v", obj)
+		}
+
+		if err := c.handleBackendDataLIFsChange(ctx, backendUUID); err != nil {
+			if errors.IsReconcileDeferredError(err) {
+				Logx(ctx).Infof("deferred reconciling data LIFs for backend '%v', requeuing; %v",
+					backendUUID, err.Error())
+				c.dataLIFWorkqueue.AddRateLimited(backendUUID)
+				return nil
+			}
+			c.dataLIFWorkqueue.Forget(obj)
+			return err
+		}
+
+		c.dataLIFWorkqueue.Forget(obj)
+		Logx(ctx).Tracef("Synced data LIFs for backend '%s'", backendUUID)
+		return nil
+	}(obj)
+	if err != nil {
+		Logx(ctx).Error(err)
 	}
 	return true
 }

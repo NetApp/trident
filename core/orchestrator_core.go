@@ -6781,8 +6781,16 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 
 	if changeMap != nil {
 		if changeMap.Contains(storage.BackendStateReasonChange) {
-			// Update CR.
 			Logc(ctx).WithField("reason", reason).Debugf("Backend state reason change detected for %s.", b.Name())
+		}
+		if changeMap.Contains(storage.BackendStateDataAccessChange) {
+			Logc(ctx).Debugf("Backend data LIF change detected for %s.", b.Name())
+		}
+
+		// Update CR. The data LIFs travel with the backend's persistent form, and the CRD
+		// controller reconciles VolumeAttachments when it sees them change on the TridentBackend.
+		if changeMap.Contains(storage.BackendStateReasonChange) ||
+			changeMap.Contains(storage.BackendStateDataAccessChange) {
 			if err := o.storeClient.UpdateBackend(ctx, b); err != nil {
 				return err
 			}

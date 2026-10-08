@@ -3180,6 +3180,19 @@ func TestCreateNamespacePath(t *testing.T) {
 	assert.Equal(t, nsNameExpected, nsNameGot)
 }
 
+func TestNVMeStorageDriverDataLIFs(t *testing.T) {
+	d := &NVMeStorageDriver{}
+	assert.Nil(t, d.DataLIFs())
+
+	d.ips = []string{}
+	got := d.DataLIFs()
+	assert.NotNil(t, got)
+	assert.Empty(t, got)
+
+	d.ips = []string{"192.0.2.10", "192.0.2.11"}
+	assert.Equal(t, []string{"192.0.2.10", "192.0.2.11"}, d.DataLIFs())
+}
+
 func TestGetBackendState(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
@@ -3245,7 +3258,7 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 			reason, changeMap := driver.GetBackendState(ctx)
 
 			assert.Empty(t, reason)
-			assert.Equal(t, tt.expectChange, changeMap.Contains(storage.BackendStateDataLIFsChange))
+			assert.Equal(t, tt.expectChange, changeMap.Contains(storage.BackendStateDataAccessChange))
 			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
 		})
 	}

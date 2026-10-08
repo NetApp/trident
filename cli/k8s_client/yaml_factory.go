@@ -1190,6 +1190,8 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{FORCE_DETACH_BOOL}", strconv.FormatBool(args.EnableForceDetach))
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ENABLE_DATALIF_REFRESH}",
+		strconv.FormatBool(args.EnableDataLIFRefresh))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SIDECAR_LOG_LEVEL}", sidecarLogLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
@@ -1412,6 +1414,7 @@ spec:
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
         - "--enable_force_detach={FORCE_DETACH_BOOL}"
+        - "--enable_datalif_refresh={ENABLE_DATALIF_REFRESH}"
         - "--iscsi_self_healing_interval={ISCSI_SELF_HEALING_INTERVAL}"
         - "--iscsi_self_healing_wait_time={ISCSI_SELF_HEALING_WAIT_TIME}"
         {DEBUG}

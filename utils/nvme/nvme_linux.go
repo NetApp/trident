@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -201,6 +202,38 @@ func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Failed to disconnect subsystem %s.", s.NQN)
 		return fmt.Errorf("failed to disconnect subsystem %s; %v", s.NQN, err)
+	}
+
+	return nil
+}
+
+// DisconnectPathFromHost removes a single path of the subsystem from the k8s node, leaving the
+// subsystem and its remaining paths in place.
+//
+// DisconnectSubsystemFromHost takes the NQN and so tears down every path at once, which is not
+// usable for pruning one dead path out of a multipathed subsystem. The controller name that
+// `nvme disconnect -d` expects is the last element of the path's sysfs directory.
+func (s *NVMeSubsystem) DisconnectPathFromHost(ctx context.Context, path Path) error {
+	Logc(ctx).Debug(">>>> nvme_linux.DisconnectPathFromHost")
+	defer Logc(ctx).Debug("<<<< nvme_linux.DisconnectPathFromHost")
+
+	if err := beforeNVMeDisconnect.Inject(); err != nil {
+		return err
+	}
+
+	controller := filepath.Base(path.Name)
+	if controller == "" || controller == "." || controller == string(filepath.Separator) {
+		return fmt.Errorf("could not determine the controller name from path %s", path.Name)
+	}
+
+	// Bounded, unlike the connect and whole-subsystem disconnect beside it, because this runs on
+	// the self-healing timer: a command that never returns would stall every later subsystem in
+	// the sweep, and failing here is harmless since the path is simply retried next time.
+	_, err := s.command.ExecuteWithTimeout(ctx, "nvme", NVMeDisconnectPathTimeoutInSeconds*time.Second,
+		false, "disconnect", "-d", controller)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Failed to disconnect path %s of subsystem %s.", controller, s.NQN)
+		return fmt.Errorf("failed to disconnect path %s of subsystem %s; %v", controller, s.NQN, err)
 	}
 
 	return nil

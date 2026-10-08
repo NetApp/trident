@@ -1851,7 +1851,7 @@ func (d *NVMeStorageDriver) GetBackendState(ctx context.Context) (string, *roari
 	// unreachable, stopped, or reporting all of its data LIFs down, and a degraded answer must
 	// not be mistaken for a LIF change.
 	if reason == "" && d.refreshDataLIFs(ctx, dataLIFs) {
-		changeMap.Add(storage.BackendStateDataLIFsChange)
+		changeMap.Add(storage.BackendStateDataAccessChange)
 	}
 	return reason, changeMap
 }

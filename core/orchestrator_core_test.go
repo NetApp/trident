@@ -11179,6 +11179,41 @@ func TestReconcileBackendState(t *testing.T) {
 			expectError:  true,
 			errorMessage: "should be error",
 		},
+		{
+			name: "changeMap contains BackendStateDataAccessChange, backend CR is updated",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateDataAccessChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+			},
+			expectError: false,
+		},
+		{
+			name: "changeMap contains BackendStateDataAccessChange and BackendStateReasonChange, backend CR is updated once",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateDataAccessChange)
+				changeMap.Add(storage.BackendStateReasonChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+			},
+			expectError: false,
+		},
+		{
+			name: "changeMap contains BackendStateDataAccessChange, error on storeclient.UpdateBackend",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateDataAccessChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(mockUpdateError)
+			},
+			expectError:  true,
+			errorMessage: "should be error",
+		},
 	}
 
 	for _, tt := range tests {

@@ -424,6 +424,25 @@ func TestGetCSIDeploymentYAML_DataLIFRefresh(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMLLinux_DataLIFRefresh(t *testing.T) {
+	version := versionutils.MustParseSemantic("1.26.0")
+
+	for _, enabled := range []bool{false, true} {
+		t.Run(strconv.FormatBool(enabled), func(t *testing.T) {
+			daemonSetArgs := &DaemonsetYAMLArguments{
+				Version:              version,
+				EnableDataLIFRefresh: enabled,
+			}
+
+			yamlData := GetCSIDaemonSetYAMLLinux(daemonSetArgs)
+			assert.Contains(t, yamlData,
+				fmt.Sprintf(`- "--enable_datalif_refresh=%t"`, enabled))
+			_, err := yaml.YAMLToJSON([]byte(yamlData))
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	deploymentArgs := &DeploymentYAMLArguments{
 		NodeSelector: map[string]string{"node-label-key": "test1"},

@@ -20,8 +20,16 @@ import (
 // TransportAddressEqualTo is a part of Path.Address string. It is used to extract IP address.
 const TransportAddressEqualTo = "traddr="
 
+// PathStateLive is the value the kernel reports in a path's state file while that path is able
+// to carry I/O. Any other value means the path exists but is not usable.
+const PathStateLive = "live"
+
 // NVMeListCmdTimeoutInSeconds is the default timeout supplied to NVMe cli command.
 const NVMeListCmdTimeoutInSeconds = 10
+
+// NVMeDisconnectPathTimeoutInSeconds bounds the removal of a single subsystem path, which runs on
+// the self-healing timer and so must not be able to stall the sweep behind it.
+const NVMeDisconnectPathTimeoutInSeconds = 10
 
 type NVMeDevices struct {
 	Devices []NVMeDevice `json:"ONTAPdevices"`
@@ -131,6 +139,7 @@ type NVMeSubsystemInterface interface {
 	IsNetworkPathPresent(ip string) bool
 	ConnectSubsystemToHost(ctx context.Context, IP string) error
 	DisconnectSubsystemFromHost(ctx context.Context) error
+	DisconnectPathFromHost(ctx context.Context, path Path) error
 	GetNamespaceCountForSubsDevice(ctx context.Context) (int, error)
 	GetNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error)
 	GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error)

@@ -14834,6 +14834,53 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			// The driver reports a data LIF change only on the poll that refreshed its cache, so
+			// the re-check under the write lock sees no change and the CR must still be written.
+			name:        "ReconcileBackendDataLIFsChangeReportedOnce",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStateDataAccessChange)
+
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				gomock.InOrder(
+					mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(1),
+					mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", roaring.New()).Times(1),
+				)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendDataLIFsChangeStoreError",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStateDataAccessChange)
+
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(failed).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
 			name:        "ReconcileBackendPoolsChangeConfigError",
 			backendUUID: "uuid1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {

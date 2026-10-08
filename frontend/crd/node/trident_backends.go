@@ -3,12 +3,18 @@
 package crd
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core/node"
 	. "github.com/netapp/trident/logging"
+	tridenterrors "github.com/netapp/trident/utils/errors"
 )
 
 // handleTridentBackends handles the business logic for TridentBackend events
@@ -24,7 +30,7 @@ func (c *TridentNodeCrdController) handleTridentBackends(keyItem *KeyItem) error
 
 	if namespace == "" {
 		Logc(ctx).WithField("key", key).Error("Invalid key; no namespace present.")
-		return errors.NewBadRequest(fmt.Sprintf("invalid key, no namespace present: %v", key))
+		return apierrors.NewBadRequest(fmt.Sprintf("invalid key, no namespace present: %v", key))
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -68,7 +74,47 @@ func (c *TridentNodeCrdController) handleTridentBackends(keyItem *KeyItem) error
 	// Send the full key (namespace/name) so scheduler has namespace info
 	c.autogrowOrchestrator.HandleTBEEvent(ctx, keyItem.event, key)
 
+	// Data LIF refresh is opt-in. A nil snapshot means none has been published. A non-nil
+	// snapshot, including an empty slice, is authoritative.
+	if dataLIFs := backend.PublishedDataLIFs(); config.EnableDataLIFRefresh && dataLIFs != nil {
+		if err := c.reconcilePublishedDataLIFs(ctx, backend.BackendUUID, *dataLIFs); err != nil {
+			return tridenterrors.WrapWithReconcileDeferredError(err, "data LIF reconciliation failed")
+		}
+	}
+
 	Logc(ctx).WithFields(fields).Info("Successfully processed TridentBackend event")
 
 	return nil
+}
+
+// reconcilePublishedDataLIFs asks the node core to converge each volume this node has published
+// from the backend onto the backend's data LIFs. The request carries only the target IPs. The
+// node core owns the tracking info and decides, under the volume lock, which protocol applies and
+// which paths to prune or graft. A nil TridentBackend DataLIFs pointer is filtered by the caller;
+// an empty slice here is an authoritative snapshot that all data LIFs were removed.
+func (c *TridentNodeCrdController) reconcilePublishedDataLIFs(
+	ctx context.Context, backendUUID string, desiredIPs []string,
+) error {
+	publications, err := c.tridentVolumePublicationLister.List(labels.Everything())
+	if err != nil {
+		return fmt.Errorf("could not list volume publications: %w", err)
+	}
+
+	// A failing volume must not block the others. Reconciliation is idempotent per volume, so
+	// retrying the whole set after a partial failure is safe.
+	var errs []error
+	for _, publication := range publications {
+		if publication == nil || publication.NodeID != c.nodeName ||
+			publication.BackendUUID != backendUUID || publication.VolumeID == "" {
+			continue
+		}
+		if err := c.orchestrator.ReconcileAttachment(ctx, publication.VolumeID, node.ReconcileAttachmentRequest{
+			TargetIPs: desiredIPs,
+		}); err != nil {
+			errs = append(errs, fmt.Errorf(
+				"could not reconcile data LIFs for volume %s: %w", publication.VolumeID, err))
+		}
+	}
+
+	return errors.Join(errs...)
 }

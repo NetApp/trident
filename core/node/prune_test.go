@@ -14,6 +14,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/nvme"
 )
 
 // This file's tests must not use t.Parallel(); see core_test.go for why.
@@ -150,6 +151,215 @@ func TestCore_Prune_Block_Success(t *testing.T) {
 	assert.Equal(t, "vol1", resp.VolumeName)
 	assert.Equal(t, tridentconfig.Block, resp.Protocol)
 	assert.Equal(t, req.VolumeAccessInfo, resp.VolumeAccessInfo)
+}
+
+func TestCore_Prune_NVMeSuccess(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
+	req := PruneRequest{
+		Protocol:         tridentconfig.Block,
+		VolumeAccessInfo: trackingInfo.VolumePublishInfo.VolumeAccessInfo,
+	}
+	req.NVMeTargetIPs = []string{"192.0.2.11"}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
+		Return(&nvme.NVMeSubsystem{}, nil)
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Prune(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, req.NVMeTargetIPs, resp.NVMeTargetIPs)
+}
+
+func TestCore_Prune_NVMeTargetIPsOnlyAppliesDesiredIPs(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
+	trackingInfo.MountOptions = "discard"
+	trackedNQN := trackingInfo.NVMeSubsystemNQN
+	req := PruneRequest{Protocol: tridentconfig.Block}
+	req.NVMeTargetIPs = []string{"192.0.2.11"}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackedNQN).Return(&nvme.NVMeSubsystem{}, nil)
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			assert.Equal(t, trackedNQN, publishInfo.NVMeSubsystemNQN)
+			assert.Equal(t, "discard", publishInfo.MountOptions)
+			assert.Equal(t, []string{"192.0.2.11"}, publishInfo.NVMeTargetIPs)
+			return nil
+		})
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Prune(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestCore_Prune_NVMeTargetIPsOnlyIgnoresNonNVMeVolumes(t *testing.T) {
+	tests := map[string]struct {
+		trackingInfo *models.VolumeTrackingInfo
+		trackingErr  error
+	}{
+		"iSCSI volume": {trackingInfo: sampleTrackingInfo(ISCSI)},
+		"untracked":    {trackingErr: errors.NotFoundError("not found")},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			core, mocks := newTestCore(t)
+			req := PruneRequest{Protocol: tridentconfig.Block}
+			req.NVMeTargetIPs = []string{}
+
+			mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(tt.trackingInfo, tt.trackingErr)
+
+			resp, err := core.Prune(context.Background(), "vol1", req)
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			assert.Equal(t, "vol1", resp.VolumeName)
+		})
+	}
+}
+
+func TestCore_Prune_NVMeIdentityMismatch(t *testing.T) {
+	tests := map[string]struct {
+		mutateReq   func(req *PruneRequest)
+		errContains string
+	}{
+		"subsystem NQN mismatch": {
+			mutateReq:   func(req *PruneRequest) { req.NVMeSubsystemNQN = "nqn.other" },
+			errContains: "NVMe subsystem NQN mismatch",
+		},
+		"namespace UUID mismatch": {
+			mutateReq:   func(req *PruneRequest) { req.NVMeNamespaceUUID = "ffffffff-ffff-ffff-ffff-ffffffffffff" },
+			errContains: "NVMe namespace UUID mismatch",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			core, mocks := newTestCore(t)
+			trackingInfo := sampleTrackingInfo(NVMe)
+			req := PruneRequest{
+				Protocol:         tridentconfig.Block,
+				VolumeAccessInfo: trackingInfo.VolumePublishInfo.VolumeAccessInfo,
+			}
+			tt.mutateReq(&req)
+
+			mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+
+			resp, err := core.Prune(context.Background(), "vol1", req)
+			assert.Nil(t, resp)
+			require.Error(t, err)
+			assert.True(t, errors.IsTerminalReconciliationError(err))
+			assert.Contains(t, err.Error(), tt.errContains)
+		})
+	}
+}
+
+func TestCore_Prune_NVMeSubsystemNotFoundRecordsDesiredTargets(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10"}
+	req := PruneRequest{Protocol: tridentconfig.Block}
+	req.NVMeTargetIPs = []string{"192.0.2.11"}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
+		Return(nil, errors.NotFoundError("no subsystem paths found"))
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			assert.Equal(t, trackingInfo.NVMeSubsystemNQN, publishInfo.NVMeSubsystemNQN)
+			assert.Equal(t, []string{"192.0.2.11"}, publishInfo.NVMeTargetIPs)
+			return nil
+		})
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Prune(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, req.NVMeTargetIPs, resp.NVMeTargetIPs)
+}
+
+func TestCore_Prune_NVMeEmptyTargetSnapshot(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
+	req := PruneRequest{
+		Protocol:         tridentconfig.Block,
+		VolumeAccessInfo: trackingInfo.VolumePublishInfo.VolumeAccessInfo,
+	}
+	req.NVMeTargetIPs = []string{}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
+		Return(&nvme.NVMeSubsystem{}, nil)
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Prune(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Empty(t, resp.NVMeTargetIPs)
+}
+
+func TestPruneNVMeAttachment_NilPublishInfo(t *testing.T) {
+	core, _ := newTestCore(t)
+	req := PruneRequest{Protocol: tridentconfig.Block}
+	req.NVMeSubsystemNQN = "nqn.test"
+
+	resp, err := core.pruneNVMeAttachment(context.Background(), "vol1", req, nil)
+	assert.Nil(t, resp)
+	require.Error(t, err)
+	assert.True(t, errors.IsTerminalReconciliationError(err))
+	assert.Contains(t, err.Error(), "NVMe tracking info not found")
+}
+
+func TestPruneNVMeAttachment_TrackingInfoMismatch(t *testing.T) {
+	tests := map[string]struct {
+		mutateReq   func(req *PruneRequest)
+		errContains string
+	}{
+		"subsystem NQN mismatch": {
+			mutateReq:   func(req *PruneRequest) { req.NVMeSubsystemNQN = "nqn.other" },
+			errContains: "NVMe subsystem NQN mismatch",
+		},
+		"namespace UUID mismatch": {
+			mutateReq:   func(req *PruneRequest) { req.NVMeNamespaceUUID = "ffffffff-ffff-ffff-ffff-ffffffffffff" },
+			errContains: "NVMe namespace UUID mismatch",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			core, _ := newTestCore(t)
+			publishInfo := samplePublishInfo(NVMe)
+			trackedNQN := publishInfo.NVMeSubsystemNQN
+			trackedUUID := publishInfo.NVMeNamespaceUUID
+			req := PruneRequest{
+				Protocol:         tridentconfig.Block,
+				VolumeAccessInfo: publishInfo.VolumeAccessInfo,
+			}
+			tt.mutateReq(&req)
+
+			resp, err := core.pruneNVMeAttachment(context.Background(), "vol1", req, publishInfo)
+			assert.Nil(t, resp)
+			require.Error(t, err)
+			assert.True(t, errors.IsTerminalReconciliationError(err))
+			assert.Contains(t, err.Error(), tt.errContains)
+			assert.Equal(t, trackedNQN, publishInfo.NVMeSubsystemNQN)
+			assert.Equal(t, trackedUUID, publishInfo.NVMeNamespaceUUID)
+		})
+	}
 }
 
 func TestPruneISCSIAttachment_NilPublishInfo(t *testing.T) {

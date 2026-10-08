@@ -5,6 +5,7 @@ package nvme
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -60,6 +61,97 @@ func (s *NVMeSubsystem) updatePaths(ctx context.Context) error {
 	s.Paths = paths
 
 	return nil
+}
+
+// livePathCount returns how many of the subsystem's paths can currently carry I/O.
+func (s *NVMeSubsystem) livePathCount() int {
+	live := 0
+	for _, path := range s.Paths {
+		if path.State == PathStateLive {
+			live++
+		}
+	}
+
+	return live
+}
+
+// PrunePaths removes the subsystem's paths to data LIFs that are absent from desiredIPs.
+//
+// Trident connects with `ctrl-loss-tmo -1`, which makes a path undroppable on purpose: when its
+// data LIF disappears the kernel keeps the path object indefinitely in a non-live state instead
+// of reaping it. That object still counts towards MaxSessionsPerSubsystem, so a subsystem holding
+// one live path and one dead one is already at the cap and a replacement data LIF cannot be
+// grafted in the dead path's place. Pruning before grafting is what frees the slot, rather than
+// growing a third path alongside the corpse.
+//
+// This destroys host state, so all of the following must hold before a path is touched:
+//
+//   - its address is absent from desiredIPs. The controller is the authority on which data LIFs
+//     still exist, so a LIF that is merely flapping or briefly unreachable is still desired and
+//     is never acted on here.
+//   - at least one path remains afterwards. Reconnecting a subsystem renames the NVMe devices
+//     underneath volumes that are already mounted, so emptying one would turn a degraded
+//     subsystem into an outage needing manual recovery.
+//   - it is not the only path that can currently carry I/O. A desired path that is still down
+//     cannot take over, so removing the last live path would stop a subsystem that is degraded
+//     but still serving. A later prune removes it once a desired path is live.
+//
+// On a subsystem whose LIFs have not changed, every path matches a desired address and nothing is
+// read, executed or logged.
+func (s *NVMeSubsystem) PrunePaths(ctx context.Context, desiredIPs []string) {
+	// The namespace head survives only while the subsystem still has a path, so this is what keeps
+	// a prune from renaming /dev/nvmeXnY underneath a mounted volume.
+	remaining := len(s.Paths)
+	// Paths are re-read only after the loop, so this count has to be kept locally as live paths
+	// are removed.
+	liveRemaining := s.livePathCount()
+
+	pruned := false
+	for _, path := range s.Paths {
+		if remaining <= 1 {
+			break
+		}
+
+		ip := extractIPFromNVMeAddress(path.Address)
+		if ip == "" || slices.Contains(desiredIPs, ip) {
+			continue
+		}
+
+		if path.State == PathStateLive && liveRemaining <= 1 {
+			continue
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"subsystem": s.NQN,
+			"path":      path.Name,
+			"targetIP":  ip,
+			"state":     path.State,
+		}).Info("Removing a subsystem path whose data LIF no longer serves this subsystem.")
+
+		if err := s.DisconnectPathFromHost(ctx, path); err != nil {
+			// Leave it in place; the next data LIF change re-prunes it. The cost of failing here
+			// is the behaviour this function exists to correct, so it is worth retrying rather
+			// than escalating.
+			Logc(ctx).WithError(err).WithField("path", path.Name).
+				Debug("Could not remove the path; it will be retried on the next data LIF change.")
+			continue
+		}
+
+		remaining--
+		if path.State == PathStateLive {
+			liveRemaining--
+		}
+		pruned = true
+	}
+
+	if pruned {
+		// Re-read the paths so that the subsystem's connection status reflects what is actually
+		// left rather than counting paths that have just been removed.
+		if err := s.updatePaths(ctx); err != nil {
+			Logc(ctx).WithError(err).Debug(
+				"Could not refresh subsystem paths after pruning; they will be re-read on the next sweep.")
+		}
+	}
 }
 
 // IsNetworkPathPresent checks if there is a path present in the subsystem corresponding to the LIF.
@@ -539,6 +631,25 @@ func (s *NVMeSessions) AddNVMeSession(subsystem NVMeSubsystem, targetIPs []strin
 		if !sd.IsTargetIPPresent(ip) {
 			sd.AddTargetIP(ip)
 		}
+	}
+}
+
+// RemoveTargetIPsFromSession drops the given target IPs from a subsystem's session. AddNVMeSession
+// only ever merges IPs in, so without this a target IP stays in the session for the life of the
+// process and self-healing keeps trying to connect to a data LIF that no longer serves the volume.
+func (s *NVMeSessions) RemoveTargetIPsFromSession(subNQN string, ips []string) {
+	if s == nil || s.IsEmpty() {
+		return
+	}
+
+	session, ok := s.Info[subNQN]
+	if !ok {
+		// No session found for given subsystem.
+		return
+	}
+
+	for _, ip := range ips {
+		session.RemoveTargetIP(ip)
 	}
 }
 

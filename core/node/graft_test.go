@@ -108,6 +108,80 @@ func TestCore_Graft_ReadTrackingInfoErrorPropagates(t *testing.T) {
 	assert.Contains(t, err.Error(), "disk on fire")
 }
 
+func TestCore_Graft_NVMeSuccess(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10"}
+	req := GraftRequest{
+		Protocol:         tridentconfig.Block,
+		VolumeAccessInfo: trackingInfo.VolumePublishInfo.VolumeAccessInfo,
+	}
+	req.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Graft(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, req.NVMeTargetIPs, resp.NVMeTargetIPs)
+}
+
+func TestCore_Graft_NVMeTargetIPsOnlyUsesTrackedIdentity(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10"}
+	trackingInfo.MountOptions = "discard"
+	trackedNQN := trackingInfo.NVMeSubsystemNQN
+	req := GraftRequest{Protocol: tridentconfig.Block}
+	req.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			assert.Equal(t, trackedNQN, publishInfo.NVMeSubsystemNQN)
+			assert.Equal(t, "discard", publishInfo.MountOptions)
+			assert.Equal(t, req.NVMeTargetIPs, publishInfo.NVMeTargetIPs)
+			return nil
+		})
+	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+
+	resp, err := core.Graft(context.Background(), "vol1", req)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestCore_Graft_NVMeTargetIPsOnlyIgnoresNonNVMeVolumes(t *testing.T) {
+	tests := map[string]struct {
+		trackingInfo *models.VolumeTrackingInfo
+		trackingErr  error
+	}{
+		"iSCSI volume": {trackingInfo: sampleTrackingInfo(ISCSI)},
+		"untracked":    {trackingErr: errors.NotFoundError("not found")},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			core, mocks := newTestCore(t)
+			req := GraftRequest{Protocol: tridentconfig.Block}
+			req.NVMeTargetIPs = []string{"192.0.2.11"}
+
+			mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(tt.trackingInfo, tt.trackingErr)
+
+			resp, err := core.Graft(context.Background(), "vol1", req)
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			assert.Equal(t, "vol1", resp.VolumeName)
+		})
+	}
+}
+
 func TestCore_Graft_TrackingInfoMismatch(t *testing.T) {
 	tests := map[string]struct {
 		mutateReq   func(req *GraftRequest)

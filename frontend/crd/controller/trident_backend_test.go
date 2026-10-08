@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/config"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
@@ -192,4 +194,162 @@ func TestHandleTridentBackend_BackendConfigDeletingPhase(t *testing.T) {
 	assert.Equal(t, EventDelete, newKeyItem.event)
 	assert.Equal(t, ObjectTypeTridentBackendConfig, newKeyItem.objectType)
 	assert.Equal(t, "default/test-backend-config", newKeyItem.key)
+}
+
+func setDataLIFRefresh(t *testing.T, enabled bool) {
+	t.Helper()
+	previous := config.EnableDataLIFRefresh
+	config.EnableDataLIFRefresh = enabled
+	t.Cleanup(func() { config.EnableDataLIFRefresh = previous })
+}
+
+func tridentBackendWithDataLIFs(backendUUID string, dataLIFs ...string) *tridentv1.TridentBackend {
+	backend := createTestTridentBackend("tbe-"+backendUUID, "trident", backendUUID)
+	if dataLIFs != nil {
+		backend.DiscoveredState = &tridentv1.TridentBackendDiscoveredState{DataLIFs: &dataLIFs}
+	}
+	return backend
+}
+
+func tridentBackendWithEmptyDataLIFs(backendUUID string) *tridentv1.TridentBackend {
+	backend := createTestTridentBackend("tbe-"+backendUUID, "trident", backendUUID)
+	backend.DiscoveredState = &tridentv1.TridentBackendDiscoveredState{DataLIFs: &[]string{}}
+	return backend
+}
+
+func TestTridentBackendHandlers_EnqueueDataLIFsChange(t *testing.T) {
+	const backendUUID = "backend-uuid"
+
+	tests := []struct {
+		name         string
+		enabled      bool
+		event        func(c *TridentCrdController)
+		expectQueued bool
+	}{
+		{
+			name:    "first snapshot published",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID),
+					tridentBackendWithDataLIFs(backendUUID, "192.0.2.10", "192.0.2.11"))
+			},
+			expectQueued: true,
+		},
+		{
+			name:    "snapshot changed",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"),
+					tridentBackendWithDataLIFs(backendUUID, "192.0.2.10", "192.0.2.11"))
+			},
+			expectQueued: true,
+		},
+		{
+			name:    "empty snapshot is a change",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"),
+					tridentBackendWithEmptyDataLIFs(backendUUID))
+			},
+			expectQueued: true,
+		},
+		{
+			name:    "snapshot unchanged",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"),
+					tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"))
+			},
+		},
+		{
+			name:    "no snapshot published",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID),
+					tridentBackendWithDataLIFs(backendUUID))
+			},
+		},
+		{
+			name:    "added backend with snapshot",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.addTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"))
+			},
+			expectQueued: true,
+		},
+		{
+			name:    "added backend without snapshot",
+			enabled: true,
+			event: func(c *TridentCrdController) {
+				c.addTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID))
+			},
+		},
+		{
+			name:    "data LIF refresh disabled",
+			enabled: false,
+			event: func(c *TridentCrdController) {
+				c.updateTridentBackendHandler(tridentBackendWithDataLIFs(backendUUID, "192.0.2.10"),
+					tridentBackendWithDataLIFs(backendUUID, "192.0.2.11"))
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			controller, mockCtrl, _ := setupBackendConfigTest(t)
+			defer mockCtrl.Finish()
+			setDataLIFRefresh(t, tc.enabled)
+
+			tc.event(controller)
+
+			if !tc.expectQueued {
+				assert.Zero(t, controller.dataLIFWorkqueue.Len())
+				return
+			}
+			require.Equal(t, 1, controller.dataLIFWorkqueue.Len())
+			item, shutdown := controller.dataLIFWorkqueue.Get()
+			require.False(t, shutdown)
+			assert.Equal(t, backendUUID, item)
+			assert.Zero(t, controller.workqueue.Len(), "data LIF changes must stay off the main workqueue")
+		})
+	}
+}
+
+func TestPublishedTridentBackendDataLIFs(t *testing.T) {
+	controller, mockCtrl, _ := setupBackendConfigTest(t)
+	defer mockCtrl.Finish()
+
+	indexer := controller.crdInformer.TridentBackends().Informer().GetIndexer()
+	require.NoError(t, indexer.Add(tridentBackendWithDataLIFs("published", "192.0.2.10", "192.0.2.11")))
+	require.NoError(t, indexer.Add(tridentBackendWithEmptyDataLIFs("empty")))
+	require.NoError(t, indexer.Add(tridentBackendWithDataLIFs("unpublished")))
+
+	dataLIFs, err := controller.publishedTridentBackendDataLIFs("published")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"192.0.2.10", "192.0.2.11"}, dataLIFs)
+
+	dataLIFs, err = controller.publishedTridentBackendDataLIFs("empty")
+	require.NoError(t, err)
+	require.NotNil(t, dataLIFs)
+	assert.Empty(t, dataLIFs)
+
+	dataLIFs, err = controller.publishedTridentBackendDataLIFs("unpublished")
+	require.NoError(t, err)
+	assert.Nil(t, dataLIFs)
+
+	dataLIFs, err = controller.publishedTridentBackendDataLIFs("missing")
+	require.NoError(t, err)
+	assert.Nil(t, dataLIFs)
+}
+
+func TestHandleBackendDataLIFsChange_NothingPublished(t *testing.T) {
+	controller, mockCtrl, _ := setupBackendConfigTest(t)
+	defer mockCtrl.Finish()
+
+	require.NoError(t, controller.crdInformer.TridentBackends().Informer().GetIndexer().Add(
+		tridentBackendWithDataLIFs("unpublished")))
+
+	// Returns before touching the VolumeAttachment indexer, which this controller does not have.
+	assert.NoError(t, controller.handleBackendDataLIFsChange(context.Background(), "unpublished"))
+	assert.Error(t, controller.handleBackendDataLIFsChange(context.Background(), ""))
 }

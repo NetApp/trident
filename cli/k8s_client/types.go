@@ -204,6 +204,7 @@ type DaemonsetYAMLArguments struct {
 	Labels                             map[string]string       `json:"labels"`
 	ControllingCRDetails               map[string]string       `json:"controllingCRDetails"`
 	EnableForceDetach                  bool                    `json:"enableForceDetach"`
+	EnableDataLIFRefresh               bool                    `json:"enableDataLIFRefresh"`
 	DisableAuditLog                    bool                    `json:"disableAuditLog"`
 	Debug                              bool                    `json:"debug"`
 	Version                            *versionutils.Version   `json:"version"`

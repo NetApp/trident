@@ -7756,6 +7756,10 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 	reason, changeMap := backend.GetBackendState(ctx)
 	unlocker()
 
+	// A driver reports a data LIF change only on the poll that refreshed its cache, so the
+	// re-check under the write lock below cannot be relied on to report it again.
+	dataLIFsChanged := changeMap != nil && changeMap.Contains(storage.BackendStateDataAccessChange)
+
 	if changeMap != nil && !changeMap.IsEmpty() {
 
 		// Acquire write lock on backend
@@ -7773,6 +7777,12 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 
 		// Ensure there is work to do now that we hold the write lock
 		reason, changeMap = backend.GetBackendState(ctx)
+		if dataLIFsChanged {
+			if changeMap == nil {
+				changeMap = roaring.New()
+			}
+			changeMap.Add(storage.BackendStateDataAccessChange)
+		}
 		if changeMap == nil || changeMap.IsEmpty() {
 			// In the unlikely event there is now no issue, just return
 			return nil
@@ -7787,8 +7797,16 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 		}
 
 		if changeMap.Contains(storage.BackendStateReasonChange) {
-			// Update CR.
 			Logc(ctx).WithFields(logFields).Debugf("Backend state reason change detected.")
+		}
+		if changeMap.Contains(storage.BackendStateDataAccessChange) {
+			Logc(ctx).WithFields(logFields).Debugf("Backend data LIF change detected.")
+		}
+
+		// Update CR. The data LIFs travel with the backend's persistent form, and the CRD
+		// controller reconciles VolumeAttachments when it sees them change on the TridentBackend.
+		if changeMap.Contains(storage.BackendStateReasonChange) ||
+			changeMap.Contains(storage.BackendStateDataAccessChange) {
 			if err := o.storeClient.UpdateBackend(ctx, backend); err != nil {
 				return err
 			}

@@ -24,6 +24,7 @@ func TestInitializeLimiters_CreatesOneLimiterPerWorkflowAndProtocol(t *testing.T
 		mountNFSVolumeKey, mountSMBVolumeKey, mountISCSIVolumeKey, mountFCPVolumeKey, mountNVMeVolumeKey,
 		unmountVolumeKey, expandVolumeKey,
 		graftISCSIAttachmentKey, pruneISCSIAttachmentKey,
+		graftNVMeAttachmentKey, pruneNVMeAttachmentKey,
 	}
 
 	for _, name := range expectedLimiters {

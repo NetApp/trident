@@ -5,6 +5,7 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"slices"
 
 	"github.com/google/uuid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,6 +80,15 @@ func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.Backend
 	if in.BackendUUID == "" && persistent.BackendUUID != "" {
 		in.BackendUUID = persistent.BackendUUID
 	}
+	// A nil snapshot leaves the published LIFs in place, so writers that have no snapshot, or run
+	// with data LIF refresh disabled, cannot erase them.
+	if persistent.DataLIFs != nil {
+		dataLIFs := slices.Clone(*persistent.DataLIFs)
+		if in.DiscoveredState == nil {
+			in.DiscoveredState = &TridentBackendDiscoveredState{}
+		}
+		in.DiscoveredState.DataLIFs = &dataLIFs
+	}
 
 	return nil
 }
@@ -95,6 +105,10 @@ func (in *TridentBackend) Persistent() (*storage.BackendPersistent, error) {
 		UserState:   storage.UserBackendState(in.UserState),
 		StateReason: in.StateReason,
 		ConfigRef:   in.ConfigRef,
+	}
+	if published := in.PublishedDataLIFs(); published != nil {
+		dataLIFs := slices.Clone(*published)
+		persistent.DataLIFs = &dataLIFs
 	}
 
 	return persistent, json.Unmarshal(in.Config.Raw, &persistent.Config)
