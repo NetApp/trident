@@ -56,7 +56,7 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 
 			// Get initial metric values
 			initialBackendGauge := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("test-driver", string(storage.Online)))
-			initialTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
+			initialTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid", storage.Online.String()))
 
 			// Create upsert backend
 			mockUpsertBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -88,7 +88,7 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 
 			// Verify metrics were updated correctly
 			afterUpsertBackendGauge := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("test-driver", string(storage.Online)))
-			afterUpsertTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "updated-backend", "test-backend-uuid"))
+			afterUpsertTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "updated-backend", "test-backend-uuid", storage.Online.String()))
 
 			if tt.backendExists {
 				// For existing backend: delete old (dec) + add new (inc) = no net change
@@ -97,7 +97,7 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 				assert.Equal(t, initialTridentBackendInfo, afterUpsertTridentBackendInfo, "TridentBackendInfo should be set to 1 for updated backend")
 
 				// Verify the old TridentBackendInfo metric is removed
-				oldTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
+				oldTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid", storage.Online.String()))
 
 				assert.Equal(t, float64(0), oldTridentBackendInfo, "Old TridentBackendInfo should be removed")
 			} else {
@@ -164,7 +164,7 @@ func TestDeleteBackend_Metrics(t *testing.T) {
 
 			// Get initial metric value
 			initialBackendGauge := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("test-driver", string(storage.Online)))
-			initialTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
+			initialTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid", storage.Online.String()))
 
 			// Execute delete operation
 			subquery := DeleteBackend("test-backend-uuid")
@@ -182,7 +182,7 @@ func TestDeleteBackend_Metrics(t *testing.T) {
 
 				// Verify metrics were updated correctly (decremented by 1)
 				afterDeleteBackendGauge := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("test-driver", string(storage.Online)))
-				afterDeleteTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
+				afterDeleteTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid", storage.Online.String()))
 
 				assert.Equal(t, initialBackendGauge-1, afterDeleteBackendGauge, "BackendGauge should be decremented by 1 when deleting existing backend")
 				assert.Equal(t, initialTridentBackendInfo-1, afterDeleteTridentBackendInfo, "TridentBackendInfo should be set to 0 when deleting existing backend")
@@ -202,13 +202,69 @@ func TestDeleteBackend_Metrics(t *testing.T) {
 
 				// Verify metrics were NOT updated (no change since backend didn't exist)
 				afterDeleteBackendGauge := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("test-driver", string(storage.Online)))
-				afterDeleteTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
+				afterDeleteTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid", storage.Online.String()))
 
 				assert.Equal(t, initialBackendGauge, afterDeleteBackendGauge, "BackendGauge should remain unchanged when deleting non-existing backend")
 				assert.Equal(t, initialTridentBackendInfo, afterDeleteTridentBackendInfo, "TridentBackendInfo should remain unchanged when deleting non-existing backend")
 			}
 		})
 	}
+}
+
+func TestUpsertBackend_Metrics_StateChange(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	metrics.BackendsGauge.Reset()
+	metrics.TridentBackendInfo.Reset()
+
+	initialBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+		"name":       "stateful-backend",
+		"driverName": "ontap-nas",
+		"state":      string(storage.Online),
+		"uuid":       "state-backend-uuid",
+	})
+
+	backends.lock()
+	backends.data["state-backend-uuid"] = initialBackend
+	backends.unlock()
+	addBackendToMetrics(initialBackend)
+
+	updatedBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+		"name":       "stateful-backend",
+		"driverName": "ontap-nas",
+		"state":      string(storage.Failed),
+		"uuid":       "state-backend-uuid",
+	})
+
+	mockPool := mockstorage.NewMockPool(mockCtrl)
+	mockPool.EXPECT().SetBackend(updatedBackend).Times(1)
+	mockPoolMap := sync.Map{}
+	mockPoolMap.Store("mock-pool", mockPool)
+	updatedBackend.EXPECT().StoragePools().Return(&mockPoolMap).AnyTimes()
+
+	subquery := UpsertBackend("state-backend-uuid", "stateful-backend", "stateful-backend")
+	result := &Result{}
+	err := subquery.setResults(&subquery, result)
+	assert.NoError(t, err, "UpsertBackend setResults should not error")
+	assert.NotNil(t, result.Backend.Upsert, "Upsert function should be created")
+	result.Backend.Upsert(updatedBackend)
+
+	onlineInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(
+		"ontap-nas", "stateful-backend", "state-backend-uuid", storage.Online.String()))
+	failedInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(
+		"ontap-nas", "stateful-backend", "state-backend-uuid", storage.Failed.String()))
+	assert.Equal(t, float64(0), onlineInfo, "previous backend_state series should be removed")
+	assert.Equal(t, float64(1), failedInfo, "current backend_state series should be set")
+
+	onlineCount := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("ontap-nas", storage.Online.String()))
+	failedCount := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues("ontap-nas", storage.Failed.String()))
+	assert.Equal(t, float64(0), onlineCount, "online backend count should return to 0 after state change")
+	assert.Equal(t, float64(1), failedCount, "failed backend count should be 1 after state change")
+
+	backends.lock()
+	delete(backends.data, "state-backend-uuid")
+	delete(backends.key.data, "stateful-backend")
+	backends.unlock()
 }
 
 func TestListBackends(t *testing.T) {

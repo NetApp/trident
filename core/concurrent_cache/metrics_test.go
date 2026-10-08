@@ -102,14 +102,14 @@ func TestAddAndDeleteBackendMetrics(t *testing.T) {
 
 			// Get initial metric values
 			initialGaugeValue := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues(tt.driverName, tt.state.String()))
-			initialInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID))
+			initialInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID, tt.state.String()))
 
 			// Test adding backend to metrics
 			addBackendToMetrics(mockBackend)
 
 			// Verify metrics were updated correctly after add
 			afterAddGaugeValue := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues(tt.driverName, tt.state.String()))
-			afterAddInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID))
+			afterAddInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID, tt.state.String()))
 
 			assert.Equal(t, initialGaugeValue+1, afterAddGaugeValue, "BackendsGauge should be incremented by 1 after add")
 			assert.Equal(t, initialInfoValue+1, afterAddInfoValue, "TridentBackendInfo should be set to 1 after add")
@@ -119,7 +119,7 @@ func TestAddAndDeleteBackendMetrics(t *testing.T) {
 
 			// Verify metrics were updated correctly after delete
 			finalGaugeValue := testutil.ToFloat64(metrics.BackendsGauge.WithLabelValues(tt.driverName, tt.state.String()))
-			finalInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID))
+			finalInfoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(tt.driverName, tt.backendName, tt.backendUUID, tt.state.String()))
 
 			assert.Equal(t, initialGaugeValue, finalGaugeValue, "BackendsGauge should return to initial value after delete")
 			assert.Equal(t, initialInfoValue, finalInfoValue, "TridentBackendInfo should return to initial value after delete")
@@ -161,7 +161,7 @@ func TestAddAndDeleteBackendMetrics_MultipleBackends(t *testing.T) {
 		addBackendToMetrics(mockBackend)
 
 		// Verify individual backend info metrics after add
-		infoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(b.driverName, b.backendName, b.backendUUID))
+		infoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(b.driverName, b.backendName, b.backendUUID, b.state.String()))
 		assert.Equal(t, float64(1), infoValue, "TridentBackendInfo should be set to 1 for backend %d", i)
 	}
 
@@ -178,7 +178,7 @@ func TestAddAndDeleteBackendMetrics_MultipleBackends(t *testing.T) {
 
 		// Verify individual backend info metrics are deleted
 		b := backends[i]
-		infoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(b.driverName, b.backendName, b.backendUUID))
+		infoValue := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues(b.driverName, b.backendName, b.backendUUID, b.state.String()))
 		assert.Equal(t, float64(0), infoValue, "TridentBackendInfo should be 0 after delete for backend %d", i)
 	}
 

@@ -11376,7 +11376,7 @@ func TestUpdateMirror_UpdateSucceeded(t *testing.T) {
 
 	o.backends[backendUUID] = mockBackend
 
-	mockBackend.EXPECT().GetDriverName().Times(3)
+	mockBackend.EXPECT().GetDriverName().Times(2)
 	mockBackend.EXPECT().State()
 	mockBackend.EXPECT().Name()
 	mockBackend.EXPECT().BackendUUID().Times(2)

@@ -20,6 +20,7 @@ func addBackendToMetrics(backend storage.Backend) {
 		backend.GetDriverName(),
 		backend.Name(),
 		backend.BackendUUID(),
+		backend.State().String(),
 	).Set(float64(1))
 }
 
@@ -34,6 +35,7 @@ func deleteBackendFromMetrics(backend storage.Backend) {
 		backend.GetDriverName(),
 		backend.Name(),
 		backend.BackendUUID(),
+		backend.State().String(),
 	)
 }
 

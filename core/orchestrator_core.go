@@ -809,9 +809,11 @@ func (o *TridentOrchestrator) updateMetrics() {
 		if backend == nil {
 			continue
 		}
-		metrics.BackendsGauge.WithLabelValues(backend.GetDriverName(), backend.State().String()).Inc()
-		metrics.TridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name(),
-			backend.BackendUUID()).Set(float64(1))
+		driverName := backend.GetDriverName()
+		backendState := backend.State().String()
+		metrics.BackendsGauge.WithLabelValues(driverName, backendState).Inc()
+		metrics.TridentBackendInfo.WithLabelValues(driverName, backend.Name(),
+			backend.BackendUUID(), backendState).Set(float64(1))
 	}
 
 	metrics.VolumesGauge.Reset()

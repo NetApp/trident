@@ -22,7 +22,7 @@ var (
 			Name:      "backend_info",
 			Help:      "Trident backend information",
 		},
-		[]string{"backend_type", "backend_name", "backend_uuid"},
+		[]string{"backend_type", "backend_name", "backend_uuid", "backend_state"},
 	)
 	BackendsGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
