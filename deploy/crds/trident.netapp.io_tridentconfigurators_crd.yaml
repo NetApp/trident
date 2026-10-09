@@ -11,7 +11,33 @@ spec:
       schema:
         openAPIV3Schema:
           type: object
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                backendNames:
+                  type: array
+                  items:
+                    type: string
+                message:
+                  type: string
+                deletionPolicy:
+                  type: string
+                phase:
+                  type: string
+                lastOperationStatus:
+                  type: string
+                cloudProvider:
+                  type: string
       subresources:
         status: {}
       additionalPrinterColumns:
