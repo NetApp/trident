@@ -479,8 +479,14 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	// Mount the volume at the specified junction
 	if err := d.API.FlexgroupMount(ctx, name, "/"+name); err != nil {
+		cleanupCtx, cancel := newCleanupContext(ctx)
+		if cleanupErr := d.API.FlexgroupDestroy(cleanupCtx, name, true, true); cleanupErr != nil {
+			Logc(ctx).WithField("volume", name).WithError(cleanupErr).
+				Error("Could not clean up FlexGroup after mount failed.")
+		}
+		cancel()
 		createErrors = append(createErrors,
-			fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v; %v", storagePool.Name(),
+			fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v; %w", storagePool.Name(),
 				name, "/"+name, err))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
@@ -495,14 +501,55 @@ func (d *NASFlexGroupStorageDriver) Create(
 	return nil
 }
 
+func cleanupFailedCloneFlexgroup(
+	ctx context.Context, client api.OntapAPI, err error, clonedVolName, sourceVol, createdSnapName string,
+) {
+	if err == nil || drivers.IsVolumeExistsError(err) {
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"clonedVolume": clonedVolName,
+		"sourceVol":    sourceVol,
+		"snapshot":     createdSnapName,
+	}).Debug("Cleaning up after failed FlexGroup clone.")
+
+	if clonedVolName != "" {
+		if destroyErr := client.FlexgroupDestroy(ctx, clonedVolName, true, true); destroyErr != nil {
+			Logc(ctx).WithField("volume", clonedVolName).WithError(destroyErr).
+				Warn("Unable to delete volume after failed FlexGroup clone.")
+		}
+	}
+
+	if createdSnapName != "" {
+		if snapDeleteErr := client.FlexgroupSnapshotDelete(ctx, createdSnapName, sourceVol); snapDeleteErr != nil {
+			Logc(ctx).WithField("snapshot", createdSnapName).WithError(snapDeleteErr).
+				Warn("Unable to delete snapshot after failed FlexGroup clone.")
+		}
+	}
+}
+
 // cloneFlexgroup creates a flexgroup clone
 func cloneFlexgroup(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
+	var err error
+	var clonedVolName string
+	var createdSnapName string
+
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+
+	// StorageBackend.CloneVolume does not destroy the clone when CreateClone fails, and
+	// FlexgroupMount can fail after the clone exists. Use a cleanup context so rollback
+	// still runs when the request context is canceled during junction verification.
+	defer func() {
+		cleanupCtx, cancel := newCleanupContext(ctx)
+		defer cancel()
+		cleanupFailedCloneFlexgroup(cleanupCtx, client, err, clonedVolName, source, createdSnapName)
+	}()
 
 	fields := LogFields{
 		"Method":   "cloneFlexgroup",
@@ -532,6 +579,7 @@ func cloneFlexgroup(
 		if err = client.FlexgroupSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
+		createdSnapName = snapshot
 		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
 	}
 
@@ -539,6 +587,7 @@ func cloneFlexgroup(
 	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, useAsync); err != nil {
 		return err
 	}
+	clonedVolName = name
 
 	if err = waitForFlexgroup(ctx, client, name); err != nil {
 		return err
@@ -557,14 +606,14 @@ func cloneFlexgroup(
 
 	// Set the QoS Policy if necessary
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
-		if err := client.FlexgroupSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+		if err = client.FlexgroupSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
 			return err
 		}
 	}
 
 	// Split the clone if requested
 	if split {
-		if err := client.FlexgroupCloneSplitStart(ctx, name); err != nil {
+		if err = client.FlexgroupCloneSplitStart(ctx, name); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}

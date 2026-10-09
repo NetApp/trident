@@ -6,6 +6,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -33,6 +34,67 @@ func ConfigureWaitForOntapBackoffForTests() {
 	waitForOntapInitialInterval = 10 * time.Millisecond
 	waitForOntapMaxInterval = 50 * time.Millisecond
 	waitForOntapMaxElapsed = 30 * time.Second
+}
+
+// VolumeInfoGetter reads a volume by name.
+type VolumeInfoGetter func(context.Context, string) (*Volume, error)
+
+// WaitForJunctionPath retries a volume lookup until ONTAP reports a usable junction path.
+// If expectedPath is empty, any non-empty junction path is accepted. Retry budget matches
+// WaitForNVMeNamespaceToExist via newOntapBackOff (~30s unless ctx expires sooner).
+func WaitForJunctionPath(
+	ctx context.Context, getter VolumeInfoGetter, volumeName, expectedPath string,
+) (*Volume, error) {
+	var volume *Volume
+
+	checkJunctionPath := func() error {
+		var err error
+		volume, err = getter(ctx, volumeName)
+		if err != nil {
+			getErr := fmt.Errorf("get volume %s while waiting for junction path: %w", volumeName, err)
+			if errors.IsNotFoundError(err) ||
+				stderrors.Is(err, context.Canceled) ||
+				stderrors.Is(err, context.DeadlineExceeded) {
+				return backoff.Permanent(getErr)
+			}
+			return getErr
+		}
+		if volume == nil {
+			return backoff.Permanent(errors.NotFoundError("volume %s was not found", volumeName))
+		}
+		junctionPath := strings.Trim(volume.JunctionPath, "/")
+		if junctionPath == "" {
+			return fmt.Errorf("volume %s has an empty junction path", volumeName)
+		}
+		if expectedPath != "" && junctionPath != strings.Trim(expectedPath, "/") {
+			return fmt.Errorf(
+				"volume %s has junction path %q, expected %q", volumeName, volume.JunctionPath, expectedPath,
+			)
+		}
+		return nil
+	}
+	notify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"volume":    volumeName,
+			"increment": duration,
+		}).WithError(err).Debug("Junction path is not ready, retrying.")
+	}
+
+	bo := newOntapBackOff(ctx)
+	if err := backoff.RetryNotify(checkJunctionPath, backoff.WithContext(bo, ctx), notify); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, fmt.Errorf("waiting for volume %s junction path interrupted: %w", volumeName, ctxErr)
+		}
+		if stderrors.Is(err, context.Canceled) || stderrors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("waiting for volume %s junction path interrupted: %w", volumeName, err)
+		}
+		if errors.IsNotFoundError(err) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("timed out waiting for volume %s junction path: %w", volumeName, err)
+	}
+
+	return volume, nil
 }
 
 // LunGetter is the minimal surface needed for WaitForLunToExist. OntapAPI satisfies it.

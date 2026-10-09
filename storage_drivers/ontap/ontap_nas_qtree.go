@@ -39,6 +39,10 @@ var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<
 var (
 	// FIJI injection point: triggers after export policy is destroyed during unpublish (qtree)
 	duringUnpublishQtreeAfterExportPolicyDestroy = fiji.Register("duringUnpublishQtreeAfterExportPolicyDestroy", "ontap_nas_qtree")
+	// FIJI injection point: simulates ONTAP omitting the parent FlexVol junction from a successful qtree follow-up read.
+	afterQtreeParentVolumeReadMissingJunction fiji.Injector = fiji.Register(
+		"afterQtreeParentVolumeReadMissingJunction", "ontap_nas_qtree",
+	)
 )
 
 const (
@@ -1746,9 +1750,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	if !enableSnapshotDir {
 		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
-			if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
-				Logc(ctx).Error(err)
-			}
+			d.cleanupFailedFlexvolCreate(ctx, flexvol)
 			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
@@ -1756,22 +1758,27 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Mount the volume at the specified junction
 	err = d.API.VolumeMount(ctx, flexvol, "/"+flexvol)
 	if err != nil {
-		if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
-			Logc(ctx).Error(err)
-		}
-		return "", fmt.Errorf("error mounting Flexvol: %v", err)
+		d.cleanupFailedFlexvolCreate(ctx, flexvol)
+		return "", fmt.Errorf("error mounting Flexvol: %w", err)
 	}
 
 	// Create the default quota rule so we can use quota-resize for new qtrees
 	err = d.addDefaultQuotaForFlexvol(ctx, flexvol)
 	if err != nil {
-		if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
-			Logc(ctx).Error(err)
-		}
+		d.cleanupFailedFlexvolCreate(ctx, flexvol)
 		return "", fmt.Errorf("error adding default quota to Flexvol: %v", err)
 	}
 
 	return flexvol, nil
+}
+
+func (d *NASQtreeStorageDriver) cleanupFailedFlexvolCreate(ctx context.Context, flexvol string) {
+	cleanupCtx, cancel := newCleanupContext(ctx)
+	defer cancel()
+
+	if err := d.API.VolumeDestroy(cleanupCtx, flexvol, true, true); err != nil {
+		Logc(ctx).WithField("volume", flexvol).WithError(err).Error("Could not clean up FlexVol after create failed.")
+	}
 }
 
 // findFlexvolForQtree returns a locked FlexVol (from the set of existing Flexvols) that
@@ -1823,6 +1830,9 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	// If a FlexVol is suitable, return with the lock still held (caller inherits it).
 	// If not suitable, unlock and continue to the next candidate.
 	for _, volume := range volumes {
+		if volume.JunctionPath == "" {
+			continue
+		}
 		volName := volume.Name
 
 		// Lock this FlexVol before checking capacity/qtree count
@@ -2402,14 +2412,27 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
-	// Find junction path, do not assume junction path is the same as the flexvol name, for case in import
-	flexVol, err := d.API.VolumeInfo(ctx, flexvolName)
-	if err != nil {
-		return fmt.Errorf("could not find flexvol %s: %v", flexvolName, err)
+	// Find junction path, do not assume junction path is the same as the flexvol name, for case in import.
+	var flexVol *api.Volume
+	if qtreeAccessPathNeedsFlexvolJunction(volConfig, d.Config.NASType) {
+		// The FlexVol's own junction is unknown here (it may differ from its name after an import),
+		// so accept any non-empty junction rather than a specific path.
+		flexVol, err = api.WaitForJunctionPath(ctx, d.qtreeParentVolumeInfo, flexvolName, "")
+		if err != nil {
+			return fmt.Errorf("could not get a valid junction path for flexvol %s: %w", flexvolName, err)
+		}
+	} else {
+		flexVol, err = d.API.VolumeInfo(ctx, flexvolName)
+		if err != nil {
+			return fmt.Errorf("could not find flexvol %s: %v", flexvolName, err)
+		}
+		if flexVol == nil {
+			return fmt.Errorf("could not find flexvol %s", flexvolName)
+		}
 	}
 
 	// Set export path info on the volume config
-	junctionPath := strings.TrimPrefix(flexVol.JunctionPath, "/")
+	junctionPath := strings.Trim(flexVol.JunctionPath, "/")
 	if d.Config.NASType == sa.SMB {
 		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
 		volConfig.AccessInfo.SMBPath = ConstructOntapNASQTreeVolumePath(ctx, d.Config.SMBShare, junctionPath,
@@ -2423,6 +2446,37 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	}
 
 	return nil
+}
+
+// qtreeParentVolumeInfo reads the qtree's parent FlexVol and applies the Qtree-specific FIJI fault
+// that reproduces ONTAP returning no pool junction, which previously produced an incomplete /<qtree> path.
+func (d *NASQtreeStorageDriver) qtreeParentVolumeInfo(ctx context.Context, flexvolName string) (*api.Volume, error) {
+	flexVol, err := d.API.VolumeInfo(ctx, flexvolName)
+	if err != nil || flexVol == nil {
+		return flexVol, err
+	}
+
+	// FIJI handlers signal that a fault fired by returning an error. Here the signal deliberately
+	// corrupts the successful read instead of being returned as an API error.
+	if err := afterQtreeParentVolumeReadMissingJunction.Inject(); err != nil {
+		faultedFlexVol := *flexVol
+		// Dropping the junction is what makes ConstructOntapNASQTreeVolumePath emit //<qtree>.
+		faultedFlexVol.JunctionPath = ""
+		Logc(ctx).WithFields(LogFields{
+			"fault":                "afterQtreeParentVolumeReadMissingJunction",
+			"volume":               flexVol.Name,
+			"originalJunctionPath": flexVol.JunctionPath,
+		}).WithError(err).Warn("FIJI removed the parent FlexVol junction from an ONTAP qtree follow-up read.")
+		return &faultedFlexVol, nil
+	}
+
+	return flexVol, nil
+}
+
+// qtreeAccessPathNeedsFlexvolJunction reports whether ConstructOntapNASQTreeVolumePath uses the FlexVol junction as a path component.
+// Secure SMB paths are qtree-scoped and do not use the parent FlexVol junction. Example: `\qtree1`.
+func qtreeAccessPathNeedsFlexvolJunction(volConfig *storage.VolumeConfig, nasType string) bool {
+	return !(nasType == sa.SMB && volConfig.SecureSMBEnabled)
 }
 
 func (d *NASQtreeStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {

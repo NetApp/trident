@@ -670,8 +670,63 @@ func TestOntapAPIZAPI_VolumeMount_Success(t *testing.T) {
 	}
 
 	mock.EXPECT().VolumeMount("test_volume", "/test_volume").Return(volumeMountResponse, nil).Times(1)
+	mock.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	mock.EXPECT().VolumeGet("test_volume").Return(&azgo.VolumeAttributesType{
+		VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
+			NamePtr:         new("test_volume"),
+			JunctionPathPtr: new("/test_volume"),
+		},
+	}, nil).Times(1)
 
 	err := oapi.VolumeMount(ctx, "test_volume", "/test_volume")
+	assert.NoError(t, err)
+}
+
+func TestOntapAPIZAPI_VolumeMount_VerificationFailure(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	volumeMountResponse := &azgo.VolumeMountResponse{
+		Result: azgo.VolumeMountResponseResult{
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	mock.EXPECT().VolumeMount("test_volume", "/test_volume").Return(volumeMountResponse, nil).Times(1)
+	mock.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	mock.EXPECT().VolumeGet("test_volume").Return(&azgo.VolumeAttributesType{
+		VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
+			NamePtr:         new("test_volume"),
+			JunctionPathPtr: new(""),
+		},
+	}, nil).AnyTimes()
+
+	waitCtx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	err := oapi.VolumeMount(waitCtx, "test_volume", "/test_volume")
+	assert.ErrorContains(t, err, "error verifying volume test_volume junction path")
+}
+
+func TestOntapAPIZAPI_FlexgroupMount_VerifiesWithFlexGroupGet(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	volumeMountResponse := &azgo.VolumeMountResponse{
+		Result: azgo.VolumeMountResponseResult{
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	mock.EXPECT().VolumeMount("test_flexgroup", "/test_flexgroup").Return(volumeMountResponse, nil).Times(1)
+	mock.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+	mock.EXPECT().FlexGroupGet("test_flexgroup").Return(&azgo.VolumeAttributesType{
+		VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
+			NamePtr:         new("test_flexgroup"),
+			JunctionPathPtr: new("/test_flexgroup"),
+		},
+	}, nil).Times(1)
+
+	err := oapi.FlexgroupMount(ctx, "test_flexgroup", "/test_flexgroup")
 	assert.NoError(t, err)
 }
 

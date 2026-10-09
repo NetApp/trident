@@ -1485,8 +1485,23 @@ func (d OntapAPIZAPI) FlexgroupModifyUnixPermissions(
 }
 
 func (d OntapAPIZAPI) FlexgroupMount(ctx context.Context, name, junctionPath string) error {
-	// Mount the volume at the specified junction
-	return d.VolumeMount(ctx, name, junctionPath)
+	// ZAPI uses the same mount API for FlexVols and FlexGroups. Verification must use
+	// FlexgroupInfo: VolumeInfo/VolumeGet filters style-extended=flexvol and cannot see a FlexGroup.
+	mountResponse, err := d.api.VolumeMount(name, junctionPath)
+	if err = azgo.GetError(ctx, mountResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
+		return fmt.Errorf("error mounting volume to junction: %v", err)
+	}
+
+	if _, err := WaitForJunctionPath(ctx, d.FlexgroupInfo, name, junctionPath); err != nil {
+		return fmt.Errorf("error verifying volume %v junction path: %w", name, err)
+	}
+
+	return nil
 }
 
 func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error {
@@ -1748,6 +1763,10 @@ func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string
 			}
 		}
 		return fmt.Errorf("error mounting volume to junction: %v", err)
+	}
+
+	if _, err := WaitForJunctionPath(ctx, d.VolumeInfo, name, junctionPath); err != nil {
+		return fmt.Errorf("error verifying volume %v junction path: %w", name, err)
 	}
 
 	return nil

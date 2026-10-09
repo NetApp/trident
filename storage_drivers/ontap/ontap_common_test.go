@@ -5380,6 +5380,25 @@ func TestNewTelemetryRunContext(t *testing.T) {
 		"cancel should still be able to interrupt the derived context")
 }
 
+func TestNewCleanupContext(t *testing.T) {
+	type contextKey struct{}
+	parent := context.WithValue(context.Background(), contextKey{}, "request-value")
+	callerCtx, callerCancel := context.WithCancel(parent)
+	callerCancel()
+
+	cleanupCtx, cleanupCancel := newCleanupContext(callerCtx)
+	defer cleanupCancel()
+
+	assert.NoError(t, cleanupCtx.Err(), "cleanup should not inherit caller cancellation")
+	assert.Equal(t, "request-value", cleanupCtx.Value(contextKey{}))
+	deadline, hasDeadline := cleanupCtx.Deadline()
+	assert.True(t, hasDeadline)
+	assert.WithinDuration(t, time.Now().Add(ontapCleanupTimeout), deadline, time.Second)
+
+	cleanupCancel()
+	assert.ErrorIs(t, cleanupCtx.Err(), context.Canceled)
+}
+
 // TestTelemetryStart_SetsCancel verifies that Start wires up t.cancel (recorded synchronously,
 // before the goroutine is spawned) so Stop has something to call. This package's test suite has
 // dozens of pre-existing driver.Initialize() calls that start a Telemetry goroutine and never
@@ -9115,7 +9134,7 @@ func TestCloneFlexvol(t *testing.T) {
 				mockAPI.EXPECT().VolumeCloneCreate(
 					ctx, internalName, cloneSourceVolumeInternal, gomock.Any(), false,
 				).Return(fmt.Errorf("error creating clone"))
-				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, gomock.Any(), "fakeSource").Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), gomock.Any(), "fakeSource").Return(nil)
 			},
 			cloneVolumeConfig: storage.VolumeConfig{
 				InternalName:              internalName,
@@ -9162,7 +9181,7 @@ func TestCloneFlexvol(t *testing.T) {
 				).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("", errors.New("error waiting for NVMe clone"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, "dummy", true, true)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
 			cloneVolumeConfig:   cloneVolumeConfig,
 			storageDriverConfig: storageDriverConfigNVMe,
@@ -9178,7 +9197,7 @@ func TestCloneFlexvol(t *testing.T) {
 				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(errors.New("error creating clone"))
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, "dummy", true, true)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
 			cloneVolumeConfig:   cloneVolumeConfig,
 			storageDriverConfig: storageDriverConfig,
@@ -9195,7 +9214,7 @@ func TestCloneFlexvol(t *testing.T) {
 					maxFlexvolCloneWait).Return("online", nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
 				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(errors.New("error mounting volume"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, "dummy", true, true)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
 			cloneVolumeConfig:   cloneVolumeConfig,
 			storageDriverConfig: storageDriverConfig,
@@ -9215,7 +9234,7 @@ func TestCloneFlexvol(t *testing.T) {
 				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(
 					ctx, internalName, qosPolicyGroup,
 				).Return(errors.New("error setting qos policy"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, "dummy", true, true)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
 			cloneVolumeConfig:   cloneVolumeConfig,
 			storageDriverConfig: storageDriverConfig,
@@ -9234,7 +9253,7 @@ func TestCloneFlexvol(t *testing.T) {
 				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(nil)
 				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, internalName, qosPolicyGroup).Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, internalName).Return(errors.New("error splitting clone"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, "dummy", true, true)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
 			cloneVolumeConfig:   cloneVolumeConfig,
 			storageDriverConfig: storageDriverConfig,
@@ -9266,6 +9285,46 @@ func TestCloneFlexvol(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCloneFlexvol_MountFailureCleansUpAfterCallerCancel(t *testing.T) {
+	callerCtx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	const internalName = "dummy"
+	const source = "fakeSource"
+	const snapshot = "fakeSnap"
+	cloneVolumeConfig := storage.VolumeConfig{
+		InternalName:                internalName,
+		CloneSourceVolumeInternal:   source,
+		CloneSourceSnapshotInternal: snapshot,
+	}
+	storageDriverConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			DebugTraceFlags:   map[string]bool{"method": true},
+			StorageDriverName: tridentconfig.OntapNASStorageDriverName,
+		},
+	}
+
+	mockAPI.EXPECT().VolumeExists(callerCtx, internalName).Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(callerCtx, internalName, source, snapshot, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(callerCtx, internalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(callerCtx, internalName, internalName, "fakeLabel").Return(nil)
+	mockAPI.EXPECT().VolumeMount(callerCtx, internalName, "/"+internalName).Return(context.Canceled)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), internalName, true, true).
+		DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {
+			assert.NoError(t, cleanupCtx.Err())
+			return nil
+		})
+
+	err := cloneFlexvol(
+		callerCtx, &cloneVolumeConfig, "fakeLabel", false, &storageDriverConfig, mockAPI, api.QosPolicyGroup{},
+	)
+	assert.Error(t, err)
 }
 
 func TestCreateFlexvolSnapshot(t *testing.T) {

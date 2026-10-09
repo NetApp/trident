@@ -126,6 +126,7 @@ const (
 	// together to balance snapshot deletion wait times and retries.
 	maxSnapshotDeleteWait = 60 * time.Second
 	getSVMStateTimeout    = 20 * time.Second
+	ontapCleanupTimeout   = 60 * time.Second
 
 	VolTypeRW  = "rw"  // read-write
 	VolTypeLS  = "ls"  // load-sharing
@@ -133,6 +134,11 @@ const (
 	VolTypeDC  = "dc"  // data-cache
 	VolTypeTMP = "tmp" // temporary
 )
+
+// newCleanupContext preserves request-scoped values while giving rollback its own bounded lifetime.
+func newCleanupContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), ontapCleanupTimeout)
+}
 
 // For legacy reasons, these strings mustn't change
 const (
@@ -5013,9 +5019,12 @@ func cloneFlexvol(
 	// creating the clone; deleting by the source's ID would destroy the wrong volume.
 	cloneVolConfig.BackendVolumeID = ""
 
-	// Cleanup cloned volume and snapshots we created if we error
+	// Junction verification can fail after the clone exists, including because the request
+	// context was canceled. Rollback needs its own lifetime or VolumeDestroy is canceled too.
 	defer func() {
-		cleanupFailedCloneFlexVol(ctx, client, err, clonedVolName, source, createdSnapName)
+		cleanupCtx, cancel := newCleanupContext(ctx)
+		defer cancel()
+		cleanupFailedCloneFlexVol(cleanupCtx, client, err, clonedVolName, source, createdSnapName)
 	}()
 
 	fields := LogFields{

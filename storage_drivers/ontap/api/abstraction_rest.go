@@ -389,6 +389,9 @@ func FlexVolInfoFromRestAttrsHelper(volume *models.Volume) (*Volume, error) {
 	if volume.Name != nil {
 		v.Name = *volume.Name
 	}
+	if volume.Nas != nil && volume.Nas.Path != nil {
+		v.JunctionPath = *volume.Nas.Path
+	}
 	if volume.Guarantee != nil && volume.Guarantee.Type != nil {
 		v.SpaceReserve = *volume.Guarantee.Type
 	}
@@ -902,6 +905,10 @@ func (d OntapAPIREST) FlexgroupMount(ctx context.Context, name, junctionPath str
 		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
 	}
 
+	if _, err := WaitForJunctionPath(ctx, d.FlexgroupInfo, name, junctionPath); err != nil {
+		return fmt.Errorf("error verifying volume %v junction path: %w", name, err)
+	}
+
 	return nil
 }
 
@@ -1192,6 +1199,10 @@ func (d OntapAPIREST) VolumeMount(ctx context.Context, name, junctionPath string
 		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
 	}
 
+	if _, err := WaitForJunctionPath(ctx, d.VolumeInfo, name, junctionPath); err != nil {
+		return fmt.Errorf("error verifying volume %v junction path: %w", name, err)
+	}
+
 	return nil
 }
 
@@ -1303,6 +1314,7 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 		"encryption.enabled",
 		"guarantee.type",
 		"snapshot_policy.name",
+		"nas.path",
 	}
 
 	// Work around ONTAP REST bug where guarantee type is not filtered properly by ignoring it in the query.

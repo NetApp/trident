@@ -2105,7 +2105,11 @@ func TestFlexgroupMount(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Flexgroup mount
+	volume := getVolumeInfo()
+	volume.Name = new("trident-pvc-1234")
+	volume.Nas.Path = new("/trident-pvc-1234")
 	rsi.EXPECT().FlexGroupMount(ctx, "trident-pvc-1234", "/trident-pvc-1234").Return(nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "trident-pvc-1234", gomock.Any()).Return(volume, nil)
 	err := oapi.FlexgroupMount(ctx, "trident-pvc-1234", "/trident-pvc-1234")
 	assert.NoError(t, err, "error returned while mounting a volume")
 
@@ -2114,6 +2118,19 @@ func TestFlexgroupMount(t *testing.T) {
 		errors.New("failed to mount flexgroup volume"))
 	err = oapi.FlexgroupMount(ctx, "trident-pvc-1234", "/trident-pvc-1234")
 	assert.Error(t, err, "no error returned while mounting a volume")
+
+	// case 3: Flexgroup mount succeeds but ONTAP does not report the requested junction.
+	oapi, rsi = newMockOntapAPIREST(t)
+	volume = getVolumeInfo()
+	volume.Name = new("trident-pvc-1234")
+	volume.Nas.Path = new("")
+	rsi.EXPECT().FlexGroupMount(gomock.Any(), "trident-pvc-1234", "/trident-pvc-1234").Return(nil)
+	rsi.EXPECT().FlexGroupGetByName(gomock.Any(), "trident-pvc-1234", gomock.Any()).
+		Return(volume, nil).AnyTimes()
+	waitCtx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	err = oapi.FlexgroupMount(waitCtx, "trident-pvc-1234", "/trident-pvc-1234")
+	assert.ErrorContains(t, err, "error verifying volume trident-pvc-1234 junction path")
 }
 
 func TestFlexgroupDestroy(t *testing.T) {
@@ -2467,7 +2484,11 @@ func TestVolumeMount(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Volume mount positive test case
+	volume := getVolumeInfo()
+	volume.Name = new("vol1")
+	volume.Nas.Path = new("/vol1")
 	rsi.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	err := oapi.VolumeMount(ctx, "vol1", "/vol1")
 	assert.NoError(t, err, "error returned mounting a volume")
 
@@ -2484,6 +2505,18 @@ func TestVolumeMount(t *testing.T) {
 	rsi.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil).Return(restErr)
 	err = oapi.VolumeMount(ctx, "vol1", "/vol1")
 	assert.Error(t, err, "no error returned while mounting a volume")
+
+	// case 4: Mount succeeds but ONTAP does not report the requested junction.
+	oapi, rsi = newMockOntapAPIREST(t)
+	volume = getVolumeInfo()
+	volume.Name = new("vol1")
+	volume.Nas.Path = new("/stale")
+	rsi.EXPECT().VolumeMount(gomock.Any(), "vol1", "/vol1").Return(nil)
+	rsi.EXPECT().VolumeGetByName(gomock.Any(), "vol1", gomock.Any()).Return(volume, nil).AnyTimes()
+	waitCtx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	err = oapi.VolumeMount(waitCtx, "vol1", "/vol1")
+	assert.ErrorContains(t, err, "error verifying volume vol1 junction path")
 }
 
 func TestVolumeRename(t *testing.T) {
@@ -5422,6 +5455,7 @@ func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
 				SnapshotDir:    new(false),
 				SpaceReserve:   "",
 				SnapshotPolicy: "",
+				JunctionPath:   "/test_volume",
 			},
 			expectError: false,
 		},
@@ -5605,6 +5639,7 @@ func TestVolumeListByAttrs_Additional(t *testing.T) {
 				"encryption.enabled",
 				"guarantee.type",
 				"snapshot_policy.name",
+				"nas.path",
 			}
 			rsi.EXPECT().VolumeListByAttrs(ctx, tt.volumeAttrs, expectedFields).Return(tt.mockResponse, tt.mockError)
 

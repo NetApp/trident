@@ -445,6 +445,7 @@ func TestConcurrency_CreateRaceFlexVolCapacity(t *testing.T) {
 		Name:            flexvolName,
 		Size:            "10g",
 		SnapshotReserve: 10,
+		JunctionPath:    "/" + flexvolName,
 	}
 
 	// Track how many creates actually attempted to use this FlexVol
@@ -592,6 +593,7 @@ func TestConcurrency_CreateRaceQtreeCount(t *testing.T) {
 		Name:            flexvolName,
 		Size:            "100g",
 		SnapshotReserve: 10,
+		JunctionPath:    "/" + flexvolName,
 	}
 
 	// Track how many creates successfully passed the qtree count check

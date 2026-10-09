@@ -13,6 +13,173 @@ import (
 	terr "github.com/netapp/trident/utils/errors"
 )
 
+func TestWaitForJunctionPath(t *testing.T) {
+	readErr := errors.New("read failed")
+
+	tests := []struct {
+		name         string
+		expectedPath string
+		responses    []*Volume
+		err          error
+		errAttempts  int
+		cancel       bool
+		timeout      time.Duration
+		wantPath     string
+		wantAttempts int
+		minAttempts  int
+		wantErr      string
+		wantErrIs    error
+	}{
+		{
+			name:         "immediate exact match",
+			expectedPath: "/pool",
+			responses:    []*Volume{{Name: "pool", JunctionPath: "/pool"}},
+			wantPath:     "/pool",
+			wantAttempts: 1,
+		},
+		{
+			name:         "accepts trailing slash on reported path",
+			expectedPath: "/pool",
+			responses:    []*Volume{{Name: "pool", JunctionPath: "/pool/"}},
+			wantPath:     "/pool/",
+			wantAttempts: 1,
+		},
+		{
+			name:         "accepts trailing slash on expected path",
+			expectedPath: "/pool/",
+			responses:    []*Volume{{Name: "pool", JunctionPath: "/pool"}},
+			wantPath:     "/pool",
+			wantAttempts: 1,
+		},
+		{
+			name:         "retries empty slash-only and stale paths",
+			expectedPath: "/pool",
+			responses: []*Volume{
+				{Name: "pool"},
+				{Name: "pool", JunctionPath: "/"},
+				{Name: "pool", JunctionPath: "/stale"},
+				{Name: "pool", JunctionPath: "/pool"},
+			},
+			wantPath:     "/pool",
+			wantAttempts: 4,
+		},
+		{
+			name:         "accepts any non-empty path",
+			responses:    []*Volume{{Name: "pool", JunctionPath: "/custom/import"}},
+			wantPath:     "/custom/import",
+			wantAttempts: 1,
+		},
+		{
+			name:         "fails after retry budget",
+			expectedPath: "/pool",
+			responses:    []*Volume{{Name: "pool"}},
+			timeout:      50 * time.Millisecond,
+			minAttempts:  1,
+			wantErr:      "timed out waiting for volume pool junction path",
+		},
+		{
+			name:         "transient read errors are retried",
+			expectedPath: "/pool",
+			err:          readErr,
+			errAttempts:  2,
+			responses:    []*Volume{{Name: "pool", JunctionPath: "/pool"}},
+			wantPath:     "/pool",
+			wantAttempts: 3,
+		},
+		{
+			name:         "transient read error fails after retry budget",
+			expectedPath: "/pool",
+			err:          readErr,
+			errAttempts:  100,
+			timeout:      50 * time.Millisecond,
+			minAttempts:  1,
+			wantErr:      "timed out waiting for volume pool junction path",
+			wantErrIs:    readErr,
+		},
+		{
+			name:         "not found read error fails immediately",
+			expectedPath: "/pool",
+			err:          terr.NotFoundError("pool not found"),
+			errAttempts:  1,
+			wantAttempts: 1,
+			wantErr:      "get volume pool while waiting for junction path",
+		},
+		{
+			name:         "canceled read fails immediately",
+			expectedPath: "/pool",
+			err:          context.Canceled,
+			errAttempts:  1,
+			wantAttempts: 1,
+			wantErr:      "waiting for volume pool junction path interrupted",
+			wantErrIs:    context.Canceled,
+		},
+		{
+			name:         "nil volume fails immediately",
+			expectedPath: "/pool",
+			responses:    []*Volume{nil},
+			wantAttempts: 1,
+			wantErr:      "volume pool was not found",
+		},
+		{
+			name:         "canceled context interrupts retry",
+			expectedPath: "/pool",
+			responses:    []*Volume{{Name: "pool"}},
+			cancel:       true,
+			wantAttempts: 1,
+			wantErr:      "waiting for volume pool junction path interrupted",
+			wantErrIs:    context.Canceled,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var (
+				ctx    context.Context
+				cancel context.CancelFunc
+			)
+			switch {
+			case test.cancel:
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			case test.timeout > 0:
+				ctx, cancel = context.WithTimeout(context.Background(), test.timeout)
+				defer cancel()
+			default:
+				ctx, cancel = context.WithCancel(context.Background())
+				defer cancel()
+			}
+
+			attempts := 0
+			getter := func(context.Context, string) (*Volume, error) {
+				attempts++
+				if attempts <= test.errAttempts {
+					return nil, test.err
+				}
+				index := min(attempts-test.errAttempts-1, len(test.responses)-1)
+				return test.responses[index], nil
+			}
+
+			volume, err := WaitForJunctionPath(ctx, getter, "pool", test.expectedPath)
+
+			if test.wantErr != "" {
+				assert.ErrorContains(t, err, test.wantErr)
+				assert.Nil(t, volume)
+				if test.wantErrIs != nil {
+					assert.ErrorIs(t, err, test.wantErrIs)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.wantPath, volume.JunctionPath)
+			}
+			if test.minAttempts > 0 {
+				assert.GreaterOrEqual(t, attempts, test.minAttempts)
+			} else {
+				assert.Equal(t, test.wantAttempts, attempts)
+			}
+		})
+	}
+}
+
 type seqLunGetter struct {
 	responses []struct {
 		lun *Lun

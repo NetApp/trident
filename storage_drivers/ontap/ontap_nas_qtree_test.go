@@ -42,6 +42,22 @@ var (
 	flexvol              = "trident_qtree_pool_trident_GLVRJSQGLP"
 )
 
+type qtreeCountingFaultInjector struct {
+	remaining int
+	always    bool
+}
+
+func (i *qtreeCountingFaultInjector) Inject() error {
+	if i.always {
+		return errors.New("injected missing parent junction")
+	}
+	if i.remaining == 0 {
+		return nil
+	}
+	i.remaining--
+	return errors.New("injected missing parent junction")
+}
+
 func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 
@@ -1801,6 +1817,7 @@ func TestEnsureFlexvolForQtree_Success_EligibleFlexvolFound(t *testing.T) {
 
 	// Create a mock flexvol and ensure it is returned by api
 	eligibleFlexvol, _ := MockGetVolumeInfo(ctx, "testVol")
+	eligibleFlexvol.JunctionPath = "/testVol"
 
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).AnyTimes().Return(api.Volumes{eligibleFlexvol}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, gomock.Any()).AnyTimes().Return(0, nil)
@@ -1970,7 +1987,7 @@ func TestCreateFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 
@@ -1998,7 +2015,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol2, result2 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2011,7 +2028,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol3, result3 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2025,7 +2042,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol4, result4 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2039,7 +2056,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol5, result5 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2055,7 +2072,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol6, result6 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2071,7 +2088,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol7, result7 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -2079,6 +2096,22 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	assert.Error(t, result7, "Expected error when api failed to destroy volume, got nil")
 	assert.Emptyf(t, resultFlexvol7, "Expected empty volume name, got non-empty")
+}
+
+func TestCleanupFailedFlexvolCreate_DetachesFromCallerCancellation(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	canceledCtx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "pool", true, true).
+		DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {
+			assert.NoError(t, cleanupCtx.Err())
+			_, hasDeadline := cleanupCtx.Deadline()
+			assert.True(t, hasDeadline)
+			return nil
+		})
+
+	driver.cleanupFailedFlexvolCreate(canceledCtx, "pool")
 }
 
 func addExpectForCreateFlexvolForQtree(mockAPI *mockapi.MockOntapAPI) {
@@ -2144,7 +2177,8 @@ func TestFindFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	}
 
 	eligibleVolume := &api.Volume{
-		Name: "test_flexvol",
+		Name:         "test_flexvol",
+		JunctionPath: "/test_flexvol",
 	}
 
 	// Ensure 1 volume is returned by api
@@ -2182,8 +2216,8 @@ func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 		TieringPolicy:   "",
 	}
 
-	eligibleVolume1 := &api.Volume{Name: "test_flexvol1"}
-	eligibleVolume2 := &api.Volume{Name: "test_flexvol2"}
+	eligibleVolume1 := &api.Volume{Name: "test_flexvol1", JunctionPath: "/test_flexvol1"}
+	eligibleVolume2 := &api.Volume{Name: "test_flexvol2", JunctionPath: "/test_flexvol2"}
 
 	// Ensure multiple volumes are returned by api
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2},
@@ -2207,6 +2241,41 @@ func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
+func TestFindFlexvolForQtree_SkipsVolumeWithEmptyJunction(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.flexvolNamePrefix = "test_"
+
+	isEncrypt := new(false)
+	volAttrs := &api.Volume{
+		Aggregates:      []string{"aggr1"},
+		Encrypt:         isEncrypt,
+		Name:            "test_*",
+		SnapshotDir:     new(false),
+		SnapshotPolicy:  "snapshotPolicy",
+		SpaceReserve:    "none",
+		SnapshotReserve: 10,
+		TieringPolicy:   "",
+	}
+
+	unmounted := &api.Volume{Name: "test_unmounted", JunctionPath: ""}
+	mounted := &api.Volume{Name: "test_mounted", JunctionPath: "/test_mounted"}
+
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).Return(api.Volumes{unmounted, mounted}, nil)
+	mockAPI.EXPECT().QtreeCount(ctx, mounted.Name).Return(0, nil)
+
+	lockedFlexvol, result := driver.findFlexvolForQtree(
+		ctx, "aggr1", "none", "snapshotPolicy",
+		"", "10", false, isEncrypt,
+		false, 0, 0,
+	)
+
+	assert.NoError(t, result)
+	if assert.NotNil(t, lockedFlexvol) {
+		defer lockedFlexvol.Unlock()
+		assert.Equal(t, mounted.Name, lockedFlexvol.Name())
+	}
+}
+
 func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -2224,8 +2293,8 @@ func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 		TieringPolicy:   "",
 	}
 
-	eligibleVolume1 := &api.Volume{Name: "test_flexvol1"}
-	eligibleVolume2 := &api.Volume{Name: "test_flexvol2"}
+	eligibleVolume1 := &api.Volume{Name: "test_flexvol1", JunctionPath: "/test_flexvol1"}
+	eligibleVolume2 := &api.Volume{Name: "test_flexvol2", JunctionPath: "/test_flexvol2"}
 
 	// Ensure volume is returned by api
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2},
@@ -2282,6 +2351,7 @@ func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 2: Error in getting qtree count
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.JunctionPath = "/" + volName
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{volInfo}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, mockError)
 
@@ -3338,6 +3408,128 @@ func TestCreateFollowup_Success_WithROClone(t *testing.T) {
 		"Incorrect NfsPath")
 	assert.Equal(t, strings.TrimPrefix(driver.Config.NfsMountOptions, "-o "), volConfig.AccessInfo.MountOptions,
 		"Incorrect MountOptions")
+}
+
+func TestCreateFollowup_RetriesEmptyJunctionPath(t *testing.T) {
+	volConfig := &storage.VolumeConfig{Name: "testVol", InternalName: "testVolInternal"}
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SVM = "svm1"
+	driver.Config.DataLIF = "10.0.0.1"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volConfig.InternalName, gomock.Any()).Return(true, "pool", nil)
+	emptyVolume := &api.Volume{Name: "pool"}
+	mountedVolume := &api.Volume{Name: "pool", JunctionPath: "/custom/pool/"}
+	gomock.InOrder(
+		mockAPI.EXPECT().VolumeInfo(ctx, "pool").Return(emptyVolume, nil),
+		mockAPI.EXPECT().VolumeInfo(ctx, "pool").Return(mountedVolume, nil),
+	)
+
+	err := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "/custom/pool/testVolInternal", volConfig.AccessInfo.NfsPath)
+}
+
+func TestCreateFollowup_FijiMissingParentJunctionRecovers(t *testing.T) {
+	originalFault := afterQtreeParentVolumeReadMissingJunction
+	defer func() {
+		afterQtreeParentVolumeReadMissingJunction = originalFault
+	}()
+	afterQtreeParentVolumeReadMissingJunction = &qtreeCountingFaultInjector{remaining: 3}
+
+	volConfig := &storage.VolumeConfig{Name: "testVol", InternalName: "testVolInternal"}
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SVM = "svm1"
+	driver.Config.DataLIF = "10.0.0.1"
+	parentVolume := &api.Volume{Name: "pool", JunctionPath: "/pool"}
+
+	mockAPI.EXPECT().QtreeExists(ctx, volConfig.InternalName, gomock.Any()).Return(true, "pool", nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, "pool").Return(parentVolume, nil).Times(4)
+
+	err := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "/pool/testVolInternal", volConfig.AccessInfo.NfsPath)
+	assert.Equal(t, "/pool", parentVolume.JunctionPath, "the API-owned result must not be mutated")
+}
+
+func TestCreateFollowup_FijiMissingParentJunctionFailsClosed(t *testing.T) {
+	originalFault := afterQtreeParentVolumeReadMissingJunction
+	defer func() {
+		afterQtreeParentVolumeReadMissingJunction = originalFault
+	}()
+	afterQtreeParentVolumeReadMissingJunction = &qtreeCountingFaultInjector{always: true}
+
+	volConfig := &storage.VolumeConfig{Name: "testVol", InternalName: "testVolInternal"}
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	parentVolume := &api.Volume{Name: "pool", JunctionPath: "/pool"}
+	waitCtx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	mockAPI.EXPECT().QtreeExists(waitCtx, volConfig.InternalName, gomock.Any()).Return(true, "pool", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), "pool").Return(parentVolume, nil).AnyTimes()
+
+	err := driver.CreateFollowup(waitCtx, volConfig)
+
+	assert.ErrorContains(t, err, "could not get a valid junction path for flexvol pool")
+	assert.Empty(t, volConfig.AccessInfo.NfsPath, "an incomplete /<qtree> path must not be persisted")
+	assert.Equal(t, "/pool", parentVolume.JunctionPath, "the API-owned result must not be mutated")
+}
+
+func TestCreateFollowup_FailsWhenJunctionPathRemainsEmpty(t *testing.T) {
+	volConfig := &storage.VolumeConfig{Name: "testVol", InternalName: "testVolInternal"}
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	waitCtx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	mockAPI.EXPECT().QtreeExists(waitCtx, volConfig.InternalName, gomock.Any()).Return(true, "pool", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), "pool").Return(&api.Volume{Name: "pool"}, nil).AnyTimes()
+
+	err := driver.CreateFollowup(waitCtx, volConfig)
+
+	assert.ErrorContains(t, err, "could not get a valid junction path for flexvol pool")
+	assert.Empty(t, volConfig.AccessInfo.NfsPath)
+}
+
+func TestCreateFollowup_SecureSMBAllowsEmptyJunctionPath(t *testing.T) {
+	volConfig := &storage.VolumeConfig{
+		Name:             "testVol",
+		InternalName:     "testVolInternal",
+		SecureSMBEnabled: true,
+	}
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.NASType = sa.SMB
+	driver.Config.DataLIF = "10.0.0.1"
+	driver.Config.SMBShare = "shared"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volConfig.InternalName, gomock.Any()).Return(true, "pool", nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, "pool").Return(&api.Volume{Name: "pool"}, nil)
+
+	err := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, `\testVolInternal`, volConfig.AccessInfo.SMBPath)
+}
+
+func TestQtreeAccessPathNeedsFlexvolJunction(t *testing.T) {
+	tests := []struct {
+		name      string
+		nasType   string
+		secureSMB bool
+		want      bool
+	}{
+		{name: "NFS", nasType: sa.NFS, want: true},
+		{name: "default NAS type", want: true},
+		{name: "ordinary SMB", nasType: sa.SMB, want: true},
+		{name: "secure SMB", nasType: sa.SMB, secureSMB: true, want: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{SecureSMBEnabled: test.secureSMB}
+			assert.Equal(t, test.want, qtreeAccessPathNeedsFlexvolJunction(volConfig, test.nasType))
+		})
+	}
 }
 
 func TestCreateFollowup_WithInvalidInternalID(t *testing.T) {
@@ -5079,6 +5271,11 @@ func addCommonExpectForQtreeCreate(
 	mockAPI *mockapi.MockOntapAPI, flexvol *api.Volume,
 	flexvolName, sizeBytesStr string,
 ) {
+	// A listed pool is reusable only when it has a junction path. Tests that pass a
+	// name-only volume are selecting an existing mounted pool.
+	if flexvol.JunctionPath == "" {
+		flexvol.JunctionPath = "/" + flexvolName
+	}
 	mockAPI.EXPECT().TieringPolicyValue(ctx).AnyTimes().Return("snapshot-only")
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).AnyTimes().Return([]*api.Volume{flexvol}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, flexvolName).AnyTimes().Return(0, nil)
@@ -5377,7 +5574,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 	sizeBytes := 1073741824
 	sizeBytesStr := "+" + strconv.FormatUint(uint64(sizeBytes), 10)
 	flexvolName := "flexvol1"
-	flexvol := &api.Volume{Name: flexvolName}
+	flexvol := &api.Volume{Name: flexvolName, JunctionPath: "/" + flexvolName}
 	volAttrs := map[string]sa.Request{}
 	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)

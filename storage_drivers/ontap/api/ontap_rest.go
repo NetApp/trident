@@ -4333,9 +4333,12 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 	jobStatusBackoff.MaxElapsedTime = 2 * time.Minute
 
 	// Run the job status check using an exponential backoff
-	if err := backoff.RetryNotify(checkJobStatus, jobStatusBackoff, jobStatusNotify); err != nil {
+	if err := backoff.RetryNotify(checkJobStatus, backoff.WithContext(jobStatusBackoff, ctx), jobStatusNotify); err != nil {
 		Logc(ctx).WithField("UUID", jobUUID).Warnf("Job not completed after %3.2f seconds.",
 			jobStatusBackoff.MaxElapsedTime.Seconds())
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return fmt.Errorf("waiting for job %v interrupted: %w", jobUUID, ctxErr)
+		}
 		return err
 	}
 

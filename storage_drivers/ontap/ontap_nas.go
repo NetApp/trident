@@ -480,6 +480,12 @@ func (d *NASStorageDriver) Create(
 
 		// Mount the volume at the specified junction
 		if err := d.API.VolumeMount(ctx, name, "/"+name); err != nil {
+			cleanupCtx, cancel := newCleanupContext(ctx)
+			if cleanupErr := destroyFlexvol(cleanupCtx, d.API, volConfig, true, true); cleanupErr != nil {
+				Logc(ctx).WithField("volume", name).WithError(cleanupErr).
+					Error("Could not clean up volume after mount failed.")
+			}
+			cancel()
 			return err
 		}
 

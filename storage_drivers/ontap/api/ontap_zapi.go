@@ -1654,9 +1654,10 @@ func (c Client) VolumeListByAttrs(
 
 	query.SetVolumeAttributes(*volumeAttributes)
 
-	// Limit the returned data to only the Flexvol names
+	// Return the FlexVol name and junction path. The junction is required to skip a pool that
+	// was created but doesn't have junction path present
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetJunctionPath("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 

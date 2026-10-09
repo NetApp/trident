@@ -4709,6 +4709,13 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(errors.New("failed to mount volume"))
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "vol1", true, true).
+		DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {
+			assert.NoError(t, cleanupCtx.Err())
+			_, hasDeadline := cleanupCtx.Deadline()
+			assert.True(t, hasDeadline)
+			return nil
+		})
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 

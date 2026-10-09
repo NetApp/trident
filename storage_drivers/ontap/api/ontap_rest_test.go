@@ -2937,6 +2937,21 @@ func TestOntapREST_PollJobStatus(t *testing.T) {
 	}
 }
 
+func TestOntapREST_PollJobStatus_ContextCanceled(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockJobResponseJobStateRunning))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobLink := models.JobLink{UUID: new(strfmt.UUID("1234"))}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	canceledCtx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := rs.PollJobStatus(canceledCtx, &jobResponse)
+
+	assert.ErrorIs(t, err, context.Canceled)
+}
+
 func mockAggregateListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 	aggrResponse := getAggregateResponse(hasNextLink)
 	setHTTPResponseHeader(w, http.StatusOK)

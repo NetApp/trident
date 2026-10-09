@@ -1244,6 +1244,13 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_MountFailure(t *testing.T) {
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(errors.New("volume mount failed"))
+	mockAPI.EXPECT().FlexgroupDestroy(gomock.Any(), "vol1", true, true).
+		DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {
+			assert.NoError(t, cleanupCtx.Err())
+			_, hasDeadline := cleanupCtx.Deadline()
+			assert.True(t, hasDeadline)
+			return nil
+		})
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2137,6 +2144,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
 					gomock.Any()).Return(errors.New(test.errMessage))
+				mockAPI.EXPECT().FlexgroupDestroy(gomock.Any(), cloneConfig.InternalName, true, true).Return(nil)
+				mockAPI.EXPECT().FlexgroupSnapshotDelete(gomock.Any(), gomock.Any(),
+					cloneConfig.CloneSourceVolumeInternal).Return(nil)
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2156,6 +2166,13 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
 					gomock.Any()).Return(errors.New(test.errMessage))
+				mockAPI.EXPECT().FlexgroupDestroy(gomock.Any(), cloneConfig.InternalName, true, true).
+					DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {
+						assert.NoError(t, cleanupCtx.Err())
+						return nil
+					})
+				mockAPI.EXPECT().FlexgroupSnapshotDelete(gomock.Any(), gomock.Any(),
+					cloneConfig.CloneSourceVolumeInternal).Return(nil)
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2176,6 +2193,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(), gomock.Any()).Return(errors.New(test.errMessage))
+				mockAPI.EXPECT().FlexgroupDestroy(gomock.Any(), cloneConfig.InternalName, true, true).Return(nil)
+				mockAPI.EXPECT().FlexgroupSnapshotDelete(gomock.Any(), gomock.Any(),
+					cloneConfig.CloneSourceVolumeInternal).Return(nil)
 
 				cloneConfig.QosPolicy = "fake-qos-policy"
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
@@ -2196,6 +2216,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(errors.New(
 					test.errMessage))
+				mockAPI.EXPECT().FlexgroupDestroy(gomock.Any(), cloneConfig.InternalName, true, true).Return(nil)
+				mockAPI.EXPECT().FlexgroupSnapshotDelete(gomock.Any(), gomock.Any(),
+					cloneConfig.CloneSourceVolumeInternal).Return(nil)
 
 				cloneConfig.SplitOnClone = "true"
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
