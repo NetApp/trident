@@ -1054,7 +1054,8 @@ func isValidAccessControlPermission(permission string) bool {
 
 // IsEphemeralPVC checks whether a PVC being provisioned is an ephemeral one that is part of a backup workflow.
 func IsEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
-	return IsVeeamKastenEphemeralPVC(pvc) || IsTrilioEphemeralPVC(pvc) || IsCohesityEphemeralPVC(pvc) || IsCommVaultEphemeralPVC(pvc)
+	return IsVeeamKastenEphemeralPVC(pvc) || IsTrilioEphemeralPVC(pvc) || IsCohesityEphemeralPVC(pvc) ||
+		IsCommVaultEphemeralPVC(pvc) || IsRubrikEphemeralPVC(pvc)
 }
 
 // IsVeeamKastenEphemeralPVC checks if a PVC is part of a Veeam Kasten workflow.
@@ -1097,8 +1098,18 @@ func IsCommVaultEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
 	}
 
 	// Check for the well-known CommVault backup label on the PVC.
-	// The value is intentionally empty.
 	_, exists := pvc.Labels[LabelCommVaultBackup]
+	return exists
+}
+
+// IsRubrikEphemeralPVC checks if a PVC is part of a Rubrik workflow.
+func IsRubrikEphemeralPVC(pvc *v1.PersistentVolumeClaim) bool {
+	if pvc == nil {
+		return false
+	}
+
+	// Check for the well-known Rubrik backup label on the PVC.
+	_, exists := pvc.Labels[LabelRubrikBackup]
 	return exists
 }
 

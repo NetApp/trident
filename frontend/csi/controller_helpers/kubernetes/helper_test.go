@@ -2767,6 +2767,67 @@ func TestIsCommVaultEphemeralPVC(t *testing.T) {
 	}
 }
 
+func TestIsRubrikEphemeralPVC(t *testing.T) {
+	tests := []struct {
+		name     string
+		pvc      *v1.PersistentVolumeClaim
+		expected bool
+	}{
+		{
+			name:     "Nil PVC",
+			pvc:      nil,
+			expected: false,
+		},
+		{
+			name: "PVC with Rubrik backup label and empty key",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelRubrikBackup: "",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "PVC without Rubrik label",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"some-other-key": "value",
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with empty labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "PVC with nil labels",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: nil,
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsRubrikEphemeralPVC(tt.pvc)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestIsEphemeralPVC(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -2812,6 +2873,17 @@ func TestIsEphemeralPVC(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						LabelCommVaultBackup: "cv-backup-admin",
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Rubrik ephemeral PVC",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						LabelRubrikBackup: "rubrik.com/job",
 					},
 				},
 			},
@@ -2904,6 +2976,14 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			expectedSkipRecoveryQueue: "true",
 		},
 		{
+			name:    "Rubrik ephemeral PVC defaults SkipRecoveryQueue to true",
+			pvcName: "rubrik-pvc",
+			pvcLabels: map[string]string{
+				LabelRubrikBackup: "",
+			},
+			expectedSkipRecoveryQueue: "true",
+		},
+		{
 			name:                      "non-ephemeral PVC leaves SkipRecoveryQueue empty",
 			pvcName:                   "regular-pvc",
 			pvcAnnotations:            nil,
@@ -2948,6 +3028,17 @@ func TestGetVolumeConfig_SkipRecoveryQueue(t *testing.T) {
 			},
 			pvcLabels: map[string]string{
 				LabelCommVaultBackup: "cv-admin-backup",
+			},
+			expectedSkipRecoveryQueue: "false",
+		},
+		{
+			name:    "Rubrik ephemeral PVC with explicit annotation preserves annotation value",
+			pvcName: "rubrik-pvc-explicit",
+			pvcAnnotations: map[string]string{
+				AnnSkipRecoveryQueue: "false",
+			},
+			pvcLabels: map[string]string{
+				LabelRubrikBackup: "yes",
 			},
 			expectedSkipRecoveryQueue: "false",
 		},

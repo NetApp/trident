@@ -104,6 +104,7 @@ const (
 	LabelK8sAppManagedByTrilioValue = "k8s-triliovault"
 	LabelCohesityTaskIDKey          = "cohesity/task-id"
 	LabelCommVaultBackup            = "cv-backup-admin"
+	LabelRubrikBackup               = "rubrik.com/job"
 
 	// Red Hat OpenShift Migration Toolkit for Virtualization
 	AnnRedHatMTV = "forklift.konveyor.io/netapp-shift"
