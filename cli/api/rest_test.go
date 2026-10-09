@@ -4,6 +4,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -326,4 +327,146 @@ func TestInvokeRESTAPI_EdgeCases(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Equal(t, specialBody, body)
 	})
+}
+
+const (
+	sentinelUser = "SENTINEL_USER_4c1e"
+	sentinelPass = "SENTINEL_PAS_8b6d"
+)
+
+// captureLog points the package-global logger at a buffer, runs fn, and returns what was logged.
+// TestMain leaves the logger discarding output for this package's other tests, so that setup is
+// restored on cleanup.
+func captureLog(t *testing.T, fn func()) string {
+	t.Helper()
+
+	t.Cleanup(func() {
+		if err := logging.InitLogLevel("info"); err != nil {
+			t.Fatalf("InitLogLevel(info): %v", err)
+		}
+		logging.InitLogOutput(io.Discard)
+	})
+
+	if err := logging.InitLogLevel("debug"); err != nil {
+		t.Fatalf("InitLogLevel(debug): %v", err)
+	}
+
+	buf := &bytes.Buffer{}
+	logging.InitLogOutput(buf)
+	fn()
+
+	return buf.String()
+}
+
+// credentialForms returns every representation of the sentinel pair that could appear in a log
+// line, since an Authorization header carries the base64 form rather than the sentinel text.
+func credentialForms() []string {
+	return []string{
+		sentinelUser,
+		sentinelPass,
+		base64.StdEncoding.EncodeToString([]byte(sentinelUser + ":" + sentinelPass)),
+	}
+}
+
+// TestLogHTTPRequestDoesNotLogCredentials covers both ways a tridentctl invocation can carry a
+// credential into the debug log: an Authorization header, and userinfo in the server URL, which is
+// built from a flag or TRIDENT_SERVER and so needs no credential-handling code in this repository.
+func TestLogHTTPRequestDoesNotLogCredentials(t *testing.T) {
+	request, err := http.NewRequest(
+		"POST", "http://"+sentinelUser+":"+sentinelPass+"@trident.trident.svc:17201/trident/v1/backend", nil)
+	require.NoError(t, err)
+	request.Header.Set("Content-Type", "application/json")
+	request.SetBasicAuth(sentinelUser, sentinelPass)
+
+	// Guards the fixture itself: net/http is what decides that the credential is present at all.
+	require.NotNil(t, request.URL.User)
+	require.NotEmpty(t, request.Header.Get("Authorization"))
+
+	out := captureLog(t, func() {
+		LogHTTPRequest(request, []byte(`{"version":1}`))
+	})
+
+	// Without these the absence checks below would pass on a line that was never written.
+	require.Contains(t, out, "Request URL:")
+	require.Contains(t, out, "Request headers:")
+
+	for _, form := range credentialForms() {
+		assert.NotContains(t, out, form)
+	}
+
+	assert.Contains(t, out, "trident.trident.svc:17201", "the URL must stay useful for debugging")
+	assert.Contains(t, out, "Content-Type", "benign headers must still be logged")
+}
+
+func TestLogHTTPResponseDoesNotLogCredentials(t *testing.T) {
+	response := &http.Response{
+		Status: "401 Unauthorized",
+		Header: http.Header{
+			"Authorization":    []string{"Basic " + sentinelPass},
+			"Content-Type":     []string{"application/json"},
+			"Www-Authenticate": []string{"Basic realm=trident"},
+		},
+	}
+
+	out := captureLog(t, func() {
+		LogHTTPResponse(response, []byte(`{"error":"unauthorized"}`))
+	})
+
+	require.Contains(t, out, "Response headers:")
+	assert.NotContains(t, out, sentinelPass)
+	assert.Contains(t, out, "Content-Type", "benign headers must still be logged")
+}
+
+// TestLogHTTPRequestDoesNotLogRequestBodyCredentials covers the third way a tridentctl invocation
+// carries a credential into the debug log: `tridentctl create backend -d` sends the whole backend
+// config as the request body, and the pattern-based redaction covers only the credential keys it was
+// written for, so clientSecret, clientPrivateKey, secretKey and apiKey need the key-based walk.
+func TestLogHTTPRequestDoesNotLogRequestBodyCredentials(t *testing.T) {
+	body := []byte(`{"backend_name":"b1","config":{"storageDriverName":"azure-netapp-files",` +
+		`"username":"Body-Sentinel-User","clientSecret":"Body-Sentinel-ClientSecret",` +
+		`"clientPrivateKey":"Body-Sentinel-PrivateKey","secretKey":"Body-Sentinel-SecretKey",` +
+		`"apiKey":"Body-Sentinel-APIKey","location":"eastus"}}`)
+
+	request, err := http.NewRequest("POST", "http://trident.trident.svc:17201/trident/v1/backend", nil)
+	require.NoError(t, err)
+
+	out := captureLog(t, func() {
+		LogHTTPRequest(request, body)
+	})
+
+	// Without these the absence checks below would pass on a trace that never showed the body.
+	require.Contains(t, out, "Request body:")
+	require.Contains(t, out, "<REDACTED>", "the credential must be replaced, not merely absent")
+
+	for _, sentinel := range []string{
+		"Body-Sentinel-User",
+		"Body-Sentinel-ClientSecret",
+		"Body-Sentinel-PrivateKey",
+		"Body-Sentinel-SecretKey",
+		"Body-Sentinel-APIKey",
+	} {
+		assert.NotContains(t, out, sentinel)
+	}
+
+	assert.Contains(t, out, "b1", "the body must stay useful for debugging")
+	assert.Contains(t, out, "eastus")
+	assert.Contains(t, out, "azure-netapp-files")
+}
+
+// TestLogHTTPResponseDoesNotLogResponseBodyCredentials covers the same helper on the way back; the
+// body of a Trident REST reply is rendered by the same line.
+func TestLogHTTPResponseDoesNotLogResponseBodyCredentials(t *testing.T) {
+	response := &http.Response{
+		Status: "200 OK",
+		Header: http.Header{"Content-Type": []string{"application/json"}},
+	}
+
+	out := captureLog(t, func() {
+		LogHTTPResponse(response, []byte(
+			`{"result":"success","config":{"clientSecret":"Body-Sentinel-ClientSecret"}}`))
+	})
+
+	require.Contains(t, out, "Response body:")
+	assert.NotContains(t, out, "Body-Sentinel-ClientSecret")
+	assert.Contains(t, out, "success", "the reply must stay useful for debugging")
 }

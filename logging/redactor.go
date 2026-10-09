@@ -14,7 +14,6 @@ type redactedPattern struct {
 // Redacted patterns and their replacements - add additional patterns here
 var redactedPatterns = []redactedPattern{
 	basicAuthorization,
-	csiSecrets,
 	chapAuthorization,
 	chapAuthorizationUser,
 	backendCreateCHAPSecrets,
@@ -30,6 +29,11 @@ type Redactor struct {
 func (r *Redactor) Format(entry *log.Entry) ([]byte, error) {
 	line, err := r.BaseFormatter.Format(entry)
 	return redactAllPatterns(line), err
+}
+
+// RedactString applies all configured logging redaction patterns to a string.
+func RedactString(line string) string {
+	return string(redactAllPatterns([]byte(line)))
 }
 
 func redactAllPatterns(line []byte) []byte {

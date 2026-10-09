@@ -2,18 +2,14 @@ package logging
 
 import "regexp"
 
+// basicAuthorization masks the ONTAP management credentials in the ONTAP REST client's debug trace
+// (backend config debug: [api]): the go-openapi runtime renders the request in wire form with
+// httputil.DumpRequestOut, and the Redactor-wrapped logger installed in
+// storage_drivers/ontap/api/ontap_rest.go is what keeps the credential out of the log. It cannot
+// match a header set rendered as a Go map, so it is not a substitute for RedactedHeaders.
 var basicAuthorization = redactedPattern{
 	re:  regexp.MustCompile(`Authorization: Basic [A-Za-z0-9+/=]+`),
 	rep: []byte("Authorization: Basic <REDACTED>"),
-}
-
-// csiSecrets is a pattern intended to match the logging of the secrets field in CSI gRPC requests from the CSI sidecars
-// Example match: `secrets: <key: \"foo\" value: \"bar\" >`
-// Example match: `secrets:<key:\\\"foo\"value:'\\\"bar\" >`
-// Not a match with \" in key or value: `secrets: <key:\"f\"oo\" value:'\"bar\" >`
-var csiSecrets = redactedPattern{
-	re:  regexp.MustCompile(`secrets:\s*<key:\s*\\*\"([^\\\"])*\\*\"\s*value:\\*\"([^\\\"])*\\*\"\s*>`),
-	rep: []byte("secrets:<REDACTED>"),
 }
 
 // chapAuthorization pattern intended to redact chap credentials in REST communication

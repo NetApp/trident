@@ -84,10 +84,10 @@ func (s *TridentBackendConfigSpec) ToString() string {
 		return ""
 	}
 
-	// Redact the credentials information
-	backendConfigSpec["credentials"] = "<REDACTED>"
-
-	return fmt.Sprintf("backendConfig: %+v", backendConfigSpec)
+	// Credentials are removed from the decoded spec rather than from the rendered text, because %+v
+	// renders a map as key:value with no quotes and the quote-anchored patterns in the logging
+	// package cannot match that shape.
+	return RedactString(fmt.Sprintf("backendConfig: %+v", RedactSecrets(backendConfigSpec)))
 }
 
 func (in *TridentBackendConfig) IsSpecValid() bool {
