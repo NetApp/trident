@@ -10,6 +10,7 @@
 
 - **Kubernetes:** Fixed race conditions and state handling for concurrent publish/unpublish, clone, cache, and backend update operations.
 - **Kubernetes:** Fixed export policy race conditions and concurrent publish/unpublish handling for subordinate volumes and read-only clones in ONTAP-NAS and ONTAP-NAS-Economy drivers.
+- **Kubernetes:** Fixed ONTAP-NAS and ONTAP-NAS-Economy drivers with `autoExportPolicy` never restoring a published node's export policy rules after the node changed IP address or the rules were removed; the rules are now repaired for every volume published to a node when that node registers (Issue [#1181](https://github.com/NetApp/trident/issues/1181)).
 - **Kubernetes:** Fixed ONTAP-NAS-Economy FlexVol discovery after MetroCluster failover when snapshot policies differ (Issue [#1082](https://github.com/NetApp/trident/issues/1082)).
 - **Kubernetes:** Fixed ONTAP-NAS-Economy volume delete retries that interrupted long-running qtree deletes (Issue [#1121](https://github.com/NetApp/trident/issues/1121)).
 - **Kubernetes:** Fixed ONTAP-SAN and ONTAP-SAN-Economy import and resize behavior, including `fsType` validation, volume metadata handling, and autogrow mode behavior.

@@ -307,6 +307,46 @@ func generateVolumePublication(volName string, publishInfo *models.VolumePublish
 	return vp
 }
 
+// volumeNodeAccessRepair asks a backend's driver to add any missing export rules on one volume's
+// policy for the nodes currently published to it. volConfig is a private copy, so the driver call
+// can run without holding any orchestrator lock.
+type volumeNodeAccessRepair struct {
+	backend   storage.Backend
+	volConfig *storage.VolumeConfig
+	nodes     []*models.Node
+}
+
+// applyNodeAccessRepairs runs each repair through the backend's driver, stopping early if ctx is
+// cancelled. The driver is called directly rather than through the backend wrapper, whose
+// "already up to date" short-circuit can be flipped by a concurrent publish while the repairs are
+// in flight. Failures are logged and skipped: the next registration of any node published to the
+// volume retries the repair.
+func applyNodeAccessRepairs(ctx context.Context, nodeName string, repairs []volumeNodeAccessRepair) {
+	for _, repair := range repairs {
+		if ctx.Err() != nil {
+			return
+		}
+		err := repair.backend.Driver().ReconcileVolumeNodeAccess(ctx, repair.volConfig, repair.nodes)
+		if err != nil {
+			Logc(ctx).WithError(err).WithFields(LogFields{
+				"node":    nodeName,
+				"volume":  repair.volConfig.Name,
+				"backend": repair.backend.Name(),
+			}).Warn("Could not repair export rules for a volume published to the node.")
+		}
+	}
+}
+
+// backendCanRepairNodeAccess reports whether b hosts per-volume export policies worth repairing:
+// it enforces publications and is still serving volumes.
+func backendCanRepairNodeAccess(b storage.Backend) bool {
+	if !b.CanEnablePublishEnforcement() {
+		return false
+	}
+	state := b.State()
+	return state.IsOnline() || state.IsDeleting()
+}
+
 // isDockerPluginMode returns true if the ENV variable config.DockerPluginModeEnvVariable is set
 func isDockerPluginMode() bool {
 	return os.Getenv(config.DockerPluginModeEnvVariable) != ""
