@@ -1193,6 +1193,9 @@ func (d *SANEconomyStorageDriver) Import(
 	return nil
 }
 
+// Rename renames a LUN in place. newName may also be a "flexvol/LUN" path (the
+// format Import() stores as ImportOriginalName) to revert a failed import; in that
+// case the FlexVol is renamed back too, but only if it holds no other LUNs.
 func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName string) error {
 	fields := LogFields{
 		"Method":  "Rename",
@@ -1203,7 +1206,70 @@ func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName stri
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
-	return errors.New("rename is not implemented")
+	exists, bucketVol, err := d.LUNExists(ctx, name, "", d.FlexvolNamePrefix())
+	if err != nil {
+		return fmt.Errorf("error checking for existing LUN %s: %v", name, err)
+	}
+	if !exists {
+		return errors.NotFoundError("LUN %s not found", name)
+	}
+
+	lockedFlexvol := d.lockFlexvol(bucketVol)
+	defer lockedFlexvol.Unlock()
+
+	targetBucketVol := bucketVol
+	targetLUNName := newName
+	if pathElements := strings.Split(newName, "/"); len(pathElements) == 2 {
+		targetBucketVol = pathElements[0]
+		targetLUNName = pathElements[1]
+	}
+
+	currentPath := GetLUNPathEconomy(bucketVol, name)
+	targetPath := GetLUNPathEconomy(bucketVol, targetLUNName)
+
+	if err := d.API.LunRename(ctx, currentPath, targetPath); err != nil {
+		return fmt.Errorf("error renaming LUN %s to %s: %v", name, targetLUNName, err)
+	}
+
+	if targetBucketVol == bucketVol {
+		return nil
+	}
+
+	// The caller also wants the FlexVol renamed back. Only do so if this FlexVol is
+	// exclusive to the LUN we just renamed.
+	luns, err := d.listFlexvolLUNs(ctx, bucketVol)
+	if err != nil {
+		Logc(ctx).WithError(err).WithField("flexvol", bucketVol).
+			Warn("Could not verify FlexVol holds only this LUN; leaving FlexVol name unchanged.")
+		return nil
+	}
+	if len(luns) != 1 {
+		Logc(ctx).WithFields(LogFields{
+			"flexvol":  bucketVol,
+			"lunCount": len(luns),
+		}).Warn("FlexVol holds other LUNs; leaving FlexVol name unchanged to avoid orphaning them.")
+		return nil
+	}
+
+	flexvolExists, err := d.API.VolumeExists(ctx, targetBucketVol)
+	if err != nil {
+		return fmt.Errorf("error checking for existing FlexVol %s: %v", targetBucketVol, err)
+	}
+	if flexvolExists {
+		Logc(ctx).WithField("flexvol", targetBucketVol).
+			Warn("Target FlexVol name is already in use; leaving FlexVol name unchanged.")
+		return nil
+	}
+
+	if err := d.API.VolumeRename(ctx, bucketVol, targetBucketVol); err != nil {
+		// Roll back the LUN rename so we don't leave a half-reverted state.
+		if renameErr := d.API.LunRename(ctx, targetPath, currentPath); renameErr != nil {
+			Logc(ctx).WithError(renameErr).Warn("Failed to restore LUN name after FlexVol rename failure.")
+		}
+		return fmt.Errorf("error renaming FlexVol %s to %s: %v", bucketVol, targetBucketVol, err)
+	}
+
+	return nil
 }
 
 // Destroy the LUN
