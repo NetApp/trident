@@ -100,6 +100,7 @@ type KubernetesClient interface {
 	DeleteCSIDriver(name string) error
 	PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CheckNamespaceExists(namespace string) (bool, error)
+	CheckNamespaceLabels(namespace string, labels map[string]string) error
 	PatchNamespaceLabels(namespace string, labels map[string]string) error
 	PatchNamespace(namespace string, patchBytes []byte, patchType types.PatchType) error
 	GetNamespace(namespace string) (*v1.Namespace, error)
