@@ -46,7 +46,8 @@ spec:
   network: gcnv-network
   location: us-west2
   serviceLevel: Premium
-  storagePool: pool-premium1
+  storagePools:
+    - pool-premium1
   apiKey:
     type: service_account
     project_id: my-gcp-project
