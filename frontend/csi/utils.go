@@ -15,11 +15,9 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 
 	"github.com/netapp/trident/config"
-	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -365,101 +363,6 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *mo
 	}
 
 	return false, nil
-}
-
-// ensureLUKSVolumePassphrase ensures the LUKS device has the most recent passphrase and notifies the Trident controller
-// of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
-// passphrase name, regardless of a rotation.
-func ensureLUKSVolumePassphrase(
-	ctx context.Context, _ controllerAPI.TridentController, luksDevice luks.Device,
-	volumeId string, secrets map[string]string, _ bool,
-) error {
-	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName,
-		previousLUKSPassphrase := luks.GetLUKSPassphrasesFromSecretMap(secrets)
-	if luksPassphrase == "" {
-		return fmt.Errorf("LUKS passphrase cannot be empty")
-	}
-	if luksPassphraseName == "" {
-		return fmt.Errorf("LUKS passphrase name cannot be empty")
-	}
-
-	// Check if passphrase is already up-to-date
-	current, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
-	if err != nil {
-		return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
-	}
-	if current {
-		Logc(ctx).WithFields(LogFields{
-			"volume": volumeId,
-		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
-		// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
-		// if forceUpdate {
-		// 	luksPassphraseNames := []string{luksPassphraseName}
-		// 	err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
-		// 	if err != nil {
-		// 		return fmt.Errorf("could not update current passphrase name for LUKS volume; %v", err)
-		// 	}
-		// }
-		return nil
-	}
-
-	// Check if previous passphrase is set, otherwise we can't rotate
-	var previous bool
-	if previousLUKSPassphrase != "" {
-		if previousLUKSPassphraseName == "" {
-			return fmt.Errorf("previous LUKS passphrase name cannot be empty if previous LUKS passphrase is also specified")
-		}
-		previous, err = luksDevice.CheckPassphrase(ctx, previousLUKSPassphrase)
-		if err != nil {
-			return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
-		}
-	}
-	if !previous {
-		return fmt.Errorf("no working passphrase provided")
-	}
-	Logc(ctx).WithFields(LogFields{
-		"volume": volumeId,
-	}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
-
-	// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
-	// Send up current and previous passphrase names, if rotation fails
-	// luksPassphraseNames := []string{luksPassphraseName, previousLUKSPassphraseName}
-	// err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
-	// if err != nil {
-	// 	return fmt.Errorf("could not update passphrase names for LUKS volume, skipping passphrase rotation; %v", err)
-	// }
-
-	// Rotate
-	Logc(ctx).WithFields(LogFields{
-		"volume":                       volumeId,
-		"current-luks-passphrase-name": previousLUKSPassphraseName,
-		"new-luks-passphrase-name":     luksPassphraseName,
-	}).Info("Rotating LUKS passphrase.")
-	err = luksDevice.RotatePassphrase(ctx, volumeId, previousLUKSPassphrase, luksPassphrase)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"volume":                       volumeId,
-			"current-luks-passphrase-name": previousLUKSPassphraseName,
-			"new-luks-passphrase-name":     luksPassphraseName,
-		}).WithError(err).Errorf("Failed to rotate LUKS passphrase.")
-		return fmt.Errorf("failed to rotate LUKS passphrase; %w", err)
-	}
-	Logc(ctx).Infof("Rotated LUKS passphrase")
-
-	// isCurrent, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
-	// if err != nil {
-	// 	return fmt.Errorf("could not check current passphrase for LUKS volume; %v", err)
-	// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
-	// } else if isCurrent {
-	// 	// Send only current passphrase up
-	// 	luksPassphraseNames = []string{luksPassphraseName}
-	// 	err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
-	// 	if err != nil {
-	// 		return fmt.Errorf("could not update passphrase names for LUKS volume after rotation; %v", err)
-	// 	}
-	// }
-	// }
-	return nil
 }
 
 func addAccessInfoPortalsToPublishInfo(publishInfo map[string]string, accessInfo models.VolumeAccessInfo) {

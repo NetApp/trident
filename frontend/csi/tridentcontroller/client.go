@@ -25,8 +25,9 @@ type Client interface {
 	MarkNodeCleanupComplete(ctx context.Context, nodeName string) error
 	// UpdateVolume applies node-originated fields to the volume's controller-side record. Only
 	// fields set on the update are changed; nil fields are left alone. Implementations must be
-	// idempotent. Callers must treat failure as non-fatal - this is observability/propagation
-	// state, not a data path.
+	// idempotent. A caller that must record a value before changing the device (e.g. LUKS
+	// passphrase names before a format or rotation) aborts that change on failure; otherwise
+	// failure is non-fatal.
 	UpdateVolume(ctx context.Context, volumeName string, update *models.NodeVolumeUpdate) error
 }
 

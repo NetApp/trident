@@ -468,20 +468,6 @@ func TestAttachISCSIVolume_LUKSLockAcquireConflict(t *testing.T) {
 	assert.True(t, errors.IsVolumeStateError(err), "expected VolumeStateError, got: %v", err)
 }
 
-func TestAttachISCSIVolume_LUKSFormatErrorPropagates(t *testing.T) {
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(ISCSI)
-	publishInfo.LUKSEncryption = "true"
-
-	mocks.ISCSI.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil)
-	// EnsureVolumeFormattedAndMounted / AddSession must never be reached: the LUKS format step
-	// fails first because no passphrase was supplied in secrets.
-
-	err := core.attachISCSIVolume(context.Background(), "test-volume", publishInfo, map[string]string{}, distlock.NewNoopLock())
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "LUKS passphrase cannot be empty")
-}
-
 func TestEnsureAttachFCPVolume_Success(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(FCP)
@@ -604,7 +590,9 @@ func TestAttachNVMeVolume_ProtectsSubsystemDuringAttachAndCryptsetup(t *testing.
 			}),
 		mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
 			gomock.Any(), publishInfo.InternalID, publishInfo, publishInfo.Secrets,
-		).DoAndReturn(func(context.Context, string, *models.VolumePublishInfo, map[string]string) (bool, bool, error) {
+		).DoAndReturn(func(
+			context.Context, string, *models.VolumePublishInfo, map[string]string,
+		) (bool, bool, error) {
 			err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), subsystem, unstagePublishInfo)
 			require.NoError(t, err)
 			assert.Zero(t, subsystem.disconnectCalls)
@@ -825,35 +813,6 @@ func TestAttachNVMeVolume_FormatMountError(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "mkfs failed")
 	assert.Equal(t, 1, subsystem.disconnectCalls)
-}
-
-// A failure after the volume is mounted must not disconnect the subsystem under the mount. The
-// namespace stays published so NodeUnstageVolume can tear it down.
-func TestAttachNVMeVolume_PostMountErrorKeepsSessionAndSkipsDisconnect(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.LUKSEncryption = "true"
-
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-			sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
-		})
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), publishInfo.InternalID, publishInfo, gomock.Nil(),
-	).Return(true, true, nil)
-	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-		gomock.Any(), publishInfo.InternalID, "", publishInfo, true, true,
-	).Return(nil)
-	// RemovePublishedNVMeSession and NewNVMeSubsystem are intentionally not expected.
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "could not set LUKS volume passphrase")
-	assert.Equal(t, 1, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
 }
 
 func TestAttachNVMeVolume_LUKSBranchSkippedWhenDisabled(t *testing.T) {

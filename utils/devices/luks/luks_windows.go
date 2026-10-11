@@ -22,6 +22,13 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	return errors.UnsupportedError("RotatePassphrase is not supported for windows")
 }
 
+// NeedsInitialFormat returns whether the device has no LUKS header and is empty
+func (d *LUKSDevice) NeedsInitialFormat(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> devices_windows.NeedsInitialFormat")
+	defer Logc(ctx).Debug("<<<< devices_windows.NeedsInitialFormat")
+	return false, errors.UnsupportedError("NeedsInitialFormat is not supported for windows")
+}
+
 // IsLUKSFormatted returns whether LUKS headers have been placed on the device
 func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> devices_windows.IsLUKSFormatted")

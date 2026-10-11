@@ -171,20 +171,19 @@ func (mr *MockDeviceMockRecorder) EnsureDeviceMappedOnHost(ctx, name, secrets an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDeviceMappedOnHost", reflect.TypeOf((*MockDevice)(nil).EnsureDeviceMappedOnHost), ctx, name, secrets)
 }
 
-// EnsureFormattedAndOpen mocks base method.
-func (m *MockDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, bool, error) {
+// IsLUKSFormatted mocks base method.
+func (m *MockDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureFormattedAndOpen", ctx, luksPassphrase)
+	ret := m.ctrl.Call(m, "IsLUKSFormatted", ctx)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(bool)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// EnsureFormattedAndOpen indicates an expected call of EnsureFormattedAndOpen.
-func (mr *MockDeviceMockRecorder) EnsureFormattedAndOpen(ctx, luksPassphrase any) *gomock.Call {
+// IsLUKSFormatted indicates an expected call of IsLUKSFormatted.
+func (mr *MockDeviceMockRecorder) IsLUKSFormatted(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFormattedAndOpen", reflect.TypeOf((*MockDevice)(nil).EnsureFormattedAndOpen), ctx, luksPassphrase)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLUKSFormatted", reflect.TypeOf((*MockDevice)(nil).IsLUKSFormatted), ctx)
 }
 
 // IsMappingStale mocks base method.

@@ -97,6 +97,55 @@ func TestLUKSDevice_IsLUKSFormatted(t *testing.T) {
 	assert.True(t, isFormatted)
 }
 
+func TestLUKSDevice_NeedsInitialFormat(t *testing.T) {
+	notLUKS := mock_exec.NewMockExitError(cryptsetupIsLuksDeviceIsNotLuksStatusCode, "not LUKS")
+
+	tests := []struct {
+		name          string
+		isLuksErr     error
+		checkEmpty    bool
+		unformatted   bool
+		unformatErr   error
+		expected      bool
+		expectedError string
+	}{
+		{name: "AlreadyLUKS", expected: false},
+		{name: "EmptyAndNotLUKS", isLuksErr: notLUKS, checkEmpty: true, unformatted: true, expected: true},
+		{
+			name: "NotEmpty", isLuksErr: notLUKS, checkEmpty: true, unformatted: false,
+			expectedError: "cannot LUKS format device; device is not empty",
+		},
+		{
+			name: "UnformattedCheckError", isLuksErr: notLUKS, checkEmpty: true, unformatErr: luksError,
+			expectedError: "failed to check if device is unformatted",
+		},
+		{name: "IsLuksError", isLuksErr: luksError, expectedError: "failed to check if device is LUKS formatted"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockCommand := mockexec.NewMockCommand(mockCtrl)
+			mockDevices := mock_devices.NewMockDevices(mockCtrl)
+
+			mockCryptsetupIsLuks(mockCommand).Return([]byte(""), tt.isLuksErr)
+			if tt.checkEmpty {
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(tt.unformatted, tt.unformatErr)
+			}
+
+			luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
+			needsFormat, err := luksDevice.NeedsInitialFormat(context.Background())
+			if tt.expectedError != "" {
+				assert.ErrorContains(t, err, tt.expectedError)
+				assert.False(t, needsFormat)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, needsFormat)
+		})
+	}
+}
+
 func TestLUKSDevice_Format(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
@@ -113,6 +162,18 @@ func TestLUKSDevice_Format(t *testing.T) {
 	safeToFormat, err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
 	assert.True(t, safeToFormat)
 	assert.NoError(t, err)
+}
+
+func TestLUKSDevice_Format_AlreadyFormattedSkipsFormat(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""), nil)
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
+	safeToFormat, err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	assert.NoError(t, err)
+	assert.False(t, safeToFormat)
 }
 
 func TestLUKSFormat_UnformattedCheckError(t *testing.T) {
@@ -636,18 +697,6 @@ func TestResize_FailsWithExecError(t *testing.T) {
 
 	unexpectedError := errors.IncorrectLUKSPassphraseError("")
 	assert.NotErrorIs(t, err, unexpectedError)
-}
-
-func TestEnsureFormattedAndOpen(t *testing.T) {
-	// Positive case: Test first passphrase works
-	passphrase := "secretA"
-	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
-	mockCryptsetupLuksStatus(mockCommand)
-	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	formatted, safeToFormat, err := luksDevice.EnsureFormattedAndOpen(context.Background(), passphrase)
-	assert.False(t, safeToFormat)
-	assert.True(t, formatted)
-	assert.NoError(t, err)
 }
 
 func TestMountLUKSDevice_firstPassphraseSuccess(t *testing.T) {

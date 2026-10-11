@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/pkg/locks/distlock"
@@ -50,13 +51,61 @@ func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout ti
 	return true
 }
 
+// updateLUKSPassphraseNames updates the LUKS passphrase names on the tvol.
+func updateLUKSPassphraseNames(
+	ctx context.Context, controller tridentcontroller.Client, volumeId string, luksPassphraseNames []string,
+) error {
+	Logc(ctx).Debugf("Updating LUKS passphrase names for volume %s: %s", volumeId, luksPassphraseNames)
+	if controller == nil {
+		return errors.New("cannot update LUKS passphrase names: Trident controller client is nil")
+	}
+	return controller.UpdateVolume(ctx, volumeId, &models.NodeVolumeUpdate{LUKSPassphraseNames: &luksPassphraseNames})
+}
+
+// recordInitialLUKSPassphraseName writes the current LUKS passphrase name to the TridentVolume when
+// the device has no LUKS header yet and is empty. Call it immediately before formatting, under the
+// same lock that serializes the format. An existing header makes no controller call: the name was
+// recorded before that format, and steady-state attaches must not write to the API server.
+func (c *Core) recordInitialLUKSPassphraseName(
+	ctx context.Context, volumeID string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+) error {
+	if publishInfo == nil || !publishInfo.UseLUKS() {
+		return nil
+	}
+
+	luksDevice := luks.NewDevice(publishInfo.DevicePath, volumeID, c.cmd, c.dev)
+	needsFormat, err := luksDevice.NeedsInitialFormat(ctx)
+	if err != nil {
+		return err
+	}
+	if !needsFormat {
+		return nil
+	}
+
+	luksPassphraseName, luksPassphrase, _, _ := luks.GetLUKSPassphrasesFromSecretMap(secrets)
+	if luksPassphrase == "" {
+		return fmt.Errorf("LUKS passphrase cannot be empty")
+	}
+	if luksPassphraseName == "" {
+		return fmt.Errorf("LUKS passphrase name cannot be empty")
+	}
+
+	if err = updateLUKSPassphraseNames(ctx, c.controller, volumeID, []string{luksPassphraseName}); err != nil {
+		return fmt.Errorf("could not record LUKS passphrase name before format; %w", err)
+	}
+	return nil
+}
+
 func nvmeSubsystemOperationLockID(subsystemNQN string) string {
 	return nvmeSubsystemOperationLockPrefix + subsystemNQN
 }
 
+// ensureLUKSVolumePassphrase ensures the LUKS device has the current passphrase, rotating from the
+// previous passphrase if needed. The volume's TridentVolume is updated before and after a rotation,
+// so the recorded names always include one that opens the device.
 func ensureLUKSVolumePassphrase(
 	ctx context.Context, luksDevice luks.Device,
-	volumeId string, secrets map[string]string, _ bool,
+	volumeId string, secrets map[string]string, controller tridentcontroller.Client,
 ) error {
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName,
 		previousLUKSPassphrase := luks.GetLUKSPassphrasesFromSecretMap(secrets)
@@ -76,7 +125,6 @@ func ensureLUKSVolumePassphrase(
 		Logc(ctx).WithFields(LogFields{
 			"volume": volumeId,
 		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
-		// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
 		return nil
 	}
 
@@ -98,8 +146,15 @@ func ensureLUKSVolumePassphrase(
 		"volume": volumeId,
 	}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
 
-	// Disabled in all supported versions until 26.06.0. Users must track LUKS passphrases for volumes.
-	// Rotate
+	// Save both passphrase names to the volume.
+	// This ensures that the passphrase name is present if we error or restart after a rotation,
+	// and before we update the volume with the new passphrase name.
+	if err = updateLUKSPassphraseNames(
+		ctx, controller, volumeId, []string{luksPassphraseName, previousLUKSPassphraseName},
+	); err != nil {
+		return fmt.Errorf("error updating LUKS passphrase names; %w", err)
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"volume":                       volumeId,
 		"current-luks-passphrase-name": previousLUKSPassphraseName,
@@ -115,6 +170,13 @@ func ensureLUKSVolumePassphrase(
 		return fmt.Errorf("failed to rotate LUKS passphrase; %w", err)
 	}
 	Logc(ctx).Infof("Rotated LUKS passphrase")
+
+	if err = updateLUKSPassphraseNames(ctx, controller, volumeId, []string{luksPassphraseName}); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":               volumeId,
+			"luks-passphrase-name": luksPassphraseName,
+		}).WithError(err).Warn("Could not record current LUKS passphrase name after rotation.")
+	}
 	return nil
 }
 

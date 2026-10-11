@@ -12,6 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
+	mockTridentController "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_tridentcontroller"
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices/mock_luks"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/utils/errors"
@@ -95,7 +96,7 @@ func TestEnsureLUKSVolumePassphrase_EmptyPassphrase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	luksDevice := mock_luks.NewMockDevice(ctrl)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", map[string]string{}, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", map[string]string{}, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "LUKS passphrase cannot be empty")
 }
@@ -105,7 +106,7 @@ func TestEnsureLUKSVolumePassphrase_EmptyPassphraseName(t *testing.T) {
 	luksDevice := mock_luks.NewMockDevice(ctrl)
 	secrets := map[string]string{"luks-passphrase": "secret"}
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "LUKS passphrase name cannot be empty")
 }
@@ -116,7 +117,7 @@ func TestEnsureLUKSVolumePassphrase_CheckPassphraseErrorPropagates(t *testing.T)
 	secrets := map[string]string{"luks-passphrase": "secret", "luks-passphrase-name": "name-a"}
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, errors.New("device busy"))
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "could not verify passphrase name-a")
 	assert.Contains(t, err.Error(), "device busy")
@@ -127,8 +128,10 @@ func TestEnsureLUKSVolumePassphrase_CurrentPassphraseAlreadyMatches(t *testing.T
 	luksDevice := mock_luks.NewMockDevice(ctrl)
 	secrets := map[string]string{"luks-passphrase": "secret", "luks-passphrase-name": "name-a"}
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(true, nil)
+	// No UpdateVolume expectation: an attach or mount with the current passphrase must not write.
+	controller := mockTridentController.NewMockClient(ctrl)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, controller)
 	assert.NoError(t, err)
 }
 
@@ -138,7 +141,7 @@ func TestEnsureLUKSVolumePassphrase_NoPreviousPassphraseProvided(t *testing.T) {
 	secrets := map[string]string{"luks-passphrase": "secret", "luks-passphrase-name": "name-a"}
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no working passphrase provided")
 }
@@ -153,7 +156,7 @@ func TestEnsureLUKSVolumePassphrase_PreviousPassphraseNameEmpty(t *testing.T) {
 	}
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "previous LUKS passphrase name cannot be empty")
 }
@@ -170,7 +173,7 @@ func TestEnsureLUKSVolumePassphrase_PreviousPassphraseDoesNotCheckOut(t *testing
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(false, nil)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no working passphrase provided")
 }
@@ -187,7 +190,7 @@ func TestEnsureLUKSVolumePassphrase_PreviousPassphraseCheckErrorPropagates(t *te
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(false, errors.New("device error"))
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "could not verify passphrase name-b")
 	assert.Contains(t, err.Error(), "device error")
@@ -204,9 +207,14 @@ func TestEnsureLUKSVolumePassphrase_SuccessfulRotation(t *testing.T) {
 	}
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(true, nil)
-	luksDevice.EXPECT().RotatePassphrase(gomock.Any(), "vol-1", "old-secret", "secret").Return(nil)
+	controller := mockTridentController.NewMockClient(ctrl)
+	gomock.InOrder(
+		controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a", "name-b")).Return(nil),
+		luksDevice.EXPECT().RotatePassphrase(gomock.Any(), "vol-1", "old-secret", "secret").Return(nil),
+		controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a")).Return(nil),
+	)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, controller)
 	assert.NoError(t, err)
 }
 
@@ -222,11 +230,85 @@ func TestEnsureLUKSVolumePassphrase_RotatePassphraseErrorPropagates(t *testing.T
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
 	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(true, nil)
 	luksDevice.EXPECT().RotatePassphrase(gomock.Any(), "vol-1", "old-secret", "secret").Return(errors.New("cryptsetup failed"))
+	// Only the pre-rotation write: the device is still on the previous passphrase, which both names cover.
+	controller := mockTridentController.NewMockClient(ctrl)
+	controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a", "name-b")).Return(nil)
 
-	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, false)
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, controller)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to rotate LUKS passphrase")
 	assert.Contains(t, err.Error(), "cryptsetup failed")
+}
+
+func TestEnsureLUKSVolumePassphrase_PreRotationUpdateFailsSkipsRotation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	luksDevice := mock_luks.NewMockDevice(ctrl)
+	secrets := rotationSecrets()
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(true, nil)
+	// No RotatePassphrase expectation: the device must not change if its names can't be recorded first.
+	controller := mockTridentController.NewMockClient(ctrl)
+	controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a", "name-b")).
+		Return(errors.New("controller unavailable"))
+
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, controller)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "error updating LUKS passphrase names")
+	assert.Contains(t, err.Error(), "controller unavailable")
+}
+
+func TestEnsureLUKSVolumePassphrase_NilControllerSkipsRotation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	luksDevice := mock_luks.NewMockDevice(ctrl)
+	secrets := rotationSecrets()
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(true, nil)
+
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "error updating LUKS passphrase names")
+	assert.Contains(t, err.Error(), "Trident controller client is nil")
+}
+
+func TestEnsureLUKSVolumePassphrase_PostRotationUpdateFailureIsNonFatal(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	luksDevice := mock_luks.NewMockDevice(ctrl)
+	secrets := rotationSecrets()
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "secret").Return(false, nil)
+	luksDevice.EXPECT().CheckPassphrase(gomock.Any(), "old-secret").Return(true, nil)
+	controller := mockTridentController.NewMockClient(ctrl)
+	gomock.InOrder(
+		controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a", "name-b")).Return(nil),
+		luksDevice.EXPECT().RotatePassphrase(gomock.Any(), "vol-1", "old-secret", "secret").Return(nil),
+		controller.EXPECT().UpdateVolume(gomock.Any(), "vol-1", luksNamesUpdate("name-a")).
+			Return(errors.New("controller unavailable")),
+	)
+
+	err := ensureLUKSVolumePassphrase(context.Background(), luksDevice, "vol-1", secrets, controller)
+	assert.NoError(t, err)
+}
+
+func TestRecordInitialLUKSPassphraseName_SkipsNonLUKSVolume(t *testing.T) {
+	core, _ := newTestCore(t)
+	publishInfo := samplePublishInfo(ISCSI)
+
+	err := core.recordInitialLUKSPassphraseName(context.Background(), "vol-1", publishInfo, nil)
+	assert.NoError(t, err)
+}
+
+// rotationSecrets returns secrets where "secret"/name-a is current and "old-secret"/name-b is previous.
+func rotationSecrets() map[string]string {
+	return map[string]string{
+		"luks-passphrase":               "secret",
+		"luks-passphrase-name":          "name-a",
+		"previous-luks-passphrase":      "old-secret",
+		"previous-luks-passphrase-name": "name-b",
+	}
+}
+
+// luksNamesUpdate is the NodeVolumeUpdate the node sends to record the given LUKS passphrase names.
+func luksNamesUpdate(names ...string) *models.NodeVolumeUpdate {
+	return &models.NodeVolumeUpdate{LUKSPassphraseNames: &names}
 }
 
 func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {

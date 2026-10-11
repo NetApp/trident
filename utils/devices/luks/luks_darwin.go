@@ -22,11 +22,18 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	return errors.UnsupportedError("RotatePassphrase is not supported for darwin")
 }
 
-// IsFormatted returns whether LUKS headers have been placed on the device
-func (d *LUKSDevice) IsFormatted(ctx context.Context) (bool, error) {
-	Logc(ctx).Debug(">>>> devices_darwin.IsFormatted")
-	defer Logc(ctx).Debug("<<<< devices_darwin.IsFormatted")
-	return false, errors.UnsupportedError("IsFormatted is not supported for darwin")
+// NeedsInitialFormat returns whether the device has no LUKS header and is empty
+func (d *LUKSDevice) NeedsInitialFormat(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> devices_darwin.NeedsInitialFormat")
+	defer Logc(ctx).Debug("<<<< devices_darwin.NeedsInitialFormat")
+	return false, errors.UnsupportedError("NeedsInitialFormat is not supported for darwin")
+}
+
+// IsLUKSFormatted returns whether LUKS headers have been placed on the device
+func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> devices_darwin.IsLUKSFormatted")
+	defer Logc(ctx).Debug("<<<< devices_darwin.IsLUKSFormatted")
+	return false, errors.UnsupportedError("IsLUKSFormatted is not supported for darwin")
 }
 
 // IsOpen returns whether the device is an active luks device on the host

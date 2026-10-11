@@ -206,6 +206,10 @@ func (c *Core) attachISCSIVolume(
 
 	var luksFormatted, safeToFsFormat bool
 	if err = locker.WithLock(ctx, func(ctx context.Context) error {
+		// The passphrase name is updated only for a new volume that has never had it set.
+		if recordErr := c.recordInitialLUKSPassphraseName(ctx, volume, publishInfo, secrets); recordErr != nil {
+			return recordErr
+		}
 		var luksErr error
 		luksFormatted, safeToFsFormat, luksErr = luks.EnsureCryptsetupFormattedAndMappedOnHost(
 			ctx, publishInfo.InternalID, publishInfo, secrets, c.cmd, c.dev,
@@ -234,7 +238,7 @@ func (c *Core) attachISCSIVolume(
 
 		if err = locker.WithLock(ctx, func(ctx context.Context) error {
 			luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
-			return ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
+			return ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, c.controller)
 		}); err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %w", orchestratorErrorForLockError(err))
 		}
@@ -326,6 +330,11 @@ func (c *Core) attachFCPVolume(
 		return err
 	}
 
+	// The passphrase name is updated only for a new volume that has never had it set.
+	if err = c.recordInitialLUKSPassphraseName(ctx, volume, publishInfo, secrets); err != nil {
+		return err
+	}
+
 	// Cryptsetup format if necessary and map to host
 	luksFormatted, safeToFsFormat, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx, publishInfo.InternalID, publishInfo, secrets, c.cmd, c.dev,
@@ -347,8 +356,7 @@ func (c *Core) attachFCPVolume(
 		}
 		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 
-		// Ensure we update the passphrase in case it has never been set before
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
+		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, c.controller)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}
@@ -425,6 +433,11 @@ func (c *Core) attachNVMeVolume(
 		return err
 	}
 
+	// The passphrase name is updated only for a new volume that has never had it set.
+	if err = c.recordInitialLUKSPassphraseName(ctx, volume, publishInfo, secrets); err != nil {
+		return err
+	}
+
 	// Cryptsetup format if necessary and map to host
 	luksFormatted, safeToFormat, err := c.nvme.EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx, publishInfo.InternalID, publishInfo, secrets,
@@ -447,8 +460,7 @@ func (c *Core) attachNVMeVolume(
 		}
 		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
 
-		// Ensure we update the passphrase in case it has never been set before
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, true)
+		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, c.controller)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}

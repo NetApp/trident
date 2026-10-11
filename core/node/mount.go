@@ -203,7 +203,7 @@ func (c *Core) mountFCPVolume(
 			luksDevice = luks.NewDevice(devicePath, publishInfo.InternalID, c.cmd, c.dev)
 		}
 
-		if err = ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, false); err != nil {
+		if err = ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, c.controller); err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
 
@@ -229,7 +229,7 @@ func (c *Core) mountNVMeVolume(
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		luksDevice := luks.NewDevice(devicePath, publishInfo.InternalID, c.cmd, c.dev)
 
-		if err := ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, false); err != nil {
+		if err := ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, c.controller); err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
 
@@ -279,7 +279,7 @@ func (c *Core) mountISCSIVolume(
 
 	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
-		// Rotate the LUKS passphrase if needed; on failure, log and continue to publish.
+		// Rotate the LUKS passphrase if needed.
 		var luksDevice luks.Device
 		if luks.IsLegacyDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path.
@@ -293,9 +293,12 @@ func (c *Core) mountISCSIVolume(
 
 		if len(secrets) > 0 {
 			if err = locker.WithLock(ctx, func(ctx context.Context) error {
-				return ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, false)
+				return ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, c.controller)
 			}); err != nil {
-				Logc(ctx).WithError(orchestratorErrorForLockError(err)).Error("Failed to ensure current LUKS passphrase.")
+				// Fail the publish on every lock error. Another host may hold the Lease while
+				// formatting, and a failure on this host can leave the Lease and holder in place.
+				Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
+				return orchestratorErrorForLockError(err)
 			}
 		}
 

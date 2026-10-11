@@ -139,19 +139,11 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase string) (bool, error) {
 	fields := LogFields{"device": d.RawDevicePath()}
 
-	// Check if the device is already LUKS formatted.
-	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
-		return false, fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
-	} else if luksFormatted {
+	if needsFormat, err := d.NeedsInitialFormat(ctx); err != nil {
+		return false, err
+	} else if !needsFormat {
 		Logc(ctx).WithFields(fields).Debug("Device is already LUKS formatted.")
 		return false, nil
-	}
-
-	// Ensure the device is empty before attempting LUKS format.
-	if unformatted, err := d.devices.IsDeviceUnformatted(ctx, d.RawDevicePath()); err != nil {
-		return false, fmt.Errorf("failed to check if device is unformatted; %w", err)
-	} else if !unformatted {
-		return false, errors.New("cannot LUKS format device; device is not empty")
 	}
 
 	// Attempt LUKS format.
@@ -176,6 +168,24 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 	}
 
 	Logc(ctx).WithFields(fields).Debug("Device is LUKS formatted.")
+	return true, nil
+}
+
+// NeedsInitialFormat returns true if the device has no LUKS header and is empty, so it is safe to LUKS
+// format. It returns false if the device already has a LUKS header, and an error if the device has no
+// LUKS header but is not empty.
+func (d *LUKSDevice) NeedsInitialFormat(ctx context.Context) (bool, error) {
+	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
+		return false, fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
+	} else if luksFormatted {
+		return false, nil
+	}
+
+	if unformatted, err := d.devices.IsDeviceUnformatted(ctx, d.RawDevicePath()); err != nil {
+		return false, fmt.Errorf("failed to check if device is unformatted; %w", err)
+	} else if !unformatted {
+		return false, errors.New("cannot LUKS format device; device is not empty")
+	}
 	return true, nil
 }
 

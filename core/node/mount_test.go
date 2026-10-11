@@ -606,8 +606,8 @@ func TestMountISCSIVolume_NonLUKS_MountsMultipathDevicePath(t *testing.T) {
 // bug where mountISCSIVolume read publishInfo.Secrets instead of the secrets parameter Mount()
 // received from the caller. publishInfo.Secrets is tagged json:"-" and never survives a round
 // trip through the tracking file, so reading it always produces an empty passphrase; if that
-// regression reappears, ensureLUKSVolumePassphrase will short-circuit with "LUKS passphrase
-// cannot be empty" without ever attempting to verify a passphrase, which this test disallows.
+// regression reappears, ensureLUKSVolumePassphrase fails with "LUKS passphrase cannot be empty"
+// without ever attempting to verify a passphrase, which this test disallows.
 func TestMountISCSIVolume_LUKS_UsesSecretsParameterNotPublishInfoSecrets(t *testing.T) {
 	hook := logtest.NewGlobal()
 	defer hook.Reset()
@@ -630,37 +630,32 @@ func TestMountISCSIVolume_LUKS_UsesSecretsParameterNotPublishInfoSecrets(t *test
 		).
 		Return([]byte{}, errors.New("cryptsetup unavailable in test")).
 		AnyTimes()
-	mocks.Mount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
-	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
 	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, secrets, distlock.NewNoopLock())
-	assert.NoError(t, err) // ensureLUKSVolumePassphrase failures are logged, not propagated
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "could not verify passphrase A")
+	assert.NotContains(t, err.Error(), "LUKS passphrase cannot be empty")
 
 	for _, entry := range hook.AllEntries() {
 		assert.NotContains(t, entry.Message, "LUKS passphrase cannot be empty")
 	}
 }
 
-// TestMountISCSIVolume_LUKS_LockError_DoesNotPreventMount verifies that a WithLock failure during
-// passphrase rotation (e.g. ErrLockDeleteFailed) is treated as a soft error: it is logged but
-// does not abort the mount. The device is mounted using the existing open LUKS mapping.
-func TestMountISCSIVolume_LUKS_LockError_DoesNotPreventMount(t *testing.T) {
-	core, mocks := newTestCore(t)
+// TestMountISCSIVolume_LUKS_LockDeleteErrorPreventsMount verifies that ErrLockDeleteFailed aborts
+// the mount. The Lease has no duration, so a successful publish would leave the holder in place.
+func TestMountISCSIVolume_LUKS_LockDeleteErrorPreventsMount(t *testing.T) {
+	core, _ := newTestCore(t)
 	publishInfo := samplePublishInfo(ISCSI)
 	publishInfo.LUKSEncryption = "true"
 	publishInfo.DevicePath = "/dev/dm-3"
 
 	secrets := map[string]string{"luks-passphrase": "secret", "luks-passphrase-name": "A"}
 
-	// The locker fails: WithLock returns ErrLockDeleteFailed. The error must be swallowed.
 	locker := lockerFunc(func(_ context.Context, _ func(context.Context) error) error {
 		return distlock.ErrLockDeleteFailed
 	})
 
-	// Mount must still be attempted against the LUKS mapper path (luks-<internalID>).
-	mocks.Mount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
-	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
-
 	err := core.mountISCSIVolume(context.Background(), "vol1", "/target", publishInfo, secrets, locker)
-	assert.NoError(t, err)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, distlock.ErrLockDeleteFailed)
 }
