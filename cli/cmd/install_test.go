@@ -1786,7 +1786,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(10)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -1798,7 +1798,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(11)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(15)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -1810,7 +1810,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "openshift",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(10)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("openshift")).AnyTimes()
 				mockClient.EXPECT().RemoveTridentUserFromOpenShiftSCC(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
@@ -1825,7 +1825,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "openshift",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(11)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(15)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("openshift")).AnyTimes()
 
 				mockClient.EXPECT().RemoveTridentUserFromOpenShiftSCC(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -1921,6 +1921,21 @@ func TestCreateRBACObjects(t *testing.T) {
 			expectedErrorContains: "could not create node linux service account",
 		},
 		{
+			name:          "fail_node_linux_role",
+			useYAML:       false,
+			windows:       false,
+			cloudIdentity: "",
+			k8sFlavor:     "kubernetes",
+			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
+				gomock.InOrder(
+					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(6),
+					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(errors.New("node role creation failed")).Times(1),
+				)
+				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
+			},
+			expectedErrorContains: "could not create node linux role",
+		},
+		{
 			name:          "fail_node_windows_service_account",
 			useYAML:       false,
 			windows:       true,
@@ -1928,7 +1943,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
 				gomock.InOrder(
-					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8),
+					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(10),
 					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(errors.New("node windows service account creation failed")).Times(1),
 				)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
@@ -1939,10 +1954,10 @@ func TestCreateRBACObjects(t *testing.T) {
 			name:          "with_cloud_identity",
 			useYAML:       false,
 			windows:       false,
-			cloudIdentity: "test-identity",
+			cloudIdentity: "",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(10)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -2843,7 +2858,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 16,
+			expectedFiles: 18,
 		},
 		{
 			name:          "successful_kubernetes_with_windows",
@@ -2855,7 +2870,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 20,
+			expectedFiles: 24,
 		},
 		{
 			name:          "successful_openshift_linux_only",
@@ -2867,7 +2882,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 18,
+			expectedFiles: 20,
 		},
 		{
 			name:          "successful_openshift_with_windows",
@@ -2879,7 +2894,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 23,
+			expectedFiles: 27,
 		},
 		{
 			name:          "with_cloud_identity",
@@ -2891,7 +2906,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 16,
+			expectedFiles: 18,
 		},
 	}
 
@@ -2906,8 +2921,12 @@ func TestPrepareYAMLFiles(t *testing.T) {
 			controllerRoleBindingPath = filepath.Join(tempDir, "controller-rb.yaml")
 			controllerClusterRoleBindingPath = filepath.Join(tempDir, "controller-crb.yaml")
 			nodeLinuxServiceAccountPath = filepath.Join(tempDir, "node-sa.yaml")
+			nodeLinuxRolePath = filepath.Join(tempDir, "node-linux-role.yaml")
+			nodeLinuxRoleBindingPath = filepath.Join(tempDir, "node-linux-rolebinding.yaml")
 			nodeLinuxClusterRolePath = filepath.Join(tempDir, "node-linux-cluster-role.yaml")
 			nodeLinuxClusterRoleBindingPath = filepath.Join(tempDir, "node-linux-crb.yaml")
+			nodeWindowsRolePath = filepath.Join(tempDir, "node-windows-role.yaml")
+			nodeWindowsRoleBindingPath = filepath.Join(tempDir, "node-windows-rolebinding.yaml")
 			nodeWindowsClusterRolePath = filepath.Join(tempDir, "node-windows-cluster-role.yaml")
 			nodeWindowsClusterRoleBindingPath = filepath.Join(tempDir, "node-windows-crb.yaml")
 			crdsPath = filepath.Join(tempDir, "crds.yaml")
@@ -2938,6 +2957,10 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				assert.NoError(t, err)
 				files, _ := filepath.Glob(filepath.Join(tempDir, "*.yaml"))
 				assert.Len(t, files, tt.expectedFiles, "Expected %d files to be written, got %d", tt.expectedFiles, len(files))
+				roleBytes, readErr := os.ReadFile(nodeLinuxRolePath)
+				require.NoError(t, readErr)
+				assert.Contains(t, string(roleBytes), "events")
+				assert.Contains(t, string(roleBytes), "kind: Role")
 			}
 		})
 	}

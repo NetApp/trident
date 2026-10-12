@@ -1420,17 +1420,33 @@ func (i *Installer) createOrPatchTridentClusterRole(
 func (i *Installer) createOrPatchTridentRoles(
 	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) error {
-	// Operator should create Role and RoleBinding for node resources only if PSP is supported
-	roleNames := []string{getControllerRBACResourceName()}
+	// Namespaced Roles for controller (ASUP secrets/logs) and node (lease Events, PSP use).
+	// Lookups must be scoped by label-owned names: GetMultipleRoleInformation deletes every
+	// listed name when no objects match the label, so passing controller names into the node
+	// lookup would wipe the live controller Role on first upgrade.
+	controllerRoleNames := []string{getControllerRBACResourceName()}
+	nodeRoleNames := getNodeResourceNames()
+	roleNames := getRBACResourceNames()
 
-	// Retrieve roles with controller label
 	currentRoleMap, unwantedRoles, reuseRoleMap, err := i.client.GetMultipleRoleInformation(
-		roleNames, appLabel, shouldUpdate)
+		controllerRoleNames, appLabel, shouldUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to get Trident roles with controller label; %v", err)
 	}
 
-	combinedUnwantedRoles := unwantedRoles
+	nodeRoleMap, unwantedNodeRoles, reuseNodeRoleMap, err := i.client.GetMultipleRoleInformation(
+		nodeRoleNames, TridentNodeLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident roles with node label; %v", err)
+	}
+
+	for key, value := range nodeRoleMap {
+		currentRoleMap[key] = value
+	}
+	for key, value := range reuseNodeRoleMap {
+		reuseRoleMap[key] = value
+	}
+	combinedUnwantedRoles := append(unwantedRoles, unwantedNodeRoles...)
 
 	if err = i.client.RemoveMultipleRoles(combinedUnwantedRoles); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident roles; %v", err)
@@ -1453,16 +1469,31 @@ func (i *Installer) createOrPatchTridentRoles(
 func (i *Installer) createOrPatchTridentRoleBindings(
 	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) error {
-	// Operator should create Role and RoleBinding for node resources only if PSP is supported
-	roleBindingNames := []string{getControllerRBACResourceName()}
+	// Bind controller and node ServiceAccounts to their namespaced Roles.
+	// Same label-scoped name lists as createOrPatchTridentRoles (see comment there).
+	controllerRoleBindingNames := []string{getControllerRBACResourceName()}
+	nodeRoleBindingNames := getNodeResourceNames()
+	roleBindingNames := getRBACResourceNames()
 
 	currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap,
-		err := i.client.GetMultipleRoleBindingInformation(roleBindingNames, appLabel, shouldUpdate)
+		err := i.client.GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, shouldUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to get Trident role bindings with controller label; %v", err)
 	}
 
-	combinedUnwantedRoleBindings := unwantedRoleBindings
+	nodeRoleBindingMap, unwantedNodeRoleBindings, reuseNodeRoleBindingMap,
+		err := i.client.GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident role bindings with node label; %v", err)
+	}
+
+	for key, value := range nodeRoleBindingMap {
+		currentRoleBindingMap[key] = value
+	}
+	for key, value := range reuseNodeRoleBindingMap {
+		reuseRoleBindingMap[key] = value
+	}
+	combinedUnwantedRoleBindings := append(unwantedRoleBindings, unwantedNodeRoleBindings...)
 
 	if err = i.client.RemoveMultipleRoleBindings(combinedUnwantedRoleBindings); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident role bindings; %v", err)

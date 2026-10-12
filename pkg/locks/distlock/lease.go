@@ -60,11 +60,12 @@ var (
 // be used by a single goroutine for the duration of one WithLock call. Use NewLeaseLock to
 // create a fresh instance per operation.
 type LeaseLock struct {
-	lockID    string
-	hostID    string
-	namespace string
-	leaseUID  string
-	client    coordv1client.LeaseInterface
+	lockID        string
+	hostID        string
+	namespace     string
+	leaseUID      string
+	client        coordv1client.LeaseInterface
+	eventRecorder EventRecorder
 }
 
 type LeaseLockOpts func(*LeaseLock)
@@ -121,7 +122,11 @@ func (l *LeaseLock) WithLock(ctx context.Context, fn func(context.Context) error
 				"inspection and Lease removal may be required.",
 			l.lockID, l.leaseUID, l.hostID,
 		)
-		return fmt.Errorf("%w: %w", ErrCriticalSectionFailed, fnErr)
+		csErr := fmt.Errorf("%w: %w", ErrCriticalSectionFailed, fnErr)
+		l.recordEvent(ctx, EventTypeWarning, ReasonLeaseRetained,
+			fmt.Sprintf("critical section failed; retaining lease lease=%s/%s holder=%s detail=%v",
+				l.namespace, l.lockID, l.hostID, csErr))
+		return csErr
 	}
 
 	// The critical section completed but the Lease has not been released. Failing here mimics a crash
@@ -137,6 +142,10 @@ func (l *LeaseLock) acquire(ctx context.Context) error {
 	if ctx == nil {
 		return errors.New("supplied context cannot be nil")
 	}
+
+	// Each acquire is a fresh claim. Drop any UID from a prior WithLock on this
+	// instance (attach/detach reuse one LeaseLock across multiple WithLock calls).
+	l.leaseUID = ""
 
 	holderID := l.hostID
 	acquireTime := metav1.NowMicro()
@@ -176,10 +185,10 @@ func (l *LeaseLock) acquire(ctx context.Context) error {
 	}
 
 	if holder := convert.ToVal(lease.Spec.HolderIdentity); holder != l.hostID {
+		l.leaseUID = string(lease.UID)
 		return fmt.Errorf("%w: holder=%q", ErrLockAcquireConflict, holder)
 	}
 	l.leaseUID = string(lease.UID)
-
 	return nil
 }
 
@@ -217,8 +226,35 @@ func (l *LeaseLock) release(ctx context.Context) error {
 			"holderID":  l.hostID,
 			"leaseUID":  l.leaseUID,
 		}).WithError(deleteErr).Error("Could not delete lease.")
-		return fmt.Errorf("%w: lease=%s host=%s: %v", ErrLockDeleteFailed, l.lockID, l.hostID, deleteErr)
+		releaseErr := fmt.Errorf("%w: lease=%s host=%s: %v", ErrLockDeleteFailed, l.lockID, l.hostID, deleteErr)
+		l.recordEvent(ctx, EventTypeWarning, ReasonLeaseReleaseFailed,
+			fmt.Sprintf("failed to delete lease after success lease=%s/%s holder=%s detail=%v",
+				l.namespace, l.lockID, l.hostID, releaseErr))
+		return releaseErr
 	}
 
+	l.leaseUID = ""
 	return nil
+}
+
+func (l *LeaseLock) recordEvent(ctx context.Context, eventType, reason, message string) {
+	if l == nil || l.eventRecorder == nil {
+		return
+	}
+	l.eventRecorder.Event(ctx, l.leaseRef(), eventType, reason, message)
+}
+
+// leaseRef builds a best-effort Lease object reference for event regarding.
+func (l *LeaseLock) leaseRef() *coordinationv1.Lease {
+	return &coordinationv1.Lease{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Lease",
+			APIVersion: "coordination.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      l.lockID,
+			Namespace: l.namespace,
+			UID:       types.UID(l.leaseUID),
+		},
+	}
 }

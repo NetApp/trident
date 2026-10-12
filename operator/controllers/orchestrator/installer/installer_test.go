@@ -1978,13 +1978,14 @@ func TestInstallOrPatchTrident(t *testing.T) {
 		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(gomock.AssignableToTypeOf([]rbacv1.ClusterRoleBinding{})).Return(nil).AnyTimes()
 		mockK8sClient.EXPECT().PutClusterRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
+		// Controller + node label lookups (same pattern as ServiceAccounts above).
 		mockK8sClient.EXPECT().GetMultipleRoleInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
+			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil).Times(2)
 		mockK8sClient.EXPECT().RemoveMultipleRoles(gomock.AssignableToTypeOf([]rbacv1.Role{})).Return(nil)
 		mockK8sClient.EXPECT().PutRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil).Times(2)
 		mockK8sClient.EXPECT().RemoveMultipleRoleBindings(gomock.AssignableToTypeOf([]rbacv1.RoleBinding{})).Return(nil)
 		mockK8sClient.EXPECT().PutRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
@@ -3523,6 +3524,10 @@ func TestCreateCRDs(t *testing.T) {
 }
 
 func TestCreateOrPatchTridentRoles(t *testing.T) {
+	originalWindows := windows
+	windows = false
+	defer func() { windows = originalWindows }()
+
 	mockK8sClient := newMockKubeClient(t)
 	installer := newTestInstaller(mockK8sClient)
 
@@ -3532,27 +3537,29 @@ func TestCreateOrPatchTridentRoles(t *testing.T) {
 	labels := map[string]string{
 		TestAppLabel: TestTridentNetAppIO,
 	}
+	controllerRoleNames := []string{getControllerRBACResourceName()}
+	nodeRoleNames := getNodeResourceNames()
+	roleNames := getRBACResourceNames()
 
 	t.Run("successful role creation", func(t *testing.T) {
-		roleNames := []string{getControllerRBACResourceName()}
 		currentRoleMap := make(map[string]*rbacv1.Role)
 		unwantedRoles := []rbacv1.Role{}
 		reuseRoleMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleInformation(roleNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, false).Return(
 			currentRoleMap, unwantedRoles, reuseRoleMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(nodeRoleNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoles(unwantedRoles).Return(nil)
-		mockK8sClient.EXPECT().Namespace().Return("trident")
-		mockK8sClient.EXPECT().PutRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().Namespace().Return("trident").Times(len(roleNames))
+		mockK8sClient.EXPECT().PutRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(roleNames))
 
 		err := installer.createOrPatchTridentRoles(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident roles with shouldUpdate=false")
 	})
 
 	t.Run("failure getting role information", func(t *testing.T) {
-		roleNames := []string{getControllerRBACResourceName()}
-
-		mockK8sClient.EXPECT().GetMultipleRoleInformation(roleNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, false).Return(
 			nil, nil, nil, fmt.Errorf("failed to get roles"))
 
 		err := installer.createOrPatchTridentRoles(controllingCRDetails, labels, false)
@@ -3561,14 +3568,26 @@ func TestCreateOrPatchTridentRoles(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to get roles")
 	})
 
+	t.Run("failure getting node role information", func(t *testing.T) {
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, false).Return(
+			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(nodeRoleNames, TridentNodeLabel, false).Return(
+			nil, nil, nil, fmt.Errorf("failed to get node roles"))
+
+		err := installer.createOrPatchTridentRoles(controllingCRDetails, labels, false)
+		assert.Error(t, err, "expected error when getting node role information fails")
+		assert.Contains(t, err.Error(), "failed to get Trident roles with node label")
+	})
+
 	t.Run("failure removing unwanted roles", func(t *testing.T) {
-		roleNames := []string{getControllerRBACResourceName()}
 		currentRoleMap := make(map[string]*rbacv1.Role)
 		unwantedRoles := []rbacv1.Role{{}}
 		reuseRoleMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleInformation(roleNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, false).Return(
 			currentRoleMap, unwantedRoles, reuseRoleMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(nodeRoleNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoles(unwantedRoles).Return(fmt.Errorf("failed to remove roles"))
 
 		err := installer.createOrPatchTridentRoles(controllingCRDetails, labels, false)
@@ -3578,13 +3597,14 @@ func TestCreateOrPatchTridentRoles(t *testing.T) {
 	})
 
 	t.Run("failure creating/patching role", func(t *testing.T) {
-		roleNames := []string{getControllerRBACResourceName()}
 		currentRoleMap := make(map[string]*rbacv1.Role)
 		unwantedRoles := []rbacv1.Role{}
 		reuseRoleMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleInformation(roleNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, false).Return(
 			currentRoleMap, unwantedRoles, reuseRoleMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(nodeRoleNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoles(unwantedRoles).Return(nil)
 		mockK8sClient.EXPECT().Namespace().Return("trident")
 		mockK8sClient.EXPECT().PutRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(
@@ -3597,20 +3617,27 @@ func TestCreateOrPatchTridentRoles(t *testing.T) {
 	})
 
 	t.Run("successful role update (shouldUpdate=true)", func(t *testing.T) {
-		roleNames := []string{getControllerRBACResourceName()}
 		currentRoleMap := map[string]*rbacv1.Role{
-			roleNames[0]: {},
+			controllerRoleNames[0]: {},
 		}
 		unwantedRoles := []rbacv1.Role{}
 		reuseRoleMap := map[string]bool{
-			roleNames[0]: true,
+			controllerRoleNames[0]: true,
+		}
+		nodeRoleMap := map[string]*rbacv1.Role{
+			nodeRoleNames[0]: {},
+		}
+		reuseNodeRoleMap := map[string]bool{
+			nodeRoleNames[0]: true,
 		}
 
-		mockK8sClient.EXPECT().GetMultipleRoleInformation(roleNames, appLabel, true).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(controllerRoleNames, appLabel, true).Return(
 			currentRoleMap, unwantedRoles, reuseRoleMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleInformation(nodeRoleNames, TridentNodeLabel, true).Return(
+			nodeRoleMap, []rbacv1.Role{}, reuseNodeRoleMap, nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoles(unwantedRoles).Return(nil)
-		mockK8sClient.EXPECT().Namespace().Return("trident")
-		mockK8sClient.EXPECT().PutRole(currentRoleMap[roleNames[0]], reuseRoleMap[roleNames[0]], gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().Namespace().Return("trident").Times(len(roleNames))
+		mockK8sClient.EXPECT().PutRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(roleNames))
 
 		err := installer.createOrPatchTridentRoles(controllingCRDetails, labels, true)
 		assert.NoError(t, err, "Should not error when creating Trident roles with shouldUpdate=true")
@@ -3618,6 +3645,10 @@ func TestCreateOrPatchTridentRoles(t *testing.T) {
 }
 
 func TestCreateOrPatchTridentRoleBindings(t *testing.T) {
+	originalWindows := windows
+	windows = false
+	defer func() { windows = originalWindows }()
+
 	mockK8sClient := newMockKubeClient(t)
 	installer := newTestInstaller(mockK8sClient)
 
@@ -3627,26 +3658,28 @@ func TestCreateOrPatchTridentRoleBindings(t *testing.T) {
 	labels := map[string]string{
 		TestAppLabel: TestTridentNetAppIO,
 	}
+	controllerRoleBindingNames := []string{getControllerRBACResourceName()}
+	nodeRoleBindingNames := getNodeResourceNames()
+	roleBindingNames := getRBACResourceNames()
 
 	t.Run("successful role binding creation", func(t *testing.T) {
-		roleBindingNames := []string{getControllerRBACResourceName()}
 		currentRoleBindingMap := make(map[string]*rbacv1.RoleBinding)
 		unwantedRoleBindings := []rbacv1.RoleBinding{}
 		reuseRoleBindingMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(roleBindingNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, false).Return(
 			currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoleBindings(unwantedRoleBindings).Return(nil)
-		mockK8sClient.EXPECT().PutRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().PutRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(roleBindingNames))
 
 		err := installer.createOrPatchTridentRoleBindings(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident role bindings with shouldUpdate=false")
 	})
 
 	t.Run("failure getting role binding information", func(t *testing.T) {
-		roleBindingNames := []string{getControllerRBACResourceName()}
-
-		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(roleBindingNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, false).Return(
 			nil, nil, nil, fmt.Errorf("failed to get role bindings"))
 
 		err := installer.createOrPatchTridentRoleBindings(controllingCRDetails, labels, false)
@@ -3655,14 +3688,26 @@ func TestCreateOrPatchTridentRoleBindings(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to get role bindings")
 	})
 
+	t.Run("failure getting node role binding information", func(t *testing.T) {
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, false).Return(
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, false).Return(
+			nil, nil, nil, fmt.Errorf("failed to get node role bindings"))
+
+		err := installer.createOrPatchTridentRoleBindings(controllingCRDetails, labels, false)
+		assert.Error(t, err, "expected error when getting node role binding information fails")
+		assert.Contains(t, err.Error(), "failed to get Trident role bindings with node label")
+	})
+
 	t.Run("failure removing unwanted role bindings", func(t *testing.T) {
-		roleBindingNames := []string{getControllerRBACResourceName()}
 		currentRoleBindingMap := make(map[string]*rbacv1.RoleBinding)
 		unwantedRoleBindings := []rbacv1.RoleBinding{{}}
 		reuseRoleBindingMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(roleBindingNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, false).Return(
 			currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoleBindings(unwantedRoleBindings).Return(fmt.Errorf("failed to remove role bindings"))
 
 		err := installer.createOrPatchTridentRoleBindings(controllingCRDetails, labels, false)
@@ -3672,13 +3717,14 @@ func TestCreateOrPatchTridentRoleBindings(t *testing.T) {
 	})
 
 	t.Run("failure creating/patching role binding", func(t *testing.T) {
-		roleBindingNames := []string{getControllerRBACResourceName()}
 		currentRoleBindingMap := make(map[string]*rbacv1.RoleBinding)
 		unwantedRoleBindings := []rbacv1.RoleBinding{}
 		reuseRoleBindingMap := make(map[string]bool)
 
-		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(roleBindingNames, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, false).Return(
 			currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, false).Return(
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoleBindings(unwantedRoleBindings).Return(nil)
 		mockK8sClient.EXPECT().PutRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(
 			fmt.Errorf("failed to put role binding"))
@@ -3690,19 +3736,20 @@ func TestCreateOrPatchTridentRoleBindings(t *testing.T) {
 	})
 
 	t.Run("successful role binding update (shouldUpdate=true)", func(t *testing.T) {
-		roleBindingNames := []string{getControllerRBACResourceName()}
 		currentRoleBindingMap := map[string]*rbacv1.RoleBinding{
-			roleBindingNames[0]: {},
+			controllerRoleBindingNames[0]: {},
 		}
 		unwantedRoleBindings := []rbacv1.RoleBinding{}
 		reuseRoleBindingMap := map[string]bool{
-			roleBindingNames[0]: true,
+			controllerRoleBindingNames[0]: true,
 		}
 
-		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(roleBindingNames, appLabel, true).Return(
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(controllerRoleBindingNames, appLabel, true).Return(
 			currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap, nil)
+		mockK8sClient.EXPECT().GetMultipleRoleBindingInformation(nodeRoleBindingNames, TridentNodeLabel, true).Return(
+			make(map[string]*rbacv1.RoleBinding), []rbacv1.RoleBinding{}, make(map[string]bool), nil)
 		mockK8sClient.EXPECT().RemoveMultipleRoleBindings(unwantedRoleBindings).Return(nil)
-		mockK8sClient.EXPECT().PutRoleBinding(currentRoleBindingMap[roleBindingNames[0]], reuseRoleBindingMap[roleBindingNames[0]], gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().PutRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(roleBindingNames))
 
 		err := installer.createOrPatchTridentRoleBindings(controllingCRDetails, labels, true)
 		assert.NoError(t, err, "Should not error when creating Trident role bindings with shouldUpdate=true")

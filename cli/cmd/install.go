@@ -691,6 +691,20 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write node linux service account YAML file; %v", err)
 	}
 
+	// Creating role (trident-namespaced) for node linux — events for lease Warnings, PSP use
+	nodeLinuxRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
+		daemonSetlabels, nil)
+	if err = writeFile(nodeLinuxRolePath, nodeLinuxRoleYAML); err != nil {
+		return fmt.Errorf("could not write node linux role YAML file; %v", err)
+	}
+
+	// Creating role-binding (trident-namespaced) for node linux
+	nodeLinuxRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
+		getNodeRBACResourceName(false), daemonSetlabels, nil)
+	if err = writeFile(nodeLinuxRoleBindingPath, nodeLinuxRoleBindingYAML); err != nil {
+		return fmt.Errorf("could not write node linux role binding YAML file; %v", err)
+	}
+
 	// Creating cluster role for node linux
 	nodeLinuxClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
 	if err = writeFile(nodeLinuxClusterRolePath, nodeLinuxClusterRoleYAML); err != nil {
@@ -857,6 +871,20 @@ func prepareYAMLFiles() error {
 			daemonSetlabels, nil, "")
 		if err = writeFile(nodeWindowsServiceAccountPath, nodeWindowsServiceAccountYAML); err != nil {
 			return fmt.Errorf("could not write node windows service account YAML file; %v", err)
+		}
+
+		// Creating role (trident-namespaced) for node windows
+		nodeWindowsRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(true),
+			daemonSetlabels, nil)
+		if err = writeFile(nodeWindowsRolePath, nodeWindowsRoleYAML); err != nil {
+			return fmt.Errorf("could not write node windows role YAML file; %v", err)
+		}
+
+		// Creating role-binding (trident-namespaced) for node windows
+		nodeWindowsRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
+			getNodeRBACResourceName(true), daemonSetlabels, nil)
+		if err = writeFile(nodeWindowsRoleBindingPath, nodeWindowsRoleBindingYAML); err != nil {
+			return fmt.Errorf("could not write node windows role binding YAML file; %v", err)
 		}
 
 		// Creating cluster role for node windows
@@ -1741,6 +1769,23 @@ func createRBACObjects() (returnError error) {
 	}
 	Log().WithFields(logFields).Info("Created node linux service account.")
 
+	// Create role (trident-namespaced) for node linux — events for lease Warnings
+	if createObjectFunc(nodeLinuxRolePath,
+		k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
+			daemonSetlabels, nil)) != nil {
+		returnError = fmt.Errorf("could not create node linux role; %v", returnError)
+		return returnError
+	}
+	Log().WithFields(logFields).Info("Created node linux role.")
+
+	// Create role binding (trident-namespaced) for node linux
+	if createObjectFunc(nodeLinuxRoleBindingPath,
+		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false), daemonSetlabels, nil)) != nil {
+		returnError = fmt.Errorf("could not create node linux role binding; %v", returnError)
+		return returnError
+	}
+	Log().WithFields(logFields).Info("Created node linux role binding.")
+
 	// Create cluster role for node linux
 	if createObjectFunc(nodeLinuxClusterRolePath,
 		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)) != nil {
@@ -1766,6 +1811,23 @@ func createRBACObjects() (returnError error) {
 			return returnError
 		}
 		Log().WithFields(logFields).Info("Created node windows service account.")
+
+		// Create role (trident-namespaced) for node windows
+		if createObjectFunc(nodeWindowsRolePath,
+			k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(true),
+				daemonSetlabels, nil)) != nil {
+			returnError = fmt.Errorf("could not create node windows role; %v", returnError)
+			return returnError
+		}
+		Log().WithFields(logFields).Info("Created node windows role.")
+
+		// Create role binding (trident-namespaced) for node windows
+		if createObjectFunc(nodeWindowsRoleBindingPath,
+			k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true), daemonSetlabels, nil)) != nil {
+			returnError = fmt.Errorf("could not create node windows role binding; %v", returnError)
+			return returnError
+		}
+		Log().WithFields(logFields).Info("Created node windows role binding.")
 
 		// Creating node windows cluster role
 		if createObjectFunc(nodeWindowsClusterRolePath,

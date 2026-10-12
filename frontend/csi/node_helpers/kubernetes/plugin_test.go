@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"k8s.io/client-go/kubernetes"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
@@ -596,22 +597,45 @@ func TestLockFor_RWXLUKSVolume_NilClient_ReturnsError(t *testing.T) {
 	assert.Contains(t, err.Error(), "k8s clients are nil")
 }
 
+// TestLockFor_RWXLUKSVolume_KubeClientWithoutNamespace_ReturnsError ensures we never
+// create leases in the empty/default namespace when k8sClients is missing or incomplete.
+func TestLockFor_RWXLUKSVolume_KubeClientWithoutNamespace_ReturnsError(t *testing.T) {
+	h := newLockForHelper(t)
+	// k8sClients nil → no clients
+	_, err := h.LockFor(context.Background(), "vol-1", "host-1", rwxLUKSPublishInfo())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "k8s clients are nil")
+
+	h.k8sClients = &clik8sclient.Clients{KubeClient: &kubernetes.Clientset{}} // Namespace empty
+	_, err = h.LockFor(context.Background(), "vol-1", "host-1", rwxLUKSPublishInfo())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "k8s namespace is empty")
+}
+
 // TestLockFor_RWXLUKSVolume_EmptyResourceID_ReturnsError ensures resourceID is validated
 // only for volumes that actually need a lease.
 func TestLockFor_RWXLUKSVolume_EmptyResourceID_ReturnsError(t *testing.T) {
 	h := newLockForHelper(t)
-	h.k8sClients = &clik8sclient.Clients{} // non-nil but KubeClient is nil
+	h.k8sClients = &clik8sclient.Clients{
+		Namespace:  "trident",
+		KubeClient: &kubernetes.Clientset{},
+	}
 	_, err := h.LockFor(context.Background(), "", "host-1", rwxLUKSPublishInfo())
 	require.Error(t, err)
+	assert.Contains(t, err.Error(), "resourceID is empty")
 }
 
 // TestLockFor_RWXLUKSVolume_EmptyHostID_ReturnsError ensures hostID is validated
 // only for volumes that actually need a lease.
 func TestLockFor_RWXLUKSVolume_EmptyHostID_ReturnsError(t *testing.T) {
 	h := newLockForHelper(t)
-	h.k8sClients = &clik8sclient.Clients{} // non-nil but KubeClient is nil
+	h.k8sClients = &clik8sclient.Clients{
+		Namespace:  "trident",
+		KubeClient: &kubernetes.Clientset{},
+	}
 	_, err := h.LockFor(context.Background(), "vol-1", "", rwxLUKSPublishInfo())
 	require.Error(t, err)
+	assert.Contains(t, err.Error(), "hostID is empty")
 }
 
 func newValidHelper(

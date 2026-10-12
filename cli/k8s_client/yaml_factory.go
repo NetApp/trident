@@ -311,6 +311,11 @@ metadata:
   {LABELS}
   {OWNER_REF}
 rules:
+  # Lease lifecycle Warnings are namespaced Events regarding Leases in the Trident
+  # namespace; keep this grant Role-scoped (not ClusterRole) for least privilege.
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
     verbs: ["use"]

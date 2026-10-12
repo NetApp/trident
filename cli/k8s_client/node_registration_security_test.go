@@ -60,6 +60,49 @@ func TestNodeClusterRoleCSI_ReadsOwnNodeForTopology(t *testing.T) {
 	assert.Equal(t, []string{"get"}, nodeRules[0].Verbs, "reading topology labels needs 'get' and nothing more")
 }
 
+func TestNodeRoleCSI_LeaseEventPermissions(t *testing.T) {
+	t.Parallel()
+
+	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
+	yamlDoc := GetRoleYAML("trident", "trident-node-linux", labels, nil)
+
+	var role rbacv1.Role
+	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
+
+	var found *rbacv1.PolicyRule
+	for i := range role.Rules {
+		rule := &role.Rules[i]
+		if containsAPIGroup(rule.APIGroups, "") && containsResource(rule.Resources, "events") {
+			found = rule
+			break
+		}
+	}
+	require.NotNil(t, found, "expected namespaced Role rule for events")
+	assert.ElementsMatch(t, []string{"create", "update", "patch"}, found.Verbs)
+}
+
+func TestNodeClusterRoleCSI_NoClusterScopedLeaseEventExtras(t *testing.T) {
+	t.Parallel()
+
+	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+
+	var role rbacv1.ClusterRole
+	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
+
+	for _, rule := range role.Rules {
+		if !containsAPIGroup(rule.APIGroups, "") {
+			continue
+		}
+		assert.False(t, containsResource(rule.Resources, "events"),
+			"events must be namespaced Role grants, not ClusterRole")
+		assert.False(t, containsResource(rule.Resources, "persistentvolumes"),
+			"node ClusterRole must not grant persistentvolumes for lease events")
+		assert.False(t, containsResource(rule.Resources, "persistentvolumeclaims"),
+			"node ClusterRole must not grant persistentvolumeclaims for lease events")
+	}
+}
+
 func containsAPIGroup(groups []string, name string) bool {
 	for _, g := range groups {
 		if strings.TrimSpace(g) == name {

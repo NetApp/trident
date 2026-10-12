@@ -894,6 +894,7 @@ func (nh *NVMeHandler) EnsureCryptsetupFormattedAndMappedOnHost(
 ) (bool, bool, error) {
 	Logc(ctx).Debug(">>>> nvme.EnsureCryptsetupFormattedAndMappedOnHost")
 	defer Logc(ctx).Debug("<<<< nvme.EnsureCryptsetupFormattedAndMappedOnHost")
+
 	// Initially, the device path raw device path for this NVMe namespace.
 	devicePath := publishInfo.DevicePath
 

@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/spf13/afero"
+	"k8s.io/client-go/tools/record"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
@@ -43,6 +45,8 @@ type helper struct {
 	publishedPaths    map[string]map[string]struct{}
 	enableForceDetach bool
 	mount             mount.Mount
+	eventRecorder     record.EventRecorder
+	eventRecorderOnce sync.Once
 
 	// Extended helpers
 	nodehelpers.VolumePublishManager
@@ -82,6 +86,9 @@ func (h *helper) LockFor(
 	if h.k8sClients == nil || h.k8sClients.KubeClient == nil {
 		return nil, fmt.Errorf("k8s clients are nil; cannot acquire distributed lock for %s", resourceID)
 	}
+	if h.k8sClients.Namespace == "" {
+		return nil, fmt.Errorf("k8s namespace is empty; cannot acquire distributed lock for %s", resourceID)
+	}
 	if resourceID == "" {
 		return nil, fmt.Errorf("resourceID is empty")
 	}
@@ -89,8 +96,16 @@ func (h *helper) LockFor(
 		return nil, fmt.Errorf("hostID is empty")
 	}
 
-	leaseClient := h.k8sClients.KubeClient.CoordinationV1().Leases(h.k8sClients.Namespace)
-	return distlock.NewLeaseLock(leaseClient, h.k8sClients.Namespace, hostID, resourceID), nil
+	namespace := h.k8sClients.Namespace
+	leaseClient := h.k8sClients.KubeClient.CoordinationV1().Leases(namespace)
+	h.ensureEventRecorder()
+	return distlock.NewLeaseLock(
+		leaseClient,
+		namespace,
+		hostID,
+		resourceID,
+		distlock.WithEventRecorder(&leaseObjectEventRecorder{recorder: h.eventRecorder}),
+	), nil
 }
 
 // NewHelper instantiates the Kubernetes CSI node helper.
@@ -144,6 +159,7 @@ func (h *helper) Activate() error {
 		Logc(ctx).WithError(err).Warn("Could not initialize kubernetes client; distributed locks will be unavailable.")
 	} else {
 		h.k8sClients = clients
+		h.ensureEventRecorder()
 	}
 
 	if err := h.reconcileVolumePublishInfo(ctx); err != nil {
