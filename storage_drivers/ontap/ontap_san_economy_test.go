@@ -5689,7 +5689,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
-		StoragePrefix:     new("storagePrefix_"),
+		StoragePrefix:     new("san-eco-"),
 	}
 	commonConfigJSON := `
 	{
@@ -5738,6 +5738,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
 	assert.NoError(t, result)
+	assert.Equal(t, "trident_lun_pool_san_eco_", d.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
 }
 
 func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {

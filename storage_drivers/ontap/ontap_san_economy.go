@@ -371,6 +371,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 
 	// Set up internal driver state
 	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
+	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "-", "_", -1) // ONTAP disallows hyphens
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
 	d.denyNewFlexvols, _ = strconv.ParseBool(d.Config.DenyNewVolumePools)
 
