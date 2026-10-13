@@ -59,6 +59,7 @@ type ClientConfig struct {
 	ContextBasedZapiRecords        int
 	DebugTraceFlags                map[string]bool
 	StorageAPITimeout              time.Duration
+	SQLBypass                      bool
 	unitTestTransportConfigSchemes string
 }
 
