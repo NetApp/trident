@@ -961,7 +961,13 @@ func (d *NASStorageDriver) Publish(
 		publishInfo.MountOptions = mountOptions
 	}
 
-	return d.publishFlexVolShare(ctx, name, volConfig, publishInfo)
+	// A read-only clone is a snapshot view, not a separate FlexVol. Its export policy lives on the source.
+	flexvol := name
+	if volConfig.ReadOnlyClone {
+		flexvol = volConfig.CloneSourceVolumeInternal
+	}
+
+	return d.publishFlexVolShare(ctx, flexvol, volConfig, publishInfo)
 }
 
 // Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
@@ -979,7 +985,12 @@ func (d *NASStorageDriver) Unpublish(
 		return nil
 	}
 
-	volExportPolicyName := volConfig.InternalName
+	// Unpublish must update the source FlexVol that owns the snapshot, not the clone's synthetic name.
+	flexvol := volConfig.InternalName
+	if volConfig.ReadOnlyClone {
+		flexvol = volConfig.CloneSourceVolumeInternal
+	}
+	volExportPolicyName := flexvol
 	emptyPolicyName := getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
 	fields := LogFields{
@@ -995,13 +1006,13 @@ func (d *NASStorageDriver) Unpublish(
 	}
 
 	// Get actual volume state from ONTAP (source of truth)
-	volume, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
+	volume, err := d.API.VolumeInfo(ctx, flexvol)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Error checking for existing volume.")
 		return err
 	}
 	if volume == nil {
-		Logc(ctx).WithField("volume", volConfig.InternalName).Debug("Volume not found.")
+		Logc(ctx).WithField("volume", flexvol).Debug("Volume not found.")
 		return errors.NotFoundError("volume not found")
 	}
 
@@ -1030,7 +1041,7 @@ func (d *NASStorageDriver) Unpublish(
 	// Volume is using a backend-based policy or migrating to using autoExportPolicies
 	if len(publishInfo.Nodes) == 0 {
 		Logc(ctx).Debug("No remaining nodes, switching to empty policy.")
-		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
 			return err
 		}
 		volConfig.ExportPolicy = emptyPolicyName
@@ -1051,6 +1062,12 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> unpublishVolumePolicy")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< unpublishVolumePolicy")
+
+	// The clone has no FlexVol of its own; policy cleanup must target the shared source volume.
+	flexvol := volConfig.InternalName
+	if volConfig.ReadOnlyClone {
+		flexvol = volConfig.CloneSourceVolumeInternal
+	}
 
 	// Ensure empty policy exists BEFORE acquiring volume policy lock.
 	// This prevents nested locking (volume_policy -> empty_policy) which could
@@ -1077,7 +1094,7 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 		Logc(ctx).WithField("policy", policyName).Debug(
 			"Export policy already deleted, switching volume to empty policy.")
 		// Policy already gone - just update the volume to use empty policy
-		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
 			return err
 		}
 		volConfig.ExportPolicy = emptyPolicyName
@@ -1100,7 +1117,7 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 	// If no rules remain, clean up the policy
 	if len(allExportRules) == 0 {
 		// First, switch volume to empty policy
-		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
 			return err
 		}
 
@@ -1186,8 +1203,10 @@ func (d *NASStorageDriver) publishFlexVolShare(
 	flexVolPolicyName := flexvol
 	// Trident versions <23.04 may not have the exportPolicy field set in the volume config,
 	// if this is the case we need to use the export policy from the volume info from ONTAP.
-	if volConfig.ExportPolicy != backendPolicyName && volConfig.ExportPolicy != flexvol &&
-		volConfig.ExportPolicy != getEmptyExportPolicyName(*d.Config.StoragePrefix) {
+	// The clone's cached policy can lag the shared source. Refresh it so republishing cannot replace rules
+	// still required by the source or sibling clones.
+	if volConfig.ReadOnlyClone || (volConfig.ExportPolicy != backendPolicyName && volConfig.ExportPolicy != flexvol &&
+		volConfig.ExportPolicy != getEmptyExportPolicyName(*d.Config.StoragePrefix)) {
 		volume, err := d.API.VolumeInfo(ctx, flexvol)
 		if err != nil {
 			return err

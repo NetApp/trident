@@ -5818,6 +5818,64 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 	assert.NoError(t, result, "Expected no error in publishFlexVolShare, got error")
 }
 
+func TestPublishFlexVolShare_ReadOnlyCloneUsesSourceVolume(t *testing.T) {
+	sourceVolumeName := "source_volume"
+	sourceNodeIP := "1.1.1.2"
+	cloneNodeIP := "1.1.1.1"
+	backendPolicy := getExportPolicyName(BackendUUID)
+
+	publishInfo := models.VolumePublishInfo{
+		BackendUUID: BackendUUID,
+		Nodes:       []*models.Node{{Name: "node1", IPs: []string{cloneNodeIP}}},
+		HostName:    "node1",
+	}
+	volConfig := &storage.VolumeConfig{
+		CloneSourceVolumeInternal: sourceVolumeName,
+		ExportPolicy:              "",
+		ReadOnlyClone:             true,
+	}
+
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	volConfig.ExportPolicy = getEmptyExportPolicyName(*driver.Config.StoragePrefix)
+	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, backendPolicy).Return(true, nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(ctx, backendPolicy).Return(map[int]string{1: sourceNodeIP}, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), backendPolicy, cloneNodeIP, gomock.Any()).After(ruleListCall).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, backendPolicy).Return(nil)
+
+	err := driver.Publish(ctx, volConfig, &publishInfo)
+
+	assert.NoError(t, err)
+	assert.Equal(t, backendPolicy, volConfig.ExportPolicy)
+}
+
+func TestUnpublish_ReadOnlyCloneUsesSourceVolume(t *testing.T) {
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	sourceVolumeName := "source_volume"
+	backendPolicy := getExportPolicyName("1234")
+
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.AutoExportPolicy = true
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "readonly_clone",
+		CloneSourceVolumeInternal: sourceVolumeName,
+		ReadOnlyClone:             true,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, "test_empty")
+
+	err := driver.Unpublish(ctx, volConfig, &models.VolumePublishInfo{HostName: "node1", BackendUUID: "1234"})
+	assert.NoError(t, err)
+	assert.Equal(t, "test_empty", volConfig.ExportPolicy)
+}
+
 func TestPublishFlexVolShare_WithUnmanagedPublishInfo(t *testing.T) {
 	volName := "testVol"
 
