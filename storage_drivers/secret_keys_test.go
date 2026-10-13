@@ -40,9 +40,10 @@ var benignCredentialNamedKeys = map[string]string{
 	"trustedcacertificate": "a CA certificate is distributed to peers rather than kept secret",
 
 	// Names that only look like credentials.
-	"usechap":   "boolean selecting CHAP; the CHAP values are the chap*Secret and chap*Username keys",
-	"userest":   "boolean selecting the ONTAP REST backend",
-	"userstate": "requested backend state, online or offline",
+	"usechap":          "boolean selecting CHAP; the CHAP values are the chap*Secret and chap*Username keys",
+	"userest":          "boolean selecting the ONTAP REST backend",
+	"userestsqlbypass": "boolean adding SQL=false to ONTAP REST name lookups",
+	"userstate":        "requested backend state, online or offline",
 	"customerencryptionkeys": "azure-netapp-files maps a NetApp account to a Key Vault resource name; " +
 		"azure_anf.go passes the value to api.CreateKeyVaultEndpoint rather than using it as key material",
 }
