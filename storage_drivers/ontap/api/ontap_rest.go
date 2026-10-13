@@ -198,6 +198,10 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 			RootCAs:            caCertPool,
 		},
 	}
+	// When enabled, ask ONTAP to bypass its SQL-backed name lookup on name-filtered GETs.
+	if config.SQLBypass {
+		transport = NewSQLBypassTransport(transport)
+	}
 	// Create a metrics transport that captures request metrics.
 	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	// Create a retry transport round tripper that uses semaphores for rate limiting.
@@ -269,6 +273,8 @@ func NewGcnvRestClient(ctx context.Context, config ClientConfig, SVM, driverName
 
 	// gcnvTransport is the innermost (base) transport; wrap outward only with Metrics →
 	// LimitedRetry → ClientApp so the proxy rewrite/auth stays at the bottom of the chain.
+	// config.SQLBypass is deliberately not applied here: GCNV proxies ONTAP REST through Google
+	// rather than reaching an ONTAP management LIF directly, so SQL=false is not sent on this path.
 	var transport = gcnvTransport
 	// Create a metrics transport that captures request metrics.
 	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetGCNV))
