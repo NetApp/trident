@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/models"
@@ -99,6 +100,19 @@ type Client interface {
 
 	GetAutogrowPolicy(ctx context.Context, agPolicyName string) (*storage.AutogrowPolicyPersistent, error)
 	GetAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyPersistent, error)
+
+	AddObjectStore(ctx context.Context, store object.Store) error
+	GetObjectStores(ctx context.Context) ([]object.Store, error)
+	UpdateObjectStore(ctx context.Context, store object.Store) error
+	DeleteObjectStore(ctx context.Context, store object.Store) error
+
+	GetBuckets(ctx context.Context) ([]*object.Bucket, error)
+	UpsertBucket(ctx context.Context, bucket *object.Bucket) error
+	DeleteBucket(ctx context.Context, bucket *object.Bucket) error
+
+	GetBucketAccesses(ctx context.Context) ([]*object.BucketAccess, error)
+	UpsertBucketAccess(ctx context.Context, access *object.BucketAccess) error
+	DeleteBucketAccess(ctx context.Context, access *object.BucketAccess) error
 }
 
 type CRDClient interface {

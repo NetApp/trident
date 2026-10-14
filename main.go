@@ -18,9 +18,11 @@ import (
 	"time"
 
 	"github.com/netapp/trident/acp"
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	nodecore "github.com/netapp/trident/core/node"
+	"github.com/netapp/trident/cosi"
 	"github.com/netapp/trident/frontend"
 	controllercrd "github.com/netapp/trident/frontend/crd/controller"
 	nodecrd "github.com/netapp/trident/frontend/crd/node"
@@ -35,6 +37,7 @@ import (
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
+	"github.com/netapp/trident/frontend/objectprovisioner"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
@@ -143,6 +146,11 @@ var (
 		"Interval at which the NVMe self-healing thread is invoked")
 	enableDataLIFRefresh = flag.Bool("enable_datalif_refresh", false,
 		"Enable refreshing NVMe data LIFs during backend reconciliation.")
+
+	// COSI (Container Object Storage Interface)
+	enableCOSI = flag.Bool("enable_cosi", false, "Enable the COSI frontend for object bucket "+
+		"provisioning. Requires the COSI CRDs to be installed, and that no other COSI "+
+		"controller or sidecar is running in the cluster.")
 
 	// core
 	enableConcurrency          = flag.Bool("enable_concurrency", false, "Enable Concurrency in trident.")
@@ -690,6 +698,21 @@ func main() {
 					crdController.SetForceDetach(true)
 				}
 
+				// COSI runs only on the controller: it watches cluster-scoped bucket objects
+				// and talks to the backend, neither of which a node does.
+				if *enableCOSI {
+					cosiFrontend, err := newCOSIFrontend(orchestrator)
+					if err != nil {
+						// Deliberately not fatal. COSI is opt-in and additive; refusing to
+						// start Trident over it would take CSI provisioning down with it.
+						Log().WithError(err).Error("Unable to create the COSI frontend; " +
+							"object storage provisioning will be unavailable.")
+					} else {
+						orchestrator.AddFrontend(ctx, cosiFrontend)
+						postBootstrapFrontends = append(postBootstrapFrontends, cosiFrontend)
+					}
+				}
+
 			case csi.CSINode:
 				crdController, err := nodecrd.NewTridentNodeCrdController(
 					*k8sAPIServer, *k8sConfigPath, *csiNodeName, nodeCore, nodeHelper, *autogrowPeriod,
@@ -767,6 +790,7 @@ func main() {
 			if errors.IsTerminalReconciliationError(err) {
 				Log().WithError(err).Fatal("Activation failed for one or more helper frontends")
 			}
+			Log().WithFields(LogFields{"name": f.GetName()}).WithError(err).Error("Failed to activate frontend.")
 		}
 	}
 
@@ -802,4 +826,18 @@ func main() {
 	if err = storeClient.Stop(); err != nil {
 		Log().Error(err)
 	}
+}
+
+// newCOSIFrontend builds the COSI frontend, backed by orchestrator.
+//
+// The Kubernetes config comes from the shared client factory rather than being rebuilt here, so
+// COSI's API traffic carries the same metrics wrapping and connection settings as the rest of
+// Trident, and cosi/ never imports anything beyond its agreed seam.
+func newCOSIFrontend(orchestrator core.Orchestrator) (frontend.Plugin, error) {
+	clients, err := k8sclient.CreateK8SClients(*k8sAPIServer, *k8sConfigPath, "")
+	if err != nil {
+		return nil, fmt.Errorf("create Kubernetes clients for COSI: %w", err)
+	}
+
+	return cosi.NewFrontend(objectprovisioner.New(orchestrator), clients.RestConfig)
 }

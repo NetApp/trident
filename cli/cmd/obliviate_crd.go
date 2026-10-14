@@ -5,6 +5,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,8 +13,12 @@ import (
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	cosicrd "github.com/netapp/trident/cosi/crd"
 	. "github.com/netapp/trident/logging"
 	operatorCrdClient "github.com/netapp/trident/operator/crd/client/clientset/versioned"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -31,6 +36,10 @@ var (
 
 	// operatorCrdClient is a clientset for our own API group
 	operatorCrdClientSet operatorCrdClient.Interface
+
+	// dynamicClient reaches custom resources Trident has no typed clientset for, currently the
+	// COSI ones.
+	dynamicClient dynamic.Interface
 
 	skipCRDs []string
 )
@@ -83,11 +92,12 @@ var obliviateCRDCmd = &cobra.Command{
 
 func ObliviateCRDs(
 	kubeClientVal k8sclient.KubernetesClient, crdClientsetVal crdclient.Interface, operatorCrdClientSetVal operatorCrdClient.Interface,
-	timeout time.Duration, skipCRDs []string,
+	dynamicClientVal dynamic.Interface, timeout time.Duration, skipCRDs []string,
 ) error {
 	k8sClient = kubeClientVal
 	crdClientset = crdClientsetVal
 	operatorCrdClientSet = operatorCrdClientSetVal
+	dynamicClient = dynamicClientVal
 	k8sTimeout = timeout
 
 	return obliviateCRDs(skipCRDs)
@@ -98,6 +108,9 @@ func obliviateCRDs(skipCRDs []string) error {
 		"tridentversions.trident.netapp.io",
 		"tridentbackendconfigs.trident.netapp.io",
 		"tridentbackends.trident.netapp.io",
+		"tridentbucketaccesses.trident.netapp.io",
+		"tridentbuckets.trident.netapp.io",
+		"tridentobjectstores.trident.netapp.io",
 		"tridentstorageclasses.trident.netapp.io",
 		"tridentmirrorrelationships.trident.netapp.io",
 		"tridentactionmirrorupdates.trident.netapp.io",
@@ -118,6 +131,16 @@ func obliviateCRDs(skipCRDs []string) error {
 		"tridentautogrowpolicies.trident.netapp.io",
 		"tridentautogrowrequestinternals.trident.netapp.io",
 	}
+
+	// COSI CRDs are obliviated with the rest, but only the ones Trident installed. The filter
+	// has to happen here rather than inside the delete phases, because deleting a CRD takes
+	// every object under it along with it.
+	cosiCRDNames, err := tridentManagedCOSICRDNames()
+	if err != nil {
+		return err
+	}
+	crdNames = append(crdNames, cosiCRDNames...)
+
 	skipCRDMap := make(map[string]bool)
 	for _, crd := range skipCRDs {
 		skipCRDMap[crd] = true
@@ -145,6 +168,38 @@ func obliviateCRDs(skipCRDs []string) error {
 	return nil
 }
 
+// tridentManagedCOSICRDNames returns the COSI CRDs obliviate is allowed to remove: the ones
+// Trident installed, plus any that are absent, which both delete phases treat as a no-op.
+//
+// A COSI CRD that exists without Trident's managed-by label belongs to another provider. Deleting
+// it would take that provider's objects with it, and there is no way back: a CRD deletionTimestamp
+// cannot be revoked, so even a CRD wedged on someone else's finalizer stays doomed.
+func tridentManagedCOSICRDNames() ([]string, error) {
+	cosiCRDNames := k8sclient.COSICRDNames()
+	names := make([]string, 0, len(cosiCRDNames))
+
+	for _, crdName := range cosiCRDNames {
+		crd, err := k8sClient.GetCRD(crdName)
+		if err != nil {
+			if isNotFoundError(err) {
+				names = append(names, crdName)
+				continue
+			}
+			return nil, fmt.Errorf("could not retrieve COSI CRD %s; %v", crdName, err)
+		}
+
+		if !cosicrd.IsTridentManaged(crd.Labels) {
+			Log().WithField("CRD", crdName).Warning(
+				"COSI CRD was not installed by Trident; leaving it and its custom resources alone.")
+			continue
+		}
+
+		names = append(names, crdName)
+	}
+
+	return names, nil
+}
+
 func deleteCRs(filteredCRDs []string) error {
 	for _, crd := range filteredCRDs {
 		switch crd {
@@ -158,6 +213,18 @@ func deleteCRs(filteredCRDs []string) error {
 			}
 		case "tridentbackends.trident.netapp.io":
 			if err := deleteBackends(); err != nil {
+				return err
+			}
+		case "tridentobjectstores.trident.netapp.io":
+			if err := deleteObjectStores(); err != nil {
+				return err
+			}
+		case "tridentbuckets.trident.netapp.io":
+			if err := deleteBuckets(); err != nil {
+				return err
+			}
+		case "tridentbucketaccesses.trident.netapp.io":
+			if err := deleteBucketAccesses(); err != nil {
 				return err
 			}
 		case "tridentstorageclasses.trident.netapp.io":
@@ -237,8 +304,244 @@ func deleteCRs(filteredCRDs []string) error {
 				return err
 			}
 		default:
+			if slices.Contains(k8sclient.COSICRDNames(), crd) {
+				if err := deleteCOSICRs(crd); err != nil {
+					return err
+				}
+				continue
+			}
 			Log().WithField("CRD", crd).Debug("CRD not present.")
 		}
+	}
+
+	return nil
+}
+
+func deleteObjectStores() error {
+	crd := "tridentobjectstores.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	objectStores, err := crdClientset.TridentV1().TridentObjectStores(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(objectStores.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, objectStore := range objectStores.Items {
+		if objectStore.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentObjectStores(objectStore.Namespace).Delete(
+				ctx(), objectStore.Name, deleteOpts,
+			)
+		}
+	}
+
+	objectStores, err = crdClientset.TridentV1().TridentObjectStores(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, objectStore := range objectStores.Items {
+		if objectStore.HasTridentFinalizers() {
+			crCopy := objectStore.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentObjectStores(objectStore.Namespace).Update(
+				ctx(), crCopy, updateOpts,
+			)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentObjectStores(objectStore.Namespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), objectStore.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteBuckets() error {
+	crd := "tridentbuckets.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil || !exists {
+		return err
+	}
+	buckets, err := crdClientset.TridentV1().TridentBuckets(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+	for _, bucket := range buckets.Items {
+		if err := crdClientset.TridentV1().TridentBuckets(bucket.Namespace).Delete(
+			ctx(), bucket.Name, deleteOpts,
+		); err != nil && !isNotFoundError(err) {
+			return err
+		}
+	}
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteBucketAccesses() error {
+	crd := "tridentbucketaccesses.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil || !exists {
+		return err
+	}
+	accesses, err := crdClientset.TridentV1().TridentBucketAccesses(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+	for _, access := range accesses.Items {
+		if err := crdClientset.TridentV1().TridentBucketAccesses(access.Namespace).Delete(
+			ctx(), access.Name, deleteOpts,
+		); err != nil && !isNotFoundError(err) {
+			return err
+		}
+	}
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+// deleteCOSICRs clears finalizers from every custom resource of one COSI CRD, so that deleting
+// the CRD afterwards is not blocked.
+//
+// Trident's own CRs each get a typed helper above. COSI CRs get one generic function over the
+// dynamic client instead, because pulling the COSI clientset into tridentctl would spread the
+// COSI dependency into the CLI for the sake of a cleanup path.
+//
+// The finalizers matter here more than for Trident's CRDs: COSI puts a protection finalizer on
+// every Bucket and BucketAccess, and obliviate runs after Trident is gone, so there is nothing
+// left to remove them. Deleting the CRD without this would hang.
+func deleteCOSICRs(crdName string) error {
+	logFields := LogFields{"CRD": crdName}
+
+	exists, err := k8sClient.CheckCRDExists(crdName)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	crd, err := k8sClient.GetCRD(crdName)
+	if err != nil {
+		return err
+	}
+
+	// Only clean up what Trident installed. An unlabelled CRD belongs to another COSI
+	// provider, and obliviating Trident is no reason to delete their objects.
+	if !cosicrd.IsTridentManaged(crd.Labels) {
+		Log().WithFields(logFields).Warning("COSI CRD was not installed by Trident; leaving it alone.")
+		return nil
+	}
+
+	gvr := schema.GroupVersionResource{
+		Group:    crd.Spec.Group,
+		Version:  cosicrd.Version,
+		Resource: crd.Spec.Names.Plural,
+	}
+
+	list, err := dynamicClient.Resource(gvr).List(ctx(), metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("could not list %s; %v", crdName, err)
+	}
+
+	for i := range list.Items {
+		item := list.Items[i]
+
+		// A BucketAccess owns a credentials Secret that carries the same finalizer. The
+		// Secret is not a COSI resource, so deleting the CRDs does nothing for it, and a
+		// namespace holding one stays in Terminating forever. Clear it while the
+		// BucketAccess still says where it is.
+		if crdName == cosicrd.BucketAccessCRDName {
+			if err = clearCOSISecretFinalizers(&item); err != nil {
+				return err
+			}
+		}
+
+		if len(item.GetFinalizers()) == 0 {
+			continue
+		}
+
+		item.SetFinalizers(nil)
+		if _, err = dynamicClient.Resource(gvr).Namespace(item.GetNamespace()).
+			Update(ctx(), &item, metav1.UpdateOptions{}); err != nil {
+			return fmt.Errorf("could not remove finalizers from %s %s; %v", crdName, item.GetName(), err)
+		}
+
+		Log().WithFields(logFields).WithField("name", item.GetName()).Debug("Removed finalizers.")
+	}
+
+	Log().WithFields(logFields).Info("Cleared COSI custom resources.")
+
+	return nil
+}
+
+// secretGVR addresses core Secrets through the dynamic client.
+var secretGVR = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}
+
+// clearCOSISecretFinalizers removes the COSI protection finalizer from the credentials Secrets
+// a BucketAccess names.
+//
+// The Secret names are read off the BucketAccess rather than found by listing Secrets, because
+// the names are chosen by whoever wrote the BucketAccess and a cluster-wide Secret list is an
+// expensive and privileged thing to do for a cleanup path.
+func clearCOSISecretFinalizers(access *unstructured.Unstructured) error {
+	claims, found, err := unstructured.NestedSlice(access.Object, "spec", "bucketClaims")
+	if err != nil || !found {
+		return nil
+	}
+
+	for _, entry := range claims {
+		claim, ok := entry.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		secretName, _, _ := unstructured.NestedString(claim, "accessSecretName")
+		if secretName == "" {
+			continue
+		}
+
+		secrets := dynamicClient.Resource(secretGVR).Namespace(access.GetNamespace())
+
+		secret, err := secrets.Get(ctx(), secretName, metav1.GetOptions{})
+		if err != nil {
+			if isNotFoundError(err) {
+				continue
+			}
+			return fmt.Errorf("could not retrieve COSI credentials secret %s; %v", secretName, err)
+		}
+
+		if len(secret.GetFinalizers()) == 0 {
+			continue
+		}
+
+		secret.SetFinalizers(nil)
+		if _, err = secrets.Update(ctx(), secret, metav1.UpdateOptions{}); err != nil {
+			return fmt.Errorf("could not remove finalizers from COSI credentials secret %s; %v",
+				secretName, err)
+		}
+
+		Log().WithField("secret", secretName).Debug("Removed finalizers from COSI credentials secret.")
 	}
 
 	return nil

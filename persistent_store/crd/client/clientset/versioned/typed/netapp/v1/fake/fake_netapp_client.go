@@ -5,10 +5,9 @@
 package fake
 
 import (
+	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
-
-	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 )
 
 type FakeTridentV1 struct {
@@ -39,6 +38,14 @@ func (c *FakeTridentV1) TridentBackendConfigs(namespace string) v1.TridentBacken
 	return &FakeTridentBackendConfigs{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentBuckets(namespace string) v1.TridentBucketInterface {
+	return &FakeTridentBuckets{c, namespace}
+}
+
+func (c *FakeTridentV1) TridentBucketAccesses(namespace string) v1.TridentBucketAccessInterface {
+	return &FakeTridentBucketAccesses{c, namespace}
+}
+
 func (c *FakeTridentV1) TridentGroupSnapshots(namespace string) v1.TridentGroupSnapshotInterface {
 	return &FakeTridentGroupSnapshots{c, namespace}
 }
@@ -57,6 +64,10 @@ func (c *FakeTridentV1) TridentNodeRemediations(namespace string) v1.TridentNode
 
 func (c *FakeTridentV1) TridentNodeRemediationTemplates(namespace string) v1.TridentNodeRemediationTemplateInterface {
 	return &FakeTridentNodeRemediationTemplates{c, namespace}
+}
+
+func (c *FakeTridentV1) TridentObjectStores(namespace string) v1.TridentObjectStoreInterface {
+	return &FakeTridentObjectStores{c, namespace}
 }
 
 func (c *FakeTridentV1) TridentSnapshots(namespace string) v1.TridentSnapshotInterface {

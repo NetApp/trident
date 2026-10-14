@@ -11,6 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
+	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -279,6 +280,14 @@ const (
 	KubernetesVersionMin = "v1.27"
 	KubernetesVersionMax = "v1.36"
 
+	// KubernetesVersionMinCOSI is the oldest Kubernetes that can run COSI.
+	//
+	// Higher than KubernetesVersionMin because the COSI CRDs validate name and namespace
+	// reference fields with the CEL format library, which no API server before 1.32 provides.
+	// An older cluster rejects the CRDs outright, with a compilation error that says nothing
+	// about versions, so Trident checks first and says so plainly.
+	KubernetesVersionMinCOSI = "v1.32"
+
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry          = "registry.k8s.io/sig-storage"
 	CSISidecarProvisionerImageTag         = "csi-provisioner:v6.3.0"
@@ -393,6 +402,7 @@ var (
 	BaseURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
 	VersionURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
 	BackendURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
+	ObjectStoreURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/objectstore"
 	BackendUUIDURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
 	VolumeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
 	TransactionURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
@@ -456,6 +466,7 @@ var (
 		"ontap-nas-economy",
 		"ontap-san-economy",
 		"solidfire-san",
+		"storage-grid",
 	}
 
 	// Absolute max age for ANY TAGRI (safety net to prevent stuck states) before forced deletion
@@ -583,6 +594,40 @@ func version() string {
 	}
 
 	return version
+}
+
+// ValidateKubernetesVersionForCOSI reports whether a cluster is new enough to run COSI.
+//
+// This floor is COSI's, not Trident's: the rest of Trident runs happily on a cluster too old
+// for the COSI CRDs. Callers should treat a failure here as "do not enable COSI", never as
+// "do not install Trident".
+func ValidateKubernetesVersionForCOSI(k8sVersion *versionutils.Version) error {
+	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
+	minCOSIVersion := versionutils.MustParseMajorMinorVersion(KubernetesVersionMinCOSI)
+
+	if k8sMMVersion.LessThan(minCOSIVersion) {
+		return fmt.Errorf("COSI requires Kubernetes %s or later, but this cluster is %s. The COSI "+
+			"custom resource definitions use CEL validation that older API servers cannot "+
+			"compile. Install Trident without COSI enabled, or upgrade the cluster",
+			minCOSIVersion.ToMajorMinorString(), k8sMMVersion.ToMajorMinorString())
+	}
+
+	return nil
+}
+
+// ValidateKubernetesVersionForCOSIFromInfo is ValidateKubernetesVersionForCOSI over the version
+// a discovery client reports.
+//
+// It exists so callers do not have to parse the version themselves. That matters for the COSI
+// frontend in particular: cosi/ is deliberately limited to importing config, frontend, and
+// logging, and this keeps the version check on the config side of that line.
+func ValidateKubernetesVersionForCOSIFromInfo(versionInfo *k8sversion.Info) error {
+	k8sVersion, err := versionutils.ParseSemantic(versionInfo.GitVersion)
+	if err != nil {
+		return err
+	}
+
+	return ValidateKubernetesVersionForCOSI(k8sVersion)
 }
 
 // IsValidContainerName checks if the container name is a valid Trident container including both controller and node pods.

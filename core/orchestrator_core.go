@@ -27,6 +27,7 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
@@ -8119,6 +8120,46 @@ func (o *TridentOrchestrator) SetLogLayers(ctx context.Context, layers string) e
 	}
 
 	return nil
+}
+
+func (o *TridentOrchestrator) AddOrUpdateObjectStore(_ context.Context, _ object.Store) (object.Store, error) {
+	return nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) DeleteObjectStore(_ context.Context, _ string) error {
+	return errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) GetObjectStore(_ context.Context, _ string) (object.Store, error) {
+	return nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) ListObjectStores(_ context.Context) ([]object.Store, error) {
+	return nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) AddBucket(
+	_ context.Context, _ *object.Bucket, _ map[string]string,
+) (*object.Bucket, error) {
+	return nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) GetBucket(_ context.Context, _ string) (*object.Bucket, error) {
+	return nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) DeleteBucket(_ context.Context, _ string) error {
+	return errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) GrantBucketAccess(
+	_ context.Context, _ []object.BucketAccessMode, _ string,
+) (*object.BucketAccess, *object.S3BucketAccessSecret, error) {
+	return nil, nil, errors.UnsupportedError("object store is not supported on this orchestrator engine")
+}
+
+func (o *TridentOrchestrator) RevokeBucketAccess(_ context.Context, _ string) error {
+	return errors.UnsupportedError("object store is not supported on this orchestrator engine")
 }
 
 // ============================================================================

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/models"
@@ -37,6 +38,18 @@ type Orchestrator interface {
 		ctx context.Context, backendName, backendState, userBackendState string,
 	) (storageBackendExternal *storage.BackendExternal, err error)
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
+
+	AddOrUpdateObjectStore(ctx context.Context, store object.Store) (object.Store, error)
+	DeleteObjectStore(ctx context.Context, storeName string) error
+	GetObjectStore(ctx context.Context, storeName string) (object.Store, error)
+	ListObjectStores(ctx context.Context) ([]object.Store, error)
+	AddBucket(ctx context.Context, bucket *object.Bucket, params map[string]string) (*object.Bucket, error)
+	GetBucket(ctx context.Context, bucketName string) (*object.Bucket, error)
+	DeleteBucket(ctx context.Context, bucketName string) error
+	GrantBucketAccess(
+		ctx context.Context, bucketAccessModes []object.BucketAccessMode, bucketAccessName string,
+	) (*object.BucketAccess, *object.S3BucketAccessSecret, error)
+	RevokeBucketAccess(ctx context.Context, bucketAccessName string) error
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *models.VolumeUpdateInfo) error

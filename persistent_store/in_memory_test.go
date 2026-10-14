@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/object"
+	objectfake "github.com/netapp/trident/object/drivers/fake"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -1593,4 +1595,70 @@ func TestInMemoryClient_GetAutogrowPolicies_AllStates(t *testing.T) {
 	assert.Equal(t, storage.AutogrowPolicyStateSuccess, policyStates["success-policy"])
 	assert.Equal(t, storage.AutogrowPolicyStateFailed, policyStates["failed-policy"])
 	assert.Equal(t, storage.AutogrowPolicyStateDeleting, policyStates["deleting-policy"])
+}
+
+func TestInMemoryClient_ObjectStoreCRUD(t *testing.T) {
+	client := NewInMemoryClient()
+	ctx := testCtx()
+
+	store, err := objectfake.NewObjectDriver(
+		ctx, []byte(`{"user":"alice","password":"secret"}`),
+		[]byte(`{"objectStoreName":"store1","endpoint":"https://localhost"}`),
+	)
+	require.NoError(t, err)
+	require.NoError(t, store.Initialize(ctx))
+
+	stores, err := client.GetObjectStores(ctx)
+	require.NoError(t, err)
+	assert.Empty(t, stores)
+
+	require.NoError(t, client.AddObjectStore(ctx, store))
+	err = client.AddObjectStore(ctx, store)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), alreadyExistsError)
+
+	stores, err = client.GetObjectStores(ctx)
+	require.NoError(t, err)
+	require.Len(t, stores, 1)
+	assert.Equal(t, store.Name(), stores[0].Name())
+	assert.Equal(t, store.StoreUUID(), stores[0].StoreUUID())
+
+	store.SetState(object.StoreStateDeleting)
+	require.NoError(t, client.UpdateObjectStore(ctx, store))
+
+	bucket := &object.Bucket{Name: "bucket1", StoreName: store.Name()}
+	require.NoError(t, client.UpsertBucket(ctx, bucket))
+	require.NoError(t, client.UpsertBucket(ctx, bucket))
+	listedBuckets, err := client.GetBuckets(ctx)
+	require.NoError(t, err)
+	require.Len(t, listedBuckets, 1)
+	assert.Equal(t, bucket.Name, listedBuckets[0].Name)
+	assert.Equal(t, bucket.StoreName, listedBuckets[0].StoreName)
+	listedBuckets[0].StoreName = "mutated"
+	rereadBuckets, err := client.GetBuckets(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, store.Name(), rereadBuckets[0].StoreName)
+	require.NoError(t, client.DeleteBucket(ctx, bucket))
+	listedBuckets, err = client.GetBuckets(ctx)
+	require.NoError(t, err)
+	assert.Empty(t, listedBuckets)
+
+	access := &object.BucketAccess{Name: "access1", StoreName: store.Name()}
+	require.NoError(t, client.UpsertBucketAccess(ctx, access))
+	listedAccesses, err := client.GetBucketAccesses(ctx)
+	require.NoError(t, err)
+	require.Len(t, listedAccesses, 1)
+	assert.Equal(t, access.Name, listedAccesses[0].Name)
+	listedAccesses[0].StoreName = "mutated"
+	rereadAccesses, err := client.GetBucketAccesses(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, store.Name(), rereadAccesses[0].StoreName)
+	require.NoError(t, client.DeleteBucketAccess(ctx, access))
+	listedAccesses, err = client.GetBucketAccesses(ctx)
+	require.NoError(t, err)
+	assert.Empty(t, listedAccesses)
+
+	require.NoError(t, client.DeleteObjectStore(ctx, store))
+	err = client.UpdateObjectStore(ctx, store)
+	assert.Error(t, err)
 }

@@ -16,6 +16,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -506,4 +507,44 @@ func (c *PassthroughClient) GetAutogrowPolicy(context.Context, string) (*storage
 
 func (c *PassthroughClient) GetAutogrowPolicies(context.Context) ([]*storage.AutogrowPolicyPersistent, error) {
 	return make([]*storage.AutogrowPolicyPersistent, 0), nil
+}
+
+func (c *PassthroughClient) AddObjectStore(context.Context, object.Store) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetObjectStores(context.Context) ([]object.Store, error) {
+	return make([]object.Store, 0), nil
+}
+
+func (c *PassthroughClient) UpdateObjectStore(context.Context, object.Store) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteObjectStore(context.Context, object.Store) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetBuckets(context.Context) ([]*object.Bucket, error) {
+	return make([]*object.Bucket, 0), nil
+}
+
+func (c *PassthroughClient) UpsertBucket(context.Context, *object.Bucket) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteBucket(context.Context, *object.Bucket) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetBucketAccesses(context.Context) ([]*object.BucketAccess, error) {
+	return make([]*object.BucketAccess, 0), nil
+}
+
+func (c *PassthroughClient) UpsertBucketAccess(context.Context, *object.BucketAccess) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteBucketAccess(context.Context, *object.BucketAccess) error {
+	return nil
 }

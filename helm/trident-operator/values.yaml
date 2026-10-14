@@ -199,6 +199,11 @@ ontapConfigurator:
 # enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
 enableConcurrency: false
 
+# enableCOSI installs the COSI CRDs and enables object bucket provisioning.
+# Trident must be the only COSI provider in the cluster; it will refuse to start COSI if
+# COSI CRDs installed by another controller or driver are already present.
+enableCOSI: false
+
 # enableDataLIFRefresh enables refreshing NVMe data LIFs during backend reconciliation.
 enableDataLIFRefresh: false
 

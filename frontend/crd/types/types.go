@@ -30,5 +30,6 @@ const (
 	ObjectTypeTridentNodeRemediation         ObjectType = "TridentNodeRemediation"
 	ObjectTypeTridentAutogrowRequestInternal ObjectType = "TridentAutogrowRequestInternal"
 	ObjectTypeTridentVolumeMove              ObjectType = "TridentVolumeMove"
+	ObjectTypeTridentObjectStore             ObjectType = "TridentObjectStore"
 	ObjectTypeTridentVolume                  ObjectType = "TridentVolume"
 )

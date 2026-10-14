@@ -95,17 +95,22 @@ metadata:
 {SECRETS}
 `
 
-func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map[string]string) string {
+func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map[string]string, enableCOSI bool) string {
 	Log().WithFields(LogFields{
 		"ClusterRoleName":      clusterRoleName,
 		"Labels":               labels,
 		"ControllingCRDetails": controllingCRDetails,
+		"EnableCOSI":           enableCOSI,
 	}).Trace(">>>> GetClusterRoleYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleYAML") }()
 
 	var clusterRoleYAML string
 	if isControllerRBACResource(labels) {
-		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
+		cosiRules := ""
+		if enableCOSI {
+			cosiRules = cosiControllerClusterRoleRules
+		}
+		clusterRoleYAML = strings.ReplaceAll(controllerClusterRoleCSIYAMLTemplate, "{COSI_RULES}", cosiRules)
 	} else {
 		clusterRoleYAML = nodeClusterRoleCSIYAMLTemplate
 	}
@@ -195,6 +200,10 @@ rules:
       "tridentautogrowrequestinternals",
       "tridentautogrowrequestinternals/status",
       "tridentbackends",
+      "tridentobjectstores",
+      "tridentobjectstores/status",
+      "tridentbuckets",
+      "tridentbucketaccesses",
       "tridentbackendconfigs",
       "tridentbackendconfigs/status",
       "tridentgroupsnapshots",
@@ -228,6 +237,29 @@ rules:
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["get"]
+{COSI_RULES}`
+
+// cosiControllerClusterRoleRules are added to the controller cluster role only when COSI is
+// enabled. They are kept separate because the secrets rule is cluster-wide write access, which is
+// far too much to hand a Trident that is not serving object storage.
+const cosiControllerClusterRoleRules = `  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["buckets", "bucketaccesses"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["bucketclaims"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["bucketclasses", "bucketaccessclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["buckets/status", "bucketaccesses/status", "bucketclaims/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["buckets/finalizers", "bucketaccesses/finalizers", "bucketclaims/finalizers"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "update", "delete"]
 `
 
 // Minimal permissions for node pods
@@ -764,6 +796,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_CONCURRENCY}", strconv.FormatBool(args.EnableConcurrency))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_COSI}", strconv.FormatBool(args.EnableCOSI))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_DATALIF_REFRESH}",
 		strconv.FormatBool(args.EnableDataLIFRefresh))
 	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_TRIDENT_MAIN_RESOURCES}", args.Resources.Controller[commonconfig.TridentControllerMain])
@@ -839,6 +872,7 @@ spec:
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--enable_concurrency={ENABLE_CONCURRENCY}"
+        - "--enable_cosi={ENABLE_COSI}"
         - "--enable_datalif_refresh={ENABLE_DATALIF_REFRESH}"
         {METRICS}
         {HTTPS_METRICS}
@@ -2058,6 +2092,20 @@ func GetBackendCRDYAML() string {
 	return tridentBackendCRDYAMLv1
 }
 
+func GetObjectStoreCRDYAML() string {
+	Log().Trace(">>>> GetObjectStoreCRDYAML")
+	defer func() { Log().Trace("<<<< GetObjectStoreCRDYAML") }()
+	return tridentObjectStoreCRDYAMLv1
+}
+
+func GetBucketCRDYAML() string {
+	return tridentBucketCRDYAMLv1
+}
+
+func GetBucketAccessCRDYAML() string {
+	return tridentBucketAccessCRDYAMLv1
+}
+
 func GetBackendConfigCRDYAML() string {
 	Log().Trace(">>>> GetBackendConfigCRDYAML")
 	defer func() { Log().Trace("<<<< GetBackendConfigCRDYAML") }()
@@ -2194,6 +2242,9 @@ func GetNodeRemediationTemplateYAML(namespace string) string {
 /*
 kubectl delete crd tridentversions.trident.netapp.io --wait=false
 kubectl delete crd tridentbackends.trident.netapp.io --wait=false
+kubectl delete crd tridentobjectstores.trident.netapp.io --wait=false
+kubectl delete crd tridentbuckets.trident.netapp.io --wait=false
+kubectl delete crd tridentbucketaccesses.trident.netapp.io --wait=false
 kubectl delete crd tridentmirrorrelationships.trident.netapp.io --wait=false
 kubectl delete crd tridentactionmirrorupdates.trident.netapp.io --wait=false
 kubectl delete crd tridentbackendconfigs.trident.netapp.io --wait=false
@@ -2210,6 +2261,9 @@ kubectl delete crd tridentvolumemoves.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentobjectstores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentbuckets.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentbucketaccesses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentmirrorrelationships.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentactionmirrorupdates.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackendconfigs.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -2226,6 +2280,9 @@ kubectl patch crd tridentvolumemoves.trident.netapp.io -p '{"metadata":{"finaliz
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
+kubectl delete crd tridentobjectstores.trident.netapp.io
+kubectl delete crd tridentbuckets.trident.netapp.io
+kubectl delete crd tridentbucketaccesses.trident.netapp.io
 kubectl delete crd tridentmirrorrelationships.trident.netapp.io
 kubectl delete crd tridentactionmirrorupdates.trident.netapp.io
 kubectl delete crd tridentbackendconfigs.trident.netapp.io
@@ -2305,6 +2362,89 @@ spec:
     shortNames:
     - tbe
     - tbackend
+    categories:
+    - trident
+    - trident-internal`
+
+const tridentObjectStoreCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentobjectstores.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+  scope: Namespaced
+  names:
+    plural: tridentobjectstores
+    singular: tridentobjectstore
+    kind: TridentObjectStore
+    shortNames:
+    - tos
+    - tobjectstore
+    categories:
+    - trident
+    - trident-internal`
+
+const tridentBucketCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbuckets.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentbuckets
+    singular: tridentbucket
+    kind: TridentBucket
+    shortNames:
+    - tb
+    - tbucket
+    categories:
+    - trident
+    - trident-internal`
+
+const tridentBucketAccessCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbucketaccesses.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentbucketaccesses
+    singular: tridentbucketaccess
+    kind: TridentBucketAccess
+    shortNames:
+    - tba
+    - tbucketaccess
     categories:
     - trident
     - trident-internal`
@@ -3607,6 +3747,9 @@ spec:
 
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
+	"\n---" + tridentObjectStoreCRDYAMLv1 +
+	"\n---" + tridentBucketCRDYAMLv1 +
+	"\n---" + tridentBucketAccessCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
 	"\n---" + tridentMirrorRelationshipCRDYAMLv1 +
 	"\n---" + tridentActionMirrorUpdateCRDYAMLv1 +

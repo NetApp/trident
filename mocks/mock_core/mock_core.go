@@ -16,6 +16,7 @@ import (
 
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
+	object "github.com/netapp/trident/object"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	models "github.com/netapp/trident/utils/models"
@@ -76,6 +77,21 @@ func (mr *MockOrchestratorMockRecorder) AddBackend(ctx, configJSON, configRef an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBackend", reflect.TypeOf((*MockOrchestrator)(nil).AddBackend), ctx, configJSON, configRef)
 }
 
+// AddBucket mocks base method.
+func (m *MockOrchestrator) AddBucket(ctx context.Context, bucket *object.Bucket, params map[string]string) (*object.Bucket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddBucket", ctx, bucket, params)
+	ret0, _ := ret[0].(*object.Bucket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddBucket indicates an expected call of AddBucket.
+func (mr *MockOrchestratorMockRecorder) AddBucket(ctx, bucket, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBucket", reflect.TypeOf((*MockOrchestrator)(nil).AddBucket), ctx, bucket, params)
+}
+
 // AddFrontend mocks base method.
 func (m *MockOrchestrator) AddFrontend(ctx context.Context, f frontend.Plugin) {
 	m.ctrl.T.Helper()
@@ -100,6 +116,21 @@ func (m *MockOrchestrator) AddNode(ctx context.Context, node *models.Node, nodeE
 func (mr *MockOrchestratorMockRecorder) AddNode(ctx, node, nodeEventCallback any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNode", reflect.TypeOf((*MockOrchestrator)(nil).AddNode), ctx, node, nodeEventCallback)
+}
+
+// AddOrUpdateObjectStore mocks base method.
+func (m *MockOrchestrator) AddOrUpdateObjectStore(ctx context.Context, store object.Store) (object.Store, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddOrUpdateObjectStore", ctx, store)
+	ret0, _ := ret[0].(object.Store)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddOrUpdateObjectStore indicates an expected call of AddOrUpdateObjectStore.
+func (mr *MockOrchestratorMockRecorder) AddOrUpdateObjectStore(ctx, store any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateObjectStore", reflect.TypeOf((*MockOrchestrator)(nil).AddOrUpdateObjectStore), ctx, store)
 }
 
 // AddStorageClass mocks base method.
@@ -291,6 +322,20 @@ func (mr *MockOrchestratorMockRecorder) DeleteBackendByBackendUUID(ctx, backendN
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).DeleteBackendByBackendUUID), ctx, backendName, backendUUID)
 }
 
+// DeleteBucket mocks base method.
+func (m *MockOrchestrator) DeleteBucket(ctx context.Context, bucketName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBucket", ctx, bucketName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBucket indicates an expected call of DeleteBucket.
+func (mr *MockOrchestratorMockRecorder) DeleteBucket(ctx, bucketName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBucket", reflect.TypeOf((*MockOrchestrator)(nil).DeleteBucket), ctx, bucketName)
+}
+
 // DeleteGroupSnapshot mocks base method.
 func (m *MockOrchestrator) DeleteGroupSnapshot(ctx context.Context, groupName string) error {
 	m.ctrl.T.Helper()
@@ -317,6 +362,20 @@ func (m *MockOrchestrator) DeleteNode(ctx context.Context, nodeName string) erro
 func (mr *MockOrchestratorMockRecorder) DeleteNode(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNode", reflect.TypeOf((*MockOrchestrator)(nil).DeleteNode), ctx, nodeName)
+}
+
+// DeleteObjectStore mocks base method.
+func (m *MockOrchestrator) DeleteObjectStore(ctx context.Context, storeName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteObjectStore", ctx, storeName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteObjectStore indicates an expected call of DeleteObjectStore.
+func (mr *MockOrchestratorMockRecorder) DeleteObjectStore(ctx, storeName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObjectStore", reflect.TypeOf((*MockOrchestrator)(nil).DeleteObjectStore), ctx, storeName)
 }
 
 // DeleteSnapshot mocks base method.
@@ -448,6 +507,21 @@ func (mr *MockOrchestratorMockRecorder) GetBackendByBackendUUID(ctx, backendUUID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).GetBackendByBackendUUID), ctx, backendUUID)
 }
 
+// GetBucket mocks base method.
+func (m *MockOrchestrator) GetBucket(ctx context.Context, bucketName string) (*object.Bucket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBucket", ctx, bucketName)
+	ret0, _ := ret[0].(*object.Bucket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBucket indicates an expected call of GetBucket.
+func (mr *MockOrchestratorMockRecorder) GetBucket(ctx, bucketName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBucket", reflect.TypeOf((*MockOrchestrator)(nil).GetBucket), ctx, bucketName)
+}
+
 // GetCHAP mocks base method.
 func (m *MockOrchestrator) GetCHAP(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
@@ -551,6 +625,21 @@ func (m *MockOrchestrator) GetNode(ctx context.Context, nodeName string) (*model
 func (mr *MockOrchestratorMockRecorder) GetNode(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockOrchestrator)(nil).GetNode), ctx, nodeName)
+}
+
+// GetObjectStore mocks base method.
+func (m *MockOrchestrator) GetObjectStore(ctx context.Context, storeName string) (object.Store, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetObjectStore", ctx, storeName)
+	ret0, _ := ret[0].(object.Store)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetObjectStore indicates an expected call of GetObjectStore.
+func (mr *MockOrchestratorMockRecorder) GetObjectStore(ctx, storeName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObjectStore", reflect.TypeOf((*MockOrchestrator)(nil).GetObjectStore), ctx, storeName)
 }
 
 // GetReplicationDetails mocks base method.
@@ -750,6 +839,22 @@ func (mr *MockOrchestratorMockRecorder) GetVolumeTransaction(ctx, volTxn any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeTransaction), ctx, volTxn)
 }
 
+// GrantBucketAccess mocks base method.
+func (m *MockOrchestrator) GrantBucketAccess(ctx context.Context, bucketAccessModes []object.BucketAccessMode, bucketAccessName string) (*object.BucketAccess, *object.S3BucketAccessSecret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GrantBucketAccess", ctx, bucketAccessModes, bucketAccessName)
+	ret0, _ := ret[0].(*object.BucketAccess)
+	ret1, _ := ret[1].(*object.S3BucketAccessSecret)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GrantBucketAccess indicates an expected call of GrantBucketAccess.
+func (mr *MockOrchestratorMockRecorder) GrantBucketAccess(ctx, bucketAccessModes, bucketAccessName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GrantBucketAccess", reflect.TypeOf((*MockOrchestrator)(nil).GrantBucketAccess), ctx, bucketAccessModes, bucketAccessName)
+}
+
 // ImportSnapshot mocks base method.
 func (m *MockOrchestrator) ImportSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error) {
 	m.ctrl.T.Helper()
@@ -868,6 +973,21 @@ func (m *MockOrchestrator) ListNodes(ctx context.Context) ([]*models.NodeExterna
 func (mr *MockOrchestratorMockRecorder) ListNodes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodes", reflect.TypeOf((*MockOrchestrator)(nil).ListNodes), ctx)
+}
+
+// ListObjectStores mocks base method.
+func (m *MockOrchestrator) ListObjectStores(ctx context.Context) ([]object.Store, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListObjectStores", ctx)
+	ret0, _ := ret[0].([]object.Store)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListObjectStores indicates an expected call of ListObjectStores.
+func (mr *MockOrchestratorMockRecorder) ListObjectStores(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjectStores", reflect.TypeOf((*MockOrchestrator)(nil).ListObjectStores), ctx)
 }
 
 // ListSnapshots mocks base method.
@@ -1226,6 +1346,20 @@ func (m *MockOrchestrator) RestoreSnapshot(ctx context.Context, volumeName, snap
 func (mr *MockOrchestratorMockRecorder) RestoreSnapshot(ctx, volumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).RestoreSnapshot), ctx, volumeName, snapshotName)
+}
+
+// RevokeBucketAccess mocks base method.
+func (m *MockOrchestrator) RevokeBucketAccess(ctx context.Context, bucketAccessName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeBucketAccess", ctx, bucketAccessName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeBucketAccess indicates an expected call of RevokeBucketAccess.
+func (mr *MockOrchestratorMockRecorder) RevokeBucketAccess(ctx, bucketAccessName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeBucketAccess", reflect.TypeOf((*MockOrchestrator)(nil).RevokeBucketAccess), ctx, bucketAccessName)
 }
 
 // SetLogLayers mocks base method.

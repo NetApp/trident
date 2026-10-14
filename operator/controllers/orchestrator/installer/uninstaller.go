@@ -126,5 +126,5 @@ func (i *Installer) removeRBACObjects() error {
 }
 
 func (i *Installer) ObliviateCRDs(skipCRDs []string) error {
-	return cmd.ObliviateCRDs(i.client, i.tridentCRDClient, i.operatorCRDClient, k8sTimeout, skipCRDs)
+	return cmd.ObliviateCRDs(i.client, i.tridentCRDClient, i.operatorCRDClient, i.dynamicClient, k8sTimeout, skipCRDs)
 }

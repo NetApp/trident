@@ -16,6 +16,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	v1 "k8s.io/api/core/v1"
 
+	object "github.com/netapp/trident/object"
 	storage "github.com/netapp/trident/storage"
 	models "github.com/netapp/trident/utils/models"
 )
@@ -58,6 +59,20 @@ func (mr *MockK8SControllerHelperPluginMockRecorder) Activate() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).Activate))
 }
 
+// AddObjectStore mocks base method.
+func (m *MockK8SControllerHelperPlugin) AddObjectStore(ctx context.Context, store object.Store) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddObjectStore", ctx, store)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddObjectStore indicates an expected call of AddObjectStore.
+func (mr *MockK8SControllerHelperPluginMockRecorder) AddObjectStore(ctx, store any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddObjectStore", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).AddObjectStore), ctx, store)
+}
+
 // Deactivate mocks base method.
 func (m *MockK8SControllerHelperPlugin) Deactivate() error {
 	m.ctrl.T.Helper()
@@ -70,6 +85,20 @@ func (m *MockK8SControllerHelperPlugin) Deactivate() error {
 func (mr *MockK8SControllerHelperPluginMockRecorder) Deactivate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).Deactivate))
+}
+
+// DeleteObjectStore mocks base method.
+func (m *MockK8SControllerHelperPlugin) DeleteObjectStore(ctx context.Context, storeName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteObjectStore", ctx, storeName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteObjectStore indicates an expected call of DeleteObjectStore.
+func (mr *MockK8SControllerHelperPluginMockRecorder) DeleteObjectStore(ctx, storeName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObjectStore", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).DeleteObjectStore), ctx, storeName)
 }
 
 // GetName mocks base method.

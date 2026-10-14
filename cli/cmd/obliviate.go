@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/dynamic"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
@@ -67,6 +68,10 @@ func initClients() error {
 	k8sClient = clients.K8SClient
 	crdClientset = clients.TridentClient
 	operatorCrdClientSet = clients.TorcClient
+
+	if dynamicClient, err = dynamic.NewForConfig(clients.RestConfig); err != nil {
+		return err
+	}
 
 	// Detect whether we are running inside a pod
 	if clients.InK8SPod {

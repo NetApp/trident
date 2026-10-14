@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	cosicrd "github.com/netapp/trident/cosi/crd"
 	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
@@ -4508,4 +4509,48 @@ func TestInitInstallerLogging(t *testing.T) {
 			}, "initInstallerLogging should not panic")
 		})
 	}
+}
+
+// TestCreateAndEnsureCOSICRDsWritesNothingOnConflict is the tridentctl half of the guard in the
+// operator's TestCreateOrUpdateCOSICRDsWritesNothingOnConflict; both installers reach the same
+// ownership decision by different routes and both used to apply as they went.
+//
+// The conflict is put on the last CRD so that every other one is absent, and would therefore have
+// been created before the loop reached it.
+//
+// No CreateObjectByYAML expectation is registered, on purpose: gomock fails on any unexpected
+// call, so a single CRD write is enough to fail this test.
+func TestCreateAndEnsureCOSICRDsWritesNothingOnConflict(t *testing.T) {
+	crdNames := k8sclient.COSICRDNames()
+	require.Greater(t, len(crdNames), 1, "the regression needs at least one CRD ahead of the conflict")
+
+	conflicting := crdNames[len(crdNames)-1]
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+
+	originalClient := client
+	client = mockK8s
+	defer func() { client = originalClient }()
+
+	mockK8s.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.32.0")).AnyTimes()
+
+	for _, crdName := range crdNames {
+		if crdName == conflicting {
+			foreign := createTestCRD(crdName, false, false)
+			foreign.Labels = map[string]string{cosicrd.ManagedByLabel: "cosi-driver.example.com"}
+			mockK8s.EXPECT().CheckCRDExists(crdName).Return(true, nil)
+			mockK8s.EXPECT().GetCRD(crdName).Return(foreign, nil)
+			continue
+		}
+		mockK8s.EXPECT().CheckCRDExists(crdName).Return(false, nil)
+	}
+
+	err := createAndEnsureCOSICRDs()
+
+	var conflictErr *k8sclient.COSICRDConflictError
+	require.ErrorAs(t, err, &conflictErr, "a COSI CRD Trident did not install must be a conflict")
+	assert.Equal(t, conflicting, conflictErr.CRDName)
 }

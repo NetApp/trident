@@ -107,8 +107,9 @@ func TestYAMLFactory(t *testing.T) {
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef, cloudIdentity),
 		GetRoleYAML(Namespace, Name, labels, ownerRef),
 		GetRoleBindingYAML(Namespace, Name, labels, ownerRef),
-		GetClusterRoleYAML(Name, nil, nil),
-		GetClusterRoleYAML(Name, labels, ownerRef),
+		GetClusterRoleYAML(Name, nil, nil, false),
+		GetClusterRoleYAML(Name, labels, ownerRef, false),
+		GetClusterRoleYAML(Name, labels, ownerRef, true),
 		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef),
 		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, labels, ownerRef),
 		GetCSIDeploymentYAML(deploymentArgs),
@@ -129,7 +130,7 @@ func TestAPIVersion(t *testing.T) {
 	controllerRBACLabels := map[string]string{"app": "controller"}
 
 	yamlsOutputs := map[string]string{
-		GetClusterRoleYAML(Name, nil, nil):                                    "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(Name, nil, nil, false):                             "rbac.authorization.k8s.io/v1",
 		GetRoleYAML(Namespace, Name, nil, nil):                                "rbac.authorization.k8s.io/v1",
 		GetRoleYAML(Namespace, Name, controllerRBACLabels, nil):               "rbac.authorization.k8s.io/v1",
 		GetRoleBindingYAML(Namespace, Name, nil, nil):                         "rbac.authorization.k8s.io/v1",
@@ -1925,6 +1926,7 @@ func TestGetCRDsYAML(t *testing.T) {
 	expectedAPIs := map[string]apiextensionsv1.CustomResourceDefinition{
 		"tridentversions.trident.netapp.io":               getVersionAPIExtension(t),
 		"tridentbackends.trident.netapp.io":               getBackendAPIExtension(t),
+		"tridentobjectstores.trident.netapp.io":           getObjectStoreAPIExtension(t),
 		"tridentbackendconfigs.trident.netapp.io":         getBackendConfigAPIExtension(t),
 		"tridentmirrorrelationships.trident.netapp.io":    getMirrorRelationshipAPIExtension(t),
 		"tridentactionmirrorupdates.trident.netapp.io":    getActionMirrorUpdateAPIExtension(t),
@@ -1987,6 +1989,31 @@ func TestGetBackendCRDYAML(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetObjectStoreCRDYAML(t *testing.T) {
+	expected := getObjectStoreAPIExtension(t)
+	actualYAML := GetObjectStoreCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetBucketCRDYAML(t *testing.T) {
+	var actual apiextensionsv1.CustomResourceDefinition
+	require.NoError(t, yaml.Unmarshal([]byte(GetBucketCRDYAML()), &actual))
+	assert.Equal(t, "tridentbuckets.trident.netapp.io", actual.Name)
+	assert.Equal(t, "TridentBucket", actual.Spec.Names.Kind)
+}
+
+func TestGetBucketAccessCRDYAML(t *testing.T) {
+	var actual apiextensionsv1.CustomResourceDefinition
+	require.NoError(t, yaml.Unmarshal([]byte(GetBucketAccessCRDYAML()), &actual))
+	assert.Equal(t, "tridentbucketaccesses.trident.netapp.io", actual.Name)
+	assert.Equal(t, "TridentBucketAccess", actual.Spec.Names.Kind)
 }
 
 func getVersionAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefinition {
@@ -2085,6 +2112,49 @@ func getBackendAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefiniti
 							Priority:    int32(0),
 							JSONPath:    ".backendUUID",
 						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func getObjectStoreAPIExtension(t *testing.T) apiextensionsv1.CustomResourceDefinition {
+	t.Helper()
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: new(true),
+		},
+	}
+
+	return apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentobjectstores.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentobjectstores",
+				Singular:   "tridentobjectstore",
+				Kind:       "TridentObjectStore",
+				ShortNames: []string{"tos", "tobjectstore"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
 					},
 				},
 			},

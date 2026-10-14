@@ -10173,7 +10173,7 @@ func TestListLogWorkflows(t *testing.T) {
 		"backend=create,delete,get,list,update", "controller_server=get_capabilities,publish,unpublish",
 		"core=bootstrap,init,node_reconcile,version", "cr=reconcile", "crd_controller=create", "grpc=trace",
 		"k8s_client=trace_api,trace_factory", "node=create,delete,get,get_capabilities,get_info,get_response,list,update",
-		"node_server=publish,stage,unpublish,unstage", "plugin=activate,create,deactivate,get,list",
+		"node_server=publish,stage,unpublish,unstage", "object_store=create,delete,get,list", "plugin=activate,create,deactivate,get,list",
 		"snapshot=clone_from,create,delete,get,list,update", "storage_class=create,delete,get,list,update",
 		"storage_client=create", "trident_rest=logger",
 		"volume=clone,create,delete,get,get_capabilities,get_path,get_stats,import,list,mount,resize,unmount,update,upgrade",
@@ -10187,7 +10187,7 @@ func TestListLogLayers(t *testing.T) {
 
 	layers, err := o.ListLogLayers(ctx())
 	expected := []string{
-		"all", "autogrow", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
+		"all", "autogrow", "azure-netapp-files", "core", "cosi_frontend", "crd_frontend", "csi_frontend", "docker_frontend",
 		"fake", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy",
 		"persistent_store", "rest_frontend", "solidfire-san",
 	}

@@ -20,6 +20,8 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
+	objectfactory "github.com/netapp/trident/object/factory"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/errors"
@@ -310,6 +312,142 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 			return httpStatusCodeForAdd(err)
 		},
 	)
+}
+
+type AddObjectStoreResponse struct {
+	ObjectStoreID string `json:"objectStore,omitempty"`
+	Error         string `json:"error,omitempty"`
+}
+
+func (r *AddObjectStoreResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *AddObjectStoreResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *AddObjectStoreResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"objectStore": r.ObjectStoreID,
+		"handler":     "AddObjectStore",
+	}).Info("Added a new object store.")
+}
+
+func (r *AddObjectStoreResponse) logFailure(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"objectStore": r.ObjectStoreID,
+		"handler":     "AddObjectStore",
+	}).Error(r.Error)
+}
+
+func AddObjectStore(w http.ResponseWriter, r *http.Request) {
+	response := &AddObjectStoreResponse{}
+	r = r.WithContext(GenerateRequestContext(
+		r.Context(), "", "", WorkflowObjectStoreCreate, LogLayerRESTFrontend,
+	))
+	AddGeneric(w, r, response,
+		func(body []byte) int {
+			store, err := objectStoreFromJSON(r.Context(), body)
+			if err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
+			if err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8s, ok := k8sFrontend.(k8shelper.K8SControllerHelperPlugin)
+			if !ok {
+				err = fmt.Errorf("unable to obtain Kubernetes frontend")
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			err = k8s.AddObjectStore(r.Context(), store)
+			if err != nil {
+				response.setError(err)
+			}
+			if store != nil {
+				response.ObjectStoreID = store.Name()
+			}
+			return httpStatusCodeForAdd(err)
+		},
+	)
+}
+
+func objectStoreFromJSON(ctx context.Context, body []byte) (object.Store, error) {
+	var parsed struct {
+		Driver string `json:"objectStoreDriver"`
+	}
+	if err := json.Unmarshal(body, &parsed); err != nil {
+		return nil, fmt.Errorf("error unmarshalling object store config: %w", err)
+	}
+	if parsed.Driver == "" {
+		return nil, fmt.Errorf("objectStoreDriver is required")
+	}
+	return objectfactory.CreateStore(ctx, parsed.Driver, body, body)
+}
+
+type ListObjectStoresResponse struct {
+	ObjectStores []string `json:"objectStores"`
+	Error        string   `json:"error,omitempty"`
+}
+
+func (l *ListObjectStoresResponse) setList(payload []string) {
+	l.ObjectStores = payload
+}
+
+func ListObjectStores(w http.ResponseWriter, r *http.Request) {
+	response := &ListObjectStoresResponse{}
+	ListGeneric(w, r, response,
+		func(_ map[string]string) int {
+			storeNames := make([]string, 0)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowObjectStoreList, LogLayerRESTFrontend)
+
+			stores, err := orchestrator.ListObjectStores(ctx)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				for _, store := range stores {
+					storeNames = append(storeNames, store.Name())
+				}
+			}
+			response.setList(storeNames)
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type GetObjectStoreResponse struct {
+	ObjectStore object.Store `json:"objectStore"`
+	Error       string       `json:"error,omitempty"`
+}
+
+func GetObjectStore(w http.ResponseWriter, r *http.Request) {
+	response := &GetObjectStoreResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowObjectStoreGet, LogLayerRESTFrontend)
+
+			store, err := orchestrator.GetObjectStore(ctx, vars["objectStore"])
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.ObjectStore = store
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+// DeleteObjectStore removes the object store through core. Core returns a conflict while buckets
+// still reference the store, and deletes the CR only after that check passes.
+func DeleteObjectStore(w http.ResponseWriter, r *http.Request) {
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowObjectStoreDelete, LogLayerRESTFrontend)
+		return orchestrator.DeleteObjectStore(ctx, vars["objectStore"])
+	})
 }
 
 type UpdateBackendResponse struct {

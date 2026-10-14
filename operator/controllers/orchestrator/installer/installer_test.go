@@ -1802,6 +1802,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 		// Mock all CRD creation calls to succeed
 		crdNames := []string{
 			VersionCRDName, BackendCRDName, SnapshotInfoCRDName, BackendConfigCRDName,
+			ObjectStoreCRDName, BucketCRDName, BucketAccessCRDName,
 			StorageClassCRDName, VolumeCRDName, VolumePublicationCRDName, NodeCRDName,
 			NodeRemediationCRDName, NodeRemediationTemplateCRDName, TransactionCRDName,
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
@@ -1833,6 +1834,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 		// Mock all CRD creation calls to succeed with performOperationOnce=true
 		crdNames := []string{
 			VersionCRDName, BackendCRDName, SnapshotInfoCRDName, BackendConfigCRDName,
+			ObjectStoreCRDName, BucketCRDName, BucketAccessCRDName,
 			StorageClassCRDName, VolumeCRDName, VolumePublicationCRDName, NodeCRDName,
 			NodeRemediationCRDName, NodeRemediationTemplateCRDName, TransactionCRDName,
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
@@ -4919,4 +4921,53 @@ func TestDeleteTridentNodeRemediationResources(t *testing.T) {
 		assert.Error(t, err, "expected error when cluster role deletion fails")
 		assert.Contains(t, err.Error(), "could not delete tridentnoderemediation-access clusterRole")
 	})
+}
+
+// TestCreateOrUpdateCOSICRDsWritesNothingOnConflict guards against a partial COSI install.
+//
+// Deciding ownership and applying in the same pass meant a conflict on any CRD but the first was
+// only discovered after the earlier ones had been created -- Trident planting CRDs in a community
+// API group at the very moment it concluded it must not touch that group. The returned error
+// names only the conflicting CRD, so nothing told an administrator the rest had been created.
+//
+// The conflict is put on the last CRD so that every other one is absent, and would therefore have
+// been created before the loop reached it.
+//
+// No PutCustomResourceDefinition expectation is registered, on purpose: gomock fails on any
+// unexpected call, so a single write is enough to fail this test.
+func TestCreateOrUpdateCOSICRDsWritesNothingOnConflict(t *testing.T) {
+	crdNames := k8sclient.COSICRDNames()
+	require.Greater(t, len(crdNames), 1, "the regression needs at least one CRD ahead of the conflict")
+
+	conflicting := crdNames[len(crdNames)-1]
+
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	mockK8sClient.EXPECT().ServerVersion().Return(version.MustParseSemantic("v1.32.0")).AnyTimes()
+
+	for _, crdName := range crdNames {
+		if crdName == conflicting {
+			mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(true, nil)
+			mockK8sClient.EXPECT().GetCRD(crdName).Return(foreignCOSICRD(crdName), nil)
+			continue
+		}
+		mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(false, nil)
+	}
+
+	err := installer.createOrUpdateCOSICRDs()
+
+	var conflictErr *k8sclient.COSICRDConflictError
+	require.ErrorAs(t, err, &conflictErr, "a COSI CRD Trident did not install must be a conflict")
+	assert.Equal(t, conflicting, conflictErr.CRDName)
+}
+
+// foreignCOSICRD is a COSI CRD carrying another provider's managed-by value.
+func foreignCOSICRD(name string) *v1.CustomResourceDefinition {
+	return &v1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   name,
+			Labels: map[string]string{"app.kubernetes.io/managed-by": "cosi-driver.example.com"},
+		},
+	}
 }

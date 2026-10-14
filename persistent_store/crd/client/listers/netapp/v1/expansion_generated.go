@@ -48,6 +48,22 @@ type TridentBackendConfigListerExpansion interface{}
 // TridentBackendConfigNamespaceLister.
 type TridentBackendConfigNamespaceListerExpansion interface{}
 
+// TridentBucketListerExpansion allows custom methods to be added to
+// TridentBucketLister.
+type TridentBucketListerExpansion interface{}
+
+// TridentBucketNamespaceListerExpansion allows custom methods to be added to
+// TridentBucketNamespaceLister.
+type TridentBucketNamespaceListerExpansion interface{}
+
+// TridentBucketAccessListerExpansion allows custom methods to be added to
+// TridentBucketAccessLister.
+type TridentBucketAccessListerExpansion interface{}
+
+// TridentBucketAccessNamespaceListerExpansion allows custom methods to be added to
+// TridentBucketAccessNamespaceLister.
+type TridentBucketAccessNamespaceListerExpansion interface{}
+
 // TridentGroupSnapshotListerExpansion allows custom methods to be added to
 // TridentGroupSnapshotLister.
 type TridentGroupSnapshotListerExpansion interface{}
@@ -87,6 +103,14 @@ type TridentNodeRemediationTemplateListerExpansion interface{}
 // TridentNodeRemediationTemplateNamespaceListerExpansion allows custom methods to be added to
 // TridentNodeRemediationTemplateNamespaceLister.
 type TridentNodeRemediationTemplateNamespaceListerExpansion interface{}
+
+// TridentObjectStoreListerExpansion allows custom methods to be added to
+// TridentObjectStoreLister.
+type TridentObjectStoreListerExpansion interface{}
+
+// TridentObjectStoreNamespaceListerExpansion allows custom methods to be added to
+// TridentObjectStoreNamespaceLister.
+type TridentObjectStoreNamespaceListerExpansion interface{}
 
 // TridentSnapshotListerExpansion allows custom methods to be added to
 // TridentSnapshotLister.

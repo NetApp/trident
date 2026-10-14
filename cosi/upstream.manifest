@@ -1,0 +1,159 @@
+# Manifest of source vendored from upstream Kubernetes COSI.
+#
+# hack/resync.sh reads this file. Any file added to or removed from the vendored
+# set must be recorded here, or it silently stops being checked against upstream.
+#
+# Every listed file is byte-identical to upstream except for its import block,
+# which is rewritten from upstream's internal/ layout to Trident package paths
+# and reordered to satisfy goimports. resync.sh compares file bodies with the
+# import block removed, so those rewrites are expected and ignored.
+#
+# A line ending in "diverged" marks a file we edit on purpose. Every such edit is
+# logged at the bottom of this file and tagged "NETAPP LOCAL" in the source, so a
+# re-sync is a review of a known list rather than archaeology. Keep the list
+# short: each entry is a merge conflict waiting for the next pin bump.
+#
+# One commit governs three things and they must never drift apart:
+#   1. the files listed below
+#   2. the client and proto module pseudo-versions in go.mod
+#   3. the CRD YAML Trident installs
+# There is no upstream tag to anchor to: the only published tag of client/proto
+# contains v1alpha1 only, and v1alpha2 exists solely on untagged main.
+
+repo   kubernetes-sigs/container-object-storage-interface
+commit e761fd730bf4617dd42c9e585626ee95e88a8b62
+
+# Sidecar reconcilers.
+sidecar/pkg/reconciler/bucket.go                cosi/sidecar/bucket.go            diverged
+sidecar/pkg/reconciler/bucket_test.go           cosi/sidecar/bucket_test.go
+sidecar/pkg/reconciler/bucketaccess.go          cosi/sidecar/bucketaccess.go      diverged
+sidecar/pkg/reconciler/bucketaccess_test.go     cosi/sidecar/bucketaccess_test.go
+sidecar/pkg/reconciler/driver.go                cosi/sidecar/driver.go            diverged
+sidecar/pkg/reconciler/driver_test.go           cosi/sidecar/driver_test.go
+
+# Central controller reconcilers. controller/pkg/reconciler/bucket.go is still an
+# untouched kubebuilder scaffold upstream; vendored for completeness.
+controller/pkg/reconciler/bucket.go             cosi/controller/bucket.go
+controller/pkg/reconciler/bucketaccess.go       cosi/controller/bucketaccess.go
+controller/pkg/reconciler/bucketaccess_test.go  cosi/controller/bucketaccess_test.go
+controller/pkg/reconciler/bucketclaim.go        cosi/controller/bucketclaim.go    diverged
+controller/pkg/reconciler/bucketclaim_test.go   cosi/controller/bucketclaim_test.go
+
+# Support packages. Copied rather than imported because Go's internal/ rule
+# forbids importing them from outside the upstream module.
+internal/errors/errors.go                       cosi/third_party/errors/errors.go
+internal/predicate/predicate.go                 cosi/third_party/predicate/predicate.go
+internal/predicate/predicate_test.go            cosi/third_party/predicate/predicate_test.go
+internal/protocol/azure.go                      cosi/third_party/protocol/azure.go
+internal/protocol/azure_test.go                 cosi/third_party/protocol/azure_test.go
+internal/protocol/gcs.go                        cosi/third_party/protocol/gcs.go
+internal/protocol/gcs_test.go                   cosi/third_party/protocol/gcs_test.go
+internal/protocol/protocol.go                   cosi/third_party/protocol/protocol.go
+internal/protocol/protocol_test.go              cosi/third_party/protocol/protocol_test.go
+internal/protocol/s3.go                         cosi/third_party/protocol/s3.go
+internal/protocol/s3_test.go                    cosi/third_party/protocol/s3_test.go
+internal/bucketaccess/bucketaccess.go           cosi/third_party/bucketaccess/bucketaccess.go
+internal/bucketaccess/bucketaccess_test.go      cosi/third_party/bucketaccess/bucketaccess_test.go
+sidecar/internal/translator/translator.go       cosi/third_party/translator/translator.go
+sidecar/internal/translator/translator_test.go  cosi/third_party/translator/translator_test.go
+
+# Test helpers. Required: the vendored reconciler tests do not compile without them.
+internal/test/rpc.go                            cosi/third_party/test/rpc.go
+internal/test/test.go                           cosi/third_party/test/test.go
+internal/test/controller/test.go                cosi/third_party/test/controller/test.go
+internal/test/sidecar/test.go                   cosi/third_party/test/sidecar/test.go
+
+# CRD schemas. Trident installs these, so they are the third artifact the pinned commit
+# governs -- see the header. Kept byte-identical to upstream: the Trident ownership label is
+# applied at install time by cosi/crd.GetOwnedCRDYAML, not written into these files.
+client/config/crd/objectstorage.k8s.io_buckets.yaml              cosi/crd/objectstorage.k8s.io_buckets.yaml
+client/config/crd/objectstorage.k8s.io_bucketclaims.yaml         cosi/crd/objectstorage.k8s.io_bucketclaims.yaml
+client/config/crd/objectstorage.k8s.io_bucketclasses.yaml        cosi/crd/objectstorage.k8s.io_bucketclasses.yaml
+client/config/crd/objectstorage.k8s.io_bucketaccesses.yaml       cosi/crd/objectstorage.k8s.io_bucketaccesses.yaml
+client/config/crd/objectstorage.k8s.io_bucketaccessclasses.yaml  cosi/crd/objectstorage.k8s.io_bucketaccessclasses.yaml
+
+# ---------------------------------------------------------------------------
+# Divergence log. One entry per file marked "diverged" above.
+# ---------------------------------------------------------------------------
+#
+# cosi/sidecar/driver.go
+#   Added NewDriverInfo(driverReportedInfo, client), which takes an already-built
+#   cosiproto.ProvisionerClient instead of a grpc.ClientConnInterface.
+#
+#   Why: upstream's ValidateAndSetDriverConnectionInfo builds the client itself
+#   from a connection, which assumes the driver is a separate process. Trident
+#   serves COSI in-process, so it has a client and no connection. The validation
+#   it performs is not optional -- an invalid driver name means the reconcilers
+#   silently match no objects -- and both validateDriverName and
+#   validateAndParseProtocols are unexported.
+#
+#   Shape: ValidateAndSetDriverConnectionInfo was reduced to a one-line wrapper
+#   that calls NewDriverInfo. No validation is duplicated and no upstream
+#   behaviour changed, so a future upstream edit to either check applies to both
+#   paths. Reverting the divergence is deleting NewDriverInfo and inlining its
+#   body back into the original function.
+#
+#   Upstreamable: yes, and worth offering -- any in-process COSI driver hits this.
+#
+# cosi/sidecar/bucket.go
+#   Replaced the deletion stub in reconcile() with a single call to r.reconcileDelete,
+#   implemented in cosi/sidecar/bucket_delete.go.
+#
+#   Why: upstream carries "TODO: deletion logic" and does not deprovision buckets. Worse
+#   than a no-op, the stub removes the protection finalizer and *then* returns an error,
+#   so the Bucket object is deleted while the backend bucket is orphaned with nothing in
+#   the cluster naming it. Confirmed on a live cluster, not inferred: kubectl delete
+#   bucketclaim reported success and the driver was never called. Trident implements
+#   deletion (Decision 4), so this path cannot ship as upstream wrote it.
+#
+#   Shape: the whole stub block collapses to one call. All the behaviour lives in
+#   bucket_delete.go, which is not vendored, so the diff on upstream's most load-bearing
+#   reconciler stays reviewable at a glance. Reverting the divergence is restoring the
+#   stub block and deleting bucket_delete.go plus its test.
+#
+#   Upstreamable: not as-is. The semantics are NetApp decisions pending supportability
+#   sign-off -- see design-docs/cosi/07-deletion-semantics.md -- and upstream would need
+#   to make its own. The ordering fix alone (never drop the finalizer before the driver
+#   confirms) is worth reporting upstream regardless, since the current stub leaks.
+#
+# cosi/controller/bucketclaim.go
+#   In reconcileDelete, changed the log field bucketDeletionPolicy from the hardcoded
+#   constant BucketDeletionPolicyRetain to bucket.Spec.DeletionPolicy.
+#
+#   Why: upstream sets this log field to the literal Retain constant regardless of the
+#   bucket's actual policy, so every log line in the delete path -- including the ones on
+#   the Delete branch, actively deprovisioning a bucket -- claims bucketDeletionPolicy=Retain.
+#   Found live on 2026-09-28 (design-docs/cosi/19-grant-revoke-access-test-plan.md) while
+#   reading delete-path logs to diagnose an unrelated timing question; cosmetic only, no
+#   behavior depends on this field, but it actively misleads anyone reading the log.
+#
+#   Shape: one identifier changed on one line. Nothing else in the function moved.
+#   Reverting the divergence is restoring the literal constant.
+#
+#   Upstreamable: yes -- straightforward one-line fix, no NetApp-specific behavior involved.
+#
+# cosi/sidecar/bucketaccess.go
+#   Added the SkipRegrantWhenGranted field to BucketAccessReconciler and, in reconcile(),
+#   a check after reserveAccessSecrets that returns before DriverGrantBucketAccess when the
+#   access is already granted: readyToUse, accountID set, Key/S3, and every access Secret
+#   already holds both S3 credentials. A status error is ignored, since reconcile records
+#   transient lookup failures there too, and is cleared when the grant is skipped. The
+#   predicate lives in cosi/sidecar/bucketaccess_regrant.go, which is not vendored.
+#
+#   Why: upstream calls DriverGrantBucketAccess on every reconcile, including every resync
+#   and every controller restart, and overwrites the Secrets with the response. The proto
+#   asks drivers to treat that as idempotent, but StorageGRID only reveals a secret key when
+#   it is minted, so the driver can only answer by deleting and re-creating keys. Every
+#   restart therefore rotated keys under running consumers.
+#
+#   Cost: a granted access is no longer re-checked against the backend, so a key deleted
+#   out of band is not repaired until the access is re-created or one of its Secrets loses
+#   a credential (either makes the check fail and the driver is called again). The check
+#   is per BucketAccess, so multiple accesses to one bucket are unaffected.
+#
+#   Shape: the field defaults to false, so upstream behaviour and the vendored
+#   bucketaccess_test.go are unchanged; cosi/manager.go opts in. Reverting the divergence
+#   is deleting the field, the four-line check, bucketaccess_regrant.go and its test.
+#
+#   Upstreamable: not as-is. The real fix is in the protocol (a way for the driver to say
+#   "unchanged, keep the existing credentials"); this is a stopgap until then.

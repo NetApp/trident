@@ -64,6 +64,7 @@ const (
 	ObjectTypeTridentAutogrowPolicy          = crdtypes.ObjectTypeTridentAutogrowPolicy
 	ObjectTypeTridentAutogrowRequestInternal = crdtypes.ObjectTypeTridentAutogrowRequestInternal
 	ObjectTypeTridentVolumeMove              = crdtypes.ObjectTypeTridentVolumeMove
+	ObjectTypeTridentObjectStore             = crdtypes.ObjectTypeTridentObjectStore
 	ObjectTypeTridentVolume                  = crdtypes.ObjectTypeTridentVolume
 
 	OperationStatusSuccess string = "Success"
@@ -137,6 +138,10 @@ type TridentCrdController struct {
 	// TridentBackendConfig CRD handling
 	backendConfigsLister listers.TridentBackendConfigLister
 	backendConfigsSynced cache.InformerSynced
+
+	// TridentObjectStore CRD handling
+	objectStoresLister listers.TridentObjectStoreLister
+	objectStoresSynced cache.InformerSynced
 
 	// TridentMirrorRelationship CRD handling
 	mirrorLister listers.TridentMirrorRelationshipLister
@@ -288,6 +293,7 @@ func newTridentCrdControllerImpl(
 
 	backendInformer := crdInformer.TridentBackends()
 	backendConfigInformer := crdInformer.TridentBackendConfigs()
+	objectStoreInformer := crdInformer.TridentObjectStores()
 	mirrorInformer := allNSCrdInformer.TridentMirrorRelationships()
 	actionMirrorUpdateInformer := allNSCrdInformer.TridentActionMirrorUpdates()
 	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
@@ -338,6 +344,8 @@ func newTridentCrdControllerImpl(
 		backendsSynced:                backendInformer.Informer().HasSynced,
 		backendConfigsLister:          backendConfigInformer.Lister(),
 		backendConfigsSynced:          backendConfigInformer.Informer().HasSynced,
+		objectStoresLister:            objectStoreInformer.Lister(),
+		objectStoresSynced:            objectStoreInformer.Informer().HasSynced,
 		mirrorLister:                  mirrorInformer.Lister(),
 		mirrorSynced:                  mirrorInformer.Informer().HasSynced,
 		actionMirrorUpdateLister:      actionMirrorUpdateInformer.Lister(),
@@ -389,6 +397,12 @@ func newTridentCrdControllerImpl(
 	Logx(ctx).Trace("Setting up CRD controller event handlers.")
 
 	_, _ = backendConfigInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = objectStoreInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
@@ -554,6 +568,7 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 	if ok := cache.WaitForCacheSync(stopCh,
 		c.backendsSynced,
 		c.backendConfigsSynced,
+		c.objectStoresSynced,
 		c.nodesSynced,
 		c.storageClassesSynced,
 		c.transactionsSynced,
@@ -795,6 +810,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			keyItemName = "<REDACTED>"
 		case ObjectTypeTridentBackendConfig:
 			handleFunction = c.handleTridentBackendConfig
+		case ObjectTypeTridentObjectStore:
+			handleFunction = c.handleTridentObjectStore
 		case ObjectTypeTridentMirrorRelationship:
 			handleFunction = c.handleTridentMirrorRelationship
 		case ObjectTypeTridentActionMirrorUpdate:

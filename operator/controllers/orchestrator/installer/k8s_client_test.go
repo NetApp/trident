@@ -1251,6 +1251,7 @@ func TestPutClusterRole(t *testing.T) {
 		clusterRoleName,
 		make(map[string]string),
 		make(map[string]string),
+		false,
 	)
 	k8sClientErr := fmt.Errorf("k8s error")
 

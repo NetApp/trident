@@ -13,6 +13,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,6 +28,8 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
+	objectfake "github.com/netapp/trident/object/drivers/fake"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
@@ -735,6 +739,204 @@ func TestGetAutogrowPolicy_WithNameFix(t *testing.T) {
 	assert.NotNil(t, retrievedPolicy)
 	// The CRD name is fixed, but it should still be retrievable
 	assert.Equal(t, fixedName, retrievedPolicy.Name)
+}
+
+func TestKubernetesObjectStorePersistence(t *testing.T) {
+	p, kubeClient := GetTestKubernetesClient()
+	storeValue, err := objectfake.NewObjectDriver(context.Background(), []byte(`{"user":"alice","password":"secret"}`),
+		[]byte(`{"objectStoreName":"store-a","endpoint":"https://localhost"}`))
+	require.NoError(t, err)
+	require.NoError(t, storeValue.Initialize(context.Background()))
+	store := storeValue.(*objectfake.ObjectDriver)
+
+	require.NoError(t, p.AddObjectStore(context.Background(), store))
+
+	stores, listErr := p.GetObjectStores(context.Background())
+	require.NoError(t, listErr)
+	require.Len(t, stores, 1)
+	assert.Equal(t, store.Name(), stores[0].Name())
+	assert.Equal(t, store.StoreUUID(), stores[0].StoreUUID())
+
+	tos, err := p.crdClient.TridentV1().TridentObjectStores(p.namespace).Get(
+		context.Background(), netappv1.NameFix(store.Name()), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.Contains(t, string(tos.Spec.Raw), `"objectStoreName":"store-a"`)
+	assert.Contains(t, string(tos.Spec.Raw), `"objectStoreDriver":"fake"`)
+	assert.NotContains(t, string(tos.Spec.Raw), "alice")
+	assert.NotContains(t, string(tos.Spec.Raw), "secret")
+	assert.NotContains(t, string(tos.Status.Raw), "alice")
+	assert.NotContains(t, string(tos.Status.Raw), "secret")
+	createdSpec := tos.Spec.Raw
+	exists, err := kubeClient.CheckSecretExists("tos-" + store.StoreUUID())
+	require.NoError(t, err)
+	assert.False(t, exists)
+
+	store.SetState(object.StoreStateDeleting)
+	require.NoError(t, p.UpdateObjectStore(context.Background(), store))
+	tos, err = p.crdClient.TridentV1().TridentObjectStores(p.namespace).Get(
+		context.Background(), netappv1.NameFix(store.Name()), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.JSONEq(t, string(createdSpec), string(tos.Spec.Raw))
+	assert.Equal(t, string(object.StoreStateDeleting), objectStoreStatusString(t, tos.Status.Raw, "state"))
+	assert.Equal(t, store.StoreUUID(), objectStoreStatusString(t, tos.Status.Raw, "uuid"))
+
+	require.NoError(t, p.DeleteObjectStore(context.Background(), store))
+	_, err = p.crdClient.TridentV1().TridentObjectStores(p.namespace).Get(
+		context.Background(), netappv1.NameFix(store.Name()), metav1.GetOptions{},
+	)
+	assert.True(t, errors.IsNotFound(err))
+}
+
+func TestKubernetesObjectStoreDeleteRemovesCreatedSecret(t *testing.T) {
+	p, kubeClient := GetTestKubernetesClient()
+	ctx := context.Background()
+	spec := []byte(`{
+		"objectStoreDriver":"fake",
+		"objectStoreName":"store-a",
+		"credentials":{"secretName":"store-a-creds"}
+	}`)
+	_, err := p.crdClient.TridentV1().TridentObjectStores(p.namespace).Create(ctx, &netappv1.TridentObjectStore{
+		ObjectMeta: metav1.ObjectMeta{Name: "store-a", Namespace: p.namespace},
+		Spec: netappv1.TridentObjectStoreSpec{
+			RawExtension: runtime.RawExtension{Raw: spec},
+		},
+	}, metav1.CreateOptions{})
+	require.NoError(t, err)
+	_, err = kubeClient.CreateSecret(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "store-a-creds", Namespace: p.namespace},
+	})
+	require.NoError(t, err)
+	_, err = kubeClient.CreateSecret(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "user-managed-secret", Namespace: p.namespace},
+	})
+	require.NoError(t, err)
+
+	storeValue, err := objectfake.NewObjectDriver(ctx, []byte(`{"user":"alice","password":"secret"}`),
+		[]byte(`{"objectStoreName":"store-a","endpoint":"https://localhost"}`))
+	require.NoError(t, err)
+	require.NoError(t, storeValue.Initialize(ctx))
+
+	require.NoError(t, p.DeleteObjectStore(ctx, storeValue))
+
+	exists, err := kubeClient.CheckSecretExists("store-a-creds")
+	require.NoError(t, err)
+	assert.False(t, exists)
+	exists, err = kubeClient.CheckSecretExists("user-managed-secret")
+	require.NoError(t, err)
+	assert.True(t, exists)
+}
+
+func TestKubernetesObjectStorePersistenceAdoptsUserCR(t *testing.T) {
+	p, kubeClient := GetTestKubernetesClient()
+	ctx := context.Background()
+	spec := []byte(`{
+		"objectStoreDriver":"fake",
+		"endpoint":"https://localhost",
+		"credentials":{"secretName":"user-managed-secret"}
+	}`)
+	userCR := &netappv1.TridentObjectStore{
+		ObjectMeta: metav1.ObjectMeta{Name: "store-a", Namespace: p.namespace},
+		Spec: netappv1.TridentObjectStoreSpec{
+			RawExtension: runtime.RawExtension{Raw: spec},
+		},
+	}
+	_, err := p.crdClient.TridentV1().TridentObjectStores(p.namespace).Create(ctx, userCR, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	storeValue, err := objectfake.NewObjectDriver(ctx, []byte(`{"user":"alice","password":"secret"}`),
+		[]byte(`{"objectStoreName":"store-a","endpoint":"https://localhost"}`))
+	require.NoError(t, err)
+	require.NoError(t, storeValue.Initialize(ctx))
+	store := storeValue.(*objectfake.ObjectDriver)
+
+	require.NoError(t, p.AddObjectStore(ctx, store))
+
+	adopted, err := p.crdClient.TridentV1().TridentObjectStores(p.namespace).Get(
+		ctx, userCR.Name, metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.JSONEq(t, string(spec), string(adopted.Spec.Raw))
+	assert.Equal(t, string(object.StoreStateOnline), objectStoreStatusString(t, adopted.Status.Raw, "state"))
+	assert.Equal(t, store.StoreUUID(), objectStoreStatusString(t, adopted.Status.Raw, "uuid"))
+	assert.True(t, adopted.HasTridentFinalizers())
+
+	exists, err := kubeClient.CheckSecretExists("tos-" + store.StoreUUID())
+	require.NoError(t, err)
+	assert.False(t, exists)
+}
+
+func objectStoreStatusString(t *testing.T, raw []byte, key string) string {
+	t.Helper()
+	var doc map[string]any
+	require.NoError(t, json.Unmarshal(raw, &doc))
+	value, _ := doc[key].(string)
+	return value
+}
+
+func TestKubernetesBucketPersistence(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+	bucket := &object.Bucket{Name: "bucket-a", StoreName: "store-a"}
+
+	require.NoError(t, p.UpsertBucket(context.Background(), bucket))
+	tb, err := p.crdClient.TridentV1().TridentBuckets(p.namespace).Get(
+		context.Background(), netappv1.NameFix(bucket.Name), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.Equal(t, bucket, tb.Persistent())
+
+	listed, err := p.GetBuckets(context.Background())
+	require.NoError(t, err)
+	require.Len(t, listed, 1)
+	assert.Equal(t, bucket, listed[0])
+
+	bucket.StoreName = "store-b"
+	require.NoError(t, p.UpsertBucket(context.Background(), bucket))
+	tb, err = p.crdClient.TridentV1().TridentBuckets(p.namespace).Get(
+		context.Background(), netappv1.NameFix(bucket.Name), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.Equal(t, "store-b", tb.StoreName)
+
+	require.NoError(t, p.DeleteBucket(context.Background(), bucket))
+	require.NoError(t, p.DeleteBucket(context.Background(), bucket))
+}
+
+func TestKubernetesBucketAccessPersistence(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+	access := &object.BucketAccess{
+		Name:      "access-a",
+		StoreName: "store-a",
+	}
+
+	require.NoError(t, p.UpsertBucketAccess(context.Background(), access))
+	tba, err := p.crdClient.TridentV1().TridentBucketAccesses(p.namespace).Get(
+		context.Background(), netappv1.NameFix(access.Name), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	persisted, err := tba.Persistent()
+	require.NoError(t, err)
+	assert.Equal(t, access, persisted)
+
+	listed, err := p.GetBucketAccesses(context.Background())
+	require.NoError(t, err)
+	require.Len(t, listed, 1)
+	assert.Equal(t, access, listed[0])
+
+	access.StoreName = "store-b"
+	require.NoError(t, p.UpsertBucketAccess(context.Background(), access))
+	tba, err = p.crdClient.TridentV1().TridentBucketAccesses(p.namespace).Get(
+		context.Background(), netappv1.NameFix(access.Name), metav1.GetOptions{},
+	)
+	require.NoError(t, err)
+	assert.Equal(t, "store-b", tba.StoreName)
+	persisted, err = tba.Persistent()
+	require.NoError(t, err)
+	assert.Equal(t, access, persisted)
+
+	require.NoError(t, p.DeleteBucketAccess(context.Background(), access))
+	require.NoError(t, p.DeleteBucketAccess(context.Background(), access))
 }
 
 func TestGetAutogrowPolicies(t *testing.T) {

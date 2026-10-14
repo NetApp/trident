@@ -8,15 +8,14 @@ import (
 	"context"
 	time "time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	runtime "k8s.io/apimachinery/pkg/runtime"
-	watch "k8s.io/apimachinery/pkg/watch"
-	cache "k8s.io/client-go/tools/cache"
-
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	versioned "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	internalinterfaces "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/internalinterfaces"
 	v1 "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+	watch "k8s.io/apimachinery/pkg/watch"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // TridentVolumeMoveInformer provides access to a shared informer and lister for

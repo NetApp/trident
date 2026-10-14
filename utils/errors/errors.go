@@ -20,7 +20,6 @@ const (
 // ///////////////////////////////////////////////////////////////////////////
 // Wrappers for standard library errors package
 // ///////////////////////////////////////////////////////////////////////////
-
 func New(message string) error {
 	return errors.New(message)
 }
@@ -784,10 +783,20 @@ func IsTempOperatorError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type invalidInputError struct {
+	inner   error
 	message string
 }
 
-func (e *invalidInputError) Error() string { return e.message }
+func (e *invalidInputError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *invalidInputError) Unwrap() error { return e.inner }
 
 func InvalidInputError(message string, a ...any) error {
 	if len(a) == 0 {
@@ -796,11 +805,62 @@ func InvalidInputError(message string, a ...any) error {
 	return &invalidInputError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
+func WrapWithInvalidInputError(err error, message string, a ...any) error {
+	return &invalidInputError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
 func IsInvalidInputError(err error) bool {
 	if err == nil {
 		return false
 	}
 	var errPtr *invalidInputError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// bucketNotEmptyError
+// ///////////////////////////////////////////////////////////////////////////
+
+type bucketNotEmptyError struct {
+	inner   error
+	message string
+}
+
+func (e *bucketNotEmptyError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *bucketNotEmptyError) Unwrap() error { return e.inner }
+
+// BucketNotEmptyError reports an object-store bucket delete refused because the bucket still
+// holds objects.
+func BucketNotEmptyError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &bucketNotEmptyError{message: message}
+	}
+	return &bucketNotEmptyError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
+}
+
+func WrapWithBucketNotEmptyError(err error, message string, a ...any) error {
+	return &bucketNotEmptyError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsBucketNotEmptyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *bucketNotEmptyError
 	return errors.As(err, &errPtr)
 }
 

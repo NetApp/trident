@@ -15,6 +15,7 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
@@ -1856,4 +1857,281 @@ func (k *CRDClientV1) GetAutogrowPolicies(ctx context.Context) ([]*storage.Autog
 	}
 
 	return agPolicies, nil
+}
+
+func (k *CRDClientV1) GetObjectStores(ctx context.Context) ([]object.Store, error) {
+	objectStoreList, err := k.crdClient.TridentV1().TridentObjectStores(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	stores := make([]object.Store, 0, len(objectStoreList.Items))
+	for _, tos := range objectStoreList.Items {
+		if tos == nil {
+			continue
+		}
+		if !tos.ObjectMeta.DeletionTimestamp.IsZero() {
+			Logc(ctx).WithFields(LogFields{
+				"objectStoreName":   tos.Name,
+				"DeletionTimestamp": tos.DeletionTimestamp,
+			}).Debug("GetObjectStores skipping deleted object store.")
+			continue
+		}
+
+		var secretConfig []byte
+		secretName, secretNameErr := tos.Spec.GetSecretName()
+		if secretNameErr != nil {
+			return nil, secretNameErr
+		}
+		if secretName != "" {
+			secret, secretErr := k.k8sClient.GetSecret(secretName)
+			if secretErr != nil {
+				Logc(ctx).WithFields(LogFields{
+					"objectStoreName": tos.Name,
+					"secretName":      secretName,
+				}).WithError(secretErr).Debug("GetObjectStores skipping object store with secret not found.")
+				continue
+			}
+			secretConfig, secretErr = v1.SecretConfig(secret.Data)
+			if secretErr != nil {
+				Logc(ctx).WithFields(LogFields{
+					"objectStoreName": tos.Name,
+					"secretName":      secretName,
+				}).WithError(secretErr).Debug("GetObjectStores skipping object store with secret config error.")
+				continue
+			}
+		}
+
+		store, persistErr := tos.Persistent(ctx, secretConfig)
+		if persistErr != nil {
+			return nil, persistErr
+		}
+		stores = append(stores, store)
+	}
+	return stores, nil
+}
+
+func (k *CRDClientV1) AddObjectStore(ctx context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	if store.Name() == "" || store.StoreUUID() == "" {
+		return fmt.Errorf("object store name and UUID are required")
+	}
+
+	name := v1.NameFix(store.Name())
+	objectStoreClient := k.crdClient.TridentV1().TridentObjectStores(k.namespace)
+	existing, err := objectStoreClient.Get(ctx, name, getOpts)
+	if err == nil {
+		// A Kubernetes user creates the TridentObjectStore before the CRD frontend
+		// constructs and initializes its driver. Adopt that CR without replacing its
+		// free-form spec; credentials stay in the user-supplied Secret.
+		copy := existing.DeepCopy()
+		copy.AddTridentFinalizers()
+		updated, updateErr := objectStoreClient.Update(ctx, copy, updateOpts)
+		if updateErr != nil {
+			return updateErr
+		}
+		if applyErr := updated.Apply(store); applyErr != nil {
+			return applyErr
+		}
+		_, updateErr = objectStoreClient.UpdateStatus(ctx, updated, updateOpts)
+		return updateErr
+	} else if !k8sapierrors.IsNotFound(err) {
+		return err
+	}
+
+	tos, err := v1.NewTridentObjectStore(store)
+	if err != nil {
+		return err
+	}
+	created, err := objectStoreClient.Create(ctx, tos, createOpts)
+	if err != nil {
+		return err
+	}
+	created.Status = tos.Status
+	if _, err = objectStoreClient.UpdateStatus(ctx, created, updateOpts); err != nil {
+		_ = k.deleteObjectStoreCRD(ctx, created)
+		return err
+	}
+	return nil
+}
+
+func (k *CRDClientV1) UpdateObjectStore(ctx context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	tosClient := k.crdClient.TridentV1().TridentObjectStores(k.namespace)
+	tos, err := tosClient.Get(ctx, v1.NameFix(store.Name()), getOpts)
+	if err != nil {
+		return err
+	}
+	if err = tos.Apply(store); err != nil {
+		return err
+	}
+	_, err = tosClient.UpdateStatus(ctx, tos, updateOpts)
+	return err
+}
+
+func (k *CRDClientV1) DeleteObjectStore(ctx context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	tos, err := k.crdClient.TridentV1().TridentObjectStores(k.namespace).Get(ctx, v1.NameFix(store.Name()), getOpts)
+	if k8sapierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return k.deleteObjectStoreCRD(ctx, tos)
+}
+
+func (k *CRDClientV1) GetBuckets(ctx context.Context) ([]*object.Bucket, error) {
+	bucketList, err := k.crdClient.TridentV1().TridentBuckets(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	buckets := make([]*object.Bucket, 0, len(bucketList.Items))
+	for _, tb := range bucketList.Items {
+		if tb == nil {
+			continue
+		}
+		if !tb.ObjectMeta.DeletionTimestamp.IsZero() {
+			Logc(ctx).WithFields(LogFields{
+				"bucketName":        tb.Name,
+				"DeletionTimestamp": tb.DeletionTimestamp,
+			}).Debug("GetBuckets skipping deleted bucket.")
+			continue
+		}
+		buckets = append(buckets, tb.Persistent())
+	}
+	return buckets, nil
+}
+
+func (k *CRDClientV1) UpsertBucket(ctx context.Context, bucket *object.Bucket) error {
+	if bucket == nil || bucket.Name == "" {
+		return fmt.Errorf("bucket name is required")
+	}
+	client := k.crdClient.TridentV1().TridentBuckets(k.namespace)
+	name := v1.NameFix(bucket.Name)
+	tb, err := client.Get(ctx, name, getOpts)
+	if k8sapierrors.IsNotFound(err) {
+		tb, err = v1.NewTridentBucket(bucket)
+		if err != nil {
+			return err
+		}
+		_, err = client.Create(ctx, tb, createOpts)
+		return err
+	} else if err != nil {
+		return err
+	}
+	if err = tb.Apply(bucket); err != nil {
+		return err
+	}
+	_, err = client.Update(ctx, tb, updateOpts)
+	return err
+}
+
+func (k *CRDClientV1) DeleteBucket(ctx context.Context, bucket *object.Bucket) error {
+	if bucket == nil {
+		return fmt.Errorf("bucket is nil")
+	}
+	err := k.crdClient.TridentV1().TridentBuckets(k.namespace).Delete(ctx, v1.NameFix(bucket.Name), k.deleteOpts())
+	if k8sapierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+func (k *CRDClientV1) GetBucketAccesses(ctx context.Context) ([]*object.BucketAccess, error) {
+	accessList, err := k.crdClient.TridentV1().TridentBucketAccesses(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	accesses := make([]*object.BucketAccess, 0, len(accessList.Items))
+	for _, tba := range accessList.Items {
+		if tba == nil {
+			continue
+		}
+		if !tba.ObjectMeta.DeletionTimestamp.IsZero() {
+			Logc(ctx).WithFields(LogFields{
+				"bucketAccessName":  tba.Name,
+				"DeletionTimestamp": tba.DeletionTimestamp,
+			}).Debug("GetBucketAccesses skipping deleted bucket access.")
+			continue
+		}
+		access, persistErr := tba.Persistent()
+		if persistErr != nil {
+			return nil, persistErr
+		}
+		accesses = append(accesses, access)
+	}
+	return accesses, nil
+}
+
+func (k *CRDClientV1) UpsertBucketAccess(ctx context.Context, access *object.BucketAccess) error {
+	if access == nil || access.Name == "" {
+		return fmt.Errorf("bucket access name is required")
+	}
+	client := k.crdClient.TridentV1().TridentBucketAccesses(k.namespace)
+	name := v1.NameFix(access.Name)
+	tba, err := client.Get(ctx, name, getOpts)
+	if k8sapierrors.IsNotFound(err) {
+		tba, err = v1.NewTridentBucketAccess(access)
+		if err != nil {
+			return err
+		}
+		_, err = client.Create(ctx, tba, createOpts)
+		return err
+	} else if err != nil {
+		return err
+	}
+	if err = tba.Apply(access); err != nil {
+		return err
+	}
+	_, err = client.Update(ctx, tba, updateOpts)
+	return err
+}
+
+func (k *CRDClientV1) DeleteBucketAccess(ctx context.Context, access *object.BucketAccess) error {
+	if access == nil {
+		return fmt.Errorf("bucket access is nil")
+	}
+	err := k.crdClient.TridentV1().TridentBucketAccesses(k.namespace).Delete(
+		ctx, v1.NameFix(access.Name), k.deleteOpts(),
+	)
+	if k8sapierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+func (k *CRDClientV1) deleteObjectStoreCRD(ctx context.Context, tos *v1.TridentObjectStore) error {
+	// Delete the tridentctl-created Secret. A user-supplied credentials secret is left alone.
+	// A secret delete failure is logged and does not block object store deletion.
+	secretName, _ := tos.Spec.GetSecretName()
+	if secretName != "" && secretName == tos.Name+"-creds" {
+		if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil && !k8sapierrors.IsNotFound(err) {
+			Logc(ctx).WithFields(LogFields{
+				"objectStore": tos.Name,
+				"secret":      secretName,
+			}).WithError(err).Error("Could not delete object store secret.")
+		}
+	}
+
+	client := k.crdClient.TridentV1().TridentObjectStores(k.namespace)
+	if tos.HasTridentFinalizers() {
+		copy := tos.DeepCopy()
+		copy.RemoveTridentFinalizers()
+		if _, err := client.Update(ctx, copy, updateOpts); err != nil && !k8sapierrors.IsNotFound(err) {
+			return err
+		}
+	}
+	err := client.Delete(ctx, tos.Name, k.deleteOpts())
+	if k8sapierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
 }

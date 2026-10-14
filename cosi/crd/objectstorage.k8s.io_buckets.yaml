@@ -1,0 +1,261 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: unapproved, experimental v1alpha2 changes
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: buckets.objectstorage.k8s.io
+spec:
+  group: objectstorage.k8s.io
+  names:
+    kind: Bucket
+    listKind: BucketList
+    plural: buckets
+    singular: bucket
+  scope: Cluster
+  versions:
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: Bucket is the Schema for the buckets API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of Bucket
+            properties:
+              bucketClaimRef:
+                description: |-
+                  bucketClaimRef references the BucketClaim that resulted in the creation of this Bucket.
+                  For statically-provisioned buckets, set the namespace and name of the BucketClaim that is
+                  allowed to bind to this Bucket; UID may be left unset if desired and will be updated by COSI.
+                properties:
+                  name:
+                    description: |-
+                      name is the name of the BucketClaim being referenced.
+                      Must be a valid Kubernetes resource name: at most 253 characters, consisting only of
+                      lower-case alphanumeric characters, hyphens, and periods, starting and ending with an
+                      alphanumeric character.
+                    maxLength: 253
+                    minLength: 1
+                    type: string
+                    x-kubernetes-validations:
+                    - message: name must be a valid resource name
+                      rule: '!format.dns1123Subdomain().validate(self).hasValue()'
+                    - message: name is immutable
+                      rule: self == oldSelf
+                  namespace:
+                    description: |-
+                      namespace is the namespace of the BucketClaim being referenced.
+                      Must be a valid Kubernetes Namespace name: at most 63 characters, consisting only of
+                      lower-case alphanumeric characters and hyphens, starting and ending with alphanumerics.
+                    maxLength: 63
+                    minLength: 1
+                    type: string
+                    x-kubernetes-validations:
+                    - message: namespace must be a valid namespace name
+                      rule: '!format.dns1123Label().validate(self).hasValue()'
+                    - message: namespace is immutable
+                      rule: self == oldSelf
+                  uid:
+                    description: |-
+                      uid is the UID of the BucketClaim being referenced.
+                      Must be a valid Kubernetes UID: RFC 4122 form with lowercase hexadecimal characters
+                      (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                    maxLength: 36
+                    minLength: 36
+                    pattern: ^[0-9a-f]{8}-([0-9a-f]{4}\-){3}[0-9a-f]{12}$
+                    type: string
+                    x-kubernetes-validations:
+                    - message: uid is immutable once set
+                      rule: oldSelf == '' || self == oldSelf
+                required:
+                - name
+                - namespace
+                type: object
+                x-kubernetes-validations:
+                - message: namespace cannot be removed once set
+                  rule: '!has(oldSelf.namespace) || has(self.namespace)'
+                - message: uid cannot be removed once set
+                  rule: '!has(oldSelf.uid) || has(self.uid)'
+              deletionPolicy:
+                description: |-
+                  deletionPolicy determines whether a Bucket should be deleted when its bound BucketClaim is
+                  deleted. This is mutable to allow Admins to change the policy after creation.
+                  Possible values:
+                   - Retain: keep both the Bucket object and the backend bucket
+                   - Delete: delete both the Bucket object and the backend bucket
+                enum:
+                - Retain
+                - Delete
+                type: string
+              driverName:
+                description: |-
+                  driverName is the name of the driver that fulfills requests for this Bucket.
+                  See driver documentation to determine the correct value to set.
+                  Must be 63 characters or less, beginning and ending with an alphanumeric character
+                  ([a-z0-9A-Z]) with dashes (-), dots (.), and alphanumerics between.
+                maxLength: 63
+                minLength: 1
+                pattern: ^[a-zA-Z0-9]([a-zA-Z0-9\-\.]{0,61}[a-zA-Z0-9])?$
+                type: string
+                x-kubernetes-validations:
+                - message: driverName is immutable
+                  rule: self == oldSelf
+              existingBucketID:
+                description: |-
+                  existingBucketID is the unique identifier for an existing backend bucket known to the driver.
+                  Use driver documentation to determine the correct value to set.
+                  This field is used only for static Bucket provisioning.
+                  This field will be empty when the Bucket is dynamically provisioned from a BucketClaim.
+                  Must be at most 2048 characters and consist only of alphanumeric characters ([a-z0-9A-Z]),
+                  dashes (-), dots (.), underscores (_), and forward slash (/).
+                maxLength: 2048
+                minLength: 1
+                pattern: ^[a-zA-Z0-9/._-]+$
+                type: string
+                x-kubernetes-validations:
+                - message: existingBucketID is immutable
+                  rule: self == oldSelf
+              parameters:
+                additionalProperties:
+                  type: string
+                description: |-
+                  parameters is an opaque map of driver-specific configuration items passed to the driver that
+                  fulfills requests for this Bucket.
+                  See driver documentation to determine supported parameters and their effects.
+                  A maximum of 512 parameters are allowed.
+                maxProperties: 512
+                minProperties: 1
+                type: object
+                x-kubernetes-validations:
+                - message: parameters map is immutable
+                  rule: self == oldSelf
+              protocols:
+                description: |-
+                  protocols lists object store protocols that the provisioned Bucket must support.
+                  If specified, COSI will verify that each item is advertised as supported by the driver.
+                  See driver documentation to determine supported protocols.
+                  Possible values: 'S3', 'Azure', 'GCS'.
+                items:
+                  description: ObjectProtocol represents an object protocol type.
+                  enum:
+                  - S3
+                  - Azure
+                  - GCS
+                  type: string
+                maxItems: 3
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: set
+                x-kubernetes-validations:
+                - message: protocols list is immutable
+                  rule: self == oldSelf
+            required:
+            - bucketClaimRef
+            - deletionPolicy
+            - driverName
+            type: object
+            x-kubernetes-validations:
+            - message: parameters map cannot be added or removed after creation
+              rule: has(oldSelf.parameters) == has(self.parameters)
+            - message: protocols list cannot be added or removed after creation
+              rule: has(oldSelf.protocols) == has(self.protocols)
+            - message: existingBucketID cannot be added or removed after creation
+              rule: has(oldSelf.existingBucketID) == has(self.existingBucketID)
+          status:
+            description: status defines the observed state of Bucket
+            properties:
+              bucketID:
+                description: |-
+                  bucketID is the unique identifier for the backend bucket known to the driver.
+                  Must be at most 2048 characters and consist only of alphanumeric characters ([a-z0-9A-Z]),
+                  dashes (-), dots (.), underscores (_), and forward slash (/).
+                maxLength: 2048
+                minLength: 1
+                pattern: ^[a-zA-Z0-9/._-]+$
+                type: string
+                x-kubernetes-validations:
+                - message: boundBucketName is immutable once set
+                  rule: self == oldSelf
+              bucketInfo:
+                additionalProperties:
+                  type: string
+                description: |-
+                  bucketInfo contains info about the bucket reported by the driver, rendered in the same
+                  COSI_<PROTOCOL>_<KEY> format used for the BucketAccess Secret.
+                  e.g., COSI_S3_ENDPOINT, COSI_AZURE_STORAGE_ACCOUNT.
+                  This should not contain any sensitive information.
+                maxProperties: 128
+                minProperties: 1
+                type: object
+              error:
+                description: |-
+                  error holds the most recent error message, with a timestamp.
+                  This is cleared when provisioning is successful.
+                minProperties: 0
+                properties:
+                  message:
+                    description: |-
+                      message is a string detailing the encountered error.
+                      NOTE: message will be logged, and it should not contain sensitive information.
+                      Must not exceed 1.5MB.
+                    maxLength: 1572864
+                    minLength: 0
+                    type: string
+                  time:
+                    description: time is the timestamp when the error was encountered.
+                    format: date-time
+                    type: string
+                type: object
+              protocols:
+                description: |-
+                  protocols is the set of protocols the Bucket reports to support. BucketAccesses can request
+                  access to this Bucket using any of the protocols reported here.
+                  Possible values: 'S3', 'Azure', 'GCS'.
+                items:
+                  description: ObjectProtocol represents an object protocol type.
+                  enum:
+                  - S3
+                  - Azure
+                  - GCS
+                  type: string
+                maxItems: 3
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: set
+              readyToUse:
+                description: readyToUse indicates that the bucket is ready for consumption
+                  by workloads.
+                type: boolean
+            required:
+            - readyToUse
+            type: object
+            x-kubernetes-validations:
+            - message: bucketID cannot be removed once set
+              rule: '!has(oldSelf.bucketID) || has(self.bucketID)'
+            - message: protocols cannot be removed once set
+              rule: '!has(oldSelf.protocols) || has(self.protocols)'
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

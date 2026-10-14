@@ -43,12 +43,16 @@ func withUpdateNodeTestMode(operatingMode string, flags updateNodeTestFlags, fn 
 	oldOrchReady := orchestratorReady
 	oldAdminReady := administratorReady
 	oldProvReady := provisionerReady
+	oldKubernetesCLI := KubernetesCLI
 
 	OperatingMode = operatingMode
 	forceUpdate = flags.forceUpdate
 	orchestratorReady = flags.orchestratorReady
 	administratorReady = flags.administratorReady
 	provisionerReady = flags.provisionerReady
+	// Tunnel mode asserts that no CLI has been discovered. Another test in this package can leave
+	// KubernetesCLI set to kubectl, which would send the command at a real cluster.
+	KubernetesCLI = ""
 
 	defer func() {
 		OperatingMode = oldOperatingMode
@@ -56,6 +60,7 @@ func withUpdateNodeTestMode(operatingMode string, flags updateNodeTestFlags, fn 
 		orchestratorReady = oldOrchReady
 		administratorReady = oldAdminReady
 		provisionerReady = oldProvReady
+		KubernetesCLI = oldKubernetesCLI
 	}()
 
 	fn()

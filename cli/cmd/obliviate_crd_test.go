@@ -1,20 +1,31 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"sync"
 	"testing"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	fakedynamic "k8s.io/client-go/dynamic/fake"
 
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	cosicrd "github.com/netapp/trident/cosi/crd"
+	"github.com/netapp/trident/logging"
 	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	fakeTridentClient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 )
 
 var (
@@ -37,6 +48,8 @@ func withObliviateCRDTestMode(t *testing.T, fn func()) {
 
 	// Save original state
 	originalK8sClient := k8sClient
+	originalCRDClientset := crdClientset
+	originalDynamicClient := dynamicClient
 	originalK8sTimeout := k8sTimeout
 	originalOperatingMode := OperatingMode
 	originalForceObliviate := forceObliviate
@@ -45,6 +58,8 @@ func withObliviateCRDTestMode(t *testing.T, fn func()) {
 	defer func() {
 		// Restore original state
 		k8sClient = originalK8sClient
+		crdClientset = originalCRDClientset
+		dynamicClient = originalDynamicClient
 		k8sTimeout = originalK8sTimeout
 		OperatingMode = originalOperatingMode
 		forceObliviate = originalForceObliviate
@@ -76,12 +91,30 @@ func setupCRDNotExists(mockK8s *mockK8sClient.MockKubernetesClient, crdName stri
 	mockK8s.EXPECT().CheckCRDExists(crdName).Return(false, nil)
 }
 
+// expectCOSIOwnershipPrePass sets up the ownership lookup obliviateCRDs runs over the COSI CRDs
+// before either delete phase. Every CRD comes back Trident-managed, so all of them stay in the
+// list and the rest of a test's expectations are unaffected.
+func expectCOSIOwnershipPrePass(mockK8s *mockK8sClient.MockKubernetesClient) {
+	for _, crdName := range k8sclient.COSICRDNames() {
+		mockK8s.EXPECT().GetCRD(crdName).Return(tridentManagedCOSICRD(crdName), nil)
+	}
+}
+
+func tridentManagedCOSICRD(name string) *apiextensionsv1.CustomResourceDefinition {
+	crd := createTestCRD(name, false, false)
+	crd.Labels = map[string]string{cosicrd.ManagedByLabel: cosicrd.ManagedByValue}
+	return crd
+}
+
 // getAllTridentCRDs returns the complete list of Trident CRDs from the implementation
 func getAllTridentCRDs() []string {
 	return []string{
 		"tridentversions.trident.netapp.io",
 		"tridentbackendconfigs.trident.netapp.io",
 		"tridentbackends.trident.netapp.io",
+		"tridentbucketaccesses.trident.netapp.io",
+		"tridentbuckets.trident.netapp.io",
+		"tridentobjectstores.trident.netapp.io",
 		"tridentstorageclasses.trident.netapp.io",
 		"tridentmirrorrelationships.trident.netapp.io",
 		"tridentactionmirrorupdates.trident.netapp.io",
@@ -95,12 +128,20 @@ func getAllTridentCRDs() []string {
 		"tridentvolumereferences.trident.netapp.io",
 		"tridentactionsnapshotrestores.trident.netapp.io",
 		"tridentvolumemoves.trident.netapp.io",
+		"tridentnoderemediations.trident.netapp.io",
+		"tridentnoderemediationtemplates.trident.netapp.io",
 		"tridentconfigurators.trident.netapp.io",
 		"tridentorchestrators.trident.netapp.io",
 		"tridentautogrowpolicies.trident.netapp.io",
 		"tridentautogrowrequestinternals.trident.netapp.io",
-		"tridentnoderemediations.trident.netapp.io",
-		"tridentnoderemediationtemplates.trident.netapp.io",
+
+		// COSI CRDs are obliviated alongside Trident's own, but only the ones Trident
+		// installed: tridentManagedCOSICRDNames drops the rest before either delete phase.
+		"buckets.objectstorage.k8s.io",
+		"bucketclaims.objectstorage.k8s.io",
+		"bucketclasses.objectstorage.k8s.io",
+		"bucketaccesses.objectstorage.k8s.io",
+		"bucketaccessclasses.objectstorage.k8s.io",
 	}
 }
 
@@ -209,6 +250,7 @@ func TestObliviateCRDs(t *testing.T) {
 				mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
 				k8sClient = mockK8s
 
+				expectCOSIOwnershipPrePass(mockK8s)
 				tt.mockFunc(mockK8s)
 
 				err := obliviateCRDs(tt.skipCRDs)
@@ -218,6 +260,64 @@ func TestObliviateCRDs(t *testing.T) {
 				} else {
 					assert.NoError(t, err)
 				}
+			})
+		})
+	}
+}
+
+func TestDeleteObjectStores(t *testing.T) {
+	tests := []struct {
+		name           string
+		objectStores   []*tridentv1.TridentObjectStore
+		expectedOutput string
+	}{
+		{
+			name:           "NoResourcesPresent",
+			expectedOutput: "Resources not present.",
+		},
+		{
+			name: "ResourcesDeleted",
+			objectStores: []*tridentv1.TridentObjectStore{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "object-store",
+						Namespace: "trident",
+					},
+				},
+			},
+			expectedOutput: "Resources deleted.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withObliviateCRDTestMode(t, func() {
+				ctrl := gomock.NewController(t)
+				mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+				mockK8s.EXPECT().CheckCRDExists("tridentobjectstores.trident.netapp.io").Return(true, nil)
+				k8sClient = mockK8s
+
+				objects := make([]runtime.Object, 0, len(tt.objectStores))
+				for _, objectStore := range tt.objectStores {
+					objects = append(objects, objectStore)
+				}
+				crdClientset = fakeTridentClient.NewSimpleClientset(objects...)
+
+				var output bytes.Buffer
+				originalOutput := log.StandardLogger().Out
+				originalLevel := log.GetLevel()
+				originalDefaultLevel := logging.GetDefaultLogLevel()
+				log.SetOutput(&output)
+				log.SetLevel(log.InfoLevel)
+				assert.NoError(t, logging.SetDefaultLogLevel("info"))
+				defer func() {
+					log.SetOutput(originalOutput)
+					log.SetLevel(originalLevel)
+					_ = logging.SetDefaultLogLevel(originalDefaultLevel)
+				}()
+
+				assert.NoError(t, deleteObjectStores())
+				assert.Contains(t, output.String(), tt.expectedOutput)
 			})
 		})
 	}
@@ -760,6 +860,46 @@ func TestFilterCRDs(t *testing.T) {
 	}
 }
 
+// TestObliviateCRDsLeavesForeignCOSICRDsAlone covers the case where another COSI provider owns one
+// of the CRDs. Obliviate must not delete it, and must not delete the objects under it, while still
+// clearing Trident's own CRDs and succeeding.
+//
+// Deleting a foreign CRD is unrecoverable: it takes that provider's objects with it, and a CRD
+// deletionTimestamp cannot be revoked. Guarding only the custom-resource phase is not enough,
+// which is what this test pins down.
+func TestObliviateCRDsLeavesForeignCOSICRDsAlone(t *testing.T) {
+	const foreignCRD = "buckets.objectstorage.k8s.io"
+
+	withObliviateCRDTestMode(t, func() {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+		k8sClient = mockK8s
+
+		// The foreign CRD carries another provider's managed-by value.
+		foreign := createTestCRD(foreignCRD, false, false)
+		foreign.Labels = map[string]string{cosicrd.ManagedByLabel: "cosi-driver.example.com"}
+		mockK8s.EXPECT().GetCRD(foreignCRD).Return(foreign, nil)
+
+		for _, crdName := range k8sclient.COSICRDNames() {
+			if crdName != foreignCRD {
+				mockK8s.EXPECT().GetCRD(crdName).Return(tridentManagedCOSICRD(crdName), nil)
+			}
+		}
+
+		// Every CRD that survives the ownership filter is looked up once per delete phase.
+		// The foreign CRD is absent from that set, so any call naming it fails the test.
+		for _, crdName := range getAllTridentCRDs() {
+			if crdName != foreignCRD {
+				mockK8s.EXPECT().CheckCRDExists(crdName).Return(false, nil).Times(2)
+			}
+		}
+
+		assert.NoError(t, obliviateCRDs([]string{}))
+	})
+}
+
 func TestObliviateCRDsPublicFunction(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -798,9 +938,12 @@ func TestObliviateCRDsPublicFunction(t *testing.T) {
 				defer ctrl.Finish()
 
 				mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+				k8sClient = mockK8s
+
+				expectCOSIOwnershipPrePass(mockK8s)
 				tt.mockFunc(mockK8s)
 
-				err := ObliviateCRDs(mockK8s, nil, nil, normalTimeout, tt.skipCRDs)
+				err := ObliviateCRDs(mockK8s, nil, nil, nil, normalTimeout, tt.skipCRDs)
 
 				if tt.err {
 					assert.Error(t, err)
@@ -810,4 +953,152 @@ func TestObliviateCRDsPublicFunction(t *testing.T) {
 			})
 		})
 	}
+}
+
+// The operator reaches obliviate only through ObliviateCRDs, so the dynamic client it passes is
+// the only one deleteCOSICRs can use when a Trident-installed COSI CRD is present.
+func TestObliviateCRDsClearsCOSICRsWithGivenDynamicClient(t *testing.T) {
+	const cosiCRD = cosicrd.BucketClaimCRDName
+	gvr := schema.GroupVersionResource{Group: cosicrd.Group, Version: cosicrd.Version, Resource: "bucketclaims"}
+
+	withObliviateCRDTestMode(t, func() {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+		dynamicClient = nil
+
+		claim := &unstructured.Unstructured{}
+		claim.SetAPIVersion(cosicrd.Group + "/" + cosicrd.Version)
+		claim.SetKind("BucketClaim")
+		claim.SetNamespace("default")
+		claim.SetName("claim-1")
+		claim.SetFinalizers([]string{"objectstorage.k8s.io/protection"})
+		fakeDynamic := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
+			runtime.NewScheme(), map[schema.GroupVersionResource]string{gvr: "BucketClaimList"}, claim)
+
+		managed := tridentManagedCOSICRD(cosiCRD)
+		managed.Spec.Group = cosicrd.Group
+		managed.Spec.Names.Plural = "bucketclaims"
+
+		expectCOSIOwnershipPrePass(mockK8s)
+		for _, crdName := range getAllTridentCRDs() {
+			if crdName != cosiCRD {
+				mockK8s.EXPECT().CheckCRDExists(crdName).Return(false, nil).Times(2)
+			}
+		}
+		mockK8s.EXPECT().CheckCRDExists(cosiCRD).Return(true, nil)
+		mockK8s.EXPECT().GetCRD(cosiCRD).Return(managed, nil)
+		mockK8s.EXPECT().CheckCRDExists(cosiCRD).Return(true, nil)
+		mockK8s.EXPECT().GetCRD(cosiCRD).Return(managed, nil)
+		mockK8s.EXPECT().DeleteCRD(cosiCRD).Return(nil)
+		mockK8s.EXPECT().CheckCRDExists(cosiCRD).Return(false, nil)
+
+		assert.NoError(t, ObliviateCRDs(mockK8s, nil, nil, fakeDynamic, normalTimeout, []string{}))
+
+		got, err := fakeDynamic.Resource(gvr).Namespace("default").Get(testCtx, "claim-1", metav1.GetOptions{})
+		assert.NoError(t, err)
+		assert.Empty(t, got.GetFinalizers())
+	})
+}
+
+func TestTridentManagedCOSICRDNames(t *testing.T) {
+	const foreignCRD = "buckets.objectstorage.k8s.io"
+
+	notFound := &apierrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
+
+	foreignOwned := createTestCRD(foreignCRD, false, false)
+	foreignOwned.Labels = map[string]string{cosicrd.ManagedByLabel: "cosi-driver.example.com"}
+
+	unlabelled := createTestCRD(foreignCRD, false, false)
+
+	tests := []struct {
+		name     string
+		mockFunc func(*mockK8sClient.MockKubernetesClient)
+		want     []string
+		wantErr  bool
+	}{
+		{
+			name: "AllTridentManaged",
+			mockFunc: func(mockK8s *mockK8sClient.MockKubernetesClient) {
+				expectCOSIOwnershipPrePass(mockK8s)
+			},
+			want: k8sclient.COSICRDNames(),
+		},
+		{
+			name: "AbsentCRDsStayInTheList",
+			mockFunc: func(mockK8s *mockK8sClient.MockKubernetesClient) {
+				for _, crdName := range k8sclient.COSICRDNames() {
+					mockK8s.EXPECT().GetCRD(crdName).Return(nil, notFound)
+				}
+			},
+			want: k8sclient.COSICRDNames(),
+		},
+		{
+			name: "ForeignProviderCRDIsDropped",
+			mockFunc: func(mockK8s *mockK8sClient.MockKubernetesClient) {
+				for _, crdName := range k8sclient.COSICRDNames() {
+					if crdName == foreignCRD {
+						mockK8s.EXPECT().GetCRD(crdName).Return(foreignOwned, nil)
+						continue
+					}
+					mockK8s.EXPECT().GetCRD(crdName).Return(tridentManagedCOSICRD(crdName), nil)
+				}
+			},
+			want: withoutCRD(k8sclient.COSICRDNames(), foreignCRD),
+		},
+		{
+			name: "UnlabelledCRDIsDropped",
+			mockFunc: func(mockK8s *mockK8sClient.MockKubernetesClient) {
+				for _, crdName := range k8sclient.COSICRDNames() {
+					if crdName == foreignCRD {
+						mockK8s.EXPECT().GetCRD(crdName).Return(unlabelled, nil)
+						continue
+					}
+					mockK8s.EXPECT().GetCRD(crdName).Return(tridentManagedCOSICRD(crdName), nil)
+				}
+			},
+			want: withoutCRD(k8sclient.COSICRDNames(), foreignCRD),
+		},
+		{
+			name: "APIErrorIsReturned",
+			mockFunc: func(mockK8s *mockK8sClient.MockKubernetesClient) {
+				mockK8s.EXPECT().GetCRD(gomock.Any()).Return(nil, fmt.Errorf("api error"))
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withObliviateCRDTestMode(t, func() {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
+
+				mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+				k8sClient = mockK8s
+
+				tt.mockFunc(mockK8s)
+
+				got, err := tridentManagedCOSICRDNames()
+
+				if tt.wantErr {
+					assert.Error(t, err)
+					return
+				}
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			})
+		})
+	}
+}
+
+func withoutCRD(crdNames []string, exclude string) []string {
+	kept := make([]string, 0, len(crdNames))
+	for _, crdName := range crdNames {
+		if crdName != exclude {
+			kept = append(kept, crdName)
+		}
+	}
+	return kept
 }

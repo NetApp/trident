@@ -243,6 +243,18 @@ func TestSimpleErrorTypes(t *testing.T) {
 			isErrFunc:   IsInvalidInputError,
 			expectedMsg: "simple input message",
 		},
+		{
+			name:        "BucketNotEmptyError_WithArgs",
+			createErr:   func() error { return BucketNotEmptyError("bucket %s is not empty", "b1") },
+			isErrFunc:   IsBucketNotEmptyError,
+			expectedMsg: "bucket b1 is not empty",
+		},
+		{
+			name:        "BucketNotEmptyError_Wrapped",
+			createErr:   func() error { return WrapWithBucketNotEmptyError(errors.New("409"), "delete bucket %s", "b1") },
+			isErrFunc:   IsBucketNotEmptyError,
+			expectedMsg: "delete bucket b1; 409",
+		},
 	}
 
 	for _, tt := range tests {

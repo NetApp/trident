@@ -20,6 +20,15 @@ type MultipleBackendResponse struct {
 	Items []storage.BackendExternal `json:"items"`
 }
 
+type GetObjectStoreResponse struct {
+	ObjectStore map[string]interface{} `json:"objectStore"`
+	Error       string                 `json:"error"`
+}
+
+type MultipleObjectStoreResponse struct {
+	Items []map[string]interface{} `json:"items"`
+}
+
 type StorageClass struct {
 	Config struct {
 		Version         string              `json:"version"`

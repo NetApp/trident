@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -52,6 +53,22 @@ func expectOpenShiftCLIAvailable(mock *mockexec.MockCommand) {
 
 func expectKubernetesCLIUnavailableForTest(t *testing.T) {
 	t.Helper()
+
+	// Earlier tests in this package leave Server or TRIDENT_SERVER set. Either one selects direct
+	// mode before the CLI is consulted, so the mock below would never run.
+	prevServer := Server
+	Server = ""
+	prevEnv, hadEnv := os.LookupEnv("TRIDENT_SERVER")
+	if err := os.Unsetenv("TRIDENT_SERVER"); err != nil {
+		t.Fatalf("Unsetenv(TRIDENT_SERVER): %v", err)
+	}
+	t.Cleanup(func() {
+		Server = prevServer
+		if hadEnv {
+			_ = os.Setenv("TRIDENT_SERVER", prevEnv)
+		}
+	})
+
 	mock := withMockCommand(t)
 	expectKubernetesCLIUnavailable(mock)
 }

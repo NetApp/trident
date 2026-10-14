@@ -1,0 +1,180 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: unapproved, experimental v1alpha2 changes
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: bucketclaims.objectstorage.k8s.io
+spec:
+  group: objectstorage.k8s.io
+  names:
+    kind: BucketClaim
+    listKind: BucketClaimList
+    plural: bucketclaims
+    singular: bucketclaim
+  scope: Namespaced
+  versions:
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: BucketClaim is the Schema for the bucketclaims API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of BucketClaim
+            minProperties: 1
+            properties:
+              bucketClassName:
+                description: |-
+                  bucketClassName selects the BucketClass for provisioning the BucketClaim.
+                  This field is used only for BucketClaim dynamic provisioning.
+                  If unspecified, existingBucketName must be specified for binding to an existing Bucket.
+                  Must be a valid Kubernetes resource name: at most 253 characters, consisting only of
+                  lower-case alphanumeric characters, hyphens, and periods, starting and ending with an
+                  alphanumeric character.
+                maxLength: 253
+                minLength: 1
+                type: string
+                x-kubernetes-validations:
+                - message: name must be a valid resource name
+                  rule: '!format.dns1123Subdomain().validate(self).hasValue()'
+                - message: bucketClassName is immutable
+                  rule: self == oldSelf
+              existingBucketName:
+                description: |-
+                  existingBucketName selects the name of an existing Bucket resource that this BucketClaim
+                  should bind to.
+                  This field is used only for BucketClaim static provisioning.
+                  If unspecified, bucketClassName must be specified for dynamically provisioning a new bucket.
+                  Must be a valid Kubernetes resource name: at most 253 characters, consisting only of
+                  lower-case alphanumeric characters, hyphens, and periods, starting and ending with an
+                  alphanumeric character.
+                maxLength: 253
+                minLength: 1
+                type: string
+                x-kubernetes-validations:
+                - message: name must be a valid resource name
+                  rule: '!format.dns1123Subdomain().validate(self).hasValue()'
+                - message: existingBucketName is immutable
+                  rule: self == oldSelf
+              protocols:
+                description: |-
+                  protocols lists object storage protocols that the provisioned Bucket must support.
+                  If specified, COSI will verify that each item is advertised as supported by the driver.
+                  It is recommended to specify all protocols that applications will rely on in BucketAccesses
+                  referencing this BucketClaim.
+                  Possible values: 'S3', 'Azure', 'GCS'.
+                items:
+                  description: ObjectProtocol represents an object protocol type.
+                  enum:
+                  - S3
+                  - Azure
+                  - GCS
+                  type: string
+                maxItems: 3
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: set
+                x-kubernetes-validations:
+                - message: protocols list is immutable
+                  rule: self == oldSelf
+            type: object
+            x-kubernetes-validations:
+            - message: bucketClassName cannot be added or removed after creation
+              rule: has(oldSelf.bucketClassName) == has(self.bucketClassName)
+            - message: existingBucketName cannot be added or removed after creation
+              rule: has(oldSelf.existingBucketName) == has(self.existingBucketName)
+            - message: protocols list cannot be added or removed after creation
+              rule: has(oldSelf.protocols) == has(self.protocols)
+            - message: exactly one of the fields in [bucketClassName existingBucketName]
+                must be set
+              rule: '[has(self.bucketClassName),has(self.existingBucketName)].filter(x,x==true).size()
+                == 1'
+          status:
+            description: status defines the observed state of BucketClaim
+            properties:
+              boundBucketName:
+                description: |-
+                  boundBucketName is the name of the Bucket this BucketClaim is bound to.
+                  Must be a valid Kubernetes resource name: at most 253 characters, consisting only of
+                  lower-case alphanumeric characters, hyphens, and periods, starting and ending with an
+                  alphanumeric character.
+                maxLength: 253
+                minLength: 1
+                type: string
+                x-kubernetes-validations:
+                - message: name must be a valid resource name
+                  rule: '!format.dns1123Subdomain().validate(self).hasValue()'
+                - message: boundBucketName is immutable once set
+                  rule: self == oldSelf
+              error:
+                description: |-
+                  error holds the most recent error message, with a timestamp.
+                  This is cleared when provisioning is successful.
+                minProperties: 0
+                properties:
+                  message:
+                    description: |-
+                      message is a string detailing the encountered error.
+                      NOTE: message will be logged, and it should not contain sensitive information.
+                      Must not exceed 1.5MB.
+                    maxLength: 1572864
+                    minLength: 0
+                    type: string
+                  time:
+                    description: time is the timestamp when the error was encountered.
+                    format: date-time
+                    type: string
+                type: object
+              protocols:
+                description: |-
+                  protocols is the set of protocols the bound Bucket reports to support. BucketAccesses can
+                  request access to this BucketClaim using any of the protocols reported here.
+                  Possible values: 'S3', 'Azure', 'GCS'.
+                items:
+                  description: ObjectProtocol represents an object protocol type.
+                  enum:
+                  - S3
+                  - Azure
+                  - GCS
+                  type: string
+                maxItems: 3
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: set
+              readyToUse:
+                description: readyToUse indicates that the bucket is ready for consumption
+                  by workloads.
+                type: boolean
+            required:
+            - readyToUse
+            type: object
+            x-kubernetes-validations:
+            - message: boundBucketName cannot be removed once set
+              rule: '!has(oldSelf.boundBucketName) || has(self.boundBucketName)'
+            - message: protocols cannot be removed once set
+              rule: '!has(oldSelf.protocols) || has(self.protocols)'
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

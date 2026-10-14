@@ -41,6 +41,7 @@ const (
 	CategoryStorageClass          = WorkflowCategory("storage_class")
 	CategoryNode                  = WorkflowCategory("node")
 	CategoryBackend               = WorkflowCategory("backend")
+	CategoryObjectStore           = WorkflowCategory("object_store")
 	CategorySnapshot              = WorkflowCategory("snapshot")
 	CategoryGroupControllerServer = WorkflowCategory("group_controller_server")
 	CategoryControllerServer      = WorkflowCategory("controller_server")
@@ -162,6 +163,11 @@ var (
 	WorkflowBackendUpdate = Workflow{CategoryBackend, OpUpdate}
 	WorkflowBackendList   = Workflow{CategoryBackend, OpList}
 
+	WorkflowObjectStoreCreate = Workflow{CategoryObjectStore, OpCreate}
+	WorkflowObjectStoreDelete = Workflow{CategoryObjectStore, OpDelete}
+	WorkflowObjectStoreGet    = Workflow{CategoryObjectStore, OpGet}
+	WorkflowObjectStoreList   = Workflow{CategoryObjectStore, OpList}
+
 	WorkflowSnapshotCreate    = Workflow{CategorySnapshot, OpCreate}
 	WorkflowSnapshotDelete    = Workflow{CategorySnapshot, OpDelete}
 	WorkflowSnapshotGet       = Workflow{CategorySnapshot, OpGet}
@@ -232,6 +238,10 @@ var (
 		WorkflowBackendGet,
 		WorkflowBackendUpdate,
 		WorkflowBackendList,
+		WorkflowObjectStoreCreate,
+		WorkflowObjectStoreDelete,
+		WorkflowObjectStoreGet,
+		WorkflowObjectStoreList,
 		WorkflowSnapshotCreate,
 		WorkflowSnapshotDelete,
 		WorkflowSnapshotGet,

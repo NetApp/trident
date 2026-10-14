@@ -21,6 +21,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -60,6 +61,16 @@ func Initialize() {
 		},
 		allowBlankID: true,
 	}
+	objectStores = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+		// object store name has to be unique
+		key: &uniqueKey{
+			data:     make(map[string]string),
+			keyLocks: locks.NewGCNamedMutex(),
+		},
+		allowBlankID: true,
+	}
 	volumes = cache{
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
@@ -78,6 +89,14 @@ func Initialize() {
 		resourceLocks: locks.NewGCNamedMutex(),
 	}
 	snapshots = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+	}
+	buckets = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+	}
+	bucketAccesses = cache{
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
 	}
@@ -163,10 +182,13 @@ var (
 	storageClasses     cache
 	groupSnapshots     cache
 	backends           cache
+	objectStores       cache
 	volumes            cache
 	subordinateVolumes cache
 	volumePublications cache
 	snapshots          cache
+	buckets            cache
+	bucketAccesses     cache
 	autogrowPolicies   cache
 
 	caches = map[resource]*cache{
@@ -175,10 +197,13 @@ var (
 		storageClass:      &storageClasses,
 		groupSnapshot:     &groupSnapshots,
 		backend:           &backends,
+		objectStore:       &objectStores,
 		volume:            &volumes,
 		subordinateVolume: &subordinateVolumes,
 		volumePublication: &volumePublications,
 		snapshot:          &snapshots,
+		bucket:            &buckets,
+		bucketAccess:      &bucketAccesses,
 		autogrowPolicy:    &autogrowPolicies,
 	}
 
@@ -614,13 +639,18 @@ func fillInIDs(root int, query []Subquery) error {
 				return errors.NotFoundError("no %s found with key %s", query[root].res, query[root].key)
 			}
 			if id != "" && query[root].id != "" && query[root].id != id {
-				return fmt.Errorf("conflicting ids for %s: [%s] and [%s]", query[root].res, id, query[root].id)
+				return errors.ConflictError("conflicting ids for %s: [%s] and [%s]", query[root].res, id, query[root].id)
 			}
 			query[root].id = id
 		} else {
 			res, ok := c.data[query[root].id]
 			if ok {
 				query[root].key = res.(UniqueKey).GetUniqueKey()
+			} else if resolved, ok := c.key.data[query[root].id]; ok {
+				query[root].id = resolved
+				if res, ok := c.data[query[root].id]; ok {
+					query[root].key = res.(UniqueKey).GetUniqueKey()
+				}
 			}
 		}
 	}
@@ -911,20 +941,26 @@ type Result struct {
 	Nodes              []*models.Node
 	StorageClasses     []*storageclass.StorageClass
 	Backends           []storage.Backend
+	ObjectStores       []object.Store
 	Volumes            []*storage.Volume
 	SubordinateVolumes []*storage.Volume
 	VolumePublications []*models.VolumePublication
 	Snapshots          []*storage.Snapshot
+	Buckets            []*object.Bucket
+	BucketAccesses     []*object.BucketAccess
 	AutogrowPolicies   []*storage.AutogrowPolicy
 	GroupSnapshots     []*storage.GroupSnapshot
 
 	Node              NodeResult
 	StorageClass      StorageClassResult
 	Backend           BackendResult
+	ObjectStore       ObjectStoreResult
 	Volume            VolumeResult
 	SubordinateVolume SubordinateVolumeResult
 	VolumePublication VolumePublicationResult
 	Snapshot          SnapshotResult
+	Bucket            BucketResult
+	BucketAccess      BucketAccessResult
 	AutogrowPolicy    AutogrowPolicyResult
 	GroupSnapshot     GroupSnapshotResult
 }
@@ -944,6 +980,12 @@ type StorageClassResult struct {
 type BackendResult struct {
 	Read   storage.Backend
 	Upsert func(storage.Backend)
+	Delete func()
+}
+
+type ObjectStoreResult struct {
+	Read   object.Store
+	Upsert func(object.Store)
 	Delete func()
 }
 
@@ -968,6 +1010,18 @@ type VolumePublicationResult struct {
 type SnapshotResult struct {
 	Read   *storage.Snapshot
 	Upsert func(*storage.Snapshot)
+	Delete func()
+}
+
+type BucketResult struct {
+	Read   *object.Bucket
+	Upsert func(*object.Bucket)
+	Delete func()
+}
+
+type BucketAccessResult struct {
+	Read   *object.BucketAccess
+	Upsert func(*object.BucketAccess)
 	Delete func()
 }
 
@@ -997,10 +1051,13 @@ var resourceNames = map[resource]string{
 	storageClass:      "Storage Class",
 	groupSnapshot:     "Group Snapshot",
 	backend:           "Backend",
+	objectStore:       "Object Store",
 	volume:            "Volume",
 	subordinateVolume: "Subordinate Volume",
 	volumePublication: "Volume Publication",
 	snapshot:          "Snapshot",
+	bucket:            "Bucket",
+	bucketAccess:      "Bucket Access",
 	autogrowPolicy:    "Autogrow Policy",
 }
 
@@ -1012,10 +1069,13 @@ const (
 	// backend->volume->snapshot trees. Always take the group lock first, never after a backend/volume/snapshot lock.
 	groupSnapshot
 	backend
+	objectStore
 	volume
 	subordinateVolume
 	volumePublication
 	snapshot
+	bucket
+	bucketAccess
 	autogrowPolicy
 	resourceCount = int(autogrowPolicy) + 1
 )
@@ -1053,14 +1113,31 @@ var schema = map[resource][]resource{
 	storageClass:      nil,
 	groupSnapshot:     nil, // parentless; constituents are locked as separate snapshot trees
 	backend:           nil,
-	autogrowPolicy:    nil,
+	objectStore:       nil,
 	volume:            {backend},
 	subordinateVolume: {volume},
 	volumePublication: {volume, node},
 	snapshot:          {volume},
+	bucketAccess:      {objectStore},
+	bucket:            {objectStore},
+	autogrowPolicy:    nil,
 }
 
 var dependentQueries = map[resource]func(interface{}) (string, error){
+	objectStore: func(i interface{}) (string, error) {
+		c, ok := i.(ObjectStoreDependent)
+		if !ok {
+			return "", fmt.Errorf("not owned by object store")
+		}
+		return c.GetObjectStoreID(), nil
+	},
+	bucket: func(i interface{}) (string, error) {
+		c, ok := i.(BucketDependent)
+		if !ok {
+			return "", fmt.Errorf("not owned by bucket")
+		}
+		return c.GetBucketID(), nil
+	},
 	backend: func(i interface{}) (string, error) {
 		c, ok := i.(BackendDependent)
 		if !ok {
@@ -1086,6 +1163,14 @@ var dependentQueries = map[resource]func(interface{}) (string, error){
 
 type BackendDependent interface {
 	GetBackendID() string
+}
+
+type ObjectStoreDependent interface {
+	GetObjectStoreID() string
+}
+
+type BucketDependent interface {
+	GetBucketID() string
 }
 
 type VolumeDependent interface {

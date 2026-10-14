@@ -16,6 +16,10 @@ type TridentBackendExpansion interface{}
 
 type TridentBackendConfigExpansion interface{}
 
+type TridentBucketExpansion interface{}
+
+type TridentBucketAccessExpansion interface{}
+
 type TridentGroupSnapshotExpansion interface{}
 
 type TridentMirrorRelationshipExpansion interface{}
@@ -25,6 +29,8 @@ type TridentNodeExpansion interface{}
 type TridentNodeRemediationExpansion interface{}
 
 type TridentNodeRemediationTemplateExpansion interface{}
+
+type TridentObjectStoreExpansion interface{}
 
 type TridentSnapshotExpansion interface{}
 

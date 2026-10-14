@@ -16,6 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/models"
@@ -354,6 +355,9 @@ func initCaches() {
 		Name: "node1",
 	}
 	backends.data["backend1"] = storage.NewTestStorageBackend()
+	store := newTestObjectStore("store1", "store1")
+	objectStores.data[store.StoreUUID()] = store
+	objectStores.key.data[store.GetUniqueKey()] = store.StoreUUID()
 	volumes.data["volume1"] = &storage.Volume{
 		BackendUUID: "backend1",
 		Config: &storage.VolumeConfig{
@@ -370,6 +374,14 @@ func initCaches() {
 			VolumeName: "volume1",
 		},
 	}
+	buckets.data["bucket1"] = &object.Bucket{
+		Name:      "bucket1",
+		StoreName: "store1",
+	}
+	bucketAccesses.data["access1"] = &object.BucketAccess{
+		Name:      "access1",
+		StoreName: "store1",
+	}
 	autogrowPolicies.data["policy1"] = storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
 }
 
@@ -378,11 +390,14 @@ func createQueryGenerators(numIds int) [][]queryGenerator {
 
 	for i := 0; i < numIds; i++ {
 		backendName := fmt.Sprintf("backend%d", i+1)
+		objectStoreName := fmt.Sprintf("store%d", i+1)
 		volumeName := fmt.Sprintf("volume%d", i+1)
 		snapshotName := fmt.Sprintf("snapshot%d", i+1)
 		nodeName := fmt.Sprintf("node%d", i+1)
 		storageClassName := fmt.Sprintf("sc%d", i+1)
 		subordinateVolumeName := fmt.Sprintf("subvol%d", i+1)
+		bucketID := fmt.Sprintf("bucket%d", i+1)
+		bucketAccessID := fmt.Sprintf("access%d", i+1)
 		generators = append(generators, []queryGenerator{
 			// Backend queries
 			{name: "ListBackends", fn: ListBackends},
@@ -390,6 +405,17 @@ func createQueryGenerators(numIds int) [][]queryGenerator {
 			{name: "ReadBackend", fn: func() Subquery { return ReadBackend(backendName) }},
 			{name: "UpsertBackend", fn: func() Subquery { return UpsertBackend(backendName, backendName, "") }},
 			{name: "DeleteBackend", fn: func() Subquery { return DeleteBackend(backendName) }},
+
+			// Object Store queries
+			{name: "ListObjectStores", fn: ListObjectStores},
+			{name: "InconsistentReadObjectStore", fn: func() Subquery {
+				return InconsistentReadObjectStore(objectStoreName)
+			}},
+			{name: "ReadObjectStore", fn: func() Subquery { return ReadObjectStore(objectStoreName) }},
+			{name: "UpsertObjectStore", fn: func() Subquery {
+				return UpsertObjectStore(objectStoreName, objectStoreName, "")
+			}},
+			{name: "DeleteObjectStore", fn: func() Subquery { return DeleteObjectStore(objectStoreName) }},
 
 			// Volume queries
 			{name: "ListVolumes", fn: ListVolumes},
@@ -404,6 +430,22 @@ func createQueryGenerators(numIds int) [][]queryGenerator {
 			{name: "ReadSnapshot", fn: func() Subquery { return ReadSnapshot(snapshotName) }},
 			{name: "UpsertSnapshot", fn: func() Subquery { return UpsertSnapshot(volumeName, snapshotName) }},
 			{name: "DeleteSnapshot", fn: func() Subquery { return DeleteSnapshot(snapshotName) }},
+
+			// Bucket queries
+			{name: "ListBuckets", fn: ListBuckets},
+			{name: "InconsistentReadBucket", fn: func() Subquery { return InconsistentReadBucket(bucketID) }},
+			{name: "ReadBucket", fn: func() Subquery { return ReadBucket(bucketID) }},
+			{name: "UpsertBucket", fn: func() Subquery { return UpsertBucket(bucketID, objectStoreName) }},
+			{name: "DeleteBucket", fn: func() Subquery { return DeleteBucket(bucketID) }},
+
+			// Bucket Access queries
+			{name: "ListBucketAccesses", fn: ListBucketAccesses},
+			{name: "InconsistentReadBucketAccess", fn: func() Subquery {
+				return InconsistentReadBucketAccess(bucketAccessID)
+			}},
+			{name: "ReadBucketAccess", fn: func() Subquery { return ReadBucketAccess(bucketAccessID) }},
+			{name: "UpsertBucketAccess", fn: func() Subquery { return UpsertBucketAccess(bucketAccessID, "") }},
+			{name: "DeleteBucketAccess", fn: func() Subquery { return DeleteBucketAccess(bucketAccessID) }},
 
 			// Node queries
 			{name: "ListNodes", fn: ListNodes},

@@ -2,7 +2,7 @@
 
 # Parameters
 # PLATFORMS defines which platforms are built for each target. If platforms is set to all, builds all supported platforms.
-PLATFORMS ?= linux/amd64
+PLATFORMS ?= $(shell uname -s -m | tr '[:upper:]' '[:lower:]' | sed -e 's# #/#' -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
 ifeq ($(PLATFORMS),all)
 PLATFORMS = $(ALL_PLATFORMS)
 endif
@@ -33,6 +33,9 @@ HELM_CHART_VERSION ?=
 
 # GOLANGCI-LINT_VERSION golangci-lint version for install-lint
 GOLANGCI-LINT_VERSION ?= v2.12.2
+
+# MOCKGEN_VERSION mockgen version for mocks target
+MOCKGEN_VERSION ?= v0.6.0
 
 # GIT_HOOKS_DIR git hooks directory from rev-parse --git-path hooks
 GIT_HOOKS_DIR := $(shell git rev-parse --git-path hooks)
@@ -234,6 +237,7 @@ go_env = CGO_ENABLED=$(CGO_ENABLED) GOOS=$(call os,$1) GOARCH=$(call arch,$1)$(i
 # usage: $(call go_build,$(binary_name),$(source_path),$(platform),$(linker_flags))
 go_build = echo $(call binary_path,$1,$3) && $(call go_env,$3) \
 	$(GO_CMD) build \
+	-trimpath \
 	-o $(call binary_path,$1,$3) \
 	-ldflags $4 \
 	$2
@@ -508,8 +512,7 @@ k8s_codegen_operator:
 	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/crd/apis/netapp/v1/
 
 mocks:
-	@go install go.uber.org/mock/mockgen@v0.6.0
-	@go generate ./...
+	@$(call run_go_generate_shell)
 
 $(GIT_HOOKS_DIR):
 	@mkdir -p $@
@@ -536,6 +539,12 @@ run_go_test = $(call go_test_env) $(GO_CMD) test $(TEST_FLAGS) ./...
 
 # run_go_test_shell runs run_go_test in GO_SHELL when set, else locally
 run_go_test_shell = $(strip $(if $(GO_SHELL),$(GO_SHELL) '$(go_git_setup) $(call run_go_test)',$(call run_go_test)))
+
+# run_go_generate installs mockgen and regenerates mocks
+run_go_generate = $(call go_test_env) $(GO_CMD) install go.uber.org/mock/mockgen@$(MOCKGEN_VERSION) && $(call go_test_env) $(GO_CMD) generate ./...
+
+# run_go_generate_shell runs run_go_generate in GO_SHELL when set, else locally
+run_go_generate_shell = $(strip $(if $(GO_SHELL),$(GO_SHELL) '$(go_git_setup) $(call run_go_generate)',$(call run_go_generate)))
 
 test: test-unit
 

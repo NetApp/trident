@@ -1,0 +1,120 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: unapproved, experimental v1alpha2 changes
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: bucketaccessclasses.objectstorage.k8s.io
+spec:
+  group: objectstorage.k8s.io
+  names:
+    kind: BucketAccessClass
+    listKind: BucketAccessClassList
+    plural: bucketaccessclasses
+    singular: bucketaccessclass
+  scope: Cluster
+  versions:
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: BucketAccessClass is the Schema for the bucketaccessclasses API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of BucketAccessClass
+            properties:
+              authenticationType:
+                description: |-
+                  authenticationType specifies which authentication mechanism is used bucket access.
+                  See driver documentation to determine which values are supported.
+                  Possible values:
+                   - Key: The driver should generate a protocol-appropriate access key that clients can use to
+                     authenticate to the backend object store.
+                   - ServiceAccount: The driver should configure the system such that Pods using the given
+                     ServiceAccount authenticate to the backend object store automatically.
+                enum:
+                - Key
+                - ServiceAccount
+                type: string
+              disallowedBucketAccessModes:
+                description: |-
+                  disallowedBucketAccessModes is a list of disallowed Read/Write access modes. A BucketAccess
+                  using this class will not be allowed to request access to a BucketClaim with any access mode
+                  listed here.
+                  This is particularly useful for administrators to restrict access to a statically-provisioned
+                  bucket that is managed outside the BucketAccess Namespace or Kubernetes cluster.
+                  Possible values: 'ReadWrite', 'ReadOnly', 'WriteOnly'.
+                items:
+                  description: BucketAccessMode describes the Read/Write mode an access
+                    should have for a bucket.
+                  enum:
+                  - ReadWrite
+                  - ReadOnly
+                  - WriteOnly
+                  type: string
+                maxItems: 3
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: set
+              driverName:
+                description: |-
+                  driverName is the name of the driver that fulfills requests for this BucketAccessClass.
+                  See driver documentation to determine the correct value to set.
+                  Must be 63 characters or less, beginning and ending with an alphanumeric character
+                  ([a-z0-9A-Z]) with dashes (-), dots (.), and alphanumerics between.
+                maxLength: 63
+                minLength: 1
+                pattern: ^[a-zA-Z0-9]([a-zA-Z0-9\-\.]{0,61}[a-zA-Z0-9])?$
+                type: string
+              multiBucketAccess:
+                description: |-
+                  multiBucketAccess specifies whether a BucketAccess using this class can reference multiple
+                  BucketClaims. When omitted, this means no opinion, and COSI will choose a reasonable default,
+                  which is subject to change over time.
+                  Possible values:
+                   - SingleBucket: (default) A BucketAccess may reference only a single BucketClaim.
+                   - MultipleBuckets: A BucketAccess may reference multiple (1 or more) BucketClaims.
+                enum:
+                - SingleBucket
+                - MultipleBuckets
+                type: string
+              parameters:
+                additionalProperties:
+                  type: string
+                description: |-
+                  parameters is an opaque map of driver-specific configuration items passed to the driver that
+                  fulfills requests for this BucketAccessClass.
+                  See driver documentation to determine supported parameters and their effects.
+                  A maximum of 512 parameters are allowed.
+                maxProperties: 512
+                minProperties: 1
+                type: object
+            required:
+            - authenticationType
+            - driverName
+            type: object
+            x-kubernetes-validations:
+            - message: BucketAccessClass spec is immutable
+              rule: self == oldSelf
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true

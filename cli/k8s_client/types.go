@@ -181,6 +181,7 @@ type DeploymentYAMLArguments struct {
 	GCPWIFAudience             string                  `json:"gcpWIFAudience"`
 	K8sAPIQPS                  int                     `json:"k8sAPIQPS"`
 	EnableConcurrency          bool                    `json:"enableConcurrency"`
+	EnableCOSI                 bool                    `json:"enableCOSI"`
 	EnableDataLIFRefresh       bool                    `json:"enableDataLIFRefresh"`
 	HTTPSMetrics               bool                    `json:"httpsMetrics"`
 	CSIFeatureGates            map[string]string       `json:"csiFeatureGates"`

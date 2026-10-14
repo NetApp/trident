@@ -38,6 +38,9 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      # Verbatim upstream COSI source. Linting it would force reformatting on
+      # every re-sync, widening the diff against upstream for no benefit.
+      - (^|/)third_party/
 formatters:
   enable:
     - goimports
@@ -51,3 +54,4 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - (^|/)third_party/

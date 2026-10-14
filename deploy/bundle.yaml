@@ -281,6 +281,34 @@ rules:
       - tridentautogrowpolicies/status
       - tridentautogrowrequestinternals
       - tridentautogrowrequestinternals/status
+      - tridentobjectstores
+      - tridentobjectstores/status
+      - tridentbuckets
+      - tridentbucketaccesses
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+      - patch
+  # The operator never touches COSI objects itself, but Kubernetes forbids granting permissions
+  # you do not hold, so it must carry these to write them into the trident-controller role.
+  - apiGroups:
+      - objectstorage.k8s.io
+    resources:
+      - buckets
+      - buckets/status
+      - buckets/finalizers
+      - bucketclaims
+      - bucketclaims/status
+      - bucketclaims/finalizers
+      - bucketaccesses
+      - bucketaccesses/status
+      - bucketaccesses/finalizers
+      - bucketclasses
+      - bucketaccessclasses
     verbs:
       - get
       - list

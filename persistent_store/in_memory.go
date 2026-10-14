@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
@@ -37,6 +38,10 @@ type InMemoryClient struct {
 	groupSnapshots          map[string]*storage.GroupSnapshotPersistent
 	groupSnapshotsAdded     int
 	autogrowPolicies        map[string]*storage.AutogrowPolicyPersistent
+	objectStores            map[string]object.Store
+	objectStoreNames        map[string]string
+	buckets                 map[string]*object.Bucket
+	bucketAccesses          map[string]*object.BucketAccess
 	uuid                    string
 }
 
@@ -50,6 +55,10 @@ func NewInMemoryClient() *InMemoryClient {
 		nodes:              make(map[string]*models.Node),
 		snapshots:          make(map[string]*storage.SnapshotPersistent),
 		autogrowPolicies:   make(map[string]*storage.AutogrowPolicyPersistent),
+		objectStores:       make(map[string]object.Store),
+		objectStoreNames:   make(map[string]string),
+		buckets:            make(map[string]*object.Bucket),
+		bucketAccesses:     make(map[string]*object.BucketAccess),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
@@ -77,6 +86,10 @@ func (c *InMemoryClient) Stop() error {
 	c.snapshots = make(map[string]*storage.SnapshotPersistent)
 	c.snapshotsAdded = 0
 	c.autogrowPolicies = make(map[string]*storage.AutogrowPolicyPersistent)
+	c.objectStores = make(map[string]object.Store)
+	c.objectStoreNames = make(map[string]string)
+	c.buckets = make(map[string]*object.Bucket)
+	c.bucketAccesses = make(map[string]*object.BucketAccess)
 	return nil
 }
 
@@ -551,4 +564,113 @@ func (c *InMemoryClient) GetAutogrowPolicies(_ context.Context) ([]*storage.Auto
 		agPolicies = append(agPolicies, agPolicy)
 	}
 	return agPolicies, nil
+}
+
+func (c *InMemoryClient) GetObjectStores(_ context.Context) ([]object.Store, error) {
+	stores := make([]object.Store, 0, len(c.objectStores))
+	for _, store := range c.objectStores {
+		stores = append(stores, store.SmartCopy().(object.Store))
+	}
+	return stores, nil
+}
+
+func (c *InMemoryClient) AddObjectStore(_ context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	if _, ok := c.objectStoreNames[store.Name()]; ok {
+		return fmt.Errorf("object store %s already exists", store.Name())
+	}
+	copied := store.SmartCopy().(object.Store)
+	c.objectStores[copied.StoreUUID()] = copied
+	c.objectStoreNames[copied.Name()] = copied.StoreUUID()
+	return nil
+}
+
+func (c *InMemoryClient) UpdateObjectStore(_ context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	uuid, ok := c.objectStoreNames[store.Name()]
+	if !ok {
+		if _, ok = c.objectStores[store.StoreUUID()]; !ok {
+			return NewPersistentStoreError(KeyNotFoundErr, store.Name())
+		}
+		uuid = store.StoreUUID()
+	}
+	copied := store.SmartCopy().(object.Store)
+	c.objectStores[uuid] = copied
+	c.objectStoreNames[copied.Name()] = uuid
+	return nil
+}
+
+func (c *InMemoryClient) DeleteObjectStore(_ context.Context, store object.Store) error {
+	if store == nil {
+		return fmt.Errorf("object store is nil")
+	}
+	delete(c.objectStores, store.StoreUUID())
+	delete(c.objectStoreNames, store.Name())
+	return nil
+}
+
+func (c *InMemoryClient) GetBuckets(_ context.Context) ([]*object.Bucket, error) {
+	buckets := make([]*object.Bucket, 0, len(c.buckets))
+	for _, bucket := range c.buckets {
+		buckets = append(buckets, bucket.SmartCopy().(*object.Bucket))
+	}
+	return buckets, nil
+}
+
+func (c *InMemoryClient) UpsertBucket(_ context.Context, bucket *object.Bucket) error {
+	if bucket == nil || bucket.Name == "" {
+		return fmt.Errorf("bucket name is required")
+	}
+	copied := *bucket
+	c.buckets[bucket.Name] = &copied
+	return nil
+}
+
+// GetBucket is test-only: it is not part of the Client interface (see finding #9,
+// design-docs/cosi/15-frontend-core-integration-proposal.md - no persisted resource of this
+// kind has a read-back method yet), but tests need a way to inspect what was actually
+// persisted, as opposed to what the in-memory cache happens to show.
+func (c *InMemoryClient) GetBucket(_ context.Context, name string) (*object.Bucket, error) {
+	ret, ok := c.buckets[name]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, name)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) DeleteBucket(_ context.Context, bucket *object.Bucket) error {
+	if bucket == nil {
+		return fmt.Errorf("bucket is nil")
+	}
+	delete(c.buckets, bucket.Name)
+	return nil
+}
+
+func (c *InMemoryClient) GetBucketAccesses(_ context.Context) ([]*object.BucketAccess, error) {
+	accesses := make([]*object.BucketAccess, 0, len(c.bucketAccesses))
+	for _, access := range c.bucketAccesses {
+		accesses = append(accesses, access.SmartCopy().(*object.BucketAccess))
+	}
+	return accesses, nil
+}
+
+func (c *InMemoryClient) UpsertBucketAccess(_ context.Context, access *object.BucketAccess) error {
+	if access == nil || access.Name == "" {
+		return fmt.Errorf("bucket access name is required")
+	}
+	copied := *access
+	c.bucketAccesses[access.Name] = &copied
+	return nil
+}
+
+func (c *InMemoryClient) DeleteBucketAccess(_ context.Context, access *object.BucketAccess) error {
+	if access == nil {
+		return fmt.Errorf("bucket access is nil")
+	}
+	delete(c.bucketAccesses, access.Name)
+	return nil
 }

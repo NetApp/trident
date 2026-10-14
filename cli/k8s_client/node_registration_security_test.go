@@ -16,7 +16,7 @@ func TestNodeClusterRoleCSI_StatusSubresourceReadOnly(t *testing.T) {
 	t.Parallel()
 
 	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
-	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil, false)
 
 	var role rbacv1.ClusterRole
 	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
@@ -42,7 +42,7 @@ func TestNodeClusterRoleCSI_ReadsOwnNodeForTopology(t *testing.T) {
 	t.Parallel()
 
 	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
-	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil, false)
 
 	var role rbacv1.ClusterRole
 	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
@@ -85,7 +85,7 @@ func TestNodeClusterRoleCSI_NoClusterScopedLeaseEventExtras(t *testing.T) {
 	t.Parallel()
 
 	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
-	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil, false)
 
 	var role rbacv1.ClusterRole
 	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))
@@ -142,7 +142,7 @@ func TestNodeClusterRoleCSI_TridentVolumesPatchOnly(t *testing.T) {
 	t.Parallel()
 
 	labels := map[string]string{TridentAppLabelKey: "node.csi.trident.netapp.io"}
-	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil)
+	yamlDoc := GetClusterRoleYAML("trident-node-linux", labels, nil, false)
 
 	var role rbacv1.ClusterRole
 	require.NoError(t, yaml.Unmarshal([]byte(yamlDoc), &role))

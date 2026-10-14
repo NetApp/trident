@@ -26,6 +26,7 @@ const (
 	LogLayerCRDFrontend             = LogLayer("crd_frontend")
 	LogLayerDockerFrontend          = LogLayer("docker_frontend")
 	LogLayerMetricsFrontend         = LogLayer("metrics_frontend")
+	LogLayerCOSIFrontend            = LogLayer("cosi_frontend")
 	LogLayerPersistentStore         = LogLayer("persistent_store")
 	LogLayerANFNASDriver            = LogLayer(AzureNASStorageDriverName)
 	LogLayerSolidfireDriver         = LogLayer(SolidfireSANStorageDriverName)
@@ -50,6 +51,7 @@ var Layers = []LogLayer{
 	LogLayerRESTFrontend,
 	LogLayerCRDFrontend,
 	LogLayerDockerFrontend,
+	LogLayerCOSIFrontend,
 	LogLayerPersistentStore,
 	LogLayerANFNASDriver,
 	LogLayerSolidfireDriver,

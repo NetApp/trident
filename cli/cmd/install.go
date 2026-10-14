@@ -40,6 +40,9 @@ const (
 	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
 	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
 	BackendCRDName                 = "tridentbackends.trident.netapp.io"
+	ObjectStoreCRDName             = "tridentobjectstores.trident.netapp.io"
+	BucketCRDName                  = "tridentbuckets.trident.netapp.io"
+	BucketAccessCRDName            = "tridentbucketaccesses.trident.netapp.io"
 	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
 	NodeCRDName                    = "tridentnodes.trident.netapp.io"
 	NodeRemediationCRDName         = "tridentnoderemediations.trident.netapp.io"
@@ -143,6 +146,7 @@ var (
 	k8sAPIQPS                    int
 	fsGroupPolicy                string
 	enableConcurrency            bool
+	enableCOSI                   bool
 	enableDataLIFRefresh         bool
 	hostNetwork                  bool
 
@@ -193,6 +197,9 @@ var (
 		ActionMirrorUpdateCRDName,
 		BackendConfigCRDName,
 		BackendCRDName,
+		ObjectStoreCRDName,
+		BucketCRDName,
+		BucketAccessCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
 		NodeRemediationCRDName,
@@ -285,6 +292,8 @@ func init() {
 	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
 		"to set on Trident's CSIDriver resource.")
 	installCmd.Flags().BoolVar(&enableConcurrency, "enable-concurrency", false, "Enable concurrency for Trident's controller **TECH PREVIEW**")
+	installCmd.Flags().BoolVar(&enableCOSI, "enable-cosi", false, "Install the COSI CRDs and enable "+
+		"object bucket provisioning. Trident must be the only COSI provider in the cluster.")
 	installCmd.Flags().BoolVar(&enableDataLIFRefresh, "enable-datalif-refresh", false,
 		"Enable refreshing NVMe data LIFs during backend reconciliation.")
 	installCmd.Flags().BoolVar(&hostNetwork, "host-network", false, "Use the host network for the Trident controller.")
@@ -658,7 +667,7 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write controller service account YAML file; %v", err)
 	}
 	// Creating cluster role for controller service account
-	controllerClusterRoleYAML := k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil)
+	controllerClusterRoleYAML := k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil, enableCOSI)
 	if err = writeFile(controllerClusterRolePath, controllerClusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write controller cluster role YAML file; %v", err)
 	}
@@ -706,7 +715,8 @@ func prepareYAMLFiles() error {
 	}
 
 	// Creating cluster role for node linux
-	nodeLinuxClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
+	nodeLinuxClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil,
+		false)
 	if err = writeFile(nodeLinuxClusterRolePath, nodeLinuxClusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write node linux cluster role YAML file; %v", err)
 	}
@@ -780,6 +790,7 @@ func prepareYAMLFiles() error {
 		GCPWIFAudience:          gcpWIFAudience,
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
+		EnableCOSI:              enableCOSI,
 		EnableDataLIFRefresh:    enableDataLIFRefresh,
 		HTTPSMetrics:            httpsMetrics,
 		HostNetwork:             hostNetwork,
@@ -888,7 +899,8 @@ func prepareYAMLFiles() error {
 		}
 
 		// Creating cluster role for node windows
-		nodeWindowsClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)
+		nodeWindowsClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels,
+			nil, false)
 		if err = writeFile(nodeWindowsClusterRolePath, nodeWindowsClusterRoleYAML); err != nil {
 			return fmt.Errorf("could not write node windows cluster role YAML file; %v", err)
 		}
@@ -1195,6 +1207,7 @@ func installTrident() (returnError error) {
 			GCPWIFAudience:          gcpWIFAudience,
 			K8sAPIQPS:               k8sAPIQPS,
 			EnableConcurrency:       enableConcurrency,
+			EnableCOSI:              enableCOSI,
 			EnableDataLIFRefresh:    enableDataLIFRefresh,
 			HTTPSMetrics:            httpsMetrics,
 			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
@@ -1494,6 +1507,94 @@ func createAndEnsureCRDs() error {
 
 	Log().Info("Applied latest Trident CRDs.")
 
+	if enableCOSI {
+		if err := createAndEnsureCOSICRDs(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createAndEnsureCOSICRDs installs the COSI CRDs Trident ships.
+//
+// Kept separate from the Trident CRD loop above, and gated on --enable-cosi, because these are
+// not Trident's API. objectstorage.k8s.io is a community group, so two rules differ from the
+// loop above:
+//
+//   - A CRD Trident did not install is never modified. The loop above always patches, which is
+//     right for trident.netapp.io and wrong here: patching would repoint a shared cluster-wide
+//     API at Trident's pinned schema underneath whoever installed it.
+//   - No finalizer is added. Trident should not hold a deletion lock on an API it shares.
+func createAndEnsureCOSICRDs() error {
+	// Checked before the first API call, so that an old cluster gets a sentence about versions
+	// rather than a CEL compilation dump from the API server.
+	if err := tridentconfig.ValidateKubernetesVersionForCOSI(client.ServerVersion()); err != nil {
+		return err
+	}
+
+	Log().Info("Creating or updating the COSI CRDs.")
+
+	// Every CRD is decided before any of them is written. Deciding and applying in one pass
+	// would let a conflict on the third CRD return after the first two were already created,
+	// which is the one outcome this whole function exists to prevent: Trident planting a
+	// community API it has just concluded it must not touch. The error names only the
+	// conflicting CRD, so nothing would tell an administrator the others had been created.
+	type cosiCRDPlan struct {
+		name   string
+		action k8sclient.COSICRDAction
+		yaml   string
+	}
+
+	crdNames := k8sclient.COSICRDNames()
+	plans := make([]cosiCRDPlan, 0, len(crdNames))
+
+	for _, crdName := range crdNames {
+		var existing *apiextensionv1.CustomResourceDefinition
+
+		crdExists, err := client.CheckCRDExists(crdName)
+		if err != nil {
+			return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, err)
+		}
+		if crdExists {
+			if existing, err = client.GetCRD(crdName); err != nil {
+				return fmt.Errorf("could not retrieve the %v CRD; %v", crdName, err)
+			}
+		}
+
+		action := k8sclient.PlanCOSICRD(existing)
+		if action == k8sclient.COSICRDConflict {
+			return &k8sclient.COSICRDConflictError{CRDName: crdName}
+		}
+
+		crdYAML, err := k8sclient.GetOwnedCOSICRDYAML(crdName)
+		if err != nil {
+			return err
+		}
+
+		plans = append(plans, cosiCRDPlan{name: crdName, action: action, yaml: crdYAML})
+	}
+
+	// Past this point every CRD is either absent or Trident's own, so applying is safe. A write
+	// can still fail, which leaves the same partial state -- but that is an API server problem
+	// rather than Trident overwriting an API it does not own.
+	for _, plan := range plans {
+		switch plan.action {
+		case k8sclient.COSICRDCreate:
+			Log().Debugf("%v CRD not present; creating a fresh CRD.", plan.name)
+			if err := createCRD(plan.name, plan.yaml); err != nil {
+				return fmt.Errorf("could not create the %s CRD; %v", plan.name, err)
+			}
+		case k8sclient.COSICRDUpdate:
+			Log().Debugf("%v CRD present and Trident-managed; patching CRD to ensure it is not stale.", plan.name)
+			if err := patchCRD(plan.name, plan.yaml); err != nil {
+				return fmt.Errorf("could not patch the %s CRD; %v", plan.name, err)
+			}
+		}
+	}
+
+	Log().Info("Applied latest COSI CRDs.")
+
 	return nil
 }
 
@@ -1745,7 +1846,7 @@ func createRBACObjects() (returnError error) {
 
 	// Create cluster role for controller
 	if createObjectFunc(controllerClusterRolePath,
-		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil)) != nil {
+		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil, enableCOSI)) != nil {
 		returnError = fmt.Errorf("could not create controller cluster role; %v", returnError)
 		return returnError
 	}
@@ -1788,7 +1889,7 @@ func createRBACObjects() (returnError error) {
 
 	// Create cluster role for node linux
 	if createObjectFunc(nodeLinuxClusterRolePath,
-		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)) != nil {
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil, false)) != nil {
 		returnError = fmt.Errorf("could not create node linux cluster role; %v", returnError)
 		return returnError
 	}
@@ -1831,7 +1932,7 @@ func createRBACObjects() (returnError error) {
 
 		// Creating node windows cluster role
 		if createObjectFunc(nodeWindowsClusterRolePath,
-			k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)) != nil {
+			k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil, false)) != nil {
 			returnError = fmt.Errorf("could not create node windows cluster role; %v", returnError)
 			return returnError
 		}
@@ -1857,7 +1958,7 @@ func createRBACObjects() (returnError error) {
 			// Identify the label to add based on the resource name
 			_, label := getAppLabelForResource(user)
 			// Create multiple SCC with name same as 'user'
-			// This will be changed in the future to accomodate one SCC to hold all three users
+			// This will be changed in the future to accommodate one SCC to hold all three users
 			if returnError = CreateOpenShiftTridentSCC(user, strings.Split(label, "=")[1]); returnError != nil {
 				returnError = fmt.Errorf("could not create security context constraint; %v", returnError)
 				return returnError
@@ -1906,7 +2007,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete cluster role
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(getClusterRoleName(), nil, nil),
+		k8sclient.GetClusterRoleYAML(getClusterRoleName(), nil, nil, false),
 		"Could not delete trident-csi cluster role.",
 		"Deleted trident-csi cluster role.",
 	)
@@ -1932,7 +2033,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete controller cluster role
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil),
+		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil, enableCOSI),
 		"Could not delete controller cluster role.",
 		"Deleted controller cluster role.",
 	)
@@ -1969,7 +2070,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete node linux cluster role, role bindings
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil),
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil, false),
 		"Could not delete node linux cluster role.",
 		"Deleted node linux cluster role.",
 	)
@@ -2005,7 +2106,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete node windows cluster role, role bindings
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil),
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil, false),
 		"Could not delete node windows cluster role.",
 		"Deleted node windows cluster role.",
 	)

@@ -963,6 +963,47 @@ func TestPassthroughClient_GetAutogrowPolicy(t *testing.T) {
 	}
 }
 
+func TestPassthroughClient_GetObjectStores(t *testing.T) {
+	p := newPassthroughClient()
+
+	stores, err := p.GetObjectStores(ctx())
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+	if stores == nil {
+		t.Error("Expected non-nil slice but got nil")
+	}
+	if len(stores) != 0 {
+		t.Errorf("Expected empty slice but got %d stores", len(stores))
+	}
+}
+
+func TestPassthroughClient_GetBuckets(t *testing.T) {
+	p := newPassthroughClient()
+
+	buckets, err := p.GetBuckets(ctx())
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+	if buckets == nil {
+		t.Error("Expected non-nil slice but got nil")
+	}
+	if len(buckets) != 0 {
+		t.Errorf("Expected empty slice but got %d buckets", len(buckets))
+	}
+
+	accesses, err := p.GetBucketAccesses(ctx())
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+	if accesses == nil {
+		t.Error("Expected non-nil slice but got nil")
+	}
+	if len(accesses) != 0 {
+		t.Errorf("Expected empty slice but got %d bucket accesses", len(accesses))
+	}
+}
+
 func TestPassthroughClient_GetAutogrowPolicies(t *testing.T) {
 	p := newPassthroughClient()
 

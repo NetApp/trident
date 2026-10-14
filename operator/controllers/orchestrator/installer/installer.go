@@ -19,6 +19,7 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/utils/env"
 
@@ -44,6 +45,9 @@ const (
 	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
 	BackendCRDName                 = "tridentbackends.trident.netapp.io"
 	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
+	ObjectStoreCRDName             = "tridentobjectstores.trident.netapp.io"
+	BucketCRDName                  = "tridentbuckets.trident.netapp.io"
+	BucketAccessCRDName            = "tridentbucketaccesses.trident.netapp.io"
 	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
 	SnapshotInfoCRDName            = "tridentsnapshotinfos.trident.netapp.io"
 	NodeCRDName                    = "tridentnodes.trident.netapp.io"
@@ -76,6 +80,7 @@ var (
 	excludeAutosupport   bool
 	windows              bool
 	enableConcurrency    bool
+	enableCOSI           bool
 	enableDataLIFRefresh bool
 	httpsMetrics         bool
 	hostNetwork          bool
@@ -137,6 +142,9 @@ var (
 		ActionSnapshotRestoreCRDName,
 		BackendCRDName,
 		BackendConfigCRDName,
+		ObjectStoreCRDName,
+		BucketCRDName,
+		BucketAccessCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
 		NodeRemediationCRDName,
@@ -160,6 +168,7 @@ type Installer struct {
 	client            ExtendedK8sClient
 	tridentCRDClient  *crdclient.Clientset
 	operatorCRDClient *operatorCrdClient.Clientset
+	dynamicClient     dynamic.Interface
 	namespace         string
 }
 
@@ -188,12 +197,18 @@ func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (Tride
 		return nil, fmt.Errorf("failed to initialize Operator's CRD client; %v", err)
 	}
 
+	dynamicClient, err := dynamic.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize dynamic client; %v", err)
+	}
+
 	Log().WithField("namespace", namespace).Debugf("Initialized installer.")
 
 	return &Installer{
 		client:            kubeClient,
 		tridentCRDClient:  CRDClientForTrident,
 		operatorCRDClient: CRDClientForOperator,
+		dynamicClient:     dynamicClient,
 		namespace:         namespace,
 	}, nil
 }
@@ -653,6 +668,7 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
 	enableConcurrency = cr.Spec.EnableConcurrency
+	enableCOSI = cr.Spec.EnableCOSI
 	enableDataLIFRefresh = cr.Spec.EnableDataLIFRefresh
 	httpsMetrics = cr.Spec.HTTPSMetrics
 
@@ -1085,6 +1101,7 @@ func (i *Installer) InstallOrPatchTrident(
 		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
 		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
+		EnableCOSI:               strconv.FormatBool(enableCOSI),
 		EnableDataLIFRefresh:     strconv.FormatBool(enableDataLIFRefresh),
 		Resources:                resourcesValues,
 		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
@@ -1115,6 +1132,16 @@ func (i *Installer) createCRDs(patchExistingCRDs bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML(), patchExistingCRDs); err != nil {
+		return err
+	}
+	// Created even with COSI disabled: the CRD controller and concurrent core always read them.
+	if err = i.CreateOrPatchCRD(ObjectStoreCRDName, k8sclient.GetObjectStoreCRDYAML(), patchExistingCRDs); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(BucketCRDName, k8sclient.GetBucketCRDYAML(), patchExistingCRDs); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(BucketAccessCRDName, k8sclient.GetBucketAccessCRDYAML(), patchExistingCRDs); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML(), patchExistingCRDs); err != nil {
@@ -1174,7 +1201,84 @@ func (i *Installer) createCRDs(patchExistingCRDs bool) error {
 		return err
 	}
 
+	if enableCOSI {
+		if err = i.createOrUpdateCOSICRDs(); err != nil {
+			return err
+		}
+	}
+
 	return err
+}
+
+// createOrUpdateCOSICRDs installs the COSI CRDs, but only ones Trident installed or that do not
+// exist yet.
+//
+// This does not go through CreateOrPatchCRD like everything above it, because that function's
+// contract is wrong for a community API group: it patches whatever it finds. Trident's own CRDs
+// are in a group Trident owns, so that is safe. objectstorage.k8s.io may have been installed by
+// the upstream COSI controller or another vendor's driver, and quietly repointing it at
+// Trident's pinned v1alpha2 schema would break them. Trident marks what it installs and refuses
+// the rest.
+//
+// Unlike the CRDs above, these are also never given a Trident finalizer -- see AddFinalizerToCRDs
+// and the CRDnames list, which deliberately excludes them.
+func (i *Installer) createOrUpdateCOSICRDs() error {
+	// Checked before the first API call, so that an old cluster gets a sentence about versions
+	// rather than a CEL compilation dump from the API server.
+	if err := commonconfig.ValidateKubernetesVersionForCOSI(i.client.ServerVersion()); err != nil {
+		return err
+	}
+
+	// Every CRD is decided before any of them is written. Deciding and applying in one pass
+	// would let a conflict on the third CRD return after the first two were already created,
+	// which is the one outcome this whole function exists to prevent: Trident planting a
+	// community API it has just concluded it must not touch. The error names only the
+	// conflicting CRD, so nothing would tell an administrator the others had been created.
+	type cosiCRDPlan struct {
+		name     string
+		existing *apiextensionv1.CustomResourceDefinition
+		exists   bool
+		yaml     string
+	}
+
+	crdNames := k8sclient.COSICRDNames()
+	plans := make([]cosiCRDPlan, 0, len(crdNames))
+
+	for _, crdName := range crdNames {
+		var existing *apiextensionv1.CustomResourceDefinition
+
+		crdExists, err := i.client.CheckCRDExists(crdName)
+		if err != nil {
+			return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, err)
+		}
+		if crdExists {
+			if existing, err = i.client.GetCRD(crdName); err != nil {
+				return fmt.Errorf("could not retrieve the %v CRD; %v", crdName, err)
+			}
+		}
+
+		if k8sclient.PlanCOSICRD(existing) == k8sclient.COSICRDConflict {
+			return &k8sclient.COSICRDConflictError{CRDName: crdName}
+		}
+
+		crdYAML, err := k8sclient.GetOwnedCOSICRDYAML(crdName)
+		if err != nil {
+			return err
+		}
+
+		plans = append(plans, cosiCRDPlan{name: crdName, existing: existing, exists: crdExists, yaml: crdYAML})
+	}
+
+	// Past this point every CRD is either absent or Trident's own, so applying is safe. A write
+	// can still fail, which leaves the same partial state -- but that is an API server problem
+	// rather than Trident overwriting an API it does not own.
+	for _, plan := range plans {
+		if err := i.client.PutCustomResourceDefinition(plan.existing, plan.name, !plan.exists, plan.yaml); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // CreateOrPatchCRD creates and establishes a CRD or patches an existing one when patchExistingCRDs is true.
@@ -1406,7 +1510,8 @@ func (i *Installer) createOrPatchTridentClusterRole(
 		}
 
 		// Create or patch the cluster role
-		newClusterRoleYAML := k8sclient.GetClusterRoleYAML(resourceName, resourceLabels, controllingCRDetails)
+		newClusterRoleYAML := k8sclient.GetClusterRoleYAML(resourceName, resourceLabels, controllingCRDetails,
+			enableCOSI)
 
 		err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, resourceLabelString)
 		if err != nil {
@@ -1873,6 +1978,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		IdentityLabel:              identityLabel,
 		K8sAPIQPS:                  k8sAPIQPS,
 		EnableConcurrency:          enableConcurrency,
+		EnableCOSI:                 enableCOSI,
 		EnableDataLIFRefresh:       enableDataLIFRefresh,
 		HTTPSMetrics:               httpsMetrics,
 		CSIFeatureGates:            csiFeatureGateYAMLSnippets,

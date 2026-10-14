@@ -22,6 +22,10 @@ type Interface interface {
 	TridentBackends() TridentBackendInformer
 	// TridentBackendConfigs returns a TridentBackendConfigInformer.
 	TridentBackendConfigs() TridentBackendConfigInformer
+	// TridentBuckets returns a TridentBucketInformer.
+	TridentBuckets() TridentBucketInformer
+	// TridentBucketAccesses returns a TridentBucketAccessInformer.
+	TridentBucketAccesses() TridentBucketAccessInformer
 	// TridentGroupSnapshots returns a TridentGroupSnapshotInformer.
 	TridentGroupSnapshots() TridentGroupSnapshotInformer
 	// TridentMirrorRelationships returns a TridentMirrorRelationshipInformer.
@@ -32,6 +36,8 @@ type Interface interface {
 	TridentNodeRemediations() TridentNodeRemediationInformer
 	// TridentNodeRemediationTemplates returns a TridentNodeRemediationTemplateInformer.
 	TridentNodeRemediationTemplates() TridentNodeRemediationTemplateInformer
+	// TridentObjectStores returns a TridentObjectStoreInformer.
+	TridentObjectStores() TridentObjectStoreInformer
 	// TridentSnapshots returns a TridentSnapshotInformer.
 	TridentSnapshots() TridentSnapshotInformer
 	// TridentSnapshotInfos returns a TridentSnapshotInfoInformer.
@@ -93,6 +99,16 @@ func (v *version) TridentBackendConfigs() TridentBackendConfigInformer {
 	return &tridentBackendConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
+// TridentBuckets returns a TridentBucketInformer.
+func (v *version) TridentBuckets() TridentBucketInformer {
+	return &tridentBucketInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentBucketAccesses returns a TridentBucketAccessInformer.
+func (v *version) TridentBucketAccesses() TridentBucketAccessInformer {
+	return &tridentBucketAccessInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
 // TridentGroupSnapshots returns a TridentGroupSnapshotInformer.
 func (v *version) TridentGroupSnapshots() TridentGroupSnapshotInformer {
 	return &tridentGroupSnapshotInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
@@ -116,6 +132,11 @@ func (v *version) TridentNodeRemediations() TridentNodeRemediationInformer {
 // TridentNodeRemediationTemplates returns a TridentNodeRemediationTemplateInformer.
 func (v *version) TridentNodeRemediationTemplates() TridentNodeRemediationTemplateInformer {
 	return &tridentNodeRemediationTemplateInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentObjectStores returns a TridentObjectStoreInformer.
+func (v *version) TridentObjectStores() TridentObjectStoreInformer {
+	return &tridentObjectStoreInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentSnapshots returns a TridentSnapshotInformer.

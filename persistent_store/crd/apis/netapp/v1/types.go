@@ -375,6 +375,101 @@ type TridentBackendList struct {
 	Items []*TridentBackend `json:"items"`
 }
 
+// TridentObjectStore defines a Trident object store.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentObjectStore struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Spec defines the desired state of TridentObjectStore
+	Spec TridentObjectStoreSpec `json:"spec"`
+	// Status defines the observed state of TridentObjectStore
+	Status TridentObjectStoreStatus `json:"status"`
+}
+
+// TridentObjectStoreList is a list of TridentObjectStore objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentObjectStoreList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// List of TridentObjectStore objects
+	Items []*TridentObjectStore `json:"items"`
+}
+
+// TridentObjectStoreSpec is free-form driver configuration. The raw JSON is passed to the
+// object store driver unchanged.
+type TridentObjectStoreSpec struct {
+	runtime.RawExtension
+}
+
+// TridentObjectStoreStatus is free-form persisted store JSON: a copy of spec
+// plus Trident internals such as uuid and state.
+type TridentObjectStoreStatus struct {
+	runtime.RawExtension
+}
+
+// TridentBucket defines a Trident bucket.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBucket struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	BucketName string             `json:"bucketName"`
+	StoreName  string             `json:"storeName"`
+	Info       *TridentBucketInfo `json:"info,omitempty"`
+}
+
+// TridentBucketInfo mirrors object.BucketInfo.
+type TridentBucketInfo struct {
+	S3 *TridentS3BucketInfo `json:"s3,omitempty"`
+}
+
+// TridentS3BucketInfo mirrors object.S3BucketInfo.
+type TridentS3BucketInfo struct {
+	Endpoint        string `json:"endpoint"`
+	Region          string `json:"region"`
+	AddressingStyle string `json:"addressingStyle"`
+}
+
+// TridentBucketList is a list of TridentBucket objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBucketList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []*TridentBucket `json:"items"`
+}
+
+// TridentBucketAccess defines access to one or more Trident buckets.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBucketAccess struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	BucketAccessName string               `json:"bucketAccessName"`
+	StoreName        string               `json:"storeName"`
+	Spec             runtime.RawExtension `json:"spec"`
+}
+
+// TridentBucketAccessList is a list of TridentBucketAccess objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBucketAccessList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []*TridentBucketAccess `json:"items"`
+}
+
 // TridentVolume defines a Trident volume.
 // +genclient
 // +k8s:openapi-gen=true

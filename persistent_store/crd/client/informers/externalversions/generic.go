@@ -7,10 +7,9 @@ package externalversions
 import (
 	"fmt"
 
+	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -52,6 +51,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentBackends().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentbackendconfigs"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentBackendConfigs().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentbuckets"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentBuckets().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentbucketaccesses"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentBucketAccesses().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentgroupsnapshots"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentGroupSnapshots().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentmirrorrelationships"):
@@ -62,6 +65,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentNodeRemediations().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentnoderemediationtemplates"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentNodeRemediationTemplates().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentobjectstores"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentObjectStores().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentsnapshots"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentSnapshots().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentsnapshotinfos"):

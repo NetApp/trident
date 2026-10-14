@@ -6,6 +6,7 @@ package kubernetes
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -37,6 +38,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/object"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/pkg/convert"
@@ -77,6 +79,8 @@ type K8SControllerHelperPlugin interface {
 	GetNodePublicationState(ctx context.Context, nodeName string) (*models.NodePublicationStateFlags, error)
 	GetPVC(ctx context.Context, namespace, name string) (*v1.PersistentVolumeClaim, error)
 	GetPVCForPV(ctx context.Context, pvName string) (*v1.PersistentVolumeClaim, error)
+	AddObjectStore(ctx context.Context, store object.Store) error
+	DeleteObjectStore(ctx context.Context, storeName string) error
 }
 
 type helper struct {
@@ -1745,4 +1749,124 @@ func (h *helper) createDynamicTelemetryUpdater() config.TelemetryUpdater {
 		// Use the shared method to update all dynamic telemetry fields
 		h.updateTelemetryFields(ctx, telemetry)
 	}
+}
+
+// createdObjectStoreSecretName is the Secret tridentctl create writes for an object store.
+func createdObjectStoreSecretName(storeName string) string {
+	return storeName + "-creds"
+}
+
+// AddObjectStore adds an object store CR and a secret with its credentials to the Kubernetes cluster
+func (h *helper) AddObjectStore(ctx context.Context, store object.Store) error {
+	secretName := createdObjectStoreSecretName(store.Name())
+	spec, err := toJSONWithCredentialsKey(store, secretName)
+	if err != nil {
+		return err
+	}
+
+	secret, err := secretFromStore(store, secretName, h.namespace)
+	if err != nil {
+		return err
+	}
+	if _, err := h.kubeClient.CoreV1().Secrets(h.namespace).
+		Create(ctx, secret, metav1.CreateOptions{}); err != nil {
+		return err
+	}
+
+	storeCR := &netappv1.TridentObjectStore{
+		ObjectMeta: metav1.ObjectMeta{Name: store.Name(), Namespace: h.namespace},
+		Spec: netappv1.TridentObjectStoreSpec{
+			RawExtension: runtime.RawExtension{Raw: spec},
+		},
+	}
+	_, err = h.tridentClient.TridentV1().TridentObjectStores(h.namespace).
+		Create(ctx, storeCR, metav1.CreateOptions{})
+	if err != nil {
+		if deleteErr := h.deleteCreatedObjectStoreSecret(ctx, store.Name(), secretName); deleteErr != nil {
+			return fmt.Errorf("%w; %v", err, deleteErr)
+		}
+		return err
+	}
+	return nil
+}
+
+// DeleteObjectStore deletes an object store CR and the Secret this helper created for it.
+func (h *helper) DeleteObjectStore(ctx context.Context, storeName string) error {
+	client := h.tridentClient.TridentV1().TridentObjectStores(h.namespace)
+	tos, err := client.Get(ctx, storeName, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		return errors.NotFoundError("object store %s not found", storeName)
+	} else if err != nil {
+		return err
+	}
+
+	secretName, secretErr := tos.Spec.GetSecretName()
+	if secretErr != nil {
+		secretName = ""
+	}
+	if err = h.deleteCreatedObjectStoreSecret(ctx, storeName, secretName); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"objectStore": storeName,
+			"secret":      secretName,
+		}).WithError(err).Error("Could not delete object store secret.")
+	}
+	err = client.Delete(ctx, storeName, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+func (h *helper) deleteCreatedObjectStoreSecret(ctx context.Context, storeName, secretName string) error {
+	if secretName == "" || secretName != createdObjectStoreSecretName(storeName) {
+		return nil
+	}
+	err := h.kubeClient.CoreV1().Secrets(h.namespace).Delete(ctx, secretName, metav1.DeleteOptions{})
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
+}
+
+func toJSONWithCredentialsKey(store object.Store, secretName string) ([]byte, error) {
+	raw, err := json.Marshal(store)
+	if err != nil {
+		return nil, err
+	}
+	v := make(map[string]any)
+	err = json.Unmarshal(raw, &v)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: refactor this flow
+	v = removeCommonConfig(v)
+	v["credentials"] = map[string]string{
+		"secretName": secretName,
+	}
+	return json.Marshal(v)
+}
+
+// removeCommonConfig fixes an issue with tridentctl create, where empty state
+// and uuid in the TOS spec overrides the status (normally desirable), causing a
+// new uuid every restart.
+func removeCommonConfig(v map[string]any) map[string]any {
+	delete(v, "state")
+	delete(v, "uuid")
+	return v
+}
+
+func secretFromStore(store object.Store, name, namespace string) (*v1.Secret, error) {
+	raw, err := json.Marshal(store.Secrets())
+	if err != nil {
+		return nil, err
+	}
+	v := make(map[string]string)
+	err = json.Unmarshal(raw, &v)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		StringData: v,
+	}, nil
 }

@@ -30,6 +30,7 @@ import (
 	mock_filesystem "github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	mock_mount "github.com/netapp/trident/mocks/mock_utils/mock_mount"
+	"github.com/netapp/trident/object"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
@@ -216,6 +217,22 @@ func getStorageClassByNameFromCache(t *testing.T, scName string) *storageclass.S
 	require.NoError(t, err)
 	sc := results[0].StorageClass.Read
 	return sc
+}
+
+func getBucketByNameFromCache(t *testing.T, bucketName string) *object.Bucket {
+	t.Helper()
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBucket(bucketName)))
+	defer unlocker()
+	require.NoError(t, err)
+	return results[0].Bucket.Read
+}
+
+func getBucketAccessByNameFromCache(t *testing.T, accessName string) *object.BucketAccess {
+	t.Helper()
+	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBucketAccess(accessName)))
+	defer unlocker()
+	require.NoError(t, err)
+	return results[0].BucketAccess.Read
 }
 
 func getVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
@@ -577,6 +594,9 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().SetVersion(gomock.Any(), version).Return(nil).Times(1)
 				mockStoreClient.EXPECT().GetTridentUUID(gomock.Any()).Return("trident-uuid", nil).AnyTimes()
 				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backends, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetObjectStores(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBuckets(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBucketAccesses(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetAutogrowPolicies(gomock.Any()).Return([]*storage.AutogrowPolicyPersistent{}, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
@@ -654,6 +674,9 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().SetVersion(gomock.Any(), version).Return(nil).Times(1)
 				mockStoreClient.EXPECT().GetTridentUUID(gomock.Any()).Return("trident-uuid", nil).AnyTimes()
 				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backends, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetObjectStores(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBuckets(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBucketAccesses(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetAutogrowPolicies(gomock.Any()).Return([]*storage.AutogrowPolicyPersistent{}, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(nil, persistentstore.NewPersistentStoreError("failed", "key")).AnyTimes()
 			},
@@ -680,6 +703,9 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().SetVersion(gomock.Any(), version).Return(nil).Times(1)
 				mockStoreClient.EXPECT().GetTridentUUID(gomock.Any()).Return("trident-uuid", nil).AnyTimes()
 				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backends, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetObjectStores(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBuckets(gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().GetBucketAccesses(gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetAutogrowPolicies(gomock.Any()).Return([]*storage.AutogrowPolicyPersistent{}, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetStorageClasses(gomock.Any()).Return(storageClasses, nil).AnyTimes()
 				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
@@ -1051,6 +1077,116 @@ func TestBootstrapStorageClassesConcurrentCore(t *testing.T) {
 				tt.verifyError(err)
 			}
 
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestBootstrapBucketsConcurrentCore(t *testing.T) {
+	bucket := &object.Bucket{Name: "bucket1", StoreName: "store1"}
+
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyError func(err error)
+	}{
+		{
+			name: "StoreError",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().GetBuckets(gomock.Any()).Return(nil, failed)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Nil(t, getBucketByNameFromCache(t, bucket.Name))
+			},
+		},
+		{
+			name: "Success",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().GetBuckets(gomock.Any()).Return([]*object.Bucket{bucket}, nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+				result := getBucketByNameFromCache(t, bucket.Name)
+				require.NotNil(t, result)
+				assert.Equal(t, bucket.Name, result.Name)
+				assert.Equal(t, bucket.StoreName, result.StoreName)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient)
+			}
+
+			err := o.bootstrapBuckets(testCtx)
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestBootstrapBucketAccessesConcurrentCore(t *testing.T) {
+	access := &object.BucketAccess{Name: "access1", StoreName: "store1"}
+
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyError func(err error)
+	}{
+		{
+			name: "StoreError",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().GetBucketAccesses(gomock.Any()).Return(nil, failed)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Nil(t, getBucketAccessByNameFromCache(t, access.Name))
+			},
+		},
+		{
+			name: "Success",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().GetBucketAccesses(gomock.Any()).Return([]*object.BucketAccess{access}, nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+				result := getBucketAccessByNameFromCache(t, access.Name)
+				require.NotNil(t, result)
+				assert.Equal(t, access.Name, result.Name)
+				assert.Equal(t, access.StoreName, result.StoreName)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient)
+			}
+
+			err := o.bootstrapBucketAccesses(testCtx)
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
 			persistenceCleanup(t, o)
 		})
 	}

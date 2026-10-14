@@ -17,6 +17,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/dynamic"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
@@ -1047,6 +1048,8 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 	// Set crdUpdateNeeded operations to false
 	c.crdUpdateNeeded = false
 
+	c.warnIfCOSIObjectsAbandoned(&tridentCR)
+
 	// Update status of the tridentCR  to `Installed`
 	debugMessage := "Updating TridentOrchestrator CR after installation."
 	statusMessage := "Trident installed"
@@ -1057,6 +1060,48 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		identifiedSpecValues)
 
 	return err
+}
+
+// warnIfCOSIObjectsAbandoned reports COSI objects left without a reconciler.
+//
+// Disabling COSI is safe and reversible, but silent: new BucketClaims are accepted and ignored,
+// and deletes stop on the protection finalizer, so a namespace holding one sits in Terminating
+// forever with nothing pointing back at the flag that caused it.
+//
+// It warns rather than refusing because nothing here is irreversible, and the grant being revoked
+// includes cluster-wide write access to Secrets -- which an administrator may need to take away
+// in a hurry, without waiting on application teams to delete their BucketClaims first.
+//
+// Keyed off state rather than the true-to-false transition, so a reinstall with COSI off over
+// objects from a previous install is caught too. Errors are logged and swallowed; the install has
+// already succeeded and no diagnostic is worth failing it over.
+func (c *Controller) warnIfCOSIObjectsAbandoned(tridentCR *netappv1.TridentOrchestrator) {
+	if tridentCR.Spec.EnableCOSI {
+		return
+	}
+
+	dynamicClient, err := dynamic.NewForConfig(c.KubeConfig)
+	if err != nil {
+		Log().WithError(err).Debug("Could not check for abandoned COSI objects.")
+		return
+	}
+
+	exist, err := k8sclient.TridentCOSIObjectsExist(context.Background(), c.K8SClient, dynamicClient)
+	if err != nil {
+		Log().WithError(err).Debug("Could not check for abandoned COSI objects.")
+		return
+	}
+	if !exist {
+		return
+	}
+
+	eventMessage := "COSI is disabled, but objectstorage.k8s.io objects still exist. They are " +
+		"left in place and no reconciler is running for them, so new BucketClaims will be " +
+		"ignored and deletes will hang on the objectstorage.k8s.io/protection finalizer. " +
+		"Re-enable COSI to release them."
+
+	Log().Warning(eventMessage)
+	c.eventRecorder.Event(tridentCR, corev1.EventTypeWarning, string(operatorV1.AppStatusInstalled), eventMessage)
 }
 
 // uninstallTridentAndUpdateStatus uninstalls Trident and updates status of the ControllingCR accordingly

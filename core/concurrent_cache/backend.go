@@ -131,7 +131,7 @@ func UpsertBackend(id, name, newName string) Subquery {
 
 				// This is the canonical method for upserting with a unique key.
 				// There are 4 cases: key and newKey are equal, key is empty, newKey is empty,
-				// and key and newKey are different. In all cases expect #3,
+				// and key and newKey are different. In all cases except #3,
 				// key must be deleted from the unique keys and newKey must be added pointing to id.
 				// If both keys are empty we should have errored out before this point.
 				switch {
