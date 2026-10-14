@@ -30,9 +30,21 @@ const (
 	VolumeAutosizeModeGrowShrink = "grow_shrink"
 )
 
+// ONTAP requires a shrink threshold between 1 and 99 for autosize requests. Trident does not
+// configure shrink mode, so use the minimum supported value for this required but unused field.
+const volumeAutosizeShrinkThresholdPercent = 1
+
+// VolumeAutosizePolicy is the writable FlexVol autosize policy.
+type VolumeAutosizePolicy struct {
+	Mode                 string
+	GrowThresholdPercent int
+	MaximumSizeBytes     uint64
+}
+
 type Volume struct {
 	AccessType        string
 	Aggregates        []string
+	AutosizePolicy    *VolumeAutosizePolicy
 	AutosizeMode      string
 	Comment           string
 	Encrypt           *bool

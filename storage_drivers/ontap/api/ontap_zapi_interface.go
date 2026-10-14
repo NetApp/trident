@@ -140,6 +140,7 @@ type ZapiClientInterface interface {
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (*azgo.VolumeCreateResponse, error)
 	VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error)
+	VolumeSetAutosizePolicy(volumeName string, autosizePolicy VolumeAutosizePolicy) (*azgo.VolumeModifyIterResponse, error)
 	VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error)
 	// VolumeCloneCreate clones a volume from a snapshot
 	VolumeCloneCreate(name, source, snapshot string) (*azgo.VolumeCloneCreateResponse, error)

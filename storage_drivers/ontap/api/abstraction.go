@@ -246,6 +246,7 @@ type OntapAPI interface {
 	VolumeRename(ctx context.Context, originalName, newName string) error
 	VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
 	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error
+	VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy) error
 	VolumeSetSize(ctx context.Context, name, newSize string) error
 	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)

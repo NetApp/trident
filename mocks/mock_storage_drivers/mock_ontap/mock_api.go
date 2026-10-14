@@ -2537,6 +2537,20 @@ func (mr *MockOntapAPIMockRecorder) VolumeRename(ctx, originalName, newName any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRename", reflect.TypeOf((*MockOntapAPI)(nil).VolumeRename), ctx, originalName, newName)
 }
 
+// VolumeSetAutosizePolicy mocks base method.
+func (m *MockOntapAPI) VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosize api.VolumeAutosizePolicy) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", ctx, volumeName, volumeUUID, autosize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeSetAutosizePolicy indicates an expected call of VolumeSetAutosizePolicy.
+func (mr *MockOntapAPIMockRecorder) VolumeSetAutosizePolicy(ctx, volumeName, volumeUUID, autosize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSetAutosizePolicy), ctx, volumeName, volumeUUID, autosize)
+}
+
 // VolumeSetComment mocks base method.
 func (m *MockOntapAPI) VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error {
 	m.ctrl.T.Helper()

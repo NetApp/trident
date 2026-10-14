@@ -2697,18 +2697,18 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeCloneSplitStart(ctx, volume
 }
 
 // VolumeCreate mocks base method.
-func (m *MockRestClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (string, error) {
+func (m *MockRestClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool, autosize *api.VolumeAutosizePolicy) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, autosize)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCreate indicates an expected call of VolumeCreate.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, autosize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume, autosize)
 }
 
 // VolumeCreateBalanced mocks base method.
@@ -2955,6 +2955,20 @@ func (m *MockRestClientInterface) VolumeRename(ctx context.Context, volumeName, 
 func (mr *MockRestClientInterfaceMockRecorder) VolumeRename(ctx, volumeName, newVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRename", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeRename), ctx, volumeName, newVolumeName)
+}
+
+// VolumeSetAutosizePolicy mocks base method.
+func (m *MockRestClientInterface) VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosize api.VolumeAutosizePolicy) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", ctx, volumeName, volumeUUID, autosize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeSetAutosizePolicy indicates an expected call of VolumeSetAutosizePolicy.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeSetAutosizePolicy(ctx, volumeName, volumeUUID, autosize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeSetAutosizePolicy), ctx, volumeName, volumeUUID, autosize)
 }
 
 // VolumeSetComment mocks base method.

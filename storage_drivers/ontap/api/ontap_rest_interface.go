@@ -51,7 +51,7 @@ type RestClientInterface interface {
 	VolumeCreate(
 		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-		snapshotReserve int, dpVolume bool,
+		snapshotReserve int, dpVolume bool, autosizePolicy *VolumeAutosizePolicy,
 	) (string, error)
 	VolumeCreateBalanced(
 		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
@@ -75,6 +75,8 @@ type RestClientInterface interface {
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
 	// VolumeSetSize sets the size of the specified flexvol
 	VolumeSetSize(ctx context.Context, volumeName, newSize string) error
+	// VolumeSetAutosizePolicy applies autosize settings to a FlexVol, using its UUID when supplied.
+	VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy) error
 	VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error
 	// VolumeSetComment sets a flexvol's comment to the supplied value
 	// equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment

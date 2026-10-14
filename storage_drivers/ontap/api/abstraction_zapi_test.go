@@ -4229,6 +4229,140 @@ func TestOntapAPIZAPI_VolumeModifyExportPolicy(t *testing.T) {
 	}
 }
 
+func TestOntapAPIZAPI_VolumeSetAutosizePolicy(t *testing.T) {
+	autosizePolicy := api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: 80,
+		MaximumSizeBytes:     2048,
+	}
+
+	failure := azgo.NewVolumeModifyIterInfoType().
+		SetErrorCode(1234).
+		SetErrorMessage("autosize rejected")
+	failureList := (&azgo.VolumeModifyIterResponseResultFailureList{}).
+		SetVolumeModifyIterInfo([]azgo.VolumeModifyIterInfoType{*failure})
+	multipleFailureList := (&azgo.VolumeModifyIterResponseResultFailureList{}).
+		SetVolumeModifyIterInfo([]azgo.VolumeModifyIterInfoType{
+			*failure,
+			*azgo.NewVolumeModifyIterInfoType().SetErrorCode(5678).SetErrorMessage("another failure"),
+		})
+
+	tests := []struct {
+		name          string
+		response      *azgo.VolumeModifyIterResponse
+		responseError error
+		errorContains string
+	}{
+		{
+			name: "success",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumSucceededPtr:  new(1),
+				},
+			},
+		},
+		{
+			name:          "nil response with error",
+			responseError: errors.New("request failed"),
+			errorContains: "request failed",
+		},
+		{
+			name:          "nil response without error",
+			errorContains: "unexpected response",
+		},
+		{
+			name: "response with error",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{ResultStatusAttr: "passed"},
+			},
+			responseError: errors.New("request failed"),
+			errorContains: "request failed",
+		},
+		{
+			name: "top-level ZAPI failure",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "failed",
+					ResultReasonAttr: "ZAPI rejected request",
+					ResultErrnoAttr:  "9999",
+				},
+			},
+			errorContains: "ZAPI rejected request",
+		},
+		{
+			name: "object failure",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumFailedPtr:     new(1),
+					FailureListPtr:   failureList,
+				},
+			},
+			errorContains: "autosize rejected",
+		},
+		{
+			name: "failure count without failure list",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumFailedPtr:     new(1),
+				},
+			},
+			errorContains: "ONTAP reported 1 failed objects",
+		},
+		{
+			name: "multiple object failures",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumFailedPtr:     new(2),
+					FailureListPtr:   multipleFailureList,
+				},
+			},
+			errorContains: "ONTAP reported 2 failed objects",
+		},
+		{
+			name: "no successful object",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumSucceededPtr:  new(0),
+				},
+			},
+			errorContains: "expected one modified object, got 0",
+		},
+		{
+			name: "multiple successful objects",
+			response: &azgo.VolumeModifyIterResponse{
+				Result: azgo.VolumeModifyIterResponseResult{
+					ResultStatusAttr: "passed",
+					NumSucceededPtr:  new(2),
+				},
+			},
+			errorContains: "expected one modified object, got 2",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+
+			mock.EXPECT().VolumeSetAutosizePolicy("test_volume", autosizePolicy).
+				Return(test.response, test.responseError)
+
+			err := oapi.VolumeSetAutosizePolicy(ctx, "test_volume", "ignored-zapi-uuid", autosizePolicy)
+
+			if test.errorContains == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, test.errorContains)
+			}
+		})
+	}
+}
+
 func TestOntapAPIZAPI_QtreeExists(t *testing.T) {
 	ctrl, mock, oapi := setupTestZAPIClient(t)
 	defer ctrl.Finish()

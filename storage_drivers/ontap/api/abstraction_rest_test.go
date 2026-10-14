@@ -1570,7 +1570,8 @@ func TestVolumeCreate(t *testing.T) {
 	// case 1: Create volume, returned No error
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		volume.AutosizePolicy).
 		Return("", nil)
 	_, err := oapi.VolumeCreate(ctx, volume)
 	assert.NoError(t, err, "error returned while creating volume")
@@ -1578,7 +1579,8 @@ func TestVolumeCreate(t *testing.T) {
 	// case 2: Create volume, volume creation failed
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		volume.AutosizePolicy).
 		Return("", errors.New("Volume create failed"))
 	_, err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
@@ -2612,6 +2614,23 @@ func TestVolumeSetSize(t *testing.T) {
 		errors.New("failed to update volume size"))
 	err = oapi.VolumeSetSize(ctx, "vol1", "1073741824000")
 	assert.Error(t, err, "no error returned while modifying a volume size")
+}
+
+func TestVolumeSetAutosizePolicy(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+	autosizePolicy := api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: 80,
+		MaximumSizeBytes:     2048,
+	}
+
+	rsi.EXPECT().VolumeSetAutosizePolicy(ctx, "vol1", "uuid1", autosizePolicy).Return(nil)
+	err := oapi.VolumeSetAutosizePolicy(ctx, "vol1", "uuid1", autosizePolicy)
+	assert.NoError(t, err)
+
+	rsi.EXPECT().VolumeSetAutosizePolicy(ctx, "vol1", "uuid1", autosizePolicy).Return(errors.New("update failed"))
+	err = oapi.VolumeSetAutosizePolicy(ctx, "vol1", "uuid1", autosizePolicy)
+	assert.ErrorContains(t, err, "volume autosize modify failed")
 }
 
 func TestVolumeModifyUnixPermissions(t *testing.T) {

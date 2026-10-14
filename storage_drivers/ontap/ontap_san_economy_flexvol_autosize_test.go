@@ -18,6 +18,7 @@ import (
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
@@ -184,14 +185,156 @@ func TestResizeFlexvol_AutosizeModes(t *testing.T) {
 	})
 }
 
+// expectBucketAutosizeAndResize expects one autosize write, preceded by one VolumeSetSize when
+// sizeBytes is non-zero.
+func expectBucketAutosizeAndResize(
+	mockAPI *mockapi.MockOntapAPI, testCtx context.Context, vol *api.Volume, autosize api.VolumeAutosizePolicy,
+	sizeBytes uint64,
+) {
+	if sizeBytes == 0 {
+		mockAPI.EXPECT().VolumeSetAutosizePolicy(
+			testCtx, testEcoFlexvolName, vol.UUID, autosize,
+		).Return(nil)
+		return
+	}
+	setSizeCall := mockAPI.EXPECT().VolumeSetSize(
+		testCtx, testEcoFlexvolName, economySizeString(sizeBytes),
+	).Return(nil)
+	autosizeCall := mockAPI.EXPECT().VolumeSetAutosizePolicy(
+		testCtx, testEcoFlexvolName, vol.UUID, autosize,
+	).Return(nil)
+	gomock.InOrder(setSizeCall, autosizeCall)
+}
+
+func TestResizeFlexvol_AppliesBackendAutosizePolicy(t *testing.T) {
+	testCtx := context.Background()
+	threshold := 80
+	luns := economyLuns(testEcoPrimaryLunBytes, "lun_a")
+	optimalMaximum := testEcoPrimaryLunBytes + testEcoPrimaryLunBytes/5
+
+	for _, tc := range []struct {
+		name            string
+		liveBytes       uint64
+		liveMode        string
+		expectedSize    uint64
+		expectedMaximum uint64
+	}{
+		{
+			name:            "grow resizes before writing policy",
+			liveBytes:       testEcoGrowFallbackBytes,
+			liveMode:        api.VolumeAutosizeModeOff,
+			expectedSize:    testEcoPrimaryLunBytes,
+			expectedMaximum: optimalMaximum,
+		},
+		{
+			name:            "shrink resizes before writing policy",
+			liveBytes:       testEcoFlexvolBytes,
+			liveMode:        api.VolumeAutosizeModeOff,
+			expectedSize:    testEcoPrimaryLunBytes,
+			expectedMaximum: optimalMaximum,
+		},
+		{
+			name:            "grow mode derives maximum from optimal size, not live size",
+			liveBytes:       5_500_000_000,
+			liveMode:        api.VolumeAutosizeModeGrow,
+			expectedMaximum: optimalMaximum,
+		},
+		{
+			name:            "grow mode floors maximum at live size",
+			liveBytes:       testEcoFlexvolBytes,
+			liveMode:        api.VolumeAutosizeModeGrow,
+			expectedMaximum: testEcoFlexvolBytes,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSanEcoDriver(t)
+			driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: &threshold,
+				MaximumSize:          "20%",
+			}
+			vol := economyFlexvolForTest(tc.liveBytes, tc.liveMode)
+			vol.UUID = "uuid1"
+			mockAPI.EXPECT().VolumeInfo(testCtx, testEcoFlexvolName).Return(vol, nil)
+			mockAPI.EXPECT().LunList(testCtx, economyFlexvolLUNListPath(testEcoFlexvolName)).Return(luns, nil)
+			expectBucketAutosizeAndResize(mockAPI, testCtx, vol, api.VolumeAutosizePolicy{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: threshold,
+				MaximumSizeBytes:     tc.expectedMaximum,
+			}, tc.expectedSize)
+
+			err := driver.resizeFlexvol(testCtx, testEcoFlexvolName, 0, true, nil)
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestResizeFlexvol_CapsAutosizeMaximumAtPoolLimit(t *testing.T) {
+	testCtx := context.Background()
+	threshold := 80
+	luns := economyLuns(testEcoPrimaryLunBytes, "lun_a")
+
+	for _, tc := range []struct {
+		name                string
+		liveBytes           uint64
+		limitVolumePoolSize string
+		expectedMaximum     uint64
+		expectedSize        uint64
+	}{
+		{
+			name:                "caps at pool limit",
+			liveBytes:           testEcoPrimaryLunBytes,
+			limitVolumePoolSize: "5500Mi",
+			expectedMaximum:     5500 * 1024 * 1024,
+		},
+		{
+			name:                "never below target size",
+			liveBytes:           testEcoGrowFallbackBytes,
+			limitVolumePoolSize: "4500Mi",
+			expectedMaximum:     testEcoPrimaryLunBytes,
+			expectedSize:        testEcoPrimaryLunBytes,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSanEcoDriver(t)
+			driver.Config.LimitVolumePoolSize = tc.limitVolumePoolSize
+			driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: &threshold,
+				MaximumSize:          "20%",
+			}
+			vol := economyFlexvolForTest(tc.liveBytes, api.VolumeAutosizeModeOff)
+			vol.UUID = "uuid1"
+			mockAPI.EXPECT().VolumeInfo(testCtx, testEcoFlexvolName).Return(vol, nil)
+			mockAPI.EXPECT().LunList(testCtx, economyFlexvolLUNListPath(testEcoFlexvolName)).Return(luns, nil)
+			expectBucketAutosizeAndResize(mockAPI, testCtx, vol, api.VolumeAutosizePolicy{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: threshold,
+				MaximumSizeBytes:     tc.expectedMaximum,
+			}, tc.expectedSize)
+
+			err := driver.resizeFlexvol(testCtx, testEcoFlexvolName, 0, true, nil)
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestResizeFlexvol_OptimalWithoutGrowPolicy(t *testing.T) {
 	testCtx := context.Background()
 	luns := economyLuns(testEcoPrimaryLunBytes, "lun_a")
 	optimalSize := economySizeString(testEcoPrimaryLunBytes)
+	threshold := 80
 
 	for _, autosizeMode := range allVolumeAutosizeModes {
 		t.Run(autosizeMode, func(t *testing.T) {
 			mockAPI, driver := newMockOntapSanEcoDriver(t)
+			driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: &threshold,
+				MaximumSize:          "20%",
+			}
 			vol := economyFlexvolForTest(testEcoFlexvolBytes, autosizeMode)
 			bucket, err := newFlexvolBucket(luns)
 			assert.NoError(t, err)

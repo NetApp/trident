@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"html/template"
 	"maps"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -29,6 +30,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
@@ -359,6 +361,10 @@ func InitializeOntapConfig(
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
+	}
+
+	if err = checkOntapAutosizeSupport(config); err != nil {
+		return nil, err
 	}
 
 	// Inject secret if not empty
@@ -2083,36 +2089,314 @@ func ValidateStoragePrefix(storagePrefix string) error {
 const DefaultSpaceAllocation = "true"
 
 const (
-	DefaultSpaceReserve              = "none"
-	DefaultSnapshotPolicy            = "none"
-	DefaultSnapshotReserve           = "5"
-	DefaultUnixPermissions           = "---rwxrwxrwx"
-	DefaultSnapshotDir               = "false"
-	DefaultExportPolicy              = "default"
-	DefaultSecurityStyleNFS          = "unix"
-	DefaultSecurityStyleSMB          = "ntfs"
-	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
-	DefaultNfsMountOptionsKubernetes = ""
-	DefaultSplitOnClone              = "false"
-	DefaultCloneSplitDelay           = 86400
-	DefaultLuksEncryption            = "false"
-	DefaultMirroring                 = "false"
-	DefaultLimitAggregateUsage       = ""
-	DefaultLimitVolumeSize           = ""
-	DefaultLimitVolumePoolSize       = ""
-	DefaultDenyNewVolumePools        = "false"
-	DefaultTieringPolicy             = ""
-	DefaultSkipRecoveryQueue         = "false"
-	DefaultExt3FormatOptions         = ""
-	DefaultExt4FormatOptions         = ""
-	DefaultXfsFormatOptions          = ""
-	DefaultASAEncryption             = "true"
-	DefaultADAdminUser               = ""
+	DefaultSpaceReserve                      = "none"
+	DefaultSnapshotPolicy                    = "none"
+	DefaultSnapshotReserve                   = "5"
+	DefaultUnixPermissions                   = "---rwxrwxrwx"
+	DefaultSnapshotDir                       = "false"
+	DefaultExportPolicy                      = "default"
+	DefaultSecurityStyleNFS                  = "unix"
+	DefaultSecurityStyleSMB                  = "ntfs"
+	DefaultNfsMountOptionsDocker             = "-o nfsvers=3"
+	DefaultNfsMountOptionsKubernetes         = ""
+	DefaultSplitOnClone                      = "false"
+	DefaultCloneSplitDelay                   = 86400
+	DefaultLuksEncryption                    = "false"
+	DefaultMirroring                         = "false"
+	DefaultLimitAggregateUsage               = ""
+	DefaultLimitVolumeSize                   = ""
+	DefaultLimitVolumePoolSize               = ""
+	DefaultDenyNewVolumePools                = "false"
+	DefaultTieringPolicy                     = ""
+	DefaultSkipRecoveryQueue                 = "false"
+	DefaultExt3FormatOptions                 = ""
+	DefaultExt4FormatOptions                 = ""
+	DefaultXfsFormatOptions                  = ""
+	DefaultASAEncryption                     = "true"
+	DefaultADAdminUser                       = ""
+	DefaultOntapAutosizeMode                 = api.VolumeAutosizeModeOff
+	DefaultOntapAutosizeGrowThresholdPercent = 85
+	DefaultOntapAutosizeMaximumSize          = "20%"
 
 	// Use of ONTAP's balanced placement algorithm varies by personality
 	DefaultUseBalancedPlacementUnified       = "false"
 	DefaultUseBalancedPlacementDisaggregated = "true"
 )
+
+func checkOntapAutosizeSupport(config *drivers.OntapStorageDriverConfig) error {
+	if config.OntapAutosizePolicy == nil {
+		return nil
+	}
+
+	if config.GCNVConfig != nil {
+		return fmt.Errorf("ontapAutosize is not supported by GCNV ONTAP mode backends")
+	}
+
+	if config.StorageDriverName == tridentconfig.OntapSANStorageDriverName ||
+		config.StorageDriverName == tridentconfig.OntapSANEconomyStorageDriverName {
+		return nil
+	}
+
+	return fmt.Errorf("ontapAutosize is not supported by storage driver %s", config.StorageDriverName)
+}
+
+func populateAndValidateOntapAutosizeConfig(config *drivers.OntapStorageDriverConfig) error {
+
+	if err := checkOntapAutosizeSupport(config); err != nil {
+		return err
+	}
+
+	autosizeConfig := config.OntapAutosizePolicy
+	if autosizeConfig == nil {
+		return nil
+	}
+	if autosizeConfig.Mode == "" {
+		autosizeConfig.Mode = DefaultOntapAutosizeMode
+	} else {
+		autosizeConfig.Mode = strings.ToLower(autosizeConfig.Mode)
+	}
+	if autosizeConfig.GrowThresholdPercent == nil {
+		autosizeConfig.GrowThresholdPercent = convert.ToPtr(DefaultOntapAutosizeGrowThresholdPercent)
+	}
+	if autosizeConfig.MaximumSize == "" {
+		autosizeConfig.MaximumSize = DefaultOntapAutosizeMaximumSize
+	}
+
+	// SAN economy LUNs share backing FlexVols whose size changes as the pool grows, so the
+	// autosize maximum must be relative to the FlexVol size instead of a fixed capacity.
+	if config.StorageDriverName == tridentconfig.OntapSANEconomyStorageDriverName &&
+		!strings.HasSuffix(autosizeConfig.MaximumSize, "%") {
+		return fmt.Errorf("invalid ontapAutosize maximumSize %q; storage driver %s requires a percentage value",
+			autosizeConfig.MaximumSize, config.StorageDriverName)
+	}
+
+	if autosizeConfig.Mode != api.VolumeAutosizeModeGrow && autosizeConfig.Mode != api.VolumeAutosizeModeOff {
+		return fmt.Errorf("invalid ontapAutosize mode %q; supported values are %q and %q",
+			autosizeConfig.Mode, api.VolumeAutosizeModeOff, api.VolumeAutosizeModeGrow)
+	}
+
+	if *autosizeConfig.GrowThresholdPercent < 2 || *autosizeConfig.GrowThresholdPercent > 99 {
+		return fmt.Errorf("invalid ontapAutosize growThresholdPercent %d; value must be between 2 and 99",
+			*autosizeConfig.GrowThresholdPercent)
+	}
+
+	if err := validateOntapAutosizeMaximum(autosizeConfig.MaximumSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateOntapAutosizeMaximum accepts either a positive integer percentage (for example "20%")
+// or a Kubernetes storage quantity (for example "1.5Gi" or a raw byte count).
+func validateOntapAutosizeMaximum(value string) error {
+	if strings.HasSuffix(value, "%") {
+		if matched, _ := regexp.MatchString(`^[1-9][0-9]*%$`, value); !matched {
+			return fmt.Errorf("invalid ontapAutosize maximumSize %q; value must be a positive integer percentage",
+				value)
+		}
+		if _, err := strconv.ParseUint(strings.TrimSuffix(value, "%"), 10, 64); err != nil {
+			return fmt.Errorf("invalid ontapAutosize maximumSize %q: %w", value, err)
+		}
+		return nil
+	}
+
+	_, err := parseOntapAutosizeMaximumBytes(value)
+	if err != nil {
+		return fmt.Errorf("invalid ontapAutosize maximumSize %q; value must be a positive integer percentage or a Kubernetes storage quantity: %w",
+			value, err)
+	}
+
+	return nil
+}
+
+func parseOntapAutosizeMaximumBytes(value string) (uint64, error) {
+	quantity, err := resource.ParseQuantity(value)
+	if err != nil {
+		return 0, err
+	}
+	if quantity.Sign() <= 0 {
+		return 0, fmt.Errorf("size must be greater than 0")
+	}
+
+	sizeBytes, err := convert.Int64ToUint64(quantity.Value())
+	if err != nil {
+		return 0, fmt.Errorf("size is out of range: %w", err)
+	}
+	return sizeBytes, nil
+}
+
+// calculateOntapAutosizeMaximum converts a percentage or quantity into an absolute autosize ceiling.
+// The configured maximum must cover the requested base size, and the resolved value is then floored
+// at the live FlexVol size because ONTAP rejects an autosize maximum below the current volume size.
+func calculateOntapAutosizeMaximum(baseFlexvolBytes, floorFlexvolBytes uint64, maximumSize string) (uint64, error) {
+	if strings.HasSuffix(maximumSize, "%") {
+		percentage, err := strconv.ParseUint(strings.TrimSuffix(maximumSize, "%"), 10, 64)
+		if err != nil || percentage == 0 {
+			return 0, fmt.Errorf("invalid ontapAutosize maximumSize %q", maximumSize)
+		}
+
+		if baseFlexvolBytes > 0 && percentage > math.MaxUint64/baseFlexvolBytes {
+			return 0, fmt.Errorf("ontapAutosize maximumSize %q is too large", maximumSize)
+		}
+		growth := baseFlexvolBytes * percentage / 100
+		if growth > math.MaxUint64-baseFlexvolBytes {
+			return 0, fmt.Errorf("ontapAutosize maximumSize %q is too large", maximumSize)
+		}
+
+		maximum := baseFlexvolBytes + growth
+		if maximum < floorFlexvolBytes {
+			maximum = floorFlexvolBytes
+		}
+		return maximum, nil
+	}
+
+	maximum, err := parseOntapAutosizeMaximumBytes(maximumSize)
+	if err != nil {
+		return 0, fmt.Errorf("convert ontapAutosize maximumSize %q to bytes: %w", maximumSize, err)
+	}
+	if maximum < baseFlexvolBytes {
+		return 0, fmt.Errorf("ontapAutosize maximum %d bytes is below required FlexVol size %d bytes",
+			maximum, baseFlexvolBytes)
+	}
+	if maximum < floorFlexvolBytes {
+		maximum = floorFlexvolBytes
+	}
+	return maximum, nil
+}
+
+// resolveOntapAutosizePolicy evaluates a backend autosize policy for a specific FlexVol size.
+func resolveOntapAutosizePolicy(
+	config *drivers.OntapAutosizeConfig, baseFlexvolBytes, floorFlexvolBytes uint64,
+) (*api.VolumeAutosizePolicy, error) {
+	if config == nil {
+		return nil, nil
+	}
+
+	autosizePolicy := &api.VolumeAutosizePolicy{Mode: config.Mode}
+	if config.Mode == api.VolumeAutosizeModeOff {
+		return autosizePolicy, nil
+	}
+	if config.GrowThresholdPercent == nil {
+		return nil, fmt.Errorf("ontapAutosize growThresholdPercent is required when mode is %s", config.Mode)
+	}
+
+	maximum, err := calculateOntapAutosizeMaximum(baseFlexvolBytes, floorFlexvolBytes, config.MaximumSize)
+	if err != nil {
+		return nil, err
+	}
+	autosizePolicy.GrowThresholdPercent = *config.GrowThresholdPercent
+	autosizePolicy.MaximumSizeBytes = maximum
+	return autosizePolicy, nil
+}
+
+// limitOntapAutosizeMaximum keeps autosize from growing a FlexVol past limitBytes. The limited maximum
+// never goes below floorBytes, which must cover both the live FlexVol size and any size Trident is
+// about to set, because ONTAP rejects a maximum below the current volume size.
+func limitOntapAutosizeMaximum(
+	ctx context.Context, autosizePolicy *api.VolumeAutosizePolicy, limitBytes, floorBytes uint64,
+) {
+	if autosizePolicy == nil ||
+		autosizePolicy.Mode != api.VolumeAutosizeModeGrow ||
+		autosizePolicy.MaximumSizeBytes <= limitBytes {
+		return
+	}
+	requestedBytes := autosizePolicy.MaximumSizeBytes
+	autosizePolicy.MaximumSizeBytes = max(limitBytes, floorBytes)
+	Logc(ctx).WithFields(LogFields{
+		"requestedMaximumBytes": requestedBytes,
+		"limitBytes":            limitBytes,
+		"floorBytes":            floorBytes,
+		"maximumBytes":          autosizePolicy.MaximumSizeBytes,
+	}).Debug("Limited ONTAP autosize maximum to the volume size limit.")
+}
+
+// applyOntapAutosizePolicy writes a policy when one is configured.
+func applyOntapAutosizePolicy(
+	ctx context.Context, client api.OntapAPI, flexvol, volumeUUID string, autosizePolicy *api.VolumeAutosizePolicy,
+) error {
+	if autosizePolicy == nil {
+		return nil
+	}
+	if err := client.VolumeSetAutosizePolicy(ctx, flexvol, volumeUUID, *autosizePolicy); err != nil {
+		return fmt.Errorf("apply ONTAP autosize to volume %s: %w", flexvol, err)
+	}
+	return nil
+}
+
+// applyOntapAutosizePolicyToClone applies the backend's autosize policy to a newly created FlexClone.
+//
+// When ONTAP creates a FlexClone, the clone starts with the same autosize settings as its source
+// volume, which may differ from the backend's policy. This function:
+//  1. Looks up the clone to get its UUID and current size.
+//  2. Computes the autosize maximum from the clone's size, not the source's.
+//  3. Applies the resulting policy to the clone.
+//  4. Records the clone's UUID in cloneVolConfig.
+func applyOntapAutosizePolicyToClone(
+	ctx context.Context, client api.OntapAPI, cloneVolConfig *storage.VolumeConfig,
+	config *drivers.OntapAutosizeConfig,
+) error {
+	name := cloneVolConfig.InternalName
+	cloneFlexvol, err := client.VolumeInfo(ctx, name)
+	if err != nil {
+		return fmt.Errorf("get clone volume %s: %w", name, err)
+	}
+	if cloneFlexvol == nil {
+		return fmt.Errorf("clone volume %s not found after reaching the desired state", name)
+	}
+	cloneSize, err := convert.ToUint64(cloneFlexvol.Size)
+	if err != nil {
+		return fmt.Errorf("parse clone volume %s size: %w", name, err)
+	}
+	autosizePolicy, err := resolveOntapAutosizePolicy(config, cloneSize, cloneSize)
+	if err != nil {
+		return err
+	}
+	if err = applyOntapAutosizePolicy(ctx, client, name, cloneFlexvol.UUID, autosizePolicy); err != nil {
+		return err
+	}
+	cloneVolConfig.BackendVolumeID = cloneFlexvol.UUID
+	return nil
+}
+
+// ontapAutosizeFromVolConfig rebuilds the saved policy. Empty mode means no policy was saved.
+func ontapAutosizeFromVolConfig(volConfig *storage.VolumeConfig) (*drivers.OntapAutosizeConfig, error) {
+	if volConfig.OntapAutosizeMode == "" {
+		return nil, nil
+	}
+
+	config := &drivers.OntapAutosizeConfig{
+		Mode:        volConfig.OntapAutosizeMode,
+		MaximumSize: volConfig.OntapAutosizeMaximumSize,
+	}
+	if volConfig.OntapAutosizeGrowThresholdPercent == "" {
+		return config, nil
+	}
+	// VolumeConfig persists the threshold as a string, so convert it back to an integer when loading.
+	threshold, err := convert.ToPositiveInt(volConfig.OntapAutosizeGrowThresholdPercent)
+	if err != nil {
+		return nil, fmt.Errorf("parse saved ontapAutosize growThresholdPercent %q: %w",
+			volConfig.OntapAutosizeGrowThresholdPercent, err)
+	}
+	config.GrowThresholdPercent = &threshold
+	return config, nil
+}
+
+// saveOntapAutosizeOnVolConfig records a policy in its configured form. A nil policy clears it.
+func saveOntapAutosizeOnVolConfig(volConfig *storage.VolumeConfig, config *drivers.OntapAutosizeConfig) {
+	volConfig.OntapAutosizeMode = ""
+	volConfig.OntapAutosizeGrowThresholdPercent = ""
+	volConfig.OntapAutosizeMaximumSize = ""
+	if config == nil {
+		return
+	}
+	// VolumeConfig persists the threshold as a string, so serialize the integer before saving.
+	volConfig.OntapAutosizeMode = config.Mode
+	if config.GrowThresholdPercent != nil {
+		volConfig.OntapAutosizeGrowThresholdPercent = strconv.Itoa(*config.GrowThresholdPercent)
+	}
+	volConfig.OntapAutosizeMaximumSize = config.MaximumSize
+}
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file.
 // This function is used by Unified and AFX personalities.
@@ -2126,6 +2410,14 @@ func PopulateConfigurationDefaults(
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateConfigurationDefaults")
 
 	var err error
+
+	if config.OntapAutosizePolicy != nil && ontapi != nil && ontapi.IsDisaggregated() {
+		return errors.New("ontapAutosize is not supported by disaggregated ONTAP backends")
+	}
+
+	if err = populateAndValidateOntapAutosizeConfig(config); err != nil {
+		return err
+	}
 
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
@@ -2353,6 +2645,10 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateASAConfigurationDefaults")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateASAConfigurationDefaults")
+
+	if config.OntapAutosizePolicy != nil {
+		return fmt.Errorf("ontapAutosize is not supported by SAN-optimized/ASA r2 storage backends")
+	}
 
 	var err error
 
@@ -5024,8 +5320,11 @@ func cloneFlexvol(
 	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	// A clone config is copied from its source, so drop any inherited backend volume ID before
-	// creating the clone; deleting by the source's ID would destroy the wrong volume.
+	// creating the clone; deleting by the source's ID would destroy the wrong volume. Replace the
+	// source's autosize record with this backend's policy, which is the policy applied to the clone
+	// below and the one Resize rebuilds from; a nil policy clears the record.
 	cloneVolConfig.BackendVolumeID = ""
+	saveOntapAutosizeOnVolConfig(cloneVolConfig, config.OntapAutosizePolicy)
 
 	// Junction verification can fail after the clone exists, including because the request
 	// context was canceled. Rollback needs its own lifetime or VolumeDestroy is canceled too.
@@ -5103,6 +5402,12 @@ func cloneFlexvol(
 
 	if err = duringVolCloneAfterSnapCreation2.Inject(); err != nil {
 		return err
+	}
+
+	if config.OntapAutosizePolicy != nil {
+		if err = applyOntapAutosizePolicyToClone(ctx, client, cloneVolConfig, config.OntapAutosizePolicy); err != nil {
+			return err
+		}
 	}
 
 	// Split the clone if requested
@@ -6324,6 +6629,19 @@ func createFlexvol(ctx context.Context, ontapAPI api.OntapAPI, volume api.Volume
 	}
 	if err != nil {
 		return "", err
+	}
+
+	// REST volume create sets autosize in the request; ZAPI volume-create and REST balanced
+	// (application container) create have no autosize fields.
+	if volume.AutosizePolicy != nil && (useBalancedPlacement || !ontapAPI.IsREST()) {
+		if err = applyOntapAutosizePolicy(ctx, ontapAPI, volume.Name, volumeUUID, volume.AutosizePolicy); err != nil {
+			newVolConfig := &storage.VolumeConfig{InternalName: volume.Name, BackendVolumeID: volumeUUID}
+			if destroyErr := destroyFlexvol(ctx, ontapAPI, newVolConfig, true, true); destroyErr != nil {
+				return "", errors.Join(err,
+					fmt.Errorf("destroy volume %s after autosize failure: %w", volume.Name, destroyErr))
+			}
+			return "", err
+		}
 	}
 
 	Logc(ctx).WithField("name", volume.Name).Debug("Created flexvol.")

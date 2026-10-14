@@ -951,6 +951,15 @@ func TestZAPI_VolumeModificationAndCloneOperations(t *testing.T) {
 		assert.NoError(t, err) // Fake server supports this operation
 	})
 
+	t.Run("VolumeSetAutosizePolicy", func(t *testing.T) {
+		_, err := client.VolumeSetAutosizePolicy("test-vol", VolumeAutosizePolicy{
+			Mode:                 VolumeAutosizeModeGrow,
+			GrowThresholdPercent: 80,
+			MaximumSizeBytes:     2 * 1024 * 1024 * 1024,
+		})
+		assert.NoError(t, err) // Fake server supports this operation
+	})
+
 	t.Run("VolumeModifyUnixPermissions", func(t *testing.T) {
 		_, err := client.VolumeModifyUnixPermissions("test-vol", "777")
 		assert.NoError(t, err) // Fake server supports this operation
@@ -1846,7 +1855,7 @@ func TestZAPI_VolumeListByAttrs_PolicyFilters(t *testing.T) {
 				body, readErr := io.ReadAll(r.Body)
 				require.NoError(t, readErr)
 
-				req, parseErr := volumeGetIterRequestFromBody(body)
+				req, parseErr := zapiRequestFromBody[azgo.VolumeGetIterRequest](body)
 				require.NoError(t, parseErr)
 				require.NotNil(t, req.QueryPtr)
 				require.NotNil(t, req.QueryPtr.VolumeAttributesPtr)
@@ -1883,7 +1892,7 @@ func TestZAPI_VolumeListByAttrs_PolicyFilters(t *testing.T) {
 	}
 }
 
-func volumeGetIterRequestFromBody(body []byte) (*azgo.VolumeGetIterRequest, error) {
+func zapiRequestFromBody[T any](body []byte) (*T, error) {
 	fragment := string(body)
 	if idx := strings.Index(fragment, "<netapp"); idx >= 0 {
 		fragment = strings.Split(fragment[idx:], "<netapp")[1]
@@ -1891,7 +1900,7 @@ func volumeGetIterRequestFromBody(body []byte) (*azgo.VolumeGetIterRequest, erro
 		fragment = strings.Split(fragment, "</netapp>")[0]
 	}
 
-	var req azgo.VolumeGetIterRequest
+	var req T
 	if err := xml.Unmarshal([]byte(fragment), &req); err != nil {
 		return nil, err
 	}
@@ -1926,4 +1935,91 @@ func TestZAPI_VolumeCreate_UnixGroupID(t *testing.T) {
 		assert.Error(t, err, "expected an error for an invalid group ID")
 		assert.Contains(t, err.Error(), "unixGroupID")
 	})
+}
+
+func TestZAPI_VolumeSetAutosize_Attributes(t *testing.T) {
+	tests := []struct {
+		name            string
+		autosizePolicy  VolumeAutosizePolicy
+		wantThresholds  bool
+		wantGrowPercent int
+		wantMaximum     int
+	}{
+		{
+			name:           "off sends mode only",
+			autosizePolicy: VolumeAutosizePolicy{Mode: VolumeAutosizeModeOff},
+		},
+		{
+			name: "grow threshold below ONTAP default shrink threshold",
+			autosizePolicy: VolumeAutosizePolicy{
+				Mode:                 VolumeAutosizeModeGrow,
+				GrowThresholdPercent: 1,
+				MaximumSizeBytes:     2048,
+			},
+			wantThresholds:  true,
+			wantGrowPercent: 1,
+			wantMaximum:     2048,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotAutosize *azgo.VolumeAutosizeAttributesType
+
+			mux := http.NewServeMux()
+			server := httptest.NewUnstartedServer(mux)
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			require.NoError(t, err)
+			server.Listener = listener
+
+			host, port, err := net.SplitHostPort(listener.Addr().String())
+			require.NoError(t, err)
+
+			mux.HandleFunc("/servlets/", func(w http.ResponseWriter, r *http.Request) {
+				body, readErr := io.ReadAll(r.Body)
+				require.NoError(t, readErr)
+
+				req, parseErr := zapiRequestFromBody[azgo.VolumeModifyIterRequest](body)
+				require.NoError(t, parseErr)
+				require.NotNil(t, req.AttributesPtr)
+				require.NotNil(t, req.AttributesPtr.VolumeAttributesPtr)
+				gotAutosize = req.AttributesPtr.VolumeAttributesPtr.VolumeAutosizeAttributesPtr
+
+				response, responseErr := xml.MarshalIndent(
+					newFakeGetDefaultZAPIResponse(host, port), "  ", "    ")
+				require.NoError(t, responseErr)
+				_, writeErr := w.Write(response)
+				require.NoError(t, writeErr)
+			})
+
+			server.StartTLS()
+			defer server.Close()
+
+			config := ClientConfig{
+				ManagementLIF: host + ":" + port,
+				Username:      "admin",
+				Password:      "password",
+			}
+			client, err := NewClient(config, "datavserver", "trident")
+			require.NoError(t, err)
+
+			_, err = client.VolumeSetAutosizePolicy("test-vol", tt.autosizePolicy)
+			require.NoError(t, err)
+			require.NotNil(t, gotAutosize)
+			require.NotNil(t, gotAutosize.ModePtr)
+			assert.Equal(t, tt.autosizePolicy.Mode, *gotAutosize.ModePtr)
+			if tt.wantThresholds {
+				require.NotNil(t, gotAutosize.GrowThresholdPercentPtr)
+				assert.Equal(t, tt.wantGrowPercent, *gotAutosize.GrowThresholdPercentPtr)
+				require.NotNil(t, gotAutosize.ShrinkThresholdPercentPtr)
+				assert.Equal(t, 1, *gotAutosize.ShrinkThresholdPercentPtr)
+				require.NotNil(t, gotAutosize.MaximumSizePtr)
+				assert.Equal(t, tt.wantMaximum, *gotAutosize.MaximumSizePtr)
+			} else {
+				assert.Nil(t, gotAutosize.GrowThresholdPercentPtr)
+				assert.Nil(t, gotAutosize.ShrinkThresholdPercentPtr)
+				assert.Nil(t, gotAutosize.MaximumSizePtr)
+			}
+		})
+	}
 }

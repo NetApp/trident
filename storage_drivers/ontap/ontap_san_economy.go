@@ -502,6 +502,11 @@ func (d *SANEconomyStorageDriver) Create(
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
 
+	// Record the backend autosize policy (mode, grow threshold, maximum size) in the volume config,
+	// matching the policy applied to the LUN's bucket FlexVol. Set before the existence check so it
+	// is also present when an existing LUN is returned.
+	saveOntapAutosizeOnVolConfig(volConfig, d.Config.OntapAutosizePolicy)
+
 	// Determine a way to see if the volume already exists
 	exists, existsInFlexvol, err := d.LUNExists(ctx, name, "", d.FlexvolNamePrefix())
 	if err != nil {
@@ -910,6 +915,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 	}
 
 	cloneVolConfig.InternalID = internalID
+	saveOntapAutosizeOnVolConfig(cloneVolConfig, d.Config.OntapAutosizePolicy)
 
 	return nil
 }
@@ -1121,6 +1127,20 @@ func (d *SANEconomyStorageDriver) Import(
 		return nil
 	}
 
+	// Unmanaged imports returned above, so this policy is resolved only for managed imports.
+	var autosizePolicy *api.VolumeAutosizePolicy
+	if d.Config.OntapAutosizePolicy != nil {
+		liveSize, sizeErr := convert.ToUint64(flexvol.Size)
+		if sizeErr != nil {
+			return fmt.Errorf("parse imported volume %s size: %w", originalFlexvolName, sizeErr)
+		}
+		if autosizePolicy, err = d.resolveBucketAutosizePolicy(ctx, liveSize, liveSize); err != nil {
+			return err
+		}
+	}
+
+	// Track the live FlexVol name because managed import may rename it before autosize is applied.
+	flexvolName := originalFlexvolName
 	var targetPath string
 
 	// Managed import with no rename only supported for csi workflow
@@ -1180,10 +1200,21 @@ func (d *SANEconomyStorageDriver) Import(
 
 			// Update target path if volume was renamed
 			if volRenamed {
+				flexvolName = newFlexvolName
 				targetPath = "/vol/" + newFlexvolName + "/" + volConfig.InternalName
 				volConfig.InternalID = d.CreateLUNInternalID(d.Config.SVM, newFlexvolName, volConfig.InternalName)
 			}
 		}
+	}
+
+	// autosizePolicy is nil unless a managed import resolved a policy above.
+	if autosizePolicy != nil {
+		if err = applyOntapAutosizePolicy(
+			ctx, d.API, flexvolName, flexvol.UUID, autosizePolicy,
+		); err != nil {
+			return err
+		}
+		saveOntapAutosizeOnVolConfig(volConfig, d.Config.OntapAutosizePolicy)
 	}
 
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), targetPath); err != nil {
@@ -3059,7 +3090,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		Logc(ctx).WithError(err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed: %w", err)
 	}
-	if err = setFlexvolSize(ctx, d.API, bucketVol, effectiveBytes, volAttrs); err != nil {
+	if err = d.setBucketSizeWithAutosizePolicy(ctx, bucketVol, flexvolSize, effectiveBytes, volAttrs); err != nil {
 		Logc(ctx).WithError(err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed: %w", err)
 	}
@@ -3103,6 +3134,9 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		}
 	}
 	Logc(ctx).WithField("size", returnSize).Debug("Returning.")
+	if volAttrs != nil {
+		saveOntapAutosizeOnVolConfig(volConfig, d.Config.OntapAutosizePolicy)
+	}
 
 	return nil
 }
@@ -3110,8 +3144,10 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 // resizeFlexvol grows or shrinks the hosting flexvol toward the optimal size for sizeBytes (the
 // delta added to total LUN capacity, or zero to fit current LUNs only).
 //
-// honorGrowMode: when true, respect ONTAP autosize mode grow by not shrinking below current size
-// (provision, resize, clone). When false, always apply the optimal target (post-delete paths).
+// honorGrowMode: when true (provision, resize, clone), respect ONTAP autosize mode grow by not
+// shrinking below current size, and apply the current backend autosize policy after changing the
+// FlexVol size. When false (post-delete paths), always apply the optimal target and leave autosize
+// untouched.
 //
 // bucket: optional cache from an earlier LunList/VolumeInfo in the same flexvol-locked operation; nil
 // for single-step calls such as create. On optimal-size failure, grows by relative +sizeBytes only.
@@ -3142,7 +3178,50 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(
 	if err != nil {
 		return err
 	}
+	if honorGrowMode {
+		return d.setBucketSizeWithAutosizePolicy(ctx, flexvol, flexvolSizeBytes, effectiveBytes, volAttrs)
+	}
 	return setFlexvolSize(ctx, d.API, flexvol, effectiveBytes, volAttrs)
+}
+
+// resolveBucketAutosizePolicy evaluates the backend autosize policy for a bucket FlexVol, limited to
+// limitVolumePoolSize but never below floorBytes.
+func (d *SANEconomyStorageDriver) resolveBucketAutosizePolicy(
+	ctx context.Context, baseBytes, floorBytes uint64,
+) (*api.VolumeAutosizePolicy, error) {
+	autosizePolicy, err := resolveOntapAutosizePolicy(d.Config.OntapAutosizePolicy, baseBytes, floorBytes)
+	if err != nil || autosizePolicy == nil {
+		return autosizePolicy, err
+	}
+	// Query the limit without validating a requested size; this helper only caps the autosize maximum.
+	shouldLimit, limitBytes, err := CheckVolumePoolSizeLimits(ctx, 0, &d.Config)
+	if err != nil {
+		return nil, err
+	}
+	if shouldLimit {
+		limitOntapAutosizeMaximum(ctx, autosizePolicy, limitBytes, floorBytes)
+	}
+	return autosizePolicy, nil
+}
+
+// setBucketSizeWithAutosizePolicy resizes a bucket FlexVol to targetBytes and then applies the backend
+// autosize policy. The maximum is derived from optimalBytes, floored at targetBytes and limited to
+// limitVolumePoolSize. volAttrs is nil only when the optimal size could not be calculated, so
+// autosize is left for the next operation that can size the bucket.
+func (d *SANEconomyStorageDriver) setBucketSizeWithAutosizePolicy(
+	ctx context.Context, flexvol string, optimalBytes, targetBytes uint64, volAttrs *api.Volume,
+) error {
+	if d.Config.OntapAutosizePolicy == nil || volAttrs == nil {
+		return setFlexvolSize(ctx, d.API, flexvol, targetBytes, volAttrs)
+	}
+	autosizePolicy, err := d.resolveBucketAutosizePolicy(ctx, optimalBytes, targetBytes)
+	if err != nil {
+		return err
+	}
+	if err = setFlexvolSize(ctx, d.API, flexvol, targetBytes, volAttrs); err != nil {
+		return err
+	}
+	return applyOntapAutosizePolicy(ctx, d.API, flexvol, volAttrs.UUID, autosizePolicy)
 }
 
 func (d *SANEconomyStorageDriver) ReconcileNodeAccess(

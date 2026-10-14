@@ -979,6 +979,12 @@ func TestOntapSanEconomyVolumeCreate_LUNExists(t *testing.T) {
 		InternalName: "lun_storagePrefix_vol1",
 	}
 	volAttrs := map[string]sa.Request{}
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "50%",
+	}
 	luns := []api.Lun{
 		{Size: "1073741824", Name: "lun_storagePrefix_vol1", VolumeName: "volumeName"},
 	}
@@ -1002,6 +1008,9 @@ func TestOntapSanEconomyVolumeCreate_LUNExists(t *testing.T) {
 
 			if test.lunExists {
 				assert.Equal(t, "/svm/SVM1/flexvol/volumeName/lun/lun_storagePrefix_vol1", volConfig.InternalID)
+				assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+				assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+				assert.Equal(t, "50%", volConfig.OntapAutosizeMaximumSize)
 			} else {
 				assert.Equal(t, "", volConfig.InternalID)
 			}
@@ -2208,6 +2217,100 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOntapSanEconomyVolumeImport_Autosize(t *testing.T) {
+	threshold := 80
+	const trackedFlexvol = "test_lun_pool_vol"
+	newImportDriver := func(
+		t *testing.T, flexvolName, limitVolumePoolSize string,
+	) (*mockapi.MockOntapAPI, *SANEconomyStorageDriver) {
+		mockAPI, d := newMockOntapSanEcoDriver(t)
+		d.flexvolNamePrefix = "test_lun_pool_"
+		d.Config.LimitVolumePoolSize = limitVolumePoolSize
+		d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+			Mode:                 api.VolumeAutosizeModeGrow,
+			GrowThresholdPercent: &threshold,
+			MaximumSize:          "20%",
+		}
+		mockAPI.EXPECT().VolumeInfo(gomock.Any(), flexvolName).Return(&api.Volume{
+			AccessType: "rw",
+			Name:       flexvolName,
+			Size:       "1073741824",
+			UUID:       "import-uuid",
+		}, nil)
+		mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+			Return(&api.Lun{Name: "/vol/" + flexvolName + "/my_LUN", State: "online", Size: "1073741824"}, nil)
+		return mockAPI, d
+	}
+	newVolConfig := func() *storage.VolumeConfig {
+		return &storage.VolumeConfig{InternalName: "pvc-1234", Size: "1g", Encryption: "false", FileSystem: "xfs"}
+	}
+
+	t.Run("applies policy capped at pool limit after rename", func(t *testing.T) {
+		mockAPI, d := newImportDriver(t, trackedFlexvol, "1100Mi")
+		volConfig := newVolConfig()
+		gomock.InOrder(
+			mockAPI.EXPECT().LunRename(
+				gomock.Any(), "/vol/"+trackedFlexvol+"/my_LUN", "/vol/"+trackedFlexvol+"/pvc-1234",
+			).Return(nil),
+			mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), trackedFlexvol, "import-uuid", api.VolumeAutosizePolicy{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: threshold,
+				MaximumSizeBytes:     1100 * 1024 * 1024,
+			}).Return(nil),
+		)
+		mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
+
+		err := d.Import(ctx, volConfig, trackedFlexvol+"/my_LUN")
+
+		assert.NoError(t, err)
+		assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+	})
+
+	t.Run("applies policy to renamed FlexVol without backend prefix", func(t *testing.T) {
+		mockAPI, d := newImportDriver(t, "my_vol", "")
+		volConfig := newVolConfig()
+		var renamedFlexvol string
+		gomock.InOrder(
+			mockAPI.EXPECT().LunRename(gomock.Any(), "/vol/my_vol/my_LUN", "/vol/my_vol/pvc-1234").Return(nil),
+			mockAPI.EXPECT().VolumeRename(gomock.Any(), "my_vol", gomock.Any()).
+				DoAndReturn(func(_ context.Context, _, newName string) error {
+					renamedFlexvol = newName
+					return nil
+				}),
+			mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), gomock.Any(), "import-uuid", gomock.Any()).
+				DoAndReturn(func(_ context.Context, name, _ string, _ api.VolumeAutosizePolicy) error {
+					assert.Equal(t, renamedFlexvol, name)
+					return nil
+				}),
+		)
+		mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
+
+		err := d.Import(ctx, volConfig, "my_vol/my_LUN")
+
+		assert.NoError(t, err)
+		assert.True(t, strings.HasPrefix(renamedFlexvol, "test_lun_pool_"))
+		assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+		assert.Equal(t, d.CreateLUNInternalID(d.Config.SVM, renamedFlexvol, "pvc-1234"), volConfig.InternalID)
+	})
+
+	t.Run("rename failure leaves autosize untouched", func(t *testing.T) {
+		mockAPI, d := newImportDriver(t, trackedFlexvol, "")
+		mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("rename failed"))
+
+		err := d.Import(ctx, newVolConfig(), trackedFlexvol+"/my_LUN")
+
+		assert.ErrorContains(t, err, "rename failed")
+	})
+
+	t.Run("resolve failure leaves names untouched", func(t *testing.T) {
+		_, d := newImportDriver(t, trackedFlexvol, "invalid")
+
+		err := d.Import(ctx, newVolConfig(), trackedFlexvol+"/my_LUN")
+
+		assert.ErrorContains(t, err, "limitVolumePoolSize")
+	})
 }
 
 func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {
@@ -4846,6 +4949,23 @@ func TestOntapSanEconomyStoreConfig(t *testing.T) {
 	assert.Equal(t, d.Config, *persistentConfig.OntapConfig, "ontap config mismatch")
 }
 
+func TestOntapSanEconomyStoreConfig_AutosizePolicy(t *testing.T) {
+	_, driver := newMockOntapSanEcoDriver(t)
+	autosizeConfig := &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: new(85),
+		MaximumSize:          "120%",
+	}
+	driver.Config.OntapAutosizePolicy = autosizeConfig
+	persistentConfig := &storage.PersistentStorageBackendConfig{}
+
+	driver.StoreConfig(ctx, persistentConfig)
+
+	if assert.NotNil(t, persistentConfig.OntapConfig) {
+		assert.Equal(t, autosizeConfig, persistentConfig.OntapConfig.OntapAutosizePolicy)
+	}
+}
+
 func TestGetVolumeForImport(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
@@ -5176,6 +5296,23 @@ func TestGetUpdateType_Failure(t *testing.T) {
 	assert.Equal(t, expectedBitmap, result, "bitmap mismatch")
 }
 
+func TestGetUpdateType_AutosizeOnly(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("")
+	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: new(85),
+		MaximumSize:          "120%",
+	}
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.Equal(t, uint64(0), result.GetCardinality(), "autosize-only backend update should be accepted")
+}
+
 func TestOntapSanEconomy_LUNExists(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
@@ -5191,14 +5328,21 @@ func TestOntapSanEconomy_LUNExists(t *testing.T) {
 
 func TestOntapSanEconomyVolumeResize(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
 	d.flexvolNamePrefix = "storagePrefix_"
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	volConfig := &storage.VolumeConfig{
-		Size:         "1073741824",
-		Encryption:   "false",
-		FileSystem:   "xfs",
-		Name:         "my_Lun",
-		InternalName: "storagePrefix_my_Lun",
+		Size:              "1073741824",
+		Encryption:        "false",
+		FileSystem:        "xfs",
+		Name:              "my_Lun",
+		InternalName:      "storagePrefix_my_Lun",
+		OntapAutosizeMode: api.VolumeAutosizeModeOff,
 	}
 	lun := api.Lun{
 		Size:       "1073741824",
@@ -5209,8 +5353,16 @@ func TestOntapSanEconomyVolumeResize(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, "/vol/storagePrefix_*/storagePrefix_my_Lun").Return(api.Luns{lun}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{lun}, nil)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&lun, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Size: "1073741824"}, nil).Times(1)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{
+		Size: "1073741824",
+		UUID: "bucket-uuid",
+	}, nil).Times(1)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"data"}}, nil).Times(1)
+	mockAPI.EXPECT().VolumeSetAutosizePolicy(ctx, "storagePrefix_my_Bucket", "bucket-uuid", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     2576980377,
+	}).Return(nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), "2147483648").Return(uint64(2147483648), nil)
 
@@ -5218,6 +5370,7 @@ func TestOntapSanEconomyVolumeResize(t *testing.T) {
 
 	assert.Nil(t, result)
 	assert.Equal(t, "/svm/SVM1/flexvol/storagePrefix_my_Bucket/lun/storagePrefix_my_Lun", volConfig.InternalID)
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
 }
 
 func TestOntapSanEconomyVolumeResize_InternalID(t *testing.T) {
@@ -5386,6 +5539,50 @@ func TestOntapSanEconomyVolumeResize_OptimalUnavailableUsesLUNSum(t *testing.T) 
 
 	err := d.Resize(ctx, volConfig, requestedBytes)
 	assert.NoError(t, err)
+}
+
+func TestOntapSanEconomyVolumeResize_OptimalUnavailableSkipsAutosize(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+	d.flexvolNamePrefix = "storagePrefix_"
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	volConfig := &storage.VolumeConfig{
+		Size:              "1073741824",
+		Encryption:        "false",
+		FileSystem:        "xfs",
+		Name:              "my_Lun",
+		InternalName:      "storagePrefix_my_Lun",
+		OntapAutosizeMode: api.VolumeAutosizeModeOff,
+	}
+	const (
+		bucketVol       = "storagePrefix_my_Bucket"
+		currentLunBytes = uint64(1_073_741_824)
+		requestedBytes  = uint64(2_147_483_648)
+	)
+	lun := api.Lun{
+		Size:       strconv.FormatUint(currentLunBytes, 10),
+		Name:       "/vol/storagePrefix_my_Bucket/storagePrefix_my_Lun",
+		VolumeName: bucketVol,
+	}
+	expectedFlexvolSize := strconv.FormatUint(requestedBytes, 10)
+
+	mockAPI.EXPECT().LunList(ctx, "/vol/storagePrefix_*/storagePrefix_my_Lun").Return(api.Luns{lun}, nil)
+	mockAPI.EXPECT().LunList(ctx, "/vol/storagePrefix_my_Bucket/*").Return(api.Luns{lun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, bucketVol).Return(nil, errors.New("volume info failed")).Times(1)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"data"}}, nil).Times(1)
+	mockAPI.EXPECT().VolumeSetSize(ctx, bucketVol, expectedFlexvolSize).Return(nil)
+	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), expectedFlexvolSize).Return(requestedBytes, nil)
+
+	err := d.Resize(ctx, volConfig, requestedBytes)
+
+	assert.NoError(t, err)
+	assert.Equal(t, api.VolumeAutosizeModeOff, volConfig.OntapAutosizeMode)
 }
 
 func TestOntapSanEconomyVolumeResize_SizeError(t *testing.T) {

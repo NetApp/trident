@@ -111,32 +111,33 @@ func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
-	*CommonStorageDriverConfig                   // embedded types replicate all fields
-	AWSConfig                        *AWSConfig  `json:"aws,omitempty"`  // AWS-specific config attributes
-	GCNVConfig                       *GCNVConfig `json:"gcnv,omitempty"` // GCNV ONTAP-mode proxy (expert mode)
-	ManagementLIF                    string      `json:"managementLIF"`
-	DataLIF                          string      `json:"dataLIF"`
-	IgroupName                       string      `json:"igroupName"`
-	SVM                              string      `json:"svm"`
-	Username                         string      `json:"username"`
-	Password                         string      `json:"password"`
-	Aggregate                        string      `json:"aggregate"`
-	UsageHeartbeat                   string      `json:"usageHeartbeat"`                   // in hours, default to 24.0
-	QtreePruneFlexvolsPeriod         string      `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
-	QtreeQuotaResizePeriod           string      `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
-	QtreesPerFlexvol                 string      `json:"qtreesPerFlexvol"`                 // default to 200
-	LUNsPerFlexvol                   string      `json:"lunsPerFlexvol"`                   // default to 100
-	EmptyFlexvolDeferredDeletePeriod string      `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
-	CloneSplitDelay                  string      `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
-	StorageAPITimeout                string      `json:"storageAPITimeout,omitempty"`      // in seconds; ZAPI defaults to 90s when omitted; REST has no client timeout unless set
-	NfsMountOptions                  string      `json:"nfsMountOptions"`
-	LimitAggregateUsage              string      `json:"limitAggregateUsage"`
-	LimitVolumePoolSize              string      `json:"limitVolumePoolSize"`
-	DenyNewVolumePools               string      `json:"denyNewVolumePools"`
-	AutoExportPolicy                 bool        `json:"autoExportPolicy"`
-	AutoExportCIDRs                  []string    `json:"autoExportCIDRs"`
-	NASType                          string      `json:"nasType"`
-	SANType                          string      `json:"sanType"`
+	*CommonStorageDriverConfig                            // embedded types replicate all fields
+	AWSConfig                        *AWSConfig           `json:"aws,omitempty"`  // AWS-specific config attributes
+	GCNVConfig                       *GCNVConfig          `json:"gcnv,omitempty"` // GCNV ONTAP-mode proxy (expert mode)
+	OntapAutosizePolicy              *OntapAutosizeConfig `json:"ontapAutosize,omitempty"`
+	ManagementLIF                    string               `json:"managementLIF"`
+	DataLIF                          string               `json:"dataLIF"`
+	IgroupName                       string               `json:"igroupName"`
+	SVM                              string               `json:"svm"`
+	Username                         string               `json:"username"`
+	Password                         string               `json:"password"`
+	Aggregate                        string               `json:"aggregate"`
+	UsageHeartbeat                   string               `json:"usageHeartbeat"`                   // in hours, default to 24.0
+	QtreePruneFlexvolsPeriod         string               `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
+	QtreeQuotaResizePeriod           string               `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
+	QtreesPerFlexvol                 string               `json:"qtreesPerFlexvol"`                 // default to 200
+	LUNsPerFlexvol                   string               `json:"lunsPerFlexvol"`                   // default to 100
+	EmptyFlexvolDeferredDeletePeriod string               `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
+	CloneSplitDelay                  string               `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
+	StorageAPITimeout                string               `json:"storageAPITimeout,omitempty"`      // in seconds; ZAPI defaults to 90s when omitted; REST has no client timeout unless set
+	NfsMountOptions                  string               `json:"nfsMountOptions"`
+	LimitAggregateUsage              string               `json:"limitAggregateUsage"`
+	LimitVolumePoolSize              string               `json:"limitVolumePoolSize"`
+	DenyNewVolumePools               string               `json:"denyNewVolumePools"`
+	AutoExportPolicy                 bool                 `json:"autoExportPolicy"`
+	AutoExportCIDRs                  []string             `json:"autoExportCIDRs"`
+	NASType                          string               `json:"nasType"`
+	SANType                          string               `json:"sanType"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
@@ -152,6 +153,16 @@ type OntapStorageDriverConfig struct {
 	ReplicationPolicy         string                   `json:"replicationPolicy"`
 	ReplicationSchedule       string                   `json:"replicationSchedule"`
 	FlexGroupAggregateList    []string                 `json:"flexgroupAggregateList"`
+}
+
+// OntapAutosizeConfig controls native ONTAP autosize for FlexVols created by a backend.
+// It is intentionally a top-level backend setting so it cannot be overridden by virtual pools.
+type OntapAutosizeConfig struct {
+	Mode                 string `json:"mode"`
+	GrowThresholdPercent *int   `json:"growThresholdPercent,omitempty"`
+	// MaximumSize is either a positive integer percentage (for example "20%")
+	// or a Kubernetes storage quantity / raw byte count (for example "1.5Gi" or "1073741824").
+	MaximumSize string `json:"maximumSize"`
 }
 
 type OntapStorageDriverPool struct {

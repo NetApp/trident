@@ -913,6 +913,67 @@ func (c *RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName
 	return fmt.Errorf("unexpected response from volume modify")
 }
 
+// toVolumeInlineAutosizePolicy converts a FlexVol autosize policy into the REST volume autosize model.
+func toVolumeInlineAutosizePolicy(autosizePolicy *VolumeAutosizePolicy) (*models.VolumeInlineAutosize, error) {
+	if autosizePolicy == nil {
+		return nil, nil
+	}
+
+	result := &models.VolumeInlineAutosize{Mode: new(autosizePolicy.Mode)}
+	if autosizePolicy.Mode == VolumeAutosizeModeOff {
+		return result, nil
+	}
+
+	maximum, err := convert.Uint64ToInt64(autosizePolicy.MaximumSizeBytes)
+	if err != nil {
+		return nil, fmt.Errorf("convert autosize maximum to int64: %w", err)
+	}
+	result.GrowThreshold = new(int64(autosizePolicy.GrowThresholdPercent))
+	result.ShrinkThreshold = new(int64(volumeAutosizeShrinkThresholdPercent))
+	result.Maximum = new(maximum)
+	return result, nil
+}
+
+// VolumeSetAutosizePolicy applies autosize settings to a FlexVol, using its UUID when supplied.
+func (c *RestClient) VolumeSetAutosizePolicy(
+	ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy,
+) error {
+	if volumeUUID == "" {
+		fields := []string{"uuid"}
+		volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
+		if err != nil {
+			return err
+		}
+		if volume == nil || volume.UUID == nil {
+			return fmt.Errorf("could not find volume uuid with name %v", volumeName)
+		}
+		volumeUUID = *volume.UUID
+	}
+
+	inlineAutosizePolicy, err := toVolumeInlineAutosizePolicy(&autosizePolicy)
+	if err != nil {
+		return err
+	}
+
+	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = volumeUUID
+	params.SetInfo(&models.Volume{Autosize: inlineAutosizePolicy})
+
+	volumeModifyOK, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	if err != nil {
+		return err
+	} else if volumeModifyOK != nil {
+		Logc(ctx).WithField("name", volumeName).Debug("Volume autosize updated synchronously.")
+		return nil
+	} else if volumeModifyAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
+	}
+	return fmt.Errorf("unexpected response from volume modify")
+}
+
 // mountVolumeByNameAndStyle mounts a volume at the specified junction
 func (c *RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, junctionPath, style string) error {
 	fields := []string{"nas.path"}
@@ -1587,6 +1648,7 @@ func (c *RestClient) createVolumeByStyle(
 	ctx context.Context, name string, sizeInBytes int64, aggrs []string,
 	spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
+	autosizePolicy *VolumeAutosizePolicy,
 ) (string, error) {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -1601,6 +1663,11 @@ func (c *RestClient) createVolumeByStyle(
 		State:          new(models.VolumeStateOnline),
 		Style:          new(style),
 	}
+	inlineAutosizePolicy, err := toVolumeInlineAutosizePolicy(autosizePolicy)
+	if err != nil {
+		return "", err
+	}
+	volumeInfo.Autosize = inlineAutosizePolicy
 
 	volumeInfoAggregates := ToSliceVolumeAggregatesItems(aggrs)
 	if len(volumeInfoAggregates) > 0 {
@@ -2043,6 +2110,7 @@ func (c *RestClient) VolumeCreate(
 	ctx context.Context,
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
+	autosizePolicy *VolumeAutosizePolicy,
 ) (string, error) {
 	sizeBytesStr, err := capacity.ToBytes(size)
 	if err != nil {
@@ -2055,7 +2123,7 @@ func (c *RestClient) VolumeCreate(
 
 	return c.createVolumeByStyle(ctx, name, sizeInBytes, []string{aggregateName}, spaceReserve, snapshotPolicy,
 		unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
-		snapshotReserve, models.VolumeStyleFlexvol, dpVolume)
+		snapshotReserve, models.VolumeStyleFlexvol, dpVolume, autosizePolicy)
 }
 
 func (c *RestClient) VolumeCreateBalanced(
@@ -5327,7 +5395,7 @@ func (c *RestClient) FlexGroupCreate(
 ) error {
 	_, err := c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
 		unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
-		models.VolumeStyleFlexgroup, false)
+		models.VolumeStyleFlexgroup, false, nil)
 	return err
 }
 

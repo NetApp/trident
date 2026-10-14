@@ -379,6 +379,11 @@ func (d *NVMeStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
+	// Record the backend autosize policy (mode, grow threshold, maximum size) in the volume config.
+	// Resize rebuilds the policy from this record to recompute the autosize maximum for the new size.
+	// Set before the existence check so it is also present when an existing volume is returned.
+	saveOntapAutosizeOnVolConfig(volConfig, d.Config.OntapAutosizePolicy)
+
 	// Check if volume+namespace already exist. Clean up orphaned FlexVols (volume without namespace).
 	// Returns VolumeExistsError if both are present, nil if creation should proceed.
 	if err := d.cleanupIncompleteNamespace(ctx, volConfig); err != nil {
@@ -445,6 +450,12 @@ func (d *NVMeStorageDriver) Create(
 	flexVolBufferSize := uint64(LUNMetadataBufferMultiplier * float64(flexVolSize))
 
 	volumeSize := strconv.FormatUint(flexVolBufferSize, 10)
+	autosizePolicy, err := resolveOntapAutosizePolicy(
+		d.Config.OntapAutosizePolicy, flexVolBufferSize, flexVolBufferSize,
+	)
+	if err != nil {
+		return err
+	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, namespaceSizeBytes, d.Config.CommonStorageDriverConfig,
@@ -549,6 +560,7 @@ func (d *NVMeStorageDriver) Create(
 			ctx, d.API, api.Volume{
 				AccessType:      "",
 				Aggregates:      []string{aggregate},
+				AutosizePolicy:  autosizePolicy,
 				Comment:         labels,
 				Encrypt:         enableEncryption,
 				ExportPolicy:    exportPolicy,
@@ -844,6 +856,21 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		volConfig.Size = newSize
 	}
 
+	// Resolve the backend policy only for managed imports. Unmanaged imports leave autosizePolicy nil,
+	// so the apply block below does not change the FlexVol.
+	var autosizePolicy *api.VolumeAutosizePolicy
+	if !volConfig.ImportNotManaged && d.Config.OntapAutosizePolicy != nil {
+		liveSize, sizeErr := convert.ToUint64(flexvol.Size)
+		if sizeErr != nil {
+			return fmt.Errorf("parse imported volume %s size: %w", originalName, sizeErr)
+		}
+		if autosizePolicy, err = resolveOntapAutosizePolicy(
+			d.Config.OntapAutosizePolicy, liveSize, liveSize,
+		); err != nil {
+			return err
+		}
+	}
+
 	// Rename the volume if Trident will manage its lifecycle and the names are different
 	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		err = d.API.VolumeRename(ctx, originalName, volConfig.InternalName)
@@ -852,6 +879,21 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 				"Could not import volume, rename volume failed: %v", err)
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
 		}
+	}
+
+	// autosizePolicy is nil for unmanaged imports, including when the backend has ontapAutosize set.
+	if autosizePolicy != nil {
+		finalName := originalName
+		if !volConfig.ImportNoRename {
+			finalName = volConfig.InternalName
+		}
+		if applyErr := applyOntapAutosizePolicy(
+			ctx, d.API, finalName, flexvol.UUID, autosizePolicy,
+		); applyErr != nil {
+			return applyErr
+		}
+		volConfig.BackendVolumeID = flexvol.UUID
+		saveOntapAutosizeOnVolConfig(volConfig, d.Config.OntapAutosizePolicy)
 	}
 
 	// Update volume labels if Trident will manage its lifecycle
@@ -1789,12 +1831,31 @@ func (d *NVMeStorageDriver) Resize(
 		return checkVolumeSizeLimitsError
 	}
 
+	// Rebuild the saved per-volume policy so resize preserves its settings and floors the new maximum at the current FlexVol size.
+	savedAutosizeConfig, err := ontapAutosizeFromVolConfig(volConfig)
+	if err != nil {
+		return err
+	}
+	autosizePolicy, err := resolveOntapAutosizePolicy(
+		savedAutosizeConfig, newFlexVolSize, currentFlexVolSize,
+	)
+	if err != nil {
+		return err
+	}
+
 	// Resize FlexVol.
 	if !sameFlexVolSize && (currentFlexVolSize < newFlexVolSize) {
 		if err = d.API.VolumeSetSize(ctx, name, strconv.FormatUint(newFlexVolSize, 10)); err != nil {
 			Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 			return fmt.Errorf("volume resize failed")
 		}
+	}
+
+	// Apply the saved autosize policy, with its maximum recalculated for the new FlexVol size.
+	if err = applyOntapAutosizePolicy(
+		ctx, d.API, name, volConfig.BackendVolumeID, autosizePolicy,
+	); err != nil {
+		return err
 	}
 
 	// Resize namespace.

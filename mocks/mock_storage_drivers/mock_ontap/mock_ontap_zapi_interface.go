@@ -2336,6 +2336,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeRename(volumeName, newVolum
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRename", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRename), volumeName, newVolumeName)
 }
 
+// VolumeSetAutosizePolicy mocks base method.
+func (m *MockZapiClientInterface) VolumeSetAutosizePolicy(volumeName string, autosize api.VolumeAutosizePolicy) (*azgo.VolumeModifyIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", volumeName, autosize)
+	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeSetAutosizePolicy indicates an expected call of VolumeSetAutosizePolicy.
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetAutosizePolicy(volumeName, autosize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetAutosizePolicy), volumeName, autosize)
+}
+
 // VolumeSetComment mocks base method.
 func (m *MockZapiClientInterface) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()

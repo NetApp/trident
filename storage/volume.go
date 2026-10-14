@@ -90,6 +90,16 @@ type VolumeConfig struct {
 	// RequestedAutogrowPolicy stores the autogrow policy on volume
 	// This IS persisted so we can recompute the effective policy after restart
 	RequestedAutogrowPolicy string `json:"requestedAutogrowPolicy,omitempty"`
+	// OntapAutosizeMode is the ONTAP autosize mode Trident last applied to this volume's backing
+	// FlexVol. Empty means Trident does not manage autosize here. On ontap-san-economy the backing
+	// FlexVol is shared, so these fields are a record of the last apply, not ownership.
+	OntapAutosizeMode string `json:"ontapAutosizeMode,omitempty"`
+	// OntapAutosizeGrowThresholdPercent is the applied grow threshold. Only meaningful when
+	// OntapAutosizeMode is grow.
+	OntapAutosizeGrowThresholdPercent string `json:"ontapAutosizeGrowThresholdPercent,omitempty"`
+	// OntapAutosizeMaximumSize is the applied maximum in its configured form (a percentage such as
+	// "20%", or a quantity such as "500Gi") so Resize can recompute it against a new base size.
+	OntapAutosizeMaximumSize string `json:"ontapAutosizeMaximumSize,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

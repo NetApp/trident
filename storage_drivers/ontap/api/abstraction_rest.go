@@ -192,7 +192,8 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, 
 
 	volumeUUID, creationErr := d.api.VolumeCreate(ctx, volume.Name, aggregateName, volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
+		volume.AutosizePolicy)
 	if creationErr != nil {
 		return "", fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -1257,6 +1258,15 @@ func (d OntapAPIREST) VolumeSetSize(ctx context.Context, name, newSize string) e
 		return fmt.Errorf("volume resize failed")
 	}
 
+	return nil
+}
+
+func (d OntapAPIREST) VolumeSetAutosizePolicy(
+	ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy,
+) error {
+	if err := d.api.VolumeSetAutosizePolicy(ctx, volumeName, volumeUUID, autosizePolicy); err != nil {
+		return fmt.Errorf("volume autosize modify failed: %w", err)
+	}
 	return nil
 }
 

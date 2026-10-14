@@ -133,6 +133,38 @@ func newTestOntapStorageDriverConfig(debugTraceFlags map[string]bool) *OntapStor
 	return config
 }
 
+func TestOntapStorageDriverConfig_OntapAutosizeRoundTripAndCopy(t *testing.T) {
+	configJSON := []byte(`{
+		"version": 1,
+		"storageDriverName": "ontap-san",
+		"ontapAutosize": {
+			"mode": "grow",
+			"growThresholdPercent": 85,
+			"maximumSize": "120%"
+		}
+	}`)
+	var config OntapStorageDriverConfig
+
+	assert.NoError(t, json.Unmarshal(configJSON, &config))
+	if assert.NotNil(t, config.OntapAutosizePolicy) {
+		assert.Equal(t, "grow", config.OntapAutosizePolicy.Mode)
+		assert.Equal(t, 85, *config.OntapAutosizePolicy.GrowThresholdPercent)
+		assert.Equal(t, "120%", config.OntapAutosizePolicy.MaximumSize)
+	}
+
+	configCopy := config.SmartCopy()
+	assert.Equal(t, config.OntapAutosizePolicy, configCopy.OntapAutosizePolicy)
+	assert.NotSame(t, config.OntapAutosizePolicy, configCopy.OntapAutosizePolicy)
+	assert.NotSame(t, config.OntapAutosizePolicy.GrowThresholdPercent,
+		configCopy.OntapAutosizePolicy.GrowThresholdPercent)
+
+	marshaled, err := config.Marshal()
+	assert.NoError(t, err)
+	var roundTripped OntapStorageDriverConfig
+	assert.NoError(t, json.Unmarshal(marshaled, &roundTripped))
+	assert.Equal(t, config.OntapAutosizePolicy, roundTripped.OntapAutosizePolicy)
+}
+
 func TestOntapStorageDriverConfig_String(t *testing.T) {
 	ontapStorageDriverConfigs := []OntapStorageDriverConfig{
 		*newTestOntapStorageDriverConfig(map[string]bool{"method": true}),

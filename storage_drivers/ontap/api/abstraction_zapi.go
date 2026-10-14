@@ -1841,6 +1841,38 @@ func (d OntapAPIZAPI) VolumeSetSize(ctx context.Context, name, newSize string) e
 	return nil
 }
 
+func (d OntapAPIZAPI) VolumeSetAutosizePolicy(
+	ctx context.Context, volumeName, _ string, autosizePolicy VolumeAutosizePolicy,
+) error {
+	response, err := d.api.VolumeSetAutosizePolicy(volumeName, autosizePolicy)
+	if response == nil {
+		if err != nil {
+			return fmt.Errorf("volume autosize modify failed for volume %s: %w", volumeName, err)
+		}
+		return fmt.Errorf("volume autosize modify failed for volume %s: unexpected response", volumeName)
+	}
+	if err = azgo.GetError(ctx, response, err); err != nil {
+		return fmt.Errorf("volume autosize modify failed for volume %s: %w", volumeName, err)
+	}
+
+	if numFailed := response.Result.NumFailed(); numFailed > 0 {
+		failureList := response.Result.FailureList()
+		failures := failureList.VolumeModifyIterInfo()
+		if len(failures) > 0 {
+			return fmt.Errorf("volume autosize modify failed for volume %s: ONTAP reported %d failed objects; "+
+				"first failure: %s (code %d)",
+				volumeName, numFailed, failures[0].ErrorMessage(), failures[0].ErrorCode())
+		}
+		return fmt.Errorf("volume autosize modify failed for volume %s: ONTAP reported %d failed objects",
+			volumeName, numFailed)
+	}
+	if response.Result.NumSucceeded() != 1 {
+		return fmt.Errorf("volume autosize modify failed for volume %s: expected one modified object, got %d",
+			volumeName, response.Result.NumSucceeded())
+	}
+	return nil
+}
+
 func (d OntapAPIZAPI) VolumeModifyUnixPermissions(
 	ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
 ) error {

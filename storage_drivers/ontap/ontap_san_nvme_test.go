@@ -667,6 +667,23 @@ func TestNVMeStoreConfig(t *testing.T) {
 	assert.Equal(t, d.Config, *persistentConfig.OntapConfig, "Ontap config mismatch.")
 }
 
+func TestNVMeStoreConfig_AutosizePolicy(t *testing.T) {
+	d := newNVMeDriver(nil, nil, nil)
+	autosizeConfig := &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: new(85),
+		MaximumSize:          "120%",
+	}
+	d.Config.OntapAutosizePolicy = autosizeConfig
+	persistentConfig := &storage.PersistentStorageBackendConfig{}
+
+	d.StoreConfig(ctx, persistentConfig)
+
+	if assert.NotNil(t, persistentConfig.OntapConfig) {
+		assert.Equal(t, autosizeConfig, persistentConfig.OntapConfig.OntapAutosizePolicy)
+	}
+}
+
 func TestNVMeGetUpdateType_InvalidUpdate(t *testing.T) {
 	d1 := newNVMeDriver(nil, nil, nil)
 	_, d2 := newMockOntapNASDriverWithSVM(t, "SVM1")
@@ -731,6 +748,20 @@ func TestNVMeGetUpdateType_NilDataLIF(t *testing.T) {
 	bMap := d1.GetUpdateType(ctx, d2)
 
 	assert.False(t, bMap.Contains(storage.InvalidVolumeAccessInfoChange), "Nil DataLIF should be valid.")
+}
+
+func TestNVMeGetUpdateType_AutosizeOnly(t *testing.T) {
+	oldDriver := newNVMeDriver(nil, nil, nil)
+	newDriver := newNVMeDriver(nil, nil, nil)
+	newDriver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: new(85),
+		MaximumSize:          "120%",
+	}
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.Equal(t, uint64(0), result.GetCardinality(), "autosize-only backend update should be accepted")
 }
 
 func TestNVMeGetCommonConfig(t *testing.T) {
@@ -894,6 +925,12 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 
 	// Volume and namespace both exist with FileSystem populated -- should return VolumeExistsError.
 	expectedUUID := uuid.New().String()
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "50%",
+	}
 	volConfig.FileSystem = "ext4"
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
@@ -906,6 +943,9 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 		"Namespace UUID should be populated when volume+namespace already exist")
 	assert.Equal(t, nsPath, volConfig.InternalID,
 		"InternalID should be the ONTAP namespace path when volume+namespace already exist")
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+	assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+	assert.Equal(t, "50%", volConfig.OntapAutosizeMaximumSize)
 }
 
 func TestNVMeCreate_CleanupIncompleteNamespace_OrphanedVolumeCleaned(t *testing.T) {
@@ -957,11 +997,20 @@ func TestNVMeCreate_CleanupIncompleteNamespace_MirrorDestination(t *testing.T) {
 	volConfig.IsMirrorDestination = true
 
 	// Mirror destination: volume exists -> skip namespace check, return VolumeExistsError
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "50%",
+	}
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.True(t, drivers.IsVolumeExistsError(err))
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+	assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+	assert.Equal(t, "50%", volConfig.OntapAutosizeMaximumSize)
 }
 
 func TestNVMeCreate_CleanupIncompleteNamespace_EmptyFileSystemTriggersCleanup(t *testing.T) {
@@ -1251,10 +1300,27 @@ func TestNVMeCreate_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+	var createdVolume api.Volume
 
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			createdVolume = volume
+			return "", nil
+		},
+	)
+	mAPI.EXPECT().VolumeSetAutosizePolicy(ctx, volConfig.InternalName, "", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     264000000,
+	}).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
 		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
@@ -1262,6 +1328,50 @@ func TestNVMeCreate_Success(t *testing.T) {
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.NoError(t, err, "Failed to create NVMe volume.")
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+	assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+	assert.Equal(t, "20%", volConfig.OntapAutosizeMaximumSize)
+	assert.NotNil(t, createdVolume.AutosizePolicy)
+	assert.Equal(t, api.VolumeAutosizeModeGrow, createdVolume.AutosizePolicy.Mode)
+}
+
+func TestNVMeCreate_MirrorDestination(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+	volConfig.IsMirrorDestination = true
+	var createdVolume api.Volume
+
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			createdVolume = volume
+			return "dest-uuid", nil
+		},
+	)
+	mAPI.EXPECT().VolumeSetAutosizePolicy(ctx, volConfig.InternalName, "dest-uuid", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     264000000,
+	}).Return(nil)
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.NoError(t, err)
+	assert.True(t, createdVolume.DPVolume)
+	assert.NotNil(t, createdVolume.AutosizePolicy)
+	assert.Equal(t, api.VolumeAutosizeModeGrow, createdVolume.AutosizePolicy.Mode)
+	assert.Equal(t, threshold, createdVolume.AutosizePolicy.GrowThresholdPercent)
+	assert.Equal(t, "dest-uuid", volConfig.BackendVolumeID)
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+	assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+	assert.Equal(t, "20%", volConfig.OntapAutosizeMaximumSize)
 }
 
 func TestNVMeCreate_NamespaceGetByNameRetriesOnError(t *testing.T) {
@@ -2527,6 +2637,10 @@ func TestNVMeResize_Success(t *testing.T) {
 func TestNVMeResize_VolumeLargerThanResizeRequest(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
+	threshold := 80
+	volConfig.OntapAutosizeMode = api.VolumeAutosizeModeGrow
+	volConfig.OntapAutosizeGrowThresholdPercent = strconv.Itoa(threshold)
+	volConfig.OntapAutosizeMaximumSize = "5%"
 	ns := &api.NVMeNamespace{Name: "/vol/vol1/namespace0", Size: "100"}
 	vol := &api.Volume{Aggregates: []string{"data"}}
 
@@ -2535,12 +2649,96 @@ func TestNVMeResize_VolumeLargerThanResizeRequest(t *testing.T) {
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(ns, nil)
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed"))
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().VolumeSetAutosizePolicy(ctx, volConfig.InternalName, "", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     uint64(tridentconfig.SANResizeDelta * 2),
+	}).Return(nil)
 	mAPI.EXPECT().NVMeNamespaceSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 
 	err := d.Resize(ctx, volConfig, tridentconfig.SANResizeDelta+200)
 
 	assert.NoError(t, err, "Volume resize failed.")
 	assert.Equal(t, "50000200", volConfig.Size, "Incorrect namespace size after resize.")
+}
+
+func TestNVMeResize_GrowAutosizeOrdering(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	threshold := 80
+	volConfig.OntapAutosizeMode = api.VolumeAutosizeModeGrow
+	volConfig.OntapAutosizeGrowThresholdPercent = strconv.Itoa(threshold)
+	volConfig.OntapAutosizeMaximumSize = "20%"
+	ns := &api.NVMeNamespace{Name: "/vol/vol1/namespace0", Size: "100"}
+	vol := &api.Volume{Aggregates: []string{"data"}}
+
+	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+	mAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(200), nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(ns, nil)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed"))
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+
+	setSizeCall := mAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	autosizeCall := mAPI.EXPECT().VolumeSetAutosizePolicy(
+		ctx, volConfig.InternalName, "", gomock.Any(),
+	).DoAndReturn(func(_ context.Context, _, _ string, policy api.VolumeAutosizePolicy) error {
+		assert.Equal(t, api.VolumeAutosizeModeGrow, policy.Mode)
+		assert.Equal(t, threshold, policy.GrowThresholdPercent)
+		return nil
+	})
+	namespaceSizeCall := mAPI.EXPECT().NVMeNamespaceSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	gomock.InOrder(setSizeCall, autosizeCall, namespaceSizeCall)
+
+	err := d.Resize(ctx, volConfig, tridentconfig.SANResizeDelta+200)
+
+	assert.NoError(t, err, "Volume resize failed.")
+}
+
+func TestNVMeResize_AutosizeWriteFailure(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	threshold := 80
+	volConfig.OntapAutosizeMode = api.VolumeAutosizeModeGrow
+	volConfig.OntapAutosizeGrowThresholdPercent = strconv.Itoa(threshold)
+	volConfig.OntapAutosizeMaximumSize = "20%"
+	ns := &api.NVMeNamespace{Name: "/vol/vol1/namespace0", Size: "100"}
+	vol := &api.Volume{Aggregates: []string{"data"}}
+
+	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+	mAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(200), nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(ns, nil)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed"))
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+
+	setSizeCall := mAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	autosizeCall := mAPI.EXPECT().VolumeSetAutosizePolicy(
+		ctx, volConfig.InternalName, "", gomock.Any(),
+	).Return(errors.New("autosize modify failed"))
+	gomock.InOrder(setSizeCall, autosizeCall)
+
+	err := d.Resize(ctx, volConfig, tridentconfig.SANResizeDelta+200)
+
+	assert.ErrorContains(t, err, "autosize modify failed")
+}
+
+func TestNVMeResize_AutosizeMaximumBelowRequestedSize(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	volConfig.OntapAutosizeMode = api.VolumeAutosizeModeGrow
+	volConfig.OntapAutosizeGrowThresholdPercent = strconv.Itoa(80)
+	volConfig.OntapAutosizeMaximumSize = "1"
+	ns := &api.NVMeNamespace{Name: "/vol/vol1/namespace0", Size: "100"}
+	vol := &api.Volume{Aggregates: []string{"data"}}
+
+	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+	mAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(200), nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(ns, nil)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed"))
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+
+	err := d.Resize(ctx, volConfig, tridentconfig.SANResizeDelta+200)
+
+	assert.ErrorContains(t, err, "below required FlexVol size")
 }
 
 func TestCreateClone(t *testing.T) {
@@ -2599,7 +2797,56 @@ func TestCreateClone(t *testing.T) {
 	})
 	poolWithLongLabelVal.Attributes()[sa.Labels] = sa.NewLabelOffer(map[string]string{"key": longLabelVal})
 
+	threshold := 80
 	tests := map[string]parameters{
+		"Success creating clone with autosize": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, "cloneVol1").Return(false, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, "fakeSource").Return(&api.Volume{
+					Aggregates: []string{"data"},
+				}, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, "cloneVol1", "fakeSource", "fakeSourceSnapshot", false).
+					Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(
+					ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait,
+				).Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, "cloneVol1", "cloneVol1", gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "cloneVol1").Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, "cloneVol1").Return(&api.Volume{
+					Name: "cloneVol1",
+					Size: "1000",
+					UUID: "clone-uuid",
+				}, nil)
+				mockAPI.EXPECT().VolumeSetAutosizePolicy(ctx, "cloneVol1", "clone-uuid", api.VolumeAutosizePolicy{
+					Mode:                 api.VolumeAutosizeModeGrow,
+					GrowThresholdPercent: threshold,
+					MaximumSizeBytes:     1200,
+				}).Return(nil)
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/cloneVol1/namespace0").Return(
+					&api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}, nil,
+				)
+			},
+			configureDriver: func(driver *NVMeStorageDriver) {
+				driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+					Mode:                 api.VolumeAutosizeModeGrow,
+					GrowThresholdPercent: &threshold,
+					MaximumSize:          "20%",
+				}
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        pool,
+			expectError: false,
+			validateCloneVolumeConfig: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+				assert.Equal(t, strconv.Itoa(threshold), volConfig.OntapAutosizeGrowThresholdPercent)
+				assert.Equal(t, "20%", volConfig.OntapAutosizeMaximumSize)
+			},
+		},
 		"Success creating clone": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
@@ -2620,6 +2867,35 @@ func TestCreateClone(t *testing.T) {
 			},
 			pool:        pool,
 			expectError: false,
+		},
+		"Success creating clone without autosize clears inherited record": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				vol := &api.Volume{Aggregates: []string{"data"}}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                      "cloneVol1",
+				Size:                              "200000000",
+				CloneSourceVolumeInternal:         "fakeSource",
+				CloneSourceSnapshotInternal:       "fakeSourceSnapshot",
+				OntapAutosizeMode:                 api.VolumeAutosizeModeGrow,
+				OntapAutosizeGrowThresholdPercent: "80",
+				OntapAutosizeMaximumSize:          "500Gi",
+			},
+			pool:        pool,
+			expectError: false,
+			validateCloneVolumeConfig: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				assert.Empty(t, volConfig.OntapAutosizeMode)
+				assert.Empty(t, volConfig.OntapAutosizeGrowThresholdPercent)
+				assert.Empty(t, volConfig.OntapAutosizeMaximumSize)
+			},
 		},
 		"Success creating clone with snapshot": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
@@ -2860,6 +3136,16 @@ func TestNVMeCreateClone_VolumeExists(t *testing.T) {
 	cloneNsPath := fmt.Sprintf("/vol/%s/namespace0", cloneVolConfig.InternalName)
 	cloneNamespaceUUID := uuid.New().String()
 
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "50%",
+	}
+	// Autosize record copied from the source volume.
+	cloneVolConfig.OntapAutosizeMode = api.VolumeAutosizeModeOff
+	cloneVolConfig.OntapAutosizeMaximumSize = "500Gi"
+
 	mAPI.EXPECT().VolumeInfo(ctx, sourceVolConfig.InternalName).Return(
 		&api.Volume{Aggregates: []string{"data"}}, nil)
 	// A previous attempt timed out after ONTAP had already built the flexvol, so cloneFlexvol
@@ -2880,6 +3166,9 @@ func TestNVMeCreateClone_VolumeExists(t *testing.T) {
 			"target node's subsystem, which ONTAP rejects with 72089790")
 	assert.Equal(t, cloneNsPath, cloneVolConfig.InternalID,
 		"InternalID must be the clone's own namespace path")
+	assert.Equal(t, api.VolumeAutosizeModeGrow, cloneVolConfig.OntapAutosizeMode)
+	assert.Equal(t, strconv.Itoa(threshold), cloneVolConfig.OntapAutosizeGrowThresholdPercent)
+	assert.Equal(t, "50%", cloneVolConfig.OntapAutosizeMaximumSize)
 }
 
 func TestImport(t *testing.T) {
@@ -2971,15 +3260,52 @@ func TestImport(t *testing.T) {
 	assert.Error(t, err)
 
 	// Test10: Success
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
 	vol.Comment = "fakeComment"
+	vol.Size = "1000"
+	vol.UUID = "import-uuid"
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
 	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
+	mAPI.EXPECT().VolumeSetAutosizePolicy(ctx, volConfig.InternalName, "import-uuid", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     1200,
+	}).Return(nil)
 
 	err = d.Import(ctx, volConfig, originalName)
 
 	assert.NoError(t, err)
+	assert.Equal(t, "import-uuid", volConfig.BackendVolumeID)
+	assert.Equal(t, api.VolumeAutosizeModeGrow, volConfig.OntapAutosizeMode)
+}
+
+func TestImport_AutosizeResolveFailSkipsRename(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	volConfig.ImportNotManaged = false
+	originalName := "fakeOriginalName"
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "500",
+	}
+	vol := &api.Volume{Aggregates: []string{"data"}, AccessType: "rw", Size: "1000", UUID: "import-uuid"}
+	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100", UUID: "fakeUUID", State: "online"}
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+
+	err := d.Import(ctx, volConfig, originalName)
+
+	assert.ErrorContains(t, err, "below required FlexVol size")
 }
 
 func TestImport_NoRename(t *testing.T) {
@@ -3017,6 +3343,12 @@ func TestImport_NoRename(t *testing.T) {
 
 func TestImport_LUKSNamespace(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
+	threshold := 80
+	d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
 	_, volConfig, _ := getNVMeCreateArgs(d)
 	originalName := "fakeOriginalName"
 	vol := &api.Volume{Aggregates: []string{"data"}}
@@ -3058,6 +3390,7 @@ func TestImport_LUKSNamespace(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Less(t, afterLUKSOverhead, beforeLUKSOverhead)
 	assert.Equal(t, beforeLUKSOverhead, incrementWithLUKSMetadataIfLUKSEnabled(ctx, afterLUKSOverhead, "true"))
+	assert.Empty(t, volConfig.OntapAutosizeMode)
 }
 
 func TestImport_NameTemplate(t *testing.T) {

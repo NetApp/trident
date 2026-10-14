@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -5097,7 +5099,7 @@ func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	_, err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
 		"fakeSnapshotPolicy", "invalidUnixPermission", "", "fake-exportpolicy", "unix", "fake-tier",
 		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, new(true), 0, models.VolumeStyleFlexvol,
-		false)
+		false, nil)
 	assert.Error(t, err, "volume created")
 	server.Close()
 }
@@ -5120,7 +5122,7 @@ func TestOntapREST_VolumeCreate(t *testing.T) {
 
 			_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "spaceReserve",
 				"fakeSnapshotPolicy", "---rwxr-xr-x", "", "fake-exportpolicy", "unix", "fake-tier",
-				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false)
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, false, nil)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create a volume")
 			} else {
@@ -5129,6 +5131,274 @@ func TestOntapREST_VolumeCreate(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestToVolumeInlineAutosizePolicy(t *testing.T) {
+	tests := []struct {
+		name                  string
+		autosizePolicy        *VolumeAutosizePolicy
+		expectedMode          string
+		expectedThreshold     int64
+		expectedMaximum       int64
+		expectThresholdAndMax bool
+	}{
+		{name: "omitted"},
+		{
+			name:           "off sends mode only",
+			autosizePolicy: &VolumeAutosizePolicy{Mode: VolumeAutosizeModeOff},
+			expectedMode:   VolumeAutosizeModeOff,
+		},
+		{
+			name: "grow sends all writable fields",
+			autosizePolicy: &VolumeAutosizePolicy{
+				Mode:                 VolumeAutosizeModeGrow,
+				GrowThresholdPercent: 80,
+				MaximumSizeBytes:     2048,
+			},
+			expectedMode:          VolumeAutosizeModeGrow,
+			expectedThreshold:     80,
+			expectedMaximum:       2048,
+			expectThresholdAndMax: true,
+		},
+		{
+			name: "grow threshold below ONTAP default shrink threshold",
+			autosizePolicy: &VolumeAutosizePolicy{
+				Mode:                 VolumeAutosizeModeGrow,
+				GrowThresholdPercent: 1,
+				MaximumSizeBytes:     2048,
+			},
+			expectedMode:          VolumeAutosizeModeGrow,
+			expectedThreshold:     1,
+			expectedMaximum:       2048,
+			expectThresholdAndMax: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual, err := toVolumeInlineAutosizePolicy(test.autosizePolicy)
+
+			assert.NoError(t, err)
+			if test.autosizePolicy == nil {
+				assert.Nil(t, actual)
+				return
+			}
+			require.NotNil(t, actual)
+			assert.Equal(t, test.expectedMode, *actual.Mode)
+			if test.expectThresholdAndMax {
+				assert.Equal(t, test.expectedThreshold, *actual.GrowThreshold)
+				require.NotNil(t, actual.ShrinkThreshold)
+				assert.Equal(t, int64(1), *actual.ShrinkThreshold)
+				assert.Equal(t, test.expectedMaximum, *actual.Maximum)
+			} else {
+				assert.Nil(t, actual.GrowThreshold)
+				assert.Nil(t, actual.ShrinkThreshold)
+				assert.Nil(t, actual.Maximum)
+			}
+		})
+	}
+}
+
+// volumeModifyClient stubs Storage.VolumeModify. The generated client never
+// returns a nil success, so the unexpected-response branch needs a stub.
+type volumeModifyClient struct {
+	storage.ClientService
+	modify func(
+		params *storage.VolumeModifyParams,
+		authInfo runtime.ClientAuthInfoWriter,
+		opts ...storage.ClientOption,
+	) (*storage.VolumeModifyOK, *storage.VolumeModifyAccepted, error)
+}
+
+func (c volumeModifyClient) VolumeModify(
+	params *storage.VolumeModifyParams,
+	authInfo runtime.ClientAuthInfoWriter,
+	opts ...storage.ClientOption,
+) (*storage.VolumeModifyOK, *storage.VolumeModifyAccepted, error) {
+	return c.modify(params, authInfo, opts...)
+}
+
+func TestOntapREST_VolumeSetAutosizePolicy(t *testing.T) {
+	const (
+		volumeName   = "vol1"
+		suppliedUUID = "supplied-uuid"
+		lookedUpUUID = "looked-up-uuid"
+	)
+	grow := VolumeAutosizePolicy{
+		Mode:                 VolumeAutosizeModeGrow,
+		GrowThresholdPercent: 85,
+		MaximumSizeBytes:     4096,
+	}
+
+	t.Run("uuid lookup", func(t *testing.T) {
+		patched := false
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch {
+			case r.Method == http.MethodGet && r.URL.Path == "/api/storage/volumes":
+				volume := &models.Volume{UUID: new(lookedUpUUID), Name: new(volumeName)}
+				response := models.VolumeResponse{
+					VolumeResponseInlineRecords: []*models.Volume{volume},
+					NumRecords:                  new(int64(1)),
+				}
+				setHTTPResponseHeader(w, http.StatusOK)
+				assert.NoError(t, json.NewEncoder(w).Encode(response))
+			case r.Method == http.MethodPatch && r.URL.Path == "/api/storage/volumes/"+lookedUpUUID:
+				patched = true
+				setHTTPResponseHeader(w, http.StatusOK)
+				assert.NoError(t, json.NewEncoder(w).Encode(&models.VolumeJobLinkResponse{}))
+			default:
+				t.Errorf("unexpected request %s %s", r.Method, r.URL.RequestURI())
+				mockResourceNotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, "", grow)
+		assert.NoError(t, err)
+		assert.True(t, patched, "modify should use the uuid returned by name lookup")
+	})
+
+	t.Run("missing volume", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet || r.URL.Path != "/api/storage/volumes" {
+				t.Errorf("unexpected request %s %s", r.Method, r.URL.RequestURI())
+			}
+			response := models.VolumeResponse{NumRecords: new(int64(0))}
+			setHTTPResponseHeader(w, http.StatusOK)
+			assert.NoError(t, json.NewEncoder(w).Encode(response))
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, "", grow)
+		assert.EqualError(t, err, "could not find volume uuid with name vol1")
+	})
+
+	t.Run("missing uuid", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			volume := &models.Volume{Name: new(volumeName)}
+			response := models.VolumeResponse{
+				VolumeResponseInlineRecords: []*models.Volume{volume},
+				NumRecords:                  new(int64(1)),
+			}
+			setHTTPResponseHeader(w, http.StatusOK)
+			assert.NoError(t, json.NewEncoder(w).Encode(response))
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, "", grow)
+		assert.EqualError(t, err, "could not find volume uuid with name vol1")
+	})
+
+	t.Run("conversion overflow", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Errorf("overflow should fail before volume modify: %s %s", r.Method, r.URL.RequestURI())
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, suppliedUUID, VolumeAutosizePolicy{
+			Mode:             VolumeAutosizeModeGrow,
+			MaximumSizeBytes: math.MaxUint64,
+		})
+		assert.ErrorContains(t, err, "convert autosize maximum to int64")
+	})
+
+	t.Run("volume modify failure", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, suppliedUUID, grow)
+		assert.Error(t, err)
+	})
+
+	t.Run("synchronous success", func(t *testing.T) {
+		var body models.Volume
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPatch || r.URL.Path != "/api/storage/volumes/"+suppliedUUID {
+				t.Errorf("unexpected request %s %s", r.Method, r.URL.RequestURI())
+				mockResourceNotFound(w, r)
+				return
+			}
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			setHTTPResponseHeader(w, http.StatusOK)
+			assert.NoError(t, json.NewEncoder(w).Encode(&models.VolumeJobLinkResponse{}))
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, suppliedUUID, grow)
+		assert.NoError(t, err)
+		require.NotNil(t, body.Autosize)
+		assert.Equal(t, VolumeAutosizeModeGrow, *body.Autosize.Mode)
+		assert.Equal(t, int64(85), *body.Autosize.GrowThreshold)
+		assert.Equal(t, int64(4096), *body.Autosize.Maximum)
+	})
+
+	t.Run("accepted job polling", func(t *testing.T) {
+		jobGets := 0
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch {
+			case r.Method == http.MethodPatch && r.URL.Path == "/api/storage/volumes/"+suppliedUUID:
+				mockRequestAccepted(w, r)
+			case r.Method == http.MethodGet && r.URL.Path == "/api/cluster/jobs/1234":
+				jobGets++
+				mockJobResponse(w, r)
+			default:
+				t.Errorf("unexpected request %s %s", r.Method, r.URL.RequestURI())
+				mockResourceNotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, suppliedUUID, grow)
+		assert.NoError(t, err)
+		assert.Positive(t, jobGets, "accepted modify should poll the job")
+	})
+
+	t.Run("unexpected response", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Errorf("volume modify is stubbed: %s %s", r.Method, r.URL.RequestURI())
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+		rs.api.Storage = volumeModifyClient{
+			modify: func(
+				params *storage.VolumeModifyParams,
+				_ runtime.ClientAuthInfoWriter,
+				_ ...storage.ClientOption,
+			) (*storage.VolumeModifyOK, *storage.VolumeModifyAccepted, error) {
+				assert.Equal(t, suppliedUUID, params.UUID)
+				require.NotNil(t, params.Info)
+				require.NotNil(t, params.Info.Autosize)
+				assert.Equal(t, VolumeAutosizeModeGrow, *params.Info.Autosize.Mode)
+				return nil, nil, nil
+			},
+		}
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, suppliedUUID, grow)
+		assert.EqualError(t, err, "unexpected response from volume modify")
+	})
 }
 
 func getHttpServerPollCreateContainerJob(
@@ -9237,7 +9507,7 @@ func TestOntapREST_VolumeCreate_UnixGroupID(t *testing.T) {
 
 	_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "none",
 		"fakeSnapshotPolicy", "---rwxr-xr-x", "1234", "fake-exportpolicy", "unix", "fake-tier",
-		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, false)
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, false, nil)
 	assert.NoError(t, err, "could not create a volume with a group ID")
 	if assert.NotNil(t, capturedGID, "expected nas.gid to be set in the create request") {
 		assert.Equal(t, int64(1234), *capturedGID, "unexpected group ID sent to ONTAP")
@@ -9254,7 +9524,7 @@ func TestOntapREST_VolumeCreate_InvalidUnixGroupID(t *testing.T) {
 
 	_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "none",
 		"fakeSnapshotPolicy", "---rwxr-xr-x", "not-a-number", "fake-exportpolicy", "unix", "fake-tier",
-		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, false)
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, false, nil)
 	assert.Error(t, err, "expected an error for an invalid unixGroupID")
 	assert.Contains(t, err.Error(), "unixGroupID")
 }
@@ -9277,7 +9547,7 @@ func TestOntapREST_VolumeCreate_UnixGroupID_DPVolumeSkipped(t *testing.T) {
 
 	_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "none",
 		"fakeSnapshotPolicy", "", "1234", "fake-exportpolicy", "unix", "fake-tier",
-		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, true)
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, nil, 0, true, nil)
 	assert.NoError(t, err, "could not create a DP volume")
 	if capturedNas != nil {
 		assert.Nil(t, capturedNas.Gid, "group ID must not be set on a DP volume")

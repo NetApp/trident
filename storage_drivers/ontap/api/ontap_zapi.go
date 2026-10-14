@@ -14,6 +14,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils/errors"
@@ -1282,6 +1283,36 @@ func (c Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*
 		SetAttributes(*volAttr).
 		ExecuteUsing(c.zr)
 	return response, err
+}
+
+func (c Client) VolumeSetAutosizePolicy(
+	volumeName string, autosizePolicy VolumeAutosizePolicy,
+) (*azgo.VolumeModifyIterResponse, error) {
+	autosizeAttributes := azgo.NewVolumeAutosizeAttributesType().SetMode(autosizePolicy.Mode)
+	if autosizePolicy.Mode != VolumeAutosizeModeOff {
+		maximum, err := convert.Uint64ToInt(autosizePolicy.MaximumSizeBytes)
+		if err != nil {
+			return nil, fmt.Errorf("convert autosize maximum to int: %w", err)
+		}
+		autosizeAttributes.
+			SetGrowThresholdPercent(autosizePolicy.GrowThresholdPercent).
+			SetShrinkThresholdPercent(volumeAutosizeShrinkThresholdPercent).
+			SetMaximumSize(maximum)
+	}
+
+	volumeAttributes := azgo.NewVolumeAttributesType().SetVolumeAutosizeAttributes(*autosizeAttributes)
+	attributes := (&azgo.VolumeModifyIterRequestAttributes{}).SetVolumeAttributes(*volumeAttributes)
+
+	volumeIDAttributes := azgo.NewVolumeIdAttributesType().SetName(volumeName)
+	queryVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volumeIDAttributes)
+	query := (&azgo.VolumeModifyIterRequestQuery{}).SetVolumeAttributes(*queryVolumeAttributes)
+
+	return azgo.NewVolumeModifyIterRequest().
+		SetQuery(*query).
+		SetAttributes(*attributes).
+		SetReturnFailureList(true).
+		SetReturnSuccessList(true).
+		ExecuteUsing(c.zr)
 }
 
 func (c Client) VolumeModifyUnixPermissions(
