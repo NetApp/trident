@@ -2567,6 +2567,30 @@ func mockSnapshotGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(snapShot)
 }
 
+func mockGetVolumeResponseDeleteOK(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "DELETE":
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(map[string]interface{}{})
+		default:
+			volume := &models.Volume{
+				UUID: new("fakeUUID"),
+				Name: new("fakeName"),
+			}
+			volumeResponse := models.VolumeResponse{
+				VolumeResponseInlineRecords: []*models.Volume{volume},
+				NumRecords:                  new(int64(1)),
+			}
+
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(volumeResponse)
+		}
+	}
+}
+
 func mockGetVolumeResponseAccepted(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/cluster/jobs/1234" {
 		mockJobResponse(w, r)
@@ -4839,6 +4863,7 @@ func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 		isNotFoundExpected bool
 	}{
 		{"GetVolume", mockGetVolumeResponseAccepted, false, false},
+		{"VolumeDeleteOK", mockGetVolumeResponseDeleteOK, false, false},
 		{"VolumeDeleteFail", mockModifyFailed, true, false},
 		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true, true},
 		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true, false},

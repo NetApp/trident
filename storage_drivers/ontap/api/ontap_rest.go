@@ -1130,16 +1130,16 @@ func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, styl
 	params.UUID = *volume.UUID
 	params.Force = &force
 
-	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
+	volumeDeleteOK, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if volumeDeleteOK != nil {
+		return nil
+	} else if volumeDeleteAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if volumeDeleteAccepted == nil {
-		return fmt.Errorf("unexpected response from volume create")
-	}
-
-	jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from volume delete")
 }
 
 // destroyVolumeByUUID destroys the volume with the specified UUID. Addressing the volume directly
@@ -1159,17 +1159,13 @@ func (c *RestClient) destroyVolumeByUUID(ctx context.Context, volumeUUID string,
 			return errors.NotFoundError("volume with UUID %s does not exist", volumeUUID)
 		}
 		return err
-	}
-
-	switch {
-	case volumeDeleteAccepted != nil:
+	} else if volumeDeleteOK != nil {
+		return nil
+	} else if volumeDeleteAccepted != nil {
 		jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
 		return c.PollJobStatus(ctx, jobLink)
-	case volumeDeleteOK != nil:
-		return nil
-	default:
-		return fmt.Errorf("unexpected response from volume delete")
 	}
+	return fmt.Errorf("unexpected response from volume delete")
 }
 
 func (c *RestClient) modifyVolumeByNameAndStyle(ctx context.Context, volume Volume, style string) error {
