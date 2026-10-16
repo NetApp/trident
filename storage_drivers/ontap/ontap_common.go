@@ -6724,14 +6724,43 @@ func lockNamespaceAndSubsystem(nsUUID, ssUUID string) func() {
 	}
 }
 
+func parseMaxNamespacesPerSuperSubsystem(ctx context.Context, value string) (int64, error) {
+	if value == "" {
+		return defaultNamespacesPerSuperSubsystem, nil
+	}
+
+	limit, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid config value %q for maxNamespacesPerSuperSubsystem: %w", value, err)
+	}
+	if limit < minNamespacesPerSuperSubsystem {
+		return 0, fmt.Errorf(
+			"invalid config value %q for maxNamespacesPerSuperSubsystem (minimum is %d)",
+			value, minNamespacesPerSuperSubsystem,
+		)
+	}
+	if limit > maxNamespacesPerSuperSubsystem {
+		return 0, fmt.Errorf(
+			"invalid config value %q for maxNamespacesPerSuperSubsystem (maximum is %d)",
+			value, maxNamespacesPerSuperSubsystem,
+		)
+	}
+
+	return limit, nil
+}
+
 // getSuperSubsystemName finds or allocates a SuperSubsystem for the given NVMe namespace.
 //
 // The function uses an approach with the following priority:
 //  1. First checks if the namespace is already mapped to any SuperSubsystem
-//  2. If not mapped, retrieves all SuperSubsystems (single wildcard call) and finds one with capacity.
+//  2. If not mapped, retrieves all SuperSubsystems (single wildcard call) and finds one with capacity
+//     under maxNamespaces. A subsystem already at or above that limit is skipped so new mappings
+//     start on a new SuperSubsystem (for example after lowering the backend limit).
 //  3. Otherwise, creates a new SuperSubsystem number by filling gaps in the numbering sequence.
 //     For example: if subsystems 1 and 3 exist, it returns 2; if 1,2,3 exist and all are full, it returns 4.
-func getSuperSubsystemName(ctx context.Context, api api.OntapAPI, nsUUID, tridentUUID string) (string, error) {
+func getSuperSubsystemName(
+	ctx context.Context, api api.OntapAPI, nsUUID, tridentUUID string, maxNamespaces int64,
+) (string, error) {
 	ssPrefix := fmt.Sprintf("%s%s_", superSubsystemNamePrefix, tridentUUID)
 
 	// Get all the subsystems this namespace is mapped to
@@ -6774,14 +6803,19 @@ func getSuperSubsystemName(ctx context.Context, api api.OntapAPI, nsUUID, triden
 		if err != nil {
 			return "", fmt.Errorf("error getting namespace count for subsystem %s: %w", ss.UUID, err)
 		}
-		if nsCount < maxNamespacesPerSuperSubsystem {
+		if nsCount < maxNamespaces {
 			Logc(ctx).WithFields(LogFields{
 				"subsystem":      ss.Name,
 				"namespaceCount": nsCount,
-				"maxNamespaces":  maxNamespacesPerSuperSubsystem,
+				"maxNamespaces":  maxNamespaces,
 			}).Debug("Found SuperSubsystem with available capacity.")
 			return ss.Name, nil
 		}
+		Logc(ctx).WithFields(LogFields{
+			"subsystem":      ss.Name,
+			"namespaceCount": nsCount,
+			"maxNamespaces":  maxNamespaces,
+		}).Debug("SuperSubsystem is at or above the configured namespace limit; skipping.")
 	}
 
 	// Create a new one, fill gaps in numbering (e.g., if 1,3 exist -> return 2)

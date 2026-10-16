@@ -81,6 +81,7 @@ func newTestOntapASANVMeDriver(
 
 	asaNvmeDriver := &ASANVMeStorageDriver{}
 	asaNvmeDriver.Config = *config
+	asaNvmeDriver.maxNamespacesPerSuperSubsystem = defaultNamespacesPerSuperSubsystem
 
 	var ontapAPI api.OntapAPI
 
@@ -321,6 +322,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				assert.Equal(t, backendUUID, driver.telemetry.TridentBackendUUID)
 				assert.NotNil(t, driver.cloneSplitTimers, "Clone split timers shouldn't be nil")
 				assert.True(t, driver.Initialized(), "Expected driver to be initialized")
+				assert.Equal(t, defaultNamespacesPerSuperSubsystem, driver.maxNamespacesPerSuperSubsystem)
 			},
 		},
 		{
@@ -484,6 +486,47 @@ func TestInitializeASANVMe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInitializeASANVMe_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testing.T) {
+	mockAPI, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.MaxNamespacesPerSuperSubsystem = "100"
+	commonConfig := driver.GetCommonConfig(ctx)
+	mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+	mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
+
+	err := driver.Initialize(ctx, driverContextCSI, "", commonConfig, nil, uuid.NewString())
+
+	assert.NoError(t, err)
+	assert.True(t, driver.Initialized())
+	assert.Equal(t, int64(100), driver.maxNamespacesPerSuperSubsystem)
+}
+
+func TestInitializeASANVMe_InvalidMaxNamespacesPerSuperSubsystem(t *testing.T) {
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.MaxNamespacesPerSuperSubsystem = "1025"
+	commonConfig := driver.GetCommonConfig(ctx)
+
+	err := driver.Initialize(
+		ctx, driverContextCSI, "", commonConfig, nil, uuid.NewString(),
+	)
+
+	assert.ErrorContains(t, err, "maximum is 1024")
+	assert.False(t, driver.Initialized())
+}
+
+func TestInitializeASANVMe_BelowMinMaxNamespacesPerSuperSubsystemIsRejected(t *testing.T) {
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.MaxNamespacesPerSuperSubsystem = "49"
+	commonConfig := driver.GetCommonConfig(ctx)
+
+	err := driver.Initialize(
+		ctx, driverContextCSI, "", commonConfig, nil, uuid.NewString(),
+	)
+
+	assert.ErrorContains(t, err, "minimum is 50")
+	assert.False(t, driver.Initialized())
 }
 
 func TestTerminateNVMe(t *testing.T) {
@@ -1814,6 +1857,7 @@ func TestPublishASANVMe(t *testing.T) {
 
 	// case: RAW filesystem - SuperSubsystem exists with capacity (not full)
 	volConfig.FileSystem = filesystem.Raw
+	driver.maxNamespacesPerSuperSubsystem = 50
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
 	// Namespace not yet mapped
@@ -1823,7 +1867,7 @@ func TestPublishASANVMe(t *testing.T) {
 		Name: "trident_subsystem_fakeUUID_1",
 		UUID: "existingSuperSSUUID",
 	}}, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "existingSuperSSUUID").Return(int64(500), nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "existingSuperSSUUID").Return(int64(49), nil).Times(1)
 	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_1", "trident_subsystem_fakeUUID_1").Return(existingSuperSS, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, existingSuperSS.UUID).Return(nil).Times(1)
 	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, existingSuperSS.UUID, "fakeNsUUID").Return(nil).Times(1)
@@ -1831,6 +1875,7 @@ func TestPublishASANVMe(t *testing.T) {
 	err = driver.Publish(ctx, volConfig, publishInfo)
 
 	assert.NoError(t, err)
+	driver.maxNamespacesPerSuperSubsystem = defaultNamespacesPerSuperSubsystem
 }
 
 func TestPublishASANVMe_UsesRefreshedDataLIFCopy(t *testing.T) {

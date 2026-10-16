@@ -13640,6 +13640,7 @@ func TestGetSuperSubsystemName(t *testing.T) {
 	tests := []struct {
 		name           string
 		mockSetup      func(*mockapi.MockOntapAPI)
+		maxNamespaces  int64
 		expectedResult string
 		expectError    bool
 		errorContains  string
@@ -13663,6 +13664,7 @@ func TestGetSuperSubsystemName(t *testing.T) {
 					}, nil)
 				// No other calls - should return immediately
 			},
+			maxNamespaces:  50,
 			expectedResult: "trident_subsystem_4321_1",
 			expectError:    false,
 		},
@@ -13850,6 +13852,51 @@ func TestGetSuperSubsystemName(t *testing.T) {
 			expectError:    false,
 		},
 		{
+			name: "Configured limit has capacity",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(49), nil)
+			},
+			maxNamespaces:  50,
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Configured limit is full",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(50), nil)
+			},
+			maxNamespaces:  50,
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
+			name: "Existing SuperSubsystem above lowered limit starts a new one",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(800), nil)
+			},
+			maxNamespaces:  50,
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
 			name: "Complex gap scenario - 1,2,4,5 exist, 1 has capacity",
 			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
@@ -13896,7 +13943,11 @@ func TestGetSuperSubsystemName(t *testing.T) {
 
 			mockAPI := mockapi.NewMockOntapAPI(ctrl)
 			tt.mockSetup(mockAPI)
-			result, err := getSuperSubsystemName(ctx, mockAPI, nsUUID, tridentUUID)
+			maxNamespaces := tt.maxNamespaces
+			if maxNamespaces == 0 {
+				maxNamespaces = defaultNamespacesPerSuperSubsystem
+			}
+			result, err := getSuperSubsystemName(ctx, mockAPI, nsUUID, tridentUUID, maxNamespaces)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -13907,6 +13958,95 @@ func TestGetSuperSubsystemName(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
+
+func TestParseMaxNamespacesPerSuperSubsystem(t *testing.T) {
+	tests := []struct {
+		name          string
+		value         string
+		expectedLimit int64
+		errorContains string
+	}{
+		{
+			name:          "Omitted value uses default",
+			value:         "",
+			expectedLimit: defaultNamespacesPerSuperSubsystem,
+		},
+		{
+			name:          "Minimum value",
+			value:         "50",
+			expectedLimit: minNamespacesPerSuperSubsystem,
+		},
+		{
+			name:          "Maximum value",
+			value:         "1024",
+			expectedLimit: maxNamespacesPerSuperSubsystem,
+		},
+		{
+			name:          "Valid value between boundaries",
+			value:         "100",
+			expectedLimit: 100,
+		},
+		{
+			name:          "Non-numeric value",
+			value:         "invalid",
+			errorContains: `invalid config value "invalid" for maxNamespacesPerSuperSubsystem`,
+		},
+		{
+			name:          "Below minimum",
+			value:         "49",
+			errorContains: `invalid config value "49" for maxNamespacesPerSuperSubsystem (minimum is 50)`,
+		},
+		{
+			name:          "Value of 1 is rejected",
+			value:         "1",
+			errorContains: `invalid config value "1" for maxNamespacesPerSuperSubsystem (minimum is 50)`,
+		},
+		{
+			name:          "Above maximum",
+			value:         "1025",
+			errorContains: `invalid config value "1025" for maxNamespacesPerSuperSubsystem (maximum is 1024)`,
+		},
+		{
+			name:          "Leading space is rejected",
+			value:         " 50",
+			errorContains: `invalid config value " 50" for maxNamespacesPerSuperSubsystem`,
+		},
+		{
+			name:          "Negative value",
+			value:         "-1",
+			errorContains: `invalid config value "-1" for maxNamespacesPerSuperSubsystem (minimum is 50)`,
+		},
+		{
+			name:          "Explicit plus sign is accepted",
+			value:         "+50",
+			expectedLimit: minNamespacesPerSuperSubsystem,
+		},
+		{
+			name:          "Leading zero is accepted as decimal",
+			value:         "050",
+			expectedLimit: minNamespacesPerSuperSubsystem,
+		},
+		{
+			name:          "Value beyond int64",
+			value:         "9223372036854775808",
+			errorContains: `invalid config value "9223372036854775808" for maxNamespacesPerSuperSubsystem`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			limit, err := parseMaxNamespacesPerSuperSubsystem(ctx, tt.value)
+
+			if tt.errorContains != "" {
+				assert.ErrorContains(t, err, tt.errorContains)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedLimit, limit)
 		})
 	}
 }

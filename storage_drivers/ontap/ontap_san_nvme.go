@@ -44,13 +44,14 @@ var (
 
 // NVMeStorageDriver is for NVMe storage provisioning.
 type NVMeStorageDriver struct {
-	initialized bool
-	Config      drivers.OntapStorageDriverConfig
-	ips         []string
-	backendName string
-	API         api.OntapAPI
-	AWSAPI      awsapi.AWSAPI
-	telemetry   *Telemetry
+	initialized                    bool
+	Config                         drivers.OntapStorageDriverConfig
+	ips                            []string
+	backendName                    string
+	API                            api.OntapAPI
+	AWSAPI                         awsapi.AWSAPI
+	telemetry                      *Telemetry
+	maxNamespacesPerSuperSubsystem int64
 
 	managedPool   storage.Pool
 	physicalPools map[string]storage.Pool
@@ -69,8 +70,10 @@ const (
 
 	// SuperSubsystem naming prefix for shared RWX volumes
 	superSubsystemNamePrefix = "trident_subsystem_"
-	// maxNamespacesPerSuperSubsystem is the hard limit for namespaces per SuperSubsystem
-	maxNamespacesPerSuperSubsystem int64 = 1024
+	// Namespace limits for a SuperSubsystem.
+	minNamespacesPerSuperSubsystem     int64 = 50
+	defaultNamespacesPerSuperSubsystem int64 = 1024
+	maxNamespacesPerSuperSubsystem     int64 = 1024
 )
 
 // Namespace attributes stored in its comment field. These fields are useful for docker context.
@@ -193,6 +196,12 @@ func (d *NVMeStorageDriver) Initialize(
 	// Load default config parameters
 	if err = PopulateConfigurationDefaults(ctx, &d.Config, d.API); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
+
+	if d.maxNamespacesPerSuperSubsystem, err = parseMaxNamespacesPerSuperSubsystem(
+		ctx, d.Config.MaxNamespacesPerSuperSubsystem,
+	); err != nil {
+		return fmt.Errorf("error initializing %s driver: %w", d.Name(), err)
 	}
 
 	// Check NVMe feature support
@@ -1120,7 +1129,9 @@ func (d *NVMeStorageDriver) Publish(
 		}
 
 		if ssName == "" {
-			ssName, err = getSuperSubsystemName(ctx, d.API, nsUUID, publishInfo.TridentUUID)
+			ssName, err = getSuperSubsystemName(
+				ctx, d.API, nsUUID, publishInfo.TridentUUID, d.maxNamespacesPerSuperSubsystem,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to get SuperSubsystem: %w", err)
 			}

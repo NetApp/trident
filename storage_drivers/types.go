@@ -127,6 +127,7 @@ type OntapStorageDriverConfig struct {
 	QtreeQuotaResizePeriod           string               `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
 	QtreesPerFlexvol                 string               `json:"qtreesPerFlexvol"`                 // default to 200
 	LUNsPerFlexvol                   string               `json:"lunsPerFlexvol"`                   // default to 100
+	MaxNamespacesPerSuperSubsystem   string               `json:"maxNamespacesPerSuperSubsystem"`   // default to 1024
 	EmptyFlexvolDeferredDeletePeriod string               `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
 	CloneSplitDelay                  string               `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
 	StorageAPITimeout                string               `json:"storageAPITimeout,omitempty"`      // in seconds; ZAPI defaults to 90s when omitted; REST has no client timeout unless set

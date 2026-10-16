@@ -33,12 +33,13 @@ import (
 
 // ASANVMeStorageDriver is for NVMe/TCP storage provisioning on ASAr2 systems
 type ASANVMeStorageDriver struct {
-	initialized bool
-	Config      drivers.OntapStorageDriverConfig
-	ips         []string
-	backendName string
-	API         api.OntapAPI
-	telemetry   *Telemetry
+	initialized                    bool
+	Config                         drivers.OntapStorageDriverConfig
+	ips                            []string
+	backendName                    string
+	API                            api.OntapAPI
+	telemetry                      *Telemetry
+	maxNamespacesPerSuperSubsystem int64
 
 	managedPool  storage.Pool
 	virtualPools map[string]storage.Pool
@@ -148,6 +149,12 @@ func (d *ASANVMeStorageDriver) Initialize(
 	// Load default config parameters
 	if err = PopulateASAConfigurationDefaults(ctx, &d.Config); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %w", err)
+	}
+
+	if d.maxNamespacesPerSuperSubsystem, err = parseMaxNamespacesPerSuperSubsystem(
+		ctx, d.Config.MaxNamespacesPerSuperSubsystem,
+	); err != nil {
+		return fmt.Errorf("error initializing %s driver: %w", d.Name(), err)
 	}
 
 	// Check NVMe feature support
@@ -918,7 +925,9 @@ func (d *ASANVMeStorageDriver) Publish(
 		}
 
 		if ssName == "" {
-			ssName, err = getSuperSubsystemName(ctx, d.API, nsUUID, publishInfo.TridentUUID)
+			ssName, err = getSuperSubsystemName(
+				ctx, d.API, nsUUID, publishInfo.TridentUUID, d.maxNamespacesPerSuperSubsystem,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to get SuperSubsystem for volume %v: %w", name, err)
 			}

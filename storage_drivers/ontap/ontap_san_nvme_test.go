@@ -50,7 +50,12 @@ func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	driver := &NVMeStorageDriver{Config: *config, API: apiOverride, AWSAPI: awsApiOverride}
+	driver := &NVMeStorageDriver{
+		Config:                         *config,
+		API:                            apiOverride,
+		AWSAPI:                         awsApiOverride,
+		maxNamespacesPerSuperSubsystem: defaultNamespacesPerSuperSubsystem,
+	}
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           config.SVM,
@@ -248,6 +253,48 @@ func TestNVMeInitialize_Success(t *testing.T) {
 
 	assert.NoError(t, err, "Failed to initialize NVMe driver.")
 	assert.True(t, d.Initialized(), "NVMe driver is not initialized.")
+	assert.Equal(t, defaultNamespacesPerSuperSubsystem, d.maxNamespacesPerSuperSubsystem)
+}
+
+func TestNVMeInitialize_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	d.Config.MaxNamespacesPerSuperSubsystem = "100"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		StorageDriverName: "ontap-san",
+		DriverContext:     tridentconfig.ContextCSI,
+	}
+	configJSON := `{"SANType": "nvme"}`
+	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
+	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
+	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
+	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
+
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
+	assert.NoError(t, err, "Failed to initialize NVMe driver.")
+	assert.True(t, d.Initialized(), "NVMe driver is not initialized.")
+	assert.Equal(t, int64(100), d.maxNamespacesPerSuperSubsystem)
+}
+
+func TestNVMeInitialize_BelowMinMaxNamespacesPerSuperSubsystemIsRejected(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	d.Config.MaxNamespacesPerSuperSubsystem = "49"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		StorageDriverName: "ontap-san",
+		DriverContext:     tridentconfig.ContextCSI,
+	}
+	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, `{"SANType": "nvme"}`, commonConfig, nil, BackendUUID)
+
+	assert.ErrorContains(t, err, "minimum is 50")
+	assert.False(t, d.Initialized())
 }
 
 func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
@@ -2172,6 +2219,28 @@ func TestPublish(t *testing.T) {
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, superSubsystem.UUID, "fakeNsUUID").Return(nil).Times(1)
 	err = d.Publish(ctx, volConfig, publishInfo)
 	assert.NoError(t, err)
+
+	// Test case 18a: RAW - configured namespace limit creates next SuperSubsystem
+	d.maxNamespacesPerSuperSubsystem = 50
+	nextSuperSubsystem := &api.NVMeSubsystem{
+		Name: "trident_subsystem_fakeUUID_2",
+		UUID: "superSSUUID2",
+		NQN:  "superNQN2",
+	}
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
+	mock.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_fakeUUID*").Return([]api.NVMeSubsystem{
+		{Name: "trident_subsystem_fakeUUID_1", UUID: "superSSUUID"},
+	}, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "superSSUUID").Return(int64(50), nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_2", "trident_subsystem_fakeUUID_2").
+		Return(nextSuperSubsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, nextSuperSubsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, nextSuperSubsystem.UUID, "fakeNsUUID").Return(nil).Times(1)
+	err = d.Publish(ctx, volConfig, publishInfo)
+	assert.NoError(t, err)
+	d.maxNamespacesPerSuperSubsystem = defaultNamespacesPerSuperSubsystem
 
 	// Test case 19: RAW - SuperSubsystem lookup error
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
