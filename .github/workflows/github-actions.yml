@@ -288,7 +288,11 @@ jobs:
 
         - name: Add coverage PR comment
           uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
-          if: github.event_name == 'pull_request'
+          # Fork PR tokens cannot create issue comments; keep coverage and artifacts
+          # authoritative while limiting this optional presentation step to same-repo PRs.
+          if: >-
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository
           with:
             recreate: true
             path: code-coverage-results.md
