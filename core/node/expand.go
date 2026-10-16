@@ -299,12 +299,23 @@ func (c *Core) expandFilesystemAndLUKS(
 			return errors.InvalidInputError("cannot expand LUKS encrypted volume; empty passphrase provided")
 		}
 
-		luksDevice := luks.NewDetailed("", filepath.Base(devicePath), c.cmd, c.dev, afero.NewOsFs())
-		if err = luksDevice.Resize(ctx, passphrase); err != nil {
-			if errors.IsIncorrectLUKSPassphraseError(err) {
-				return errors.InvalidInputError(err.Error())
+		locker, lockErr := c.nodeHelper.LockFor(ctx, volume, c.hostName, publishInfo)
+		if lockErr != nil {
+			return fmt.Errorf("failed to create distributed lock for volume %s: %v", volume, lockErr)
+		}
+
+		// cryptsetup resize may auto-recover (rewrite) a damaged LUKS2 header copy on load.
+		if err = locker.WithLock(ctx, func(ctx context.Context) error {
+			luksDevice := luks.NewDetailed("", filepath.Base(devicePath), c.cmd, c.dev, afero.NewOsFs())
+			if resizeErr := luksDevice.Resize(ctx, passphrase); resizeErr != nil {
+				if errors.IsIncorrectLUKSPassphraseError(resizeErr) {
+					return errors.InvalidInputError(resizeErr.Error())
+				}
+				return errors.InternalError("failed to resize LUKS mapping for volume %s: %v", volume, resizeErr)
 			}
-			return errors.InternalError("failed to resize LUKS mapping for volume %s: %v", volume, err)
+			return nil
+		}); err != nil {
+			return fmt.Errorf("could not resize LUKS mapping for volume %s; %w", volume, orchestratorErrorForLockError(err))
 		}
 	}
 

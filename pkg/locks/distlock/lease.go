@@ -165,6 +165,12 @@ func (l *LeaseLock) acquire(ctx context.Context) error {
 	lease, createErr := l.client.Create(ctx, leaseConfig, metav1.CreateOptions{})
 	if createErr == nil {
 		l.leaseUID = string(lease.UID)
+		Logc(ctx).WithFields(LogFields{
+			"leaseName": l.lockID,
+			"namespace": l.namespace,
+			"holderID":  l.hostID,
+			"leaseUID":  l.leaseUID,
+		}).Info("Created lease.")
 		return nil
 	}
 	if !apierrors.IsAlreadyExists(createErr) {
@@ -189,6 +195,13 @@ func (l *LeaseLock) acquire(ctx context.Context) error {
 		return fmt.Errorf("%w: holder=%q", ErrLockAcquireConflict, holder)
 	}
 	l.leaseUID = string(lease.UID)
+
+	Logc(ctx).WithFields(LogFields{
+		"leaseName": l.lockID,
+		"holderID":  l.hostID,
+		"leaseUID":  l.leaseUID,
+	}).Info("Acquired lease.")
+
 	return nil
 }
 

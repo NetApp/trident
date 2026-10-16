@@ -4,6 +4,7 @@ package node
 
 import (
 	"context"
+	"runtime"
 	"testing"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
+	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -508,6 +511,80 @@ func TestExpandFilesystemAndLUKS_LUKSMultipathResolutionSuccess_ResizeFailurePro
 
 	err := core.expandFilesystemAndLUKS(context.Background(), "test-vol", pi, 1024, secrets, 0, 0)
 	require.Error(t, err)
+}
+
+func TestExpandFilesystemAndLUKS_LUKSLockForErrorPropagates(t *testing.T) {
+	nodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+	core, _ := newTestCore(t, WithNodeHelper(nodeHelper))
+	pi := samplePublishInfo(ISCSI)
+	pi.FilesystemType = filesystem.Ext4
+	pi.LUKSEncryption = "true"
+	pi.DevicePath = "/dev/mapper/luks-abc"
+	secrets := map[string]string{"luks-passphrase": "secret"}
+	nodeHelper.EXPECT().LockFor(gomock.Any(), "test-vol", "test-node", pi).Return(nil, errors.New("no k8s client"))
+	// No Command.ExecuteWithTimeoutAndInput expectation: cryptsetup must not run without the lock.
+
+	err := core.expandFilesystemAndLUKS(context.Background(), "test-vol", pi, 1024, secrets, 0, 0)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to create distributed lock for volume test-vol")
+}
+
+func TestExpandFilesystemAndLUKS_LUKSLockConflictSkipsResize(t *testing.T) {
+	nodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+	core, _ := newTestCore(t, WithNodeHelper(nodeHelper))
+	pi := samplePublishInfo(ISCSI)
+	pi.FilesystemType = filesystem.Ext4
+	pi.LUKSEncryption = "true"
+	pi.DevicePath = "/dev/mapper/luks-abc"
+	secrets := map[string]string{"luks-passphrase": "secret"}
+	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+		return distlock.ErrLockAcquireConflict
+	})
+	nodeHelper.EXPECT().LockFor(gomock.Any(), "test-vol", "test-node", pi).Return(locker, nil)
+	// No Command.ExecuteWithTimeoutAndInput expectation: cryptsetup must not run without the lock.
+
+	err := core.expandFilesystemAndLUKS(context.Background(), "test-vol", pi, 1024, secrets, 0, 0)
+	require.Error(t, err)
+	assert.True(t, errors.IsVolumeStateError(err), "lock conflict should surface as a VolumeStateError")
+	assert.ErrorIs(t, err, distlock.ErrLockAcquireConflict)
+}
+
+func TestExpandFilesystemAndLUKS_LUKSResizeRunsInsideLock(t *testing.T) {
+	nodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+	core, mocks := newTestCore(t, WithNodeHelper(nodeHelper))
+	pi := samplePublishInfo(ISCSI)
+	pi.FilesystemType = filesystem.Ext4
+	pi.LUKSEncryption = "true"
+	pi.DevicePath = "/dev/mapper/luks-abc"
+	secrets := map[string]string{"luks-passphrase": "secret"}
+
+	lockHeld := false
+	locker := lockerFunc(func(ctx context.Context, fn func(context.Context) error) error {
+		lockHeld = true
+		defer func() { lockHeld = false }()
+		return fn(ctx)
+	})
+	nodeHelper.EXPECT().LockFor(gomock.Any(), "test-vol", "test-node", pi).Return(locker, nil)
+
+	// Only exercised on linux; harmless if never called (darwin/windows).
+	resizeCalled := false
+	mocks.Command.EXPECT().
+		ExecuteWithTimeoutAndInput(gomock.Any(), "cryptsetup", gomock.Any(), gomock.Any(), "secret", "resize", gomock.Any()).
+		DoAndReturn(func(context.Context, string, time.Duration, bool, string, ...string) ([]byte, error) {
+			resizeCalled = true
+			assert.True(t, lockHeld, "cryptsetup resize must run while holding the distributed lock")
+			return []byte{}, errors.New("cryptsetup resize failed")
+		}).
+		AnyTimes()
+
+	err := core.expandFilesystemAndLUKS(context.Background(), "test-vol", pi, 1024, secrets, 0, 0)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err), "resize failures should still surface as an InternalError")
+	assert.Contains(t, err.Error(), "could not resize LUKS mapping for volume test-vol")
+	if runtime.GOOS == "linux" {
+		assert.True(t, resizeCalled, "cryptsetup resize should have been invoked")
+		assert.Contains(t, err.Error(), "cryptsetup resize failed", "underlying cryptsetup error must be preserved")
+	}
 }
 
 func TestExpandFilesystemAndLUKS_RawFilesystemSkipsExpandFilesystemOnNode(t *testing.T) {
