@@ -30,6 +30,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/object"
 	_ "github.com/netapp/trident/object/drivers/fake"
+	_ "github.com/netapp/trident/object/drivers/ontaps3"
 	_ "github.com/netapp/trident/object/drivers/storagegrid"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/capacity"
@@ -421,7 +422,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBuckets(ctx context.Context) er
 			continue
 		}
 
-		_, results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertBucket(persistentBucket.Name, persistentBucket.StoreName)))
+		_, results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertBucket(persistentBucket.Name, persistentBucket.StoreUUID)))
 		if upsertErr != nil {
 			Logc(ctx).WithField("bucket", persistentBucket.Name).WithError(upsertErr).Error(
 				"Failed to lock bucket for upsert.")
@@ -459,7 +460,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBucketAccesses(ctx context.Cont
 		}
 
 		_, results, unlocker, upsertErr := db.Lock(ctx,
-			db.Query(db.UpsertBucketAccess(persistentAccess.Name, persistentAccess.StoreName)))
+			db.Query(db.UpsertBucketAccess(persistentAccess.Name, persistentAccess.StoreUUID)))
 		if upsertErr != nil {
 			Logc(ctx).WithField("bucketAccess", persistentAccess.Name).WithError(upsertErr).Error(
 				"Failed to lock bucket access for upsert.")
@@ -9241,13 +9242,20 @@ func (o *ConcurrentTridentOrchestrator) AddOrUpdateObjectStore(ctx context.Conte
 		}
 	}
 
+	// Core sets online after a successful Initialize. A store already deleting stays
+	// deleting so bootstrap does not place new buckets on a terminating store.
 	initErr := store.Initialize(ctx)
 	if initErr != nil {
-		store.SetState(object.StoreStateOffline)
+		if store.State() != object.StoreStateDeleting {
+			store.SetState(object.StoreStateOffline)
+		}
 		results[0].ObjectStore.Upsert(store)
+	} else if store.State() != object.StoreStateDeleting {
+		store.SetState(object.StoreStateOnline)
 	}
 	if persistErr := o.persistObjectStore(ctx, store, existing == nil); persistErr != nil {
-		// The replacement could not be persisted, so it should be stopped. It has been updated in the cache and was not updated to be "online" so this is best effort.
+		// Persist failed, so stop the replacement. A failed Initialize is already cached.
+		// A successful one is not in the cache yet and is only terminated here.
 		if termErr := store.Terminate(ctx); termErr != nil {
 			Logc(ctx).WithError(termErr).WithField("objectStore", store.Name()).
 				Debug("Failed to terminate object store that could not be persisted.")
@@ -9291,8 +9299,8 @@ func (o *ConcurrentTridentOrchestrator) ListObjectStores(ctx context.Context) ([
 
 func (o *ConcurrentTridentOrchestrator) DeleteObjectStore(ctx context.Context, storeName string) error {
 	ctx, results, unlocker, err := db.Lock(ctx,
-		db.Query(db.DeleteObjectStore(storeName)),
-		db.Query(db.UpsertObjectStore(storeName, "", "")),
+		db.Query(db.DeleteObjectStoreByName(storeName)),
+		db.Query(db.UpsertObjectStore("", storeName, "")),
 	)
 	defer unlocker()
 	if err != nil {
@@ -9300,30 +9308,42 @@ func (o *ConcurrentTridentOrchestrator) DeleteObjectStore(ctx context.Context, s
 	}
 
 	store := results[0].ObjectStore.Read
+	if store == nil {
+		return nil
+	}
 
-	// A terminating CR is skipped at bootstrap, so the store can be missing from cache while its
-	// buckets are still loaded. Keep the conflict in that case so the finalizer is not removed.
-	ctx, listResults, listUnlocker, err := db.NestedLock(ctx, db.Query(db.ListBucketsForObjectStore(storeName)))
+	ctx, listResults, listUnlocker, err := db.NestedLock(ctx, db.Query(
+		db.ListBucketsForObjectStore(store.StoreUUID()),
+		db.ListBucketAccessesForObjectStore(store.StoreUUID()),
+	))
 	defer listUnlocker()
 	if err != nil {
 		return err
 	}
 
 	if len(listResults[0].Buckets) > 0 {
-		if store != nil {
-			store.SetState(object.StoreStateDeleting)
-			results[1].ObjectStore.Upsert(store)
-			if err := o.storeClient.UpdateObjectStore(ctx, store); err != nil {
-				return err
-			}
+		store.SetState(object.StoreStateDeleting)
+		results[1].ObjectStore.Upsert(store)
+		if err := o.storeClient.UpdateObjectStore(ctx, store); err != nil {
+			return err
 		}
 		return errors.ConflictError("object store %s has buckets", storeName)
 	}
-	if store == nil {
-		return nil
+	if len(listResults[0].BucketAccesses) > 0 {
+		store.SetState(object.StoreStateDeleting)
+		results[1].ObjectStore.Upsert(store)
+		if err := o.storeClient.UpdateObjectStore(ctx, store); err != nil {
+			return err
+		}
+		return errors.ConflictError("object store %s has bucket accesses", storeName)
 	}
 
-	if err := o.storeClient.DeleteObjectStore(ctx, store); err != nil {
+	// Terminate the object store from the driver
+	if err := store.Terminate(ctx); err != nil {
+		return err
+	}
+	// Delete object store from the persistent store
+	if err = o.storeClient.DeleteObjectStore(ctx, store); err != nil {
 		return err
 	}
 
@@ -9351,9 +9371,9 @@ func (o *ConcurrentTridentOrchestrator) AddBucket(ctx context.Context, bucket *o
 	}
 
 	stores := storeResults[0].ObjectStores
-	// If the bucket already exists and has a store name, it will be the first element.
+	// If the bucket already exists and names a store, it will be the first element.
 	startingIndex := 0
-	if storeResults[0].Bucket.Read != nil && storeResults[0].Bucket.Read.StoreName != "" {
+	if storeResults[0].Bucket.Read != nil && storeResults[0].Bucket.Read.StoreUUID != "" {
 		startingIndex = 1
 	}
 	matchingStores := stores[:startingIndex]
@@ -9391,11 +9411,11 @@ func (o *ConcurrentTridentOrchestrator) AddBucket(ctx context.Context, bucket *o
 				cachedBucket = &copied
 			}
 			// Already completed in a prior call - don't call any driver again. Info (not
-			// StoreName) is the signal: StoreName is set before the driver runs, so it only
+			// StoreUUID) is the signal: StoreUUID is set before the driver runs, so it only
 			// proves an attempt was recorded, not that it succeeded. This must come before the
 			// store checks below and not depend on which store is being tried: a completed
 			// bucket whose store has since left Online must not be created again elsewhere.
-			if cachedBucket.StoreName != "" && cachedBucket.Info != (object.BucketInfo{}) {
+			if cachedBucket.StoreUUID != "" && cachedBucket.Info != (object.BucketInfo{}) {
 				outBucket = cachedBucket
 				return false, nil
 			}
@@ -9413,14 +9433,14 @@ func (o *ConcurrentTridentOrchestrator) AddBucket(ctx context.Context, bucket *o
 
 			// Cache a snapshot, not cachedBucket itself: CreateBucket mutates cachedBucket.Info
 			// in place, and aliasing it into the cache would leak that before the persist below confirms it.
-			cachedBucket.StoreName = lockedStore.Name()
+			cachedBucket.StoreUUID = lockedStore.StoreUUID()
 			preCreateSnapshot := *cachedBucket
 			results[0].Bucket.Upsert(&preCreateSnapshot)
 			if err := o.storeClient.UpsertBucket(ctx, cachedBucket); err != nil {
 				return false, err // if we fail to update the bucket we need to try again; we cannot continue without setting the store, because we must be able to recover from trident restarts when there could be some state changed in the backend.
 			}
 
-			_, err = lockedStore.CreateBucket(ctx, cachedBucket)
+			err = lockedStore.CreateBucket(ctx, cachedBucket)
 			if err != nil {
 				Logc(ctx).WithField("store", lockedStore.Name()).WithField("bucket", cachedBucket.Name).WithError(err).Error("Error creating bucket on store.")
 				// Delete is unconditional. The driver decides what that means: a bucket
@@ -9431,14 +9451,14 @@ func (o *ConcurrentTridentOrchestrator) AddBucket(ctx context.Context, bucket *o
 					return false, err
 				}
 
-				cachedBucket.StoreName = ""
+				cachedBucket.StoreUUID = ""
 				cachedBucket.Info = object.BucketInfo{}
 				results[0].Bucket.Upsert(cachedBucket)
 				// Best-effort: the next store's attempt overwrites the record anyway, and a stale
 				// cleared record only reads as an unplaced bucket, which is safe to resume.
 				if err := o.storeClient.UpsertBucket(ctx, cachedBucket); err != nil {
 					Logc(ctx).WithField("store", lockedStore.Name()).WithField("bucket", cachedBucket.Name).WithError(err).
-						Debug("Persisting the cleared store name failed.")
+						Debug("Persisting the cleared store UUID failed.")
 				}
 				return true, err
 			}
@@ -9507,7 +9527,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteBucket(ctx context.Context, bucket
 	}
 	// Never placed on a store (every attempt failed and was cleaned up), so there is nothing on
 	// any backend to delete - only Trident's own record.
-	if bucket.StoreName == "" {
+	if bucket.StoreUUID == "" {
 		if err := o.storeClient.DeleteBucket(ctx, bucket); err != nil {
 			return err
 		}
@@ -9570,14 +9590,14 @@ func (o *ConcurrentTridentOrchestrator) GrantBucketAccess(
 
 	access := &object.BucketAccess{
 		Name:      bucketAccessName,
-		StoreName: store.Name(),
+		StoreUUID: store.StoreUUID(),
 	}
 	secret, err := store.GrantBucketAccess(ctx, bucketAccessModes, access)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	_, accessResults, accessUnlocker, accessErr := db.NestedLock(ctx, db.Query(db.UpsertBucketAccess(bucketAccessName, store.Name()), db.ReadObjectStore(store.StoreUUID())))
+	_, accessResults, accessUnlocker, accessErr := db.NestedLock(ctx, db.Query(db.UpsertBucketAccess(bucketAccessName, store.StoreUUID()), db.ReadObjectStore(store.StoreUUID())))
 	defer accessUnlocker()
 	if accessErr != nil {
 		return nil, nil, accessErr
@@ -9587,7 +9607,7 @@ func (o *ConcurrentTridentOrchestrator) GrantBucketAccess(
 	if cachedAccess == nil {
 		cachedAccess = access
 	} else {
-		if cachedAccess.StoreName != store.Name() {
+		if cachedAccess.GetObjectStoreID() != store.StoreUUID() {
 			// User intervention is required to prevent leaked object store users
 			return nil, nil, errors.ConflictError("bucket access %s is on a different store than %s", bucketAccessName, store.Name())
 		}

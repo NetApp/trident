@@ -561,6 +561,21 @@ func (mr *MockStoreClientMockRecorder) GetNodes(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodes", reflect.TypeOf((*MockStoreClient)(nil).GetNodes), ctx)
 }
 
+// GetObjectStore mocks base method.
+func (m *MockStoreClient) GetObjectStore(ctx context.Context, name string) (object.Store, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetObjectStore", ctx, name)
+	ret0, _ := ret[0].(object.Store)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetObjectStore indicates an expected call of GetObjectStore.
+func (mr *MockStoreClientMockRecorder) GetObjectStore(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObjectStore", reflect.TypeOf((*MockStoreClient)(nil).GetObjectStore), ctx, name)
+}
+
 // GetObjectStores mocks base method.
 func (m *MockStoreClient) GetObjectStores(ctx context.Context) ([]object.Store, error) {
 	m.ctrl.T.Helper()

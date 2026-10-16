@@ -642,16 +642,8 @@ func fillInIDs(root int, query []Subquery) error {
 				return errors.ConflictError("conflicting ids for %s: [%s] and [%s]", query[root].res, id, query[root].id)
 			}
 			query[root].id = id
-		} else {
-			res, ok := c.data[query[root].id]
-			if ok {
-				query[root].key = res.(UniqueKey).GetUniqueKey()
-			} else if resolved, ok := c.key.data[query[root].id]; ok {
-				query[root].id = resolved
-				if res, ok := c.data[query[root].id]; ok {
-					query[root].key = res.(UniqueKey).GetUniqueKey()
-				}
-			}
+		} else if res, ok := c.data[query[root].id]; ok {
+			query[root].key = res.(UniqueKey).GetUniqueKey()
 		}
 	}
 	if query[root].setDependencyIDs != nil {

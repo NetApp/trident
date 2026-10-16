@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/object/drivers/storagegrid/sgapi"
@@ -29,7 +30,8 @@ func init() {
 
 const (
 	// DriverName is the objectStoreDriver value that selects this backend.
-	DriverName = "storage-grid"
+	DriverName           = "storage-grid"
+	defaultStoragePrefix = config.OrchestratorName + "-"
 
 	requiredMajorAPIVersion = 4
 	defaultDeletePoll       = 2 * time.Second
@@ -84,6 +86,7 @@ type ObjectDriver struct {
 	Region              string            `json:"region,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty"`
 	UUID                string            `json:"uuid"`
+	StoragePrefix       string            `json:"storagePrefix,omitempty"`
 	InsecureSkipVerify  bool              `json:"insecureSkipVerify,omitempty"`
 	EmptyBucketOnDelete bool              `json:"emptyBucketOnDelete,omitempty"`
 	StoreState          object.StoreState `json:"state"`
@@ -186,10 +189,9 @@ func (d *ObjectDriver) Initialize(ctx context.Context) error {
 	}
 
 	if err := d.openClient(ctx); err != nil {
-		d.StoreState = object.StoreStateOffline
 		return err
 	}
-	d.StoreState = object.StoreStateOnline
+	// StoreState is left unchanged. Core sets online after a successful Initialize.
 
 	Logc(ctx).WithFields(LogFields{
 		"store":    d.ObjectStoreName,
@@ -254,7 +256,7 @@ func (d *ObjectDriver) Terminate(ctx context.Context) error {
 }
 
 // GetBucketByName checks that a bucket exists on this tenant.
-// Input is the bucket name. Output is a Bucket with Name, StoreName, and Info populated.
+// Input is the bucket name. Output is a Bucket with Name, InternalID, StoreUUID, and Info populated.
 // NotFoundError if the tenant does not own it, or another error if
 // the API call fails. Extra bucket properties beyond region are not fetched.
 func (d *ObjectDriver) GetBucketByName(ctx context.Context, name string) (*object.Bucket, error) {
@@ -263,14 +265,20 @@ func (d *ObjectDriver) GetBucketByName(ctx context.Context, name string) (*objec
 	}
 	// Ask only whether this tenant owns the bucket; the region read is the existence check
 	// itself, and comes back on the same call - no properties beyond it are fetched.
-	state, err := d.client.GetBucket(ctx, name, sgapi.BucketReads{})
+	internalID := makeName(defaultStoragePrefix, name)
+	state, err := d.client.GetBucket(ctx, internalID, sgapi.BucketReads{})
 	if err != nil {
 		if sgapi.IsNotFound(err) {
-			return nil, errors.NotFoundError("bucket %s not found", name)
+			return nil, errors.NotFoundError("bucket %s not found", internalID)
 		}
-		return nil, fmt.Errorf("get bucket %s: %w", name, err)
+		return nil, fmt.Errorf("get bucket %s: %w", internalID, err)
 	}
-	return &object.Bucket{Name: name, StoreName: d.ObjectStoreName, Info: d.bucketInfo(state.Region)}, nil
+	return &object.Bucket{
+		Name:       name,
+		InternalID: internalID,
+		StoreUUID:  d.StoreUUID(),
+		Info:       d.bucketInfo(state.Region),
+	}, nil
 }
 
 // bucketInfo builds the S3 connection details COSI needs to reach a bucket in region.
@@ -289,67 +297,69 @@ func (d *ObjectDriver) bucketInfo(region string) object.BucketInfo {
 // CreateBucket provisions a bucket on this tenant.
 // Input is a Bucket. Output is nil if the bucket was created or already exists on this tenant.
 // A conflict that does not resolve to this tenant is an AlreadyExistsError.
-func (d *ObjectDriver) CreateBucket(ctx context.Context, bucket *object.Bucket) (*object.Bucket, error) {
+func (d *ObjectDriver) CreateBucket(ctx context.Context, bucket *object.Bucket) error {
 	if err := d.requireClient(); err != nil {
-		return nil, err
+		return err
 	}
 	if bucket == nil || bucket.Name == "" {
-		return nil, fmt.Errorf("bucket name is required")
+		return fmt.Errorf("bucket name is required")
 	}
 
+	bucket.InternalID = makeName(defaultStoragePrefix, bucket.Name)
+
 	// Provision the bucket in the backend's configured region.
-	spec := sgapi.ContainerCreate{Name: bucket.Name, Region: d.Region}
+	spec := sgapi.ContainerCreate{Name: bucket.InternalID, Region: d.Region}
 	result, err := d.client.CreateBucket(ctx, spec)
 	switch {
 	case err == nil:
-		bucket.StoreName = d.ObjectStoreName
+		bucket.StoreUUID = d.StoreUUID()
 		region := result.Region
 		if region == "" {
-			region, err = d.client.GetRegion(ctx, bucket.Name)
+			region, err = d.client.GetRegion(ctx, bucket.InternalID)
 			if err != nil {
-				return nil, fmt.Errorf("get region %s: %w", bucket.Name, err)
+				return fmt.Errorf("get region %s: %w", bucket.InternalID, err)
 			}
 		}
 		bucket.Info = d.bucketInfo(region)
 		Logc(ctx).WithFields(LogFields{
-			"name":  bucket.Name,
+			"name":  bucket.InternalID,
 			"store": d.ObjectStoreName,
 		}).Debug("Created StorageGRID bucket.")
-		return bucket, nil
+		return nil
 	case sgapi.IsAlertError(err):
 		// An error alert means the bucket exists and needs a later reconcile. Info is
 		// still populated on the caller's pointer despite the error return below: the
 		// container's reachability (endpoint/region) is unaffected by whichever piece of
 		// its configuration the alert flags, and a caller resuming on a cached partial
 		// attempt (core.AddBucket does) benefits from not re-fetching it on the next call.
-		bucket.StoreName = d.ObjectStoreName
+		bucket.StoreUUID = d.StoreUUID()
 		bucket.Info = d.bucketInfo(result.Region)
 		Logc(ctx).WithFields(LogFields{
-			"name":  bucket.Name,
+			"name":  bucket.InternalID,
 			"store": d.ObjectStoreName,
 		}).Debug("Created StorageGRID bucket, but there was an error.")
-		return nil, fmt.Errorf("create bucket %s: %w", bucket.Name, err)
+		return fmt.Errorf("create bucket %s: %w", bucket.InternalID, err)
 	case sgapi.IsConflict(err), sgapi.IsUnprocessable(err):
 		// Bucket name may already exist. Check if it is in this tenant, which
 		// makes create idempotent, or by another one, which is a real conflict.
-		existing, getErr := d.client.GetBucket(ctx, bucket.Name, sgapi.BucketReads{})
+		existing, getErr := d.client.GetBucket(ctx, bucket.InternalID, sgapi.BucketReads{})
 		if getErr == nil {
-			bucket.StoreName = d.ObjectStoreName
+			bucket.StoreUUID = d.StoreUUID()
 			bucket.Info = d.bucketInfo(existing.Region)
-			Logc(ctx).WithField("name", bucket.Name).Debug("Bucket already exists on this tenant.")
-			return bucket, nil
+			Logc(ctx).WithField("name", bucket.InternalID).Debug("Bucket already exists on this tenant.")
+			return nil
 		}
 		Logc(ctx).WithFields(LogFields{
-			"name":  bucket.Name,
+			"name":  bucket.InternalID,
 			"store": d.ObjectStoreName,
 		}).WithError(getErr).Debug("Could not confirm bucket ownership after create conflict.")
 		// Keep the API conflict as the cause so callers can see why this is terminal.
-		return bucket, errors.WrapWithAlreadyExistsError(err, "bucket %s already exists", bucket.Name)
+		return errors.WrapWithAlreadyExistsError(err, "bucket %s already exists", bucket.InternalID)
 	case sgapi.IsBucketNameInvalid(err):
 		// Rejected locally before any request was sent; every backend would reject it too.
-		return nil, errors.WrapWithInvalidInputError(err, "invalid bucket name %s", bucket.Name)
+		return errors.WrapWithInvalidInputError(err, "invalid bucket name %s", bucket.InternalID)
 	default:
-		return nil, fmt.Errorf("create bucket %s: %w", bucket.Name, err)
+		return fmt.Errorf("create bucket %s: %w", bucket.InternalID, err)
 	}
 }
 
@@ -375,33 +385,35 @@ func (d *ObjectDriver) DeleteBucket(ctx context.Context, name string) error {
 		return err
 	}
 
+	internalID := makeName(defaultStoragePrefix, name)
+
 	// See the comment above. A 409 here is another tenant's name, not "not empty".
-	_, getErr := d.client.GetBucket(ctx, name, sgapi.BucketReads{})
+	_, getErr := d.client.GetBucket(ctx, internalID, sgapi.BucketReads{})
 	switch {
 	case getErr == nil:
 		// Present on this tenant. Fall through and delete it.
 	case sgapi.IsNotFound(getErr), sgapi.IsConflict(getErr), sgapi.IsBucketNameInvalid(getErr):
 		Logc(ctx).WithFields(LogFields{
-			"name":  name,
+			"name":  internalID,
 			"store": d.ObjectStoreName,
 		}).Debug("Bucket is not on this tenant, so there is nothing to delete.")
 		return nil
 	default:
-		return fmt.Errorf("checking bucket %s before delete: %w", name, getErr)
+		return fmt.Errorf("checking bucket %s before delete: %w", internalID, getErr)
 	}
 
 	if req, ok := d.client.(*sgapi.Client); ok {
 		// Remove the bucket, first draining its objects and waiting for that to
 		// finish when the backend allows emptying on delete.
-		status, err := req.NewBucketDeleter(name, d.EmptyBucketOnDelete).Run(ctx, defaultDeletePoll, nil)
+		status, err := req.NewBucketDeleter(internalID, d.EmptyBucketOnDelete).Run(ctx, defaultDeletePoll, nil)
 		if err != nil {
 			if stderrors.Is(err, sgapi.ErrBucketNotEmpty) {
-				return errors.WrapWithBucketNotEmptyError(err, "delete bucket %s", name)
+				return errors.WrapWithBucketNotEmptyError(err, "delete bucket %s", internalID)
 			}
-			return fmt.Errorf("delete bucket %s: %w", name, err)
+			return fmt.Errorf("delete bucket %s: %w", internalID, err)
 		}
 		Logc(ctx).WithFields(LogFields{
-			"name":    name,
+			"name":    internalID,
 			"store":   d.ObjectStoreName,
 			"message": status.Message,
 		}).Debug("Deleted StorageGRID bucket.")
@@ -410,24 +422,24 @@ func (d *ObjectDriver) DeleteBucket(ctx context.Context, name string) error {
 
 	// Plain single-shot delete, with no emptying step, for clients that cannot
 	// run the drain-and-poll sequence above.
-	outcome, err := d.client.DeleteBucket(ctx, name)
+	outcome, err := d.client.DeleteBucket(ctx, internalID)
 	if err != nil {
-		return fmt.Errorf("delete bucket %s: %w", name, err)
+		return fmt.Errorf("delete bucket %s: %w", internalID, err)
 	}
 	switch outcome {
 	case sgapi.BucketDeleted, sgapi.BucketAlreadyGone:
 		return nil
 	case sgapi.BucketNotEmpty:
-		return errors.WrapWithBucketNotEmptyError(sgapi.ErrBucketNotEmpty, "delete bucket %s", name)
+		return errors.WrapWithBucketNotEmptyError(sgapi.ErrBucketNotEmpty, "delete bucket %s", internalID)
 	default:
-		return fmt.Errorf("delete bucket %s: unexpected outcome %s", name, outcome)
+		return fmt.Errorf("delete bucket %s: unexpected outcome %s", internalID, outcome)
 	}
 }
 
 // GrantBucketAccess creates a tenant group, user, and S3 access key for the
 // requested buckets and modes.
 // Input is BucketAccess: Name becomes the group/user short name; BucketAccessModes must list at least one bucket.
-// Output is the generated S3 secret with StoreName set on access.
+// Output is the generated S3 secret with StoreUUID set on access.
 // Existing keys for the user are revoked before a new key is minted.
 func (d *ObjectDriver) GrantBucketAccess(
 	ctx context.Context, bucketAccessModes []object.BucketAccessMode, access *object.BucketAccess,
@@ -438,10 +450,8 @@ func (d *ObjectDriver) GrantBucketAccess(
 	if access == nil {
 		return nil, fmt.Errorf("bucket access is required")
 	}
-	if access.Name == "" {
-		access.Name = uuid.NewString()
-	}
-	if err := sgapi.ValidateAccountName(access.Name); err != nil {
+	name := makeName(defaultStoragePrefix, access.Name)
+	if err := sgapi.ValidateAccountName(name); err != nil {
 		return nil, fmt.Errorf("bucket access name: %w", err)
 	}
 	if len(bucketAccessModes) == 0 {
@@ -450,51 +460,76 @@ func (d *ObjectDriver) GrantBucketAccess(
 
 	// Check that all the buckets exist before creating identities for a policy that can never apply.
 	for _, mode := range bucketAccessModes {
-		if region, err := d.client.GetRegion(ctx, mode.BucketName); err != nil {
+		bucketInternalID := makeName(defaultStoragePrefix, mode.BucketName)
+		if region, err := d.client.GetRegion(ctx, bucketInternalID); err != nil {
 			if sgapi.IsNotFound(err) {
-				return nil, errors.NotFoundError("bucket %s not found", mode.BucketName)
+				return nil, errors.NotFoundError("bucket %s not found", bucketInternalID)
 			}
-			return nil, fmt.Errorf("reading region of bucket %s: %w", mode.BucketName, err)
+			return nil, fmt.Errorf("reading region of bucket %s: %w", bucketInternalID, err)
 		} else {
 			d.Region = region
 		}
 	}
 
-	policy, err := BuildGroupPolicy(bucketAccessModes)
+	// The grid bucket name is the prefixed internal ID, so the policy must name that
+	// resource rather than the caller-facing bucket name.
+	scopedModes := make([]object.BucketAccessMode, len(bucketAccessModes))
+	for i, mode := range bucketAccessModes {
+		scopedModes[i] = mode
+		scopedModes[i].BucketName = makeName(defaultStoragePrefix, mode.BucketName)
+	}
+	policy, err := BuildGroupPolicy(scopedModes)
 	if err != nil {
 		return nil, err
 	}
 
-	group, err := d.ensureGroup(ctx, access.Name, policy)
+	group, err := d.ensureGroup(ctx, name, policy)
 	if err != nil {
 		return nil, err
 	}
-	user, err := d.ensureUser(ctx, access.Name, group.ID)
+	user, err := d.ensureUser(ctx, name, group.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Clear credentials a previous attempt left behind, so this ends with exactly one usable key and no orphans.
 	if _, err := d.client.DeleteAllAccessKeys(ctx, user.ID); err != nil {
-		return nil, fmt.Errorf("removing existing access keys of user %q: %w", access.Name, err)
+		return nil, fmt.Errorf("removing existing access keys of user %q: %w", name, err)
 	}
 	// Mint the key the consumer will use. It never expires,
 	// since nothing in COSI rotates a credential before it lapses.
 	key, err := d.client.CreateAccessKey(ctx, user.ID, nil)
 	if err != nil {
-		return nil, fmt.Errorf("minting an access key for user %q: %w", access.Name, err)
+		return nil, fmt.Errorf("minting an access key for user %q: %w", name, err)
 	}
 	secret := &object.S3BucketAccessSecret{
 		AccessKeyID:     key.AccessKey,
 		SecretAccessKey: key.SecretAccessKey,
 	}
 
-	access.StoreName = d.ObjectStoreName
+	access.InternalID = name
+	access.StoreUUID = d.StoreUUID()
 	Logc(ctx).WithFields(LogFields{
 		"access": access.Name,
 		"store":  d.ObjectStoreName,
 	}).Debug("Granted StorageGRID bucket access.")
 	return secret, nil
+}
+
+// makeName returns the name used for the StorageGrid resources: bucket, user, and group.
+func makeName(prefix, suffix string) string {
+	if suffix == "" {
+		suffix = uuid.NewString()
+	}
+
+	// If the prefix already ends with a separator, concatenate directly;
+	// otherwise insert a dash so the caller doesn't have to include one.
+	sep := "-"
+	if last := prefix[len(prefix)-1]; last == '-' {
+		sep = ""
+	}
+	name := prefix + sep + suffix
+	return name
 }
 
 // RevokeBucketAccess deletes the S3 keys, user, and group created for bucket access.
@@ -508,37 +543,38 @@ func (d *ObjectDriver) RevokeBucketAccess(ctx context.Context, access *object.Bu
 		return fmt.Errorf("bucket access is required")
 	}
 
+	name := makeName(defaultStoragePrefix, access.Name)
 	// Find the user this access created; it carries the ID that the deletes need.
-	user, _, err := d.client.GetUserByShortName(ctx, access.Name)
+	user, _, err := d.client.GetUserByShortName(ctx, name)
 	switch {
 	case err == nil:
 		// Invalidate the S3 credentials first, so access stops even if removing the user itself fails.
 		if _, err := d.client.DeleteAllAccessKeys(ctx, user.ID); err != nil {
-			return fmt.Errorf("deleting access keys of user %q: %w", access.Name, err)
+			return fmt.Errorf("deleting access keys of user %q: %w", name, err)
 		}
 
 		// Retire the user itself.
 		if err := d.client.DeleteUser(ctx, user.ID); err != nil {
-			return fmt.Errorf("deleting user %s: %w", sgapi.UserUniqueName(access.Name), err)
+			return fmt.Errorf("deleting user %s: %w", sgapi.UserUniqueName(name), err)
 		}
 	case sgapi.IsNotFound(err):
-		Logc(ctx).WithField("user", sgapi.UserUniqueName(access.Name)).Debug("User already gone.")
+		Logc(ctx).WithField("user", sgapi.UserUniqueName(name)).Debug("User already gone.")
 	default:
-		return fmt.Errorf("reading user %s: %w", sgapi.UserUniqueName(access.Name), err)
+		return fmt.Errorf("reading user %s: %w", sgapi.UserUniqueName(name), err)
 	}
 
 	// Look up the group that holds the S3 policy.
-	group, _, err := d.client.GetGroupByShortName(ctx, access.Name)
+	group, _, err := d.client.GetGroupByShortName(ctx, name)
 	switch {
 	case err == nil:
 		// Drop the policy with the group, leaving nothing behind.
 		if err := d.client.DeleteGroup(ctx, group.ID); err != nil {
-			return fmt.Errorf("deleting group %s: %w", sgapi.GroupUniqueName(access.Name), err)
+			return fmt.Errorf("deleting group %s: %w", sgapi.GroupUniqueName(name), err)
 		}
 	case sgapi.IsNotFound(err):
-		Logc(ctx).WithField("group", sgapi.GroupUniqueName(access.Name)).Debug("Group already gone.")
+		Logc(ctx).WithField("group", sgapi.GroupUniqueName(name)).Debug("Group already gone.")
 	default:
-		return fmt.Errorf("reading group %s: %w", sgapi.GroupUniqueName(access.Name), err)
+		return fmt.Errorf("reading group %s: %w", sgapi.GroupUniqueName(name), err)
 	}
 
 	Logc(ctx).WithFields(LogFields{

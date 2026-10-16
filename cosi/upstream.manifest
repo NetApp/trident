@@ -132,6 +132,22 @@ client/config/crd/objectstorage.k8s.io_bucketaccessclasses.yaml  cosi/crd/object
 #
 #   Upstreamable: yes -- straightforward one-line fix, no NetApp-specific behavior involved.
 #
+#   Also, in SetupWithManager, the Bucket watch's predicate changed from AnyCreate() to
+#   ctrlpredicate.Or(AnyCreate(), AnyDelete()). It must stay a single Or: WithPredicates ANDs
+#   its arguments.
+#
+#   Why: with Create only, a Bucket's delete event is dropped, so a deleting claim notices its
+#   Bucket is gone only on its error backoff (5 ms doubling, 1000 s cap). Upstream never sees
+#   this because its Bucket stub drops the finalizer at once; Trident's deletion can refuse for
+#   minutes (non-empty bucket, unreachable backend), after which the claim stayed Terminating
+#   for 5-11 min with its Bucket already gone (design-docs/cosi/22-pr-2856-test-results.md,
+#   BD-4 and M8-repro).
+#
+#   Shape: one line changed. Reverting the divergence is restoring AnyCreate().
+#
+#   Upstreamable: yes -- upstream main still carries the AnyCreate()-only watch and the
+#   "return nil when Bucket watcher is set up" TODOs.
+#
 # cosi/sidecar/bucketaccess.go
 #   Added the SkipRegrantWhenGranted field to BucketAccessReconciler and, in reconcile(),
 #   a check after reserveAccessSecrets that returns before DriverGrantBucketAccess when the

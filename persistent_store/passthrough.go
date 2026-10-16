@@ -513,6 +513,10 @@ func (c *PassthroughClient) AddObjectStore(context.Context, object.Store) error 
 	return nil
 }
 
+func (c *PassthroughClient) GetObjectStore(context.Context, string) (object.Store, error) {
+	return nil, NewPersistentStoreError(KeyNotFoundErr, "object stores not supported in passthrough mode")
+}
+
 func (c *PassthroughClient) GetObjectStores(context.Context) ([]object.Store, error) {
 	return make([]object.Store, 0), nil
 }

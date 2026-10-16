@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package object
 
 import "github.com/brunoga/deep"
@@ -11,8 +13,9 @@ const (
 )
 
 type BucketAccess struct {
-	Name      string
-	StoreName string
+	Name       string
+	StoreUUID  string
+	InternalID string
 }
 
 type BucketAccessMode struct {
@@ -31,10 +34,14 @@ func (a *BucketAccess) SmartCopy() interface{} {
 	return deep.MustCopy(a)
 }
 
-func (a *BucketAccess) GetStoreName() string {
-	return a.StoreName
-}
+// ProvisionerID returns the Trident key identifier for this
+// BucketAccess. This is distinct from StorageID.
+func (a *BucketAccess) ProvisionerID() string { return a.Name }
+
+// StorageID is the storage key identifier for this BucketAccess.
+// This is distinct from ProvisionerID.
+func (a *BucketAccess) StorageID() string { return a.InternalID }
 
 func (a *BucketAccess) GetObjectStoreID() string {
-	return a.StoreName
+	return a.StoreUUID
 }

@@ -25,12 +25,15 @@ func FilterObjectStoresForBucket(bucketName string) Subquery {
 			r.ObjectStores = make([]object.Store, 0)
 
 			var bucketStoreID string
-			if bucket, ok := buckets.data[bucketName]; ok && bucket.(*object.Bucket).StoreName != "" {
-				bucketStoreID = objectStores.key.data[bucket.(*object.Bucket).StoreName]
-				if bucketStoreID != "" {
-					r.ObjectStores = append(r.ObjectStores, objectStores.data[bucketStoreID].SmartCopy().(object.Store))
-				} else {
-					r.ObjectStores = append(r.ObjectStores, nil)
+			if cached, ok := buckets.data[bucketName]; ok {
+				stored := cached.(*object.Bucket)
+				if stored.StoreUUID != "" {
+					bucketStoreID = stored.StoreUUID
+					if store, found := objectStores.data[bucketStoreID]; found {
+						r.ObjectStores = append(r.ObjectStores, store.SmartCopy().(object.Store))
+					} else {
+						r.ObjectStores = append(r.ObjectStores, nil)
+					}
 				}
 			}
 
@@ -160,6 +163,12 @@ func UpsertObjectStore(id, name, newName string) Subquery {
 			return nil
 		},
 	}
+}
+
+func DeleteObjectStoreByName(name string) Subquery {
+	subquery := DeleteObjectStore("")
+	subquery.key = name
+	return subquery
 }
 
 func DeleteObjectStore(id string) Subquery {

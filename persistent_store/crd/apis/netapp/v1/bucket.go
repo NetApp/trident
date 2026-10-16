@@ -3,8 +3,6 @@
 package v1
 
 import (
-	"encoding/json"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/object"
@@ -25,20 +23,21 @@ func NewTridentBucket(bucket *object.Bucket) (*TridentBucket, error) {
 }
 
 func (in *TridentBucket) Apply(bucket *object.Bucket) error {
-	if NameFix(bucket.Name) != in.Name {
+	if NameFix(bucket.Name) != in.ObjectMeta.Name {
 		return ErrNamesDontMatch
 	}
-	in.BucketName = bucket.Name
-	in.StoreName = bucket.StoreName
+	in.InternalID = bucket.StorageID()
+	in.StoreUUID = bucket.StoreUUID
 	in.Info = tridentBucketInfoFromObject(bucket.Info)
 	return nil
 }
 
 func (in *TridentBucket) Persistent() *object.Bucket {
 	return &object.Bucket{
-		Name:      in.BucketName,
-		StoreName: in.StoreName,
-		Info:      objectBucketInfoFromTrident(in.Info),
+		Name:       in.ObjectMeta.Name,
+		InternalID: in.InternalID,
+		StoreUUID:  in.StoreUUID,
+		Info:       objectBucketInfoFromTrident(in.Info),
 	}
 }
 
@@ -86,20 +85,18 @@ func NewTridentBucketAccess(access *object.BucketAccess) (*TridentBucketAccess, 
 }
 
 func (in *TridentBucketAccess) Apply(access *object.BucketAccess) error {
-	if NameFix(access.Name) != in.Name {
+	if NameFix(access.Name) != in.ObjectMeta.Name {
 		return ErrNamesDontMatch
 	}
-	spec, err := json.Marshal(access)
-	if err != nil {
-		return err
-	}
-	in.Spec.Raw = spec
-	in.BucketAccessName = access.Name
-	in.StoreName = access.StoreName
+	in.InternalID = access.InternalID
+	in.StoreUUID = access.StoreUUID
 	return nil
 }
 
-func (in *TridentBucketAccess) Persistent() (*object.BucketAccess, error) {
-	access := &object.BucketAccess{}
-	return access, json.Unmarshal(in.Spec.Raw, access)
+func (in *TridentBucketAccess) Persistent() *object.BucketAccess {
+	return &object.BucketAccess{
+		Name:       in.ObjectMeta.Name,
+		InternalID: in.InternalID,
+		StoreUUID:  in.StoreUUID,
+	}
 }

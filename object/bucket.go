@@ -1,13 +1,15 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package object
 
 import "github.com/brunoga/deep"
 
 type Bucket struct {
-	Name      string
-	StoreName string
+	Name       string
+	InternalID string
+	StoreUUID  string
 	// Parameters are transient BucketClass selectors and are not persisted with the bucket.
 	Parameters map[string]any
-
 	// Info is populated by the driver on CreateBucket/GetBucket.
 	Info BucketInfo
 }
@@ -24,10 +26,14 @@ type S3BucketInfo struct {
 	AddressingStyle string
 }
 
-func (b *Bucket) SmartCopy() interface{} {
-	return deep.MustCopy(b)
-}
+func (b *Bucket) SmartCopy() interface{} { return deep.MustCopy(b) }
 
-func (b *Bucket) GetObjectStoreID() string {
-	return b.StoreName
-}
+// ProvisionerID returns the Trident key identifier for this bucket.
+// This is distinct from StorageID.
+func (b *Bucket) ProvisionerID() string { return b.Name }
+
+// StorageID returns the storage key identifier for this bucket.
+// This is distinct from ProvisionerID.
+func (b *Bucket) StorageID() string { return b.InternalID }
+
+func (b *Bucket) GetObjectStoreID() string { return b.StoreUUID }

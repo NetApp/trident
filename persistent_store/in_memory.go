@@ -566,6 +566,18 @@ func (c *InMemoryClient) GetAutogrowPolicies(_ context.Context) ([]*storage.Auto
 	return agPolicies, nil
 }
 
+func (c *InMemoryClient) GetObjectStore(_ context.Context, name string) (object.Store, error) {
+	uuid, ok := c.objectStoreNames[name]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, name)
+	}
+	store, ok := c.objectStores[uuid]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, name)
+	}
+	return store.SmartCopy().(object.Store), nil
+}
+
 func (c *InMemoryClient) GetObjectStores(_ context.Context) ([]object.Store, error) {
 	stores := make([]object.Store, 0, len(c.objectStores))
 	for _, store := range c.objectStores {

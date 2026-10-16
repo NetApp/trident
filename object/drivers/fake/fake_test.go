@@ -31,18 +31,19 @@ func TestCreateDeleteBucketRoundTrip(t *testing.T) {
 	d := newTestDriver(t)
 
 	bucket := &object.Bucket{Name: "my-bucket"}
-	_, err := d.CreateBucket(ctx, bucket)
+	err := d.CreateBucket(ctx, bucket)
 	require.NoError(t, err)
 	got, err := d.GetBucketByName(ctx, "my-bucket")
 	require.NoError(t, err)
 	assert.Equal(t, "my-bucket", got.Name)
-	assert.Equal(t, "fake", got.StoreName)
-	assert.Contains(t, d.Buckets(), "my-bucket")
+	assert.Equal(t, "trident-my-bucket", got.InternalID)
+	assert.Equal(t, d.StoreUUID(), got.StoreUUID)
+	assert.Contains(t, d.Buckets(), "trident-my-bucket")
 
 	require.NoError(t, d.DeleteBucket(ctx, "my-bucket"))
 	_, err = d.GetBucketByName(ctx, "my-bucket")
 	assert.True(t, errors.IsNotFoundError(err))
-	assert.NotContains(t, d.Buckets(), "my-bucket")
+	assert.NotContains(t, d.Buckets(), "trident-my-bucket")
 }
 
 // TestCreateBucketDuplicate: a repeat CreateBucket for the same name must succeed and return
@@ -52,12 +53,12 @@ func TestCreateBucketDuplicate(t *testing.T) {
 	d := newTestDriver(t)
 
 	first := &object.Bucket{Name: "dup"}
-	_, err := d.CreateBucket(ctx, first)
+	err := d.CreateBucket(ctx, first)
 	require.NoError(t, err)
 	require.NotNil(t, first.Info.S3)
 
 	second := &object.Bucket{Name: "dup"}
-	_, err = d.CreateBucket(ctx, second)
+	err = d.CreateBucket(ctx, second)
 	require.NoError(t, err)
 	assert.Equal(t, first.Info, second.Info)
 
@@ -71,14 +72,14 @@ func TestCreateBucketInjectedError(t *testing.T) {
 	injected := errors.AlreadyExistsError("bucket conflicts with an unrelated resource")
 	d.SetError("CreateBucket", injected)
 
-	_, err := d.CreateBucket(ctx, &object.Bucket{Name: "conflict"})
+	err := d.CreateBucket(ctx, &object.Bucket{Name: "conflict"})
 	assert.ErrorIs(t, err, injected)
 	assert.Equal(t, 1, d.Calls()["CreateBucket"])
 	// The injected error must short-circuit before the bucket is stored.
-	assert.NotContains(t, d.Buckets(), "conflict")
+	assert.NotContains(t, d.Buckets(), "trident-conflict")
 
 	d.SetError("CreateBucket", nil)
-	_, err = d.CreateBucket(ctx, &object.Bucket{Name: "conflict"})
+	err = d.CreateBucket(ctx, &object.Bucket{Name: "conflict"})
 	require.NoError(t, err)
 	assert.Equal(t, 2, d.Calls()["CreateBucket"])
 }
@@ -91,7 +92,7 @@ func TestDeleteBucketMissing(t *testing.T) {
 func TestGrantRevokeBucketAccess(t *testing.T) {
 	ctx := context.Background()
 	d := newTestDriver(t)
-	_, err := d.CreateBucket(ctx, &object.Bucket{Name: "cred-bucket"})
+	err := d.CreateBucket(ctx, &object.Bucket{Name: "cred-bucket"})
 	require.NoError(t, err)
 
 	access := &object.BucketAccess{Name: "access-1"}
@@ -100,10 +101,10 @@ func TestGrantRevokeBucketAccess(t *testing.T) {
 	}
 	_, err = d.GrantBucketAccess(ctx, modes, access)
 	require.NoError(t, err)
-	assert.Contains(t, d.Accesses(), "access-1")
+	assert.Contains(t, d.Accesses(), "trident-access-1")
 
 	require.NoError(t, d.RevokeBucketAccess(ctx, access))
-	assert.NotContains(t, d.Accesses(), "access-1")
+	assert.NotContains(t, d.Accesses(), "trident-access-1")
 }
 
 func TestGrantAccessMissingBucket(t *testing.T) {
@@ -122,7 +123,8 @@ func TestSetCommonConfigIgnoresZeroValues(t *testing.T) {
 	originalState := d.State()
 	require.NotEmpty(t, originalName)
 	require.NotEmpty(t, originalUUID)
-	require.NotEmpty(t, originalState)
+	// Initialize does not set state. Core marks the store online after it succeeds.
+	assert.Empty(t, originalState)
 
 	d.SetCommonConfig(object.CommonConfig{})
 	assert.Equal(t, originalName, d.Name())
@@ -151,7 +153,7 @@ func TestStoreIdentity(t *testing.T) {
 	assert.Equal(t, "fake", d.DriverName())
 	assert.NotEmpty(t, d.StoreUUID())
 	assert.Equal(t, "fake", d.GetUniqueKey())
-	assert.Equal(t, object.StoreStateOnline, d.State())
+	assert.Empty(t, d.State())
 	assert.NotSame(t, d, d.SmartCopy())
 
 	d.SetState(object.StoreStateDeleting)

@@ -131,6 +131,9 @@ type DeleteBucketRequest struct {
 type BucketDetails struct {
 	// BucketID is the backend's identifier for the bucket, used for every
 	// subsequent call about it. At most 2048 characters of [a-zA-Z0-9.-].
+	//
+	// This acts as the Provisioner identifier for the bucket; not the
+	// Storage identifier for the bucket.
 	BucketID string
 
 	// Info must carry a non-nil entry for each protocol the bucket supports,

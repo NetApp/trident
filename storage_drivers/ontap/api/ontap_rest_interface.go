@@ -466,4 +466,22 @@ type RestClientInterface interface {
 	StorageUnitCloneCreate(ctx context.Context, suUUID, cloneName, snapshot string) error
 	StorageUnitCloneSplitStart(ctx context.Context, suUUID string) error
 	StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string, error)
+
+	// S3 methods
+	S3ServiceGet(ctx context.Context, svmName string) (*Service, error)
+	S3BucketGet(ctx context.Context, name string) (*Bucket, error)
+	S3BucketCreate(ctx context.Context, spec BucketCreateConfig) (*Bucket, error)
+	S3BucketDelete(ctx context.Context, bucketUUID string) error
+	S3BucketPolicySet(ctx context.Context, bucketUUID string, policy BucketPolicy) error
+	S3UserGet(ctx context.Context, name string) (*User, error)
+	S3UserCreate(ctx context.Context, name string) (*User, error)
+	S3UserDelete(ctx context.Context, name string) error
+
+	S3PolicyCreate(ctx context.Context, name string, statements []SVMPolicyStatement) error
+	S3PolicyGet(ctx context.Context, name string) (*SVMPolicy, error)
+	S3PolicyDelete(ctx context.Context, name string) error
+
+	S3GroupCreate(ctx context.Context, name string, users []string, policies []string) error
+	S3GroupGet(ctx context.Context, name string) (*Group, error)
+	S3GroupDelete(ctx context.Context, name string) error
 }

@@ -149,7 +149,7 @@ func ValidateAccountName(name string) error {
 // 32-character display name limit.
 func DerivedIdentityName(accountName string) string {
 	sum := sha256.Sum256([]byte(accountName))
-	return fmt.Sprintf("cosi-%x", sum[:4])
+	return fmt.Sprintf("trident-%x", sum[:4])
 }
 
 func isBucketNameChar(ch byte) bool {

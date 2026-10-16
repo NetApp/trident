@@ -850,6 +850,7 @@ func TestKubernetesObjectStorePersistenceAdoptsUserCR(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, storeValue.Initialize(ctx))
 	store := storeValue.(*objectfake.ObjectDriver)
+	store.SetState(object.StoreStateOnline)
 
 	require.NoError(t, p.AddObjectStore(ctx, store))
 
@@ -875,9 +876,40 @@ func objectStoreStatusString(t *testing.T, raw []byte, key string) string {
 	return value
 }
 
+func TestGetObjectStoreIncludesTerminating(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+	storeValue, err := objectfake.NewObjectDriver(context.Background(), []byte(`{"user":"alice","password":"secret"}`),
+		[]byte(`{"objectStoreName":"store-terminating","endpoint":"https://localhost"}`))
+	require.NoError(t, err)
+	require.NoError(t, storeValue.Initialize(context.Background()))
+	store := storeValue.(*objectfake.ObjectDriver)
+	require.NoError(t, p.AddObjectStore(context.Background(), store))
+
+	got, err := p.GetObjectStore(context.Background(), store.Name())
+	require.NoError(t, err)
+	assert.Equal(t, store.StoreUUID(), got.StoreUUID())
+
+	_, err = p.GetObjectStore(context.Background(), "missing-store")
+	assert.True(t, MatchKeyNotFoundErr(err))
+
+	// Leave the finalizer in place so the CR stays with a deletionTimestamp.
+	require.NoError(t, p.crdClient.TridentV1().TridentObjectStores(p.namespace).Delete(
+		context.Background(), netappv1.NameFix(store.Name()), metav1.DeleteOptions{},
+	))
+
+	listed, err := p.GetObjectStores(context.Background())
+	require.NoError(t, err)
+	require.Len(t, listed, 1)
+	assert.Equal(t, store.StoreUUID(), listed[0].StoreUUID())
+
+	got, err = p.GetObjectStore(context.Background(), store.Name())
+	require.NoError(t, err)
+	assert.Equal(t, store.StoreUUID(), got.StoreUUID())
+}
+
 func TestKubernetesBucketPersistence(t *testing.T) {
 	p, _ := GetTestKubernetesClient()
-	bucket := &object.Bucket{Name: "bucket-a", StoreName: "store-a"}
+	bucket := &object.Bucket{Name: "bucket-a", StoreUUID: "uuid-a"}
 
 	require.NoError(t, p.UpsertBucket(context.Background(), bucket))
 	tb, err := p.crdClient.TridentV1().TridentBuckets(p.namespace).Get(
@@ -891,13 +923,13 @@ func TestKubernetesBucketPersistence(t *testing.T) {
 	require.Len(t, listed, 1)
 	assert.Equal(t, bucket, listed[0])
 
-	bucket.StoreName = "store-b"
+	bucket.StoreUUID = "uuid-b"
 	require.NoError(t, p.UpsertBucket(context.Background(), bucket))
 	tb, err = p.crdClient.TridentV1().TridentBuckets(p.namespace).Get(
 		context.Background(), netappv1.NameFix(bucket.Name), metav1.GetOptions{},
 	)
 	require.NoError(t, err)
-	assert.Equal(t, "store-b", tb.StoreName)
+	assert.Equal(t, "uuid-b", tb.StoreUUID)
 
 	require.NoError(t, p.DeleteBucket(context.Background(), bucket))
 	require.NoError(t, p.DeleteBucket(context.Background(), bucket))
@@ -907,7 +939,7 @@ func TestKubernetesBucketAccessPersistence(t *testing.T) {
 	p, _ := GetTestKubernetesClient()
 	access := &object.BucketAccess{
 		Name:      "access-a",
-		StoreName: "store-a",
+		StoreUUID: "uuid-a",
 	}
 
 	require.NoError(t, p.UpsertBucketAccess(context.Background(), access))
@@ -915,25 +947,21 @@ func TestKubernetesBucketAccessPersistence(t *testing.T) {
 		context.Background(), netappv1.NameFix(access.Name), metav1.GetOptions{},
 	)
 	require.NoError(t, err)
-	persisted, err := tba.Persistent()
-	require.NoError(t, err)
-	assert.Equal(t, access, persisted)
+	assert.Equal(t, access, tba.Persistent())
 
 	listed, err := p.GetBucketAccesses(context.Background())
 	require.NoError(t, err)
 	require.Len(t, listed, 1)
 	assert.Equal(t, access, listed[0])
 
-	access.StoreName = "store-b"
+	access.StoreUUID = "uuid-b"
 	require.NoError(t, p.UpsertBucketAccess(context.Background(), access))
 	tba, err = p.crdClient.TridentV1().TridentBucketAccesses(p.namespace).Get(
 		context.Background(), netappv1.NameFix(access.Name), metav1.GetOptions{},
 	)
 	require.NoError(t, err)
-	assert.Equal(t, "store-b", tba.StoreName)
-	persisted, err = tba.Persistent()
-	require.NoError(t, err)
-	assert.Equal(t, access, persisted)
+	assert.Equal(t, "uuid-b", tba.StoreUUID)
+	assert.Equal(t, access, tba.Persistent())
 
 	require.NoError(t, p.DeleteBucketAccess(context.Background(), access))
 	require.NoError(t, p.DeleteBucketAccess(context.Background(), access))

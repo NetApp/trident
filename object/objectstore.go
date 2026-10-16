@@ -23,7 +23,8 @@ type CommonConfig struct {
 type Store interface {
 	Name() string
 	DriverName() string
-	// Drivers control their own state, but must handle this minimum config.
+	// SetCommonConfig applies name, UUID, and state supplied outside driver JSON.
+	// Core sets online and offline; drivers store the state they are given.
 	SetCommonConfig(CommonConfig)
 	StoreUUID() string
 	State() StoreState
@@ -35,7 +36,7 @@ type Store interface {
 	GetBucketByName(context.Context, string) (*Bucket, error)
 	// CreateBucket must be idempotent on Bucket.Name: a repeat call for an existing name
 	// should succeed with Info populated.
-	CreateBucket(context.Context, *Bucket) (*Bucket, error)
+	CreateBucket(context.Context, *Bucket) error
 	DeleteBucket(context.Context, string) error
 	GrantBucketAccess(context.Context, []BucketAccessMode, *BucketAccess) (*S3BucketAccessSecret, error)
 	RevokeBucketAccess(context.Context, *BucketAccess) error

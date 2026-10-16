@@ -963,6 +963,18 @@ func TestPassthroughClient_GetAutogrowPolicy(t *testing.T) {
 	}
 }
 
+func TestPassthroughClient_GetObjectStore(t *testing.T) {
+	p := newPassthroughClient()
+
+	store, err := p.GetObjectStore(ctx(), "store")
+	if !MatchKeyNotFoundErr(err) {
+		t.Errorf("Expected key-not-found error but got: %v", err)
+	}
+	if store != nil {
+		t.Errorf("Expected nil store but got: %v", store)
+	}
+}
+
 func TestPassthroughClient_GetObjectStores(t *testing.T) {
 	p := newPassthroughClient()
 

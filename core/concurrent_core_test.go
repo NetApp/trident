@@ -1083,7 +1083,7 @@ func TestBootstrapStorageClassesConcurrentCore(t *testing.T) {
 }
 
 func TestBootstrapBucketsConcurrentCore(t *testing.T) {
-	bucket := &object.Bucket{Name: "bucket1", StoreName: "store1"}
+	bucket := &object.Bucket{Name: "bucket1", StoreUUID: "store1"}
 
 	tests := []struct {
 		name        string
@@ -1110,7 +1110,7 @@ func TestBootstrapBucketsConcurrentCore(t *testing.T) {
 				result := getBucketByNameFromCache(t, bucket.Name)
 				require.NotNil(t, result)
 				assert.Equal(t, bucket.Name, result.Name)
-				assert.Equal(t, bucket.StoreName, result.StoreName)
+				assert.Equal(t, bucket.StoreUUID, result.StoreUUID)
 			},
 		},
 	}
@@ -1138,7 +1138,7 @@ func TestBootstrapBucketsConcurrentCore(t *testing.T) {
 }
 
 func TestBootstrapBucketAccessesConcurrentCore(t *testing.T) {
-	access := &object.BucketAccess{Name: "access1", StoreName: "store1"}
+	access := &object.BucketAccess{Name: "access1", StoreUUID: "store1"}
 
 	tests := []struct {
 		name        string
@@ -1165,7 +1165,7 @@ func TestBootstrapBucketAccessesConcurrentCore(t *testing.T) {
 				result := getBucketAccessByNameFromCache(t, access.Name)
 				require.NotNil(t, result)
 				assert.Equal(t, access.Name, result.Name)
-				assert.Equal(t, access.StoreName, result.StoreName)
+				assert.Equal(t, access.StoreUUID, result.StoreUUID)
 			},
 		},
 	}

@@ -226,20 +226,22 @@ func TestTridentObjectStoreSpecRejectsInvalidCredentialsRef(t *testing.T) {
 }
 
 func TestTridentBucketConversions(t *testing.T) {
-	bucket := &object.Bucket{Name: "bucket-a", StoreName: "store-a"}
+	bucket := &object.Bucket{Name: "bucket-a", StoreUUID: "uuid-a"}
 	tb, err := NewTridentBucket(bucket)
 	require.NoError(t, err)
 	assert.Equal(t, bucket, tb.Persistent())
 
 	access := &object.BucketAccess{
 		Name:      "access-a",
-		StoreName: "store-a",
+		StoreUUID: "uuid-a",
 	}
 	tba, err := NewTridentBucketAccess(access)
 	require.NoError(t, err)
-	persisted, err := tba.Persistent()
+	assert.Equal(t, access, tba.Persistent())
+
+	raw, err := json.Marshal(tba)
 	require.NoError(t, err)
-	assert.Equal(t, access, persisted)
+	assert.NotContains(t, string(raw), `"spec"`)
 }
 
 func mustMarshal(t *testing.T, value any) string {

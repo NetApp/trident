@@ -22,7 +22,7 @@ var (
 
 func init() {
 	createCmd.AddCommand(createObjectStoreCmd)
-	createObjectStoreCmd.Flags().StringVarP(&createObjectStoreFilename, "filename", "f", "", "Path to YAML or JSON file")
+	createObjectStoreCmd.Flags().StringVarP(&createObjectStoreFilename, "filename", "f", "", "Path to JSON file")
 	createObjectStoreCmd.Flags().StringVarP(&createObjectStoreBase64Data, "base64", "", "", "Base64 encoding")
 	if err := createObjectStoreCmd.Flags().MarkHidden("base64"); err != nil {
 		fmt.Fprintln(os.Stderr, err)

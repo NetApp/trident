@@ -1859,6 +1859,18 @@ func (k *CRDClientV1) GetAutogrowPolicies(ctx context.Context) ([]*storage.Autog
 	return agPolicies, nil
 }
 
+// GetObjectStore reads one object store by name, including a CR that already has a
+// deletionTimestamp. The result is not cached.
+func (k *CRDClientV1) GetObjectStore(ctx context.Context, name string) (object.Store, error) {
+	tos, err := k.crdClient.TridentV1().TridentObjectStores(k.namespace).Get(ctx, v1.NameFix(name), getOpts)
+	if k8sapierrors.IsNotFound(err) {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, name)
+	} else if err != nil {
+		return nil, err
+	}
+	return tos.Persistent(ctx)
+}
+
 func (k *CRDClientV1) GetObjectStores(ctx context.Context) ([]object.Store, error) {
 	objectStoreList, err := k.crdClient.TridentV1().TridentObjectStores(k.namespace).List(ctx, listOpts)
 	if err != nil {
@@ -1868,13 +1880,6 @@ func (k *CRDClientV1) GetObjectStores(ctx context.Context) ([]object.Store, erro
 	stores := make([]object.Store, 0, len(objectStoreList.Items))
 	for _, tos := range objectStoreList.Items {
 		if tos == nil {
-			continue
-		}
-		if !tos.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(LogFields{
-				"objectStoreName":   tos.Name,
-				"DeletionTimestamp": tos.DeletionTimestamp,
-			}).Debug("GetObjectStores skipping deleted object store.")
 			continue
 		}
 
@@ -2062,11 +2067,7 @@ func (k *CRDClientV1) GetBucketAccesses(ctx context.Context) ([]*object.BucketAc
 			}).Debug("GetBucketAccesses skipping deleted bucket access.")
 			continue
 		}
-		access, persistErr := tba.Persistent()
-		if persistErr != nil {
-			return nil, persistErr
-		}
-		accesses = append(accesses, access)
+		accesses = append(accesses, tba.Persistent())
 	}
 	return accesses, nil
 }

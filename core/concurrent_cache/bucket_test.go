@@ -23,13 +23,13 @@ func TestBucketSubqueries(t *testing.T) {
 
 	cachedBucket := &object.Bucket{
 		Name:      "bucket1",
-		StoreName: store.GetUniqueKey(),
+		StoreUUID: store.StoreUUID(),
 	}
 	buckets.data[cachedBucket.Name] = cachedBucket
 
 	otherBucket := &object.Bucket{
 		Name:      "bucket2",
-		StoreName: otherStore.GetUniqueKey(),
+		StoreUUID: otherStore.StoreUUID(),
 	}
 	buckets.data[otherBucket.Name] = otherBucket
 
@@ -59,7 +59,7 @@ func TestBucketSubqueries(t *testing.T) {
 	unlock()
 
 	updatedBucket := cachedBucket.SmartCopy().(*object.Bucket)
-	updatedBucket.StoreName = store.GetUniqueKey()
+	updatedBucket.StoreUUID = store.StoreUUID()
 	_, results, unlock, err = Lock(
 		context.Background(), Query(UpsertBucket(cachedBucket.Name, store.StoreUUID())),
 	)
@@ -87,7 +87,7 @@ func TestBucketDependencyFromCachedBucket(t *testing.T) {
 	objectStores.key.data[store.GetUniqueKey()] = store.StoreUUID()
 	cachedBucket := &object.Bucket{
 		Name:      "bucket-id-1",
-		StoreName: store.GetUniqueKey(),
+		StoreUUID: store.StoreUUID(),
 	}
 	buckets.data[cachedBucket.Name] = cachedBucket
 

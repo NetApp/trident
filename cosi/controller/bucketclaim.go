@@ -133,7 +133,7 @@ func (r *BucketClaimReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&cosiapi.Bucket{},
 			handler.EnqueueRequestsFromMapFunc(mapBucketToBucketClaim),
-			builder.WithPredicates(cosipredicate.AnyCreate()),
+			builder.WithPredicates(ctrlpredicate.Or(cosipredicate.AnyCreate(), cosipredicate.AnyDelete())),
 		).
 		Named("bucketclaim").
 		Complete(r)

@@ -14,12 +14,12 @@ func ListBucketAccesses() Subquery {
 	}
 }
 
-func ListBucketAccessesForObjectStore(storeName string) Subquery {
+func ListBucketAccessesForObjectStore(storeUUID string) Subquery {
 	return Subquery{
 		res: bucketAccess,
 		op:  list,
 		setResults: listBucketAccessesSetResults(func(access *object.BucketAccess) bool {
-			return access.GetStoreName() == storeName
+			return access.GetObjectStoreID() == storeUUID
 		}),
 	}
 }
@@ -71,15 +71,15 @@ func InconsistentReadBucketAccess(bucketAccessID string) Subquery {
 	}
 }
 
-func UpsertBucketAccess(bucketAccessID string, storeName string) Subquery {
+func UpsertBucketAccess(bucketAccessID string, storeUUID string) Subquery {
 	var setOwnerIDs func([]Subquery, int) error
 
-	if storeName != "" {
+	if storeUUID != "" {
 		setOwnerIDs = func(s []Subquery, i int) error {
 			if err := checkDependency(s, i, objectStore); err != nil {
 				return err
 			}
-			s[s[i].dependencies[0]].id = storeName
+			s[s[i].dependencies[0]].id = storeUUID
 			return nil
 		}
 	}

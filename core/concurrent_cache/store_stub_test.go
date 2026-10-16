@@ -44,8 +44,8 @@ func (s *testObjectStore) MatchParams(map[string]string) bool { return true }
 func (s *testObjectStore) GetBucketByName(context.Context, string) (*object.Bucket, error) {
 	return nil, nil
 }
-func (s *testObjectStore) CreateBucket(context.Context, *object.Bucket) (*object.Bucket, error) {
-	return nil, nil
+func (s *testObjectStore) CreateBucket(context.Context, *object.Bucket) error {
+	return nil
 }
 func (s *testObjectStore) DeleteBucket(context.Context, string) error { return nil }
 func (s *testObjectStore) GrantBucketAccess(context.Context, []object.BucketAccessMode, *object.BucketAccess,

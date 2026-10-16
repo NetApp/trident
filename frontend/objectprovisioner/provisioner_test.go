@@ -42,8 +42,9 @@ func TestCreateBucket(t *testing.T) {
 				assert.Equal(t, "my-bucket", bucket.Name)
 				assert.Equal(t, map[string]string{"objectStoreName": "store-a"}, params)
 				return &object.Bucket{
-					Name:      bucket.Name,
-					StoreName: params["objectStoreName"],
+					Name:       bucket.Name,
+					InternalID: bucket.Name, // StorageID() returns InternalID; set it so S3BucketInfo.BucketID is populated.
+					StoreUUID:  "uuid-store-a",
 					Info: object.BucketInfo{
 						S3: &object.S3BucketInfo{Endpoint: "https://s3.example.com", Region: "us-east-1", AddressingStyle: "Path"},
 					},
@@ -64,12 +65,12 @@ func TestCreateBucket(t *testing.T) {
 		assert.Equal(t, provisioner.S3AddressingStylePath, details.Info.S3.AddressingStyle)
 	})
 
-	t.Run("missing objectStoreName parameter falls through to an empty StoreName", func(t *testing.T) {
+	t.Run("missing objectStoreName parameter leaves the bucket unplaced", func(t *testing.T) {
 		p, mockOrchestrator := newTestProvisioner(t)
 
 		mockOrchestrator.EXPECT().AddBucket(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 			func(_ context.Context, bucket *object.Bucket, params map[string]string) (*object.Bucket, error) {
-				assert.Empty(t, bucket.StoreName)
+				assert.Empty(t, bucket.StoreUUID)
 				assert.Empty(t, params)
 				return bucket, nil
 			})
@@ -94,7 +95,7 @@ func TestGetBucket(t *testing.T) {
 		p, mockOrchestrator := newTestProvisioner(t)
 
 		mockOrchestrator.EXPECT().GetBucket(gomock.Any(), "b").Return(&object.Bucket{
-			Name: "b", StoreName: "store-a",
+			Name: "b", StoreUUID: "uuid-store-a",
 			Info: object.BucketInfo{S3: &object.S3BucketInfo{Endpoint: "https://s3.example.com"}},
 		}, nil)
 
@@ -161,7 +162,7 @@ func TestGrantAccess(t *testing.T) {
 				assert.Equal(t, object.AccessModeRead, modes[1].AccessMode)
 				return &object.BucketAccess{
 					Name:      name,
-					StoreName: "store-a",
+					StoreUUID: "uuid-store-a",
 				}, &object.S3BucketAccessSecret{AccessKeyID: "AKID", SecretAccessKey: "SECRET"}, nil
 			})
 		mockOrchestrator.EXPECT().GetBucket(gomock.Any(), "bucket-1").

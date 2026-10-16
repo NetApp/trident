@@ -56,8 +56,8 @@ func (p *Provisioner) CreateBucket(
 	}
 
 	return &provisioner.BucketDetails{
-		BucketID: created.Name,
-		Info:     toProvisionerBucketInfo(created.Name, created.Info),
+		BucketID: created.ProvisionerID(),
+		Info:     toProvisionerBucketInfo(created.StorageID(), created.Info),
 	}, nil
 }
 
@@ -71,8 +71,8 @@ func (p *Provisioner) GetBucket(
 	}
 
 	return &provisioner.BucketDetails{
-		BucketID: bucket.Name,
-		Info:     toProvisionerBucketInfo(bucket.Name, bucket.Info),
+		BucketID: bucket.ProvisionerID(),
+		Info:     toProvisionerBucketInfo(bucket.StorageID(), bucket.Info),
 	}, nil
 }
 
@@ -97,18 +97,19 @@ func (p *Provisioner) GrantAccess(
 
 	granted := make([]provisioner.GrantedBucket, 0, len(modes))
 	for _, mode := range modes {
+		// Use the bucket name to look up the bucket.
 		bucket, err := p.orchestrator.GetBucket(ctx, mode.BucketName)
 		if err != nil {
 			return nil, translateError(err)
 		}
 		granted = append(granted, provisioner.GrantedBucket{
-			BucketID: bucket.Name,
-			Info:     toProvisionerBucketInfo(bucket.Name, bucket.Info),
+			BucketID: bucket.ProvisionerID(),
+			Info:     toProvisionerBucketInfo(bucket.StorageID(), bucket.Info),
 		})
 	}
 
 	return &provisioner.AccessDetails{
-		AccountID:   access.Name,
+		AccountID:   access.ProvisionerID(),
 		Buckets:     granted,
 		Credentials: toProvisionerCredentials(secret),
 	}, nil

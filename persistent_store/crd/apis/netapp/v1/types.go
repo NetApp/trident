@@ -421,8 +421,8 @@ type TridentBucket struct {
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	BucketName string             `json:"bucketName"`
-	StoreName  string             `json:"storeName"`
+	InternalID string             `json:"internalID"`
+	StoreUUID  string             `json:"storeUUID"`
 	Info       *TridentBucketInfo `json:"info,omitempty"`
 }
 
@@ -456,9 +456,8 @@ type TridentBucketAccess struct {
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	BucketAccessName string               `json:"bucketAccessName"`
-	StoreName        string               `json:"storeName"`
-	Spec             runtime.RawExtension `json:"spec"`
+	InternalID string `json:"internalID"`
+	StoreUUID  string `json:"storeUUID"`
 }
 
 // TridentBucketAccessList is a list of TridentBucketAccess objects.

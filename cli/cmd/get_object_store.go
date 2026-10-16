@@ -125,7 +125,7 @@ func WriteObjectStores(objectStores []map[string]interface{}) {
 
 func writeObjectStoreTable(objectStores []map[string]interface{}) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.Header([]string{"Name", "Object Store Driver", "UUID", "State"})
+	table.Header([]string{"Name", "Storage Driver", "UUID", "State"})
 
 	for _, s := range objectStores {
 		_ = table.Append([]string{

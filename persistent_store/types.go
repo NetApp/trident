@@ -102,6 +102,7 @@ type Client interface {
 	GetAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyPersistent, error)
 
 	AddObjectStore(ctx context.Context, store object.Store) error
+	GetObjectStore(ctx context.Context, name string) (object.Store, error)
 	GetObjectStores(ctx context.Context) ([]object.Store, error)
 	UpdateObjectStore(ctx context.Context, store object.Store) error
 	DeleteObjectStore(ctx context.Context, store object.Store) error

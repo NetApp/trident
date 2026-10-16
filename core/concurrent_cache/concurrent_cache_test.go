@@ -376,11 +376,11 @@ func initCaches() {
 	}
 	buckets.data["bucket1"] = &object.Bucket{
 		Name:      "bucket1",
-		StoreName: "store1",
+		StoreUUID: "store1",
 	}
 	bucketAccesses.data["access1"] = &object.BucketAccess{
 		Name:      "access1",
-		StoreName: "store1",
+		StoreUUID: "store1",
 	}
 	autogrowPolicies.data["policy1"] = storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
 }
@@ -409,13 +409,13 @@ func createQueryGenerators(numIds int) [][]queryGenerator {
 			// Object Store queries
 			{name: "ListObjectStores", fn: ListObjectStores},
 			{name: "InconsistentReadObjectStore", fn: func() Subquery {
-				return InconsistentReadObjectStore(objectStoreName)
+				return InconsistentReadObjectStoreByName(objectStoreName)
 			}},
-			{name: "ReadObjectStore", fn: func() Subquery { return ReadObjectStore(objectStoreName) }},
+			{name: "ReadObjectStore", fn: func() Subquery { return ReadObjectStoreByName(objectStoreName) }},
 			{name: "UpsertObjectStore", fn: func() Subquery {
-				return UpsertObjectStore(objectStoreName, objectStoreName, "")
+				return UpsertObjectStore("", objectStoreName, "")
 			}},
-			{name: "DeleteObjectStore", fn: func() Subquery { return DeleteObjectStore(objectStoreName) }},
+			{name: "DeleteObjectStore", fn: func() Subquery { return DeleteObjectStoreByName(objectStoreName) }},
 
 			// Volume queries
 			{name: "ListVolumes", fn: ListVolumes},

@@ -102,7 +102,7 @@ func TestFilterObjectStoresForBucket(t *testing.T) {
 	})
 
 	t.Run("preferred store is first and not duplicated", func(t *testing.T) {
-		cachedBucket := &object.Bucket{Name: "bucket1", StoreName: store1.GetUniqueKey()}
+		cachedBucket := &object.Bucket{Name: "bucket1", StoreUUID: store1.StoreUUID()}
 		buckets.data[cachedBucket.Name] = cachedBucket
 
 		_, results, unlock, err := Lock(context.Background(), Query(FilterObjectStoresForBucket(cachedBucket.Name)))
@@ -116,7 +116,7 @@ func TestFilterObjectStoresForBucket(t *testing.T) {
 		assert.NotSame(t, store1, results[0].ObjectStores[0])
 	})
 
-	t.Run("empty store name has no preferred store and no placeholder", func(t *testing.T) {
+	t.Run("empty store UUID has no preferred store and no placeholder", func(t *testing.T) {
 		cachedBucket := &object.Bucket{Name: "bucket-unplaced"}
 		buckets.data[cachedBucket.Name] = cachedBucket
 
@@ -129,8 +129,8 @@ func TestFilterObjectStoresForBucket(t *testing.T) {
 		assert.ElementsMatch(t, []string{store1.StoreUUID(), store2.StoreUUID()}, objectStoreUUIDs(results[0].ObjectStores))
 	})
 
-	t.Run("unknown store name prepends a nil placeholder", func(t *testing.T) {
-		cachedBucket := &object.Bucket{Name: "bucket-orphan", StoreName: "missing-store"}
+	t.Run("unknown store UUID prepends a nil placeholder", func(t *testing.T) {
+		cachedBucket := &object.Bucket{Name: "bucket-orphan", StoreUUID: "missing-store"}
 		buckets.data[cachedBucket.Name] = cachedBucket
 
 		_, results, unlock, err := Lock(context.Background(), Query(FilterObjectStoresForBucket(cachedBucket.Name)))
@@ -161,6 +161,30 @@ func findObjectStore(stores []object.Store, uuid string) object.Store {
 		}
 	}
 	return nil
+}
+
+func TestDeleteObjectStoreByName(t *testing.T) {
+	Initialize()
+
+	store := newTestObjectStore("store1", "store-id-1")
+	objectStores.data[store.StoreUUID()] = store
+	objectStores.key.data[store.GetUniqueKey()] = store.StoreUUID()
+
+	_, results, unlock, err := Lock(context.Background(), Query(DeleteObjectStore(store.GetUniqueKey())))
+	require.NoError(t, err)
+	assert.Nil(t, results[0].ObjectStore.Read)
+	unlock()
+	assert.Contains(t, objectStores.data, store.StoreUUID())
+
+	_, results, unlock, err = Lock(context.Background(), Query(DeleteObjectStoreByName(store.GetUniqueKey())))
+	require.NoError(t, err)
+	require.NotNil(t, results[0].ObjectStore.Read)
+	assert.Equal(t, store.StoreUUID(), results[0].ObjectStore.Read.StoreUUID())
+	results[0].ObjectStore.Delete()
+	unlock()
+
+	assert.NotContains(t, objectStores.data, store.StoreUUID())
+	assert.NotContains(t, objectStores.key.data, store.GetUniqueKey())
 }
 
 func TestUpsertObjectStoreUsesStoreID(t *testing.T) {

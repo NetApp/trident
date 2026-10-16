@@ -24,13 +24,13 @@ func TestBucketAccessSubqueries(t *testing.T) {
 	accessID := "access-id-1"
 	access := &object.BucketAccess{
 		Name:      accessID,
-		StoreName: store.GetUniqueKey(),
+		StoreUUID: store.StoreUUID(),
 	}
 	bucketAccesses.data[accessID] = access
 
 	otherAccess := &object.BucketAccess{
 		Name:      "access-id-2",
-		StoreName: otherStore.GetUniqueKey(),
+		StoreUUID: otherStore.StoreUUID(),
 	}
 	bucketAccesses.data["access-id-2"] = otherAccess
 
@@ -39,7 +39,7 @@ func TestBucketAccessSubqueries(t *testing.T) {
 	require.Len(t, results[0].BucketAccesses, 2)
 	unlock()
 
-	_, results, unlock, err = Lock(context.Background(), Query(ListBucketAccessesForObjectStore(access.GetStoreName())))
+	_, results, unlock, err = Lock(context.Background(), Query(ListBucketAccessesForObjectStore(access.GetObjectStoreID())))
 	require.NoError(t, err)
 	require.Len(t, results[0].BucketAccesses, 1)
 	assert.Equal(t, access, results[0].BucketAccesses[0])
@@ -56,7 +56,7 @@ func TestBucketAccessSubqueries(t *testing.T) {
 	_, results, unlock, err = Lock(context.Background(), Query(InconsistentReadBucketAccess(accessID)))
 	require.NoError(t, err)
 	require.NotNil(t, results[0].BucketAccess.Read)
-	assert.Equal(t, access.StoreName, results[0].BucketAccess.Read.StoreName)
+	assert.Equal(t, access.StoreUUID, results[0].BucketAccess.Read.StoreUUID)
 	unlock()
 
 	updatedAccess := access.SmartCopy().(*object.BucketAccess)

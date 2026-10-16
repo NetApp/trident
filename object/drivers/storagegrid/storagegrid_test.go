@@ -169,18 +169,20 @@ func TestCreateGetDeleteBucket(t *testing.T) {
 	ctx := context.Background()
 	d := newTestDriver(t)
 
-	created, err := d.CreateBucket(ctx, &object.Bucket{Name: "my-bucket"})
+	bucket := &object.Bucket{Name: "my-bucket"}
+	err := d.CreateBucket(ctx, bucket)
 	require.NoError(t, err)
-	require.NotNil(t, created.Info.S3, "CreateBucket must populate Info so COSI can reach the bucket")
-	assert.Equal(t, "https://s3.grid.example", created.Info.S3.Endpoint)
-	assert.Equal(t, "us-east-1", created.Info.S3.Region)
+	require.NotNil(t, bucket.Info.S3, "CreateBucket must populate Info so COSI can reach the bucket")
+	assert.Equal(t, "https://s3.grid.example", bucket.Info.S3.Endpoint)
+	assert.Equal(t, "us-east-1", bucket.Info.S3.Region)
 
-	got, err := d.GetBucketByName(ctx, "my-bucket")
+	got, err := d.GetBucketByName(ctx, bucket.Name)
 	require.NoError(t, err)
 	assert.Equal(t, "my-bucket", got.Name)
-	assert.Equal(t, "sg", got.StoreName)
+	assert.Equal(t, bucket.InternalID, got.InternalID)
+	assert.Equal(t, d.StoreUUID(), got.StoreUUID)
 	require.NotNil(t, got.Info.S3, "GetBucketByName must populate Info the same as CreateBucket")
-	assert.Equal(t, created.Info, got.Info)
+	assert.Equal(t, bucket.Info, got.Info)
 
 	require.NoError(t, d.DeleteBucket(ctx, "my-bucket"))
 	_, err = d.GetBucketByName(ctx, "my-bucket")
@@ -190,12 +192,14 @@ func TestCreateGetDeleteBucket(t *testing.T) {
 func TestCreateBucketIdempotentOnThisTenant(t *testing.T) {
 	ctx := context.Background()
 	d := newTestDriver(t)
-	first, err := d.CreateBucket(ctx, &object.Bucket{Name: "dup-bucket"})
-	require.NoError(t, err)
-	second, err := d.CreateBucket(ctx, &object.Bucket{Name: "dup-bucket"})
-	require.NoError(t, err)
-	require.NotNil(t, second.Info.S3, "the idempotent-retry path must also populate Info, not just the first create")
-	assert.Equal(t, first.Info, second.Info)
+	bucket1 := &object.Bucket{Name: "dup-bucket"}
+	bucket2 := &object.Bucket{Name: "dup-bucket"}
+	err1 := d.CreateBucket(ctx, bucket1)
+	require.NoError(t, err1)
+	err2 := d.CreateBucket(ctx, bucket2)
+	require.NoError(t, err2)
+	require.NotNil(t, bucket2.Info.S3, "the idempotent-retry path must also populate Info, not just the first create")
+	assert.Equal(t, bucket1.Info, bucket2.Info)
 }
 
 // TestCreateBucketAlertErrorStillPopulatesInfo guards the case core.AddBucket's cleanup
@@ -213,11 +217,11 @@ func TestCreateBucketAlertErrorStillPopulatesInfo(t *testing.T) {
 	}
 
 	bucket := &object.Bucket{Name: "alert-bucket"}
-	_, err := d.CreateBucket(ctx, bucket)
+	err := d.CreateBucket(ctx, bucket)
 	require.Error(t, err)
 	require.NotNil(t, bucket.Info.S3, "Info must be populated on the input pointer even though an error was returned")
 	assert.Equal(t, "https://s3.grid.example", bucket.Info.S3.Endpoint)
-	assert.Equal(t, "sg", bucket.StoreName)
+	assert.Equal(t, d.StoreUUID(), bucket.StoreUUID)
 
 	// The bucket actually exists on the backend despite the reported error.
 	got, err := d.GetBucketByName(ctx, "alert-bucket")
@@ -228,7 +232,7 @@ func TestCreateBucketAlertErrorStillPopulatesInfo(t *testing.T) {
 func TestCreateBucketInvalidNameIsInvalidInput(t *testing.T) {
 	d := newTestDriver(t)
 
-	_, err := d.CreateBucket(context.Background(), &object.Bucket{Name: "Not_A_Valid_Name"})
+	err := d.CreateBucket(context.Background(), &object.Bucket{Name: "Not_A_Valid_Name"})
 	require.Error(t, err)
 	assert.True(t, errors.IsInvalidInputError(err), "a bad bucket name must be classified as invalid input: %v", err)
 	assert.True(t, sgapi.IsBucketNameInvalid(err), "the underlying validation error must be preserved")
@@ -253,9 +257,9 @@ func TestDeleteBucketNameConflictIsNotThisTenant(t *testing.T) {
 	fake := d.client.(*fakeAPI)
 	// The name is taken on the grid, but not by this tenant. Create and the
 	// region read both return 409, which is what the grid does for a foreign name.
-	fake.foreignNames = map[string]struct{}{"taken-elsewhere": {}}
+	fake.foreignNames = map[string]struct{}{"trident-taken-elsewhere": {}}
 
-	_, err := d.CreateBucket(ctx, &object.Bucket{Name: "taken-elsewhere"})
+	err := d.CreateBucket(ctx, &object.Bucket{Name: "taken-elsewhere"})
 	require.Error(t, err)
 	assert.True(t, errors.IsAlreadyExistsError(err), "a name owned by another tenant is a conflict: %v", err)
 
@@ -296,7 +300,7 @@ func TestDeleteBucketLookupFailureDoesNotDelete(t *testing.T) {
 func TestDeleteBucketNotEmptyIsBucketNotEmpty(t *testing.T) {
 	ctx := context.Background()
 	d := newTestDriver(t)
-	_, err := d.CreateBucket(ctx, &object.Bucket{Name: "full-bucket"})
+	err := d.CreateBucket(ctx, &object.Bucket{Name: "full-bucket"})
 	require.NoError(t, err)
 	d.client.(*fakeAPI).notEmptyOnDelete = true
 
@@ -309,7 +313,7 @@ func TestDeleteBucketNotEmptyIsBucketNotEmpty(t *testing.T) {
 func TestGrantRevokeCallsIdentityAPIs(t *testing.T) {
 	ctx := context.Background()
 	d := newTestDriver(t)
-	_, err := d.CreateBucket(ctx, &object.Bucket{Name: "cred-bucket"})
+	err := d.CreateBucket(ctx, &object.Bucket{Name: "cred-bucket"})
 	require.NoError(t, err)
 
 	modes := []object.BucketAccessMode{{BucketName: "cred-bucket", AccessMode: object.AccessModeReadWrite}}
@@ -320,7 +324,10 @@ func TestGrantRevokeCallsIdentityAPIs(t *testing.T) {
 	assert.Equal(t, 1, fake.createGroupCalls)
 	assert.Equal(t, 1, fake.createUserCalls)
 	assert.Equal(t, 1, fake.createKeyCalls)
-	assert.Equal(t, "access-account", fake.lastGroupShortName)
+	assert.Equal(t, "trident-access-account", fake.lastGroupShortName)
+	require.NotNil(t, fake.lastPolicy)
+	require.NotEmpty(t, fake.lastPolicy.Statement)
+	assert.Equal(t, []string{"arn:aws:s3:::trident-cred-bucket"}, fake.lastPolicy.Statement[0].Resource)
 	require.NotNil(t, secret)
 	assert.Equal(t, "AKIA", secret.AccessKeyID)
 	assert.Equal(t, "secret", secret.SecretAccessKey)
@@ -390,6 +397,7 @@ type fakeAPI struct {
 	deleteGroupCalls   int
 	deleteCalls        int
 	lastGroupShortName string
+	lastPolicy         *sgapi.S3Policy
 
 	// foreignNames are bucket names that exist on the grid but not on this
 	// tenant. Create and Get both report 409: the name is taken elsewhere, and
@@ -493,6 +501,9 @@ func (f *fakeAPI) GetRegion(_ context.Context, name string) (string, error) {
 func (f *fakeAPI) CreateGroup(_ context.Context, spec sgapi.GroupCreate) (*sgapi.Group, error) {
 	f.createGroupCalls++
 	f.lastGroupShortName = spec.UniqueName[len("group/"):]
+	if spec.Policies != nil {
+		f.lastPolicy = spec.Policies.S3
+	}
 	group := &sgapi.Group{ID: "group-id", UniqueName: spec.UniqueName, DisplayName: spec.DisplayName}
 	f.groups[f.lastGroupShortName] = group
 	return group, nil

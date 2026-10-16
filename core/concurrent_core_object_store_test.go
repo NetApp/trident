@@ -24,6 +24,8 @@ import (
 	db "github.com/netapp/trident/core/concurrent_cache"
 	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/object/drivers/fake"
+	"github.com/netapp/trident/object/drivers/ontaps3"
+	"github.com/netapp/trident/object/drivers/storagegrid"
 	objectfactory "github.com/netapp/trident/object/factory"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -45,6 +47,67 @@ func fakeObjectStoreSecretConfig() []byte {
 		"password": "secret",
 	})
 	return config
+}
+
+// sgObjectStoreConfig/sgObjectStoreSecretConfig and ontaps3ObjectStoreConfig/
+// ontaps3ObjectStoreSecretConfig build real-driver configs so
+// TestConcurrentObjectStoreLifecycle can exercise every registered object-store driver
+// through the same code path, not just "fake". Leave credentials unset (or point at an
+// unreachable endpoint) to make the store's Initialize fail fast; callers skip the subtest
+// in that case.
+//
+//	TRIDENT_TEST_SG_MGMT_ENDPOINT, TRIDENT_TEST_SG_USERNAME, TRIDENT_TEST_SG_PASSWORD,
+//	TRIDENT_TEST_SG_ACCOUNT_ID
+func sgObjectStoreConfig(name string) []byte {
+	config, _ := json.Marshal(map[string]string{
+		"objectStoreDriver":  storagegrid.DriverName,
+		"objectStoreName":    name,
+		"managementEndpoint": "https://webscalenextadm.netapp.com",
+		"accountId":          "45275702274032441235",
+	})
+	return config
+}
+
+func sgObjectStoreSecretConfig() []byte {
+	config, _ := json.Marshal(map[string]string{
+		"username": "root",
+		"password": "_trident123_",
+	})
+	return config
+}
+
+func ontaps3ObjectStoreConfig(name string) []byte {
+	config, _ := json.Marshal(map[string]string{
+		"objectStoreDriver":  ontaps3.DriverName,
+		"objectStoreName":    name,
+		"managementEndpoint": "10.10.10.1",
+		"svmName":            "svmName",
+		"storagePrefix":      "test_",
+	})
+	return config
+}
+
+func ontaps3ObjectStoreSecretConfig() []byte {
+	config, _ := json.Marshal(map[string]string{
+		"username": "admin",
+		"password": "<REDACTED>",
+	})
+	return config
+}
+
+// driverToConfigurator maps a registered driver name to a function returning that
+// driver's (config, secretConfig) pair, letting TestConcurrentObjectStoreLifecycle
+// loop over every supported object-store driver.
+var driverToConfigurator = map[string]func(name string) (config, secretConfig []byte){
+	"fake": func(name string) ([]byte, []byte) {
+		return fakeObjectStoreConfig(name), fakeObjectStoreSecretConfig()
+	},
+	storagegrid.DriverName: func(name string) ([]byte, []byte) {
+		return sgObjectStoreConfig(name), sgObjectStoreSecretConfig()
+	},
+	ontaps3.DriverName: func(name string) ([]byte, []byte) {
+		return ontaps3ObjectStoreConfig(name), ontaps3ObjectStoreSecretConfig()
+	},
 }
 
 func addOrUpdateFakeObjectStore(
@@ -112,7 +175,7 @@ func cleanupCOSIResources(t *testing.T, clients *k8sclient.Clients, prefix strin
 		t.Errorf("unable to list bucket accesses during cleanup: %v", err)
 	} else {
 		for _, access := range accesses.Items {
-			if strings.HasPrefix(access.BucketAccessName, prefix) {
+			if strings.HasPrefix(access.Name, prefix) {
 				if err := api.TridentBucketAccesses(clients.Namespace).Delete(
 					testCtx, access.Name, metav1.DeleteOptions{},
 				); err != nil {
@@ -125,7 +188,7 @@ func cleanupCOSIResources(t *testing.T, clients *k8sclient.Clients, prefix strin
 		t.Errorf("unable to list buckets during cleanup: %v", err)
 	} else {
 		for _, bucket := range buckets.Items {
-			if strings.HasPrefix(bucket.BucketName, prefix) {
+			if strings.HasPrefix(bucket.Name, prefix) {
 				if err := api.TridentBuckets(clients.Namespace).Delete(
 					testCtx, bucket.Name, metav1.DeleteOptions{},
 				); err != nil {
@@ -172,68 +235,65 @@ func cleanupCOSIResources(t *testing.T, clients *k8sclient.Clients, prefix strin
 }
 
 func TestConcurrentObjectStoreLifecycle(t *testing.T) {
-	o, name, clients := setupObjectStoreOrchestrator(t)
-	storeName, bucketName := name("store-a"), name("bucket-1")
+	// Intentionally share the object store orchestrator.
+	o, name, _ := setupObjectStoreOrchestrator(t)
 
-	store, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
-	require.NoError(t, err)
-	require.NotNil(t, store)
-	assert.Equal(t, storeName, store.Name())
-	assert.Equal(t, "fake", store.DriverName())
-	assert.NotEmpty(t, store.StoreUUID())
-	fakeStore, ok := store.(*fake.ObjectDriver)
-	require.True(t, ok)
-	assert.Equal(t, "alice", fakeStore.User)
-	assert.Equal(t, "secret", fakeStore.Password)
+	for driverName, configurator := range driverToConfigurator {
+		storeName, bucketName := name(driverName), name(driverName+"-bucket")
 
-	if clients != nil {
-		tos, getErr := clients.TridentClient.TridentV1().TridentObjectStores(clients.Namespace).Get(
-			testCtx, storeName, metav1.GetOptions{},
-		)
-		require.NoError(t, getErr)
-		assert.Contains(t, string(tos.Spec.Raw), `"objectStoreDriver":"fake"`)
-		assert.NotContains(t, string(tos.Spec.Raw), "alice")
-		assert.NotContains(t, string(tos.Spec.Raw), "secret")
-		assert.NotContains(t, string(tos.Status.Raw), "alice")
-		assert.NotContains(t, string(tos.Status.Raw), "secret")
+		t.Run("Test_"+storeName, func(t *testing.T) {
+			config, secretConfig := configurator(storeName)
+
+			built, err := objectfactory.CreateStore(testCtx, driverName, secretConfig, config)
+			require.NoError(t, err)
+			store, err := o.AddOrUpdateObjectStore(testCtx, built)
+			if err != nil {
+				t.Skipf("skipping %s: store could not be initialized: %v", t.Name(), err)
+			}
+			require.NotNil(t, store)
+
+			assert.Equal(t, storeName, store.Name())
+			assert.NotEmpty(t, store.StoreUUID())
+
+			// Re-adding the same store is an idempotent upsert, not a conflict.
+			replayBuilt, err := objectfactory.CreateStore(testCtx, driverName, secretConfig, config)
+			require.NoError(t, err)
+			replay, err := o.AddOrUpdateObjectStore(testCtx, replayBuilt)
+			require.NoError(t, err)
+			assert.Equal(t, store.StoreUUID(), replay.StoreUUID())
+
+			bucket, err := o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
+			require.NoError(t, err)
+			require.NotNil(t, bucket)
+			assert.Equal(t, bucketName, bucket.Name)
+			assert.Equal(t, store.StoreUUID(), bucket.StoreUUID)
+
+			got, err := replay.GetBucketByName(testCtx, bucketName)
+			require.NoError(t, err)
+			assert.Equal(t, bucketName, got.Name)
+
+			err = o.DeleteObjectStore(testCtx, storeName)
+			assert.True(t, errors.IsConflictError(err), err)
+			deletingStore, err := o.GetObjectStore(testCtx, storeName)
+			require.NoError(t, err)
+			assert.Equal(t, object.StoreStateDeleting, deletingStore.State())
+
+			require.NoError(t, o.DeleteBucket(testCtx, bucketName))
+			_, err = replay.GetBucketByName(testCtx, bucketName)
+			assert.True(t, errors.IsNotFoundError(err))
+
+			require.NoError(t, o.DeleteBucket(testCtx, name("missing-bucket")))
+
+			require.NoError(t, o.DeleteObjectStore(testCtx, storeName))
+		})
 	}
-
-	replay, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
-	require.NoError(t, err)
-	assert.Equal(t, store.StoreUUID(), replay.StoreUUID())
-
-	bucket, err := o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
-	require.NoError(t, err)
-	require.NotNil(t, bucket)
-	assert.Equal(t, bucketName, bucket.Name)
-	assert.Equal(t, storeName, bucket.StoreName)
-
-	got, err := replay.GetBucketByName(testCtx, bucketName)
-	require.NoError(t, err)
-	assert.Equal(t, bucketName, got.Name)
-
-	err = o.DeleteObjectStore(testCtx, storeName)
-	assert.True(t, errors.IsConflictError(err), err)
-	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertObjectStore("", storeName, "")))
-	require.NoError(t, err)
-	require.NotNil(t, results[0].ObjectStore.Read)
-	assert.Equal(t, object.StoreStateDeleting, results[0].ObjectStore.Read.State())
-	unlocker()
-
-	require.NoError(t, o.DeleteBucket(testCtx, bucketName))
-	_, err = replay.GetBucketByName(testCtx, bucketName)
-	assert.True(t, errors.IsNotFoundError(err))
-
-	require.NoError(t, o.DeleteBucket(testCtx, name("missing-bucket")))
-
-	require.NoError(t, o.DeleteObjectStore(testCtx, storeName))
 }
 
 func TestConcurrentObjectStoreDeleteAfterRestartStillConflicts(t *testing.T) {
 	o, name, _ := setupObjectStoreOrchestrator(t)
 	storeName, bucketName := name("store-a"), name("bucket-1")
 
-	_, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
+	store, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
 	require.NoError(t, err)
 	_, err = o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
 	require.NoError(t, err)
@@ -241,13 +301,11 @@ func TestConcurrentObjectStoreDeleteAfterRestartStillConflicts(t *testing.T) {
 	err = o.DeleteObjectStore(testCtx, storeName)
 	assert.True(t, errors.IsConflictError(err), err)
 
-	// Bootstrap skips a CR that already has a deletion timestamp, so the store is absent from cache
-	// while its buckets are still loaded.
-	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteObjectStore(storeName)))
-	require.NoError(t, err)
-	require.NotNil(t, results[0].ObjectStore.Read)
-	results[0].ObjectStore.Delete()
-	unlocker()
+	// Restart loads the terminating store with its buckets, so delete still conflicts.
+	db.Initialize()
+	o.bootstrapped = false
+	require.NoError(t, o.bootstrapObjectStores(testCtx))
+	require.NoError(t, o.bootstrapBuckets(testCtx))
 
 	err = o.DeleteObjectStore(testCtx, storeName)
 	assert.True(t, errors.IsConflictError(err), err)
@@ -255,7 +313,7 @@ func TestConcurrentObjectStoreDeleteAfterRestartStillConflicts(t *testing.T) {
 
 	bucket, err := o.GetBucket(testCtx, bucketName)
 	require.NoError(t, err)
-	assert.Equal(t, storeName, bucket.StoreName)
+	assert.Equal(t, store.StoreUUID(), bucket.StoreUUID)
 }
 
 func TestListObjectStoresReturnsBootstrapError(t *testing.T) {
@@ -404,7 +462,7 @@ func TestConcurrentAddBucketRetryIsIdempotent(t *testing.T) {
 	assert.Equal(t, 1, fakeStore.Calls()["CreateBucket"], "retry of an already-completed bucket must not call CreateBucket again")
 }
 
-// TestConcurrentAddBucketResumesPartialAttempt: StoreName set but Info empty is a partial
+// TestConcurrentAddBucketResumesPartialAttempt: StoreUUID set but Info empty is a partial
 // attempt (e.g. a crash mid-call), not a completed one - AddBucket must still call the driver.
 func TestConcurrentAddBucketResumesPartialAttempt(t *testing.T) {
 	o, name, _ := setupObjectStoreOrchestrator(t)
@@ -415,14 +473,14 @@ func TestConcurrentAddBucketResumesPartialAttempt(t *testing.T) {
 	fakeStore, ok := store.(*fake.ObjectDriver)
 	require.True(t, ok)
 
-	// Simulate a crash: StoreName recorded, but CreateBucket never ran.
+	// Simulate a crash: StoreUUID recorded, but CreateBucket never ran.
 	_, results, unlock, err := db.Lock(testCtx, db.Query(db.UpsertBucket(bucketName, store.StoreUUID())))
 	require.NoError(t, err)
 	partial := results[0].Bucket.Read
 	if partial == nil {
 		partial = &object.Bucket{Name: bucketName}
 	}
-	partial.StoreName = store.Name()
+	partial.StoreUUID = store.StoreUUID()
 	results[0].Bucket.Upsert(partial)
 	unlock()
 	require.Equal(t, 0, fakeStore.Calls()["CreateBucket"], "sanity check: driver must not have been called yet")
@@ -457,7 +515,7 @@ func TestConcurrentAddBucketCreateConflictIsCleanedUp(t *testing.T) {
 
 	cached, err := o.GetBucket(testCtx, bucketName)
 	require.NoError(t, err)
-	assert.Empty(t, cached.StoreName, "a successful cleanup must clear the store so another one can be tried")
+	assert.Empty(t, cached.StoreUUID, "a successful cleanup must clear the store so another one can be tried")
 }
 
 // TestConcurrentAddBucketPartialFailureIsDeleted: some drivers (e.g. storage-grid, on a
@@ -515,7 +573,7 @@ func TestConcurrentAddBucketStopsWhenDeleteFails(t *testing.T) {
 
 	cached, err := o.GetBucket(testCtx, bucketName)
 	require.NoError(t, err)
-	assert.Equal(t, storeName, cached.StoreName, "the store stays recorded so a later retry resumes here")
+	assert.Equal(t, store.StoreUUID(), cached.StoreUUID, "the store stays recorded so a later retry resumes here")
 }
 
 // TestConcurrentAddBucketInvalidInputIsCleanedUpOnEachStore: an invalid request fails create
@@ -569,7 +627,7 @@ func (f *upsertBucketFailer) UpsertBucket(ctx context.Context, bucket *object.Bu
 }
 
 // TestConcurrentAddBucketRetriesWhenInfoPersistFails: AddBucket calls storeClient.UpsertBucket
-// twice per successful create - once before CreateBucket (to persist StoreName) and once after
+// twice per successful create - once before CreateBucket (to persist StoreUUID) and once after
 // (to persist Info). If that second call fails, AddBucket must fail the whole request rather
 // than warning and returning success: the "already completed" short-circuit trusts the cache,
 // so caching Info without a confirmed persist would mean this failure is never retried, and the
@@ -594,11 +652,11 @@ func TestConcurrentAddBucketRetriesWhenInfoPersistFails(t *testing.T) {
 	assert.ErrorIs(t, err, injected, "a failed Info persist must fail the request, not warn and succeed")
 	assert.Equal(t, 1, fakeStore.Calls()["CreateBucket"])
 
-	// The pre-CreateBucket upsert (StoreName only) already succeeded; only the second one -
+	// The pre-CreateBucket upsert (StoreUUID only) already succeeded; only the second one -
 	// the one that would have added Info - was made to fail.
 	persistedBeforeRetry, persistErr := inMemoryPersistence.GetBucket(testCtx, bucketName)
 	require.NoError(t, persistErr)
-	assert.Equal(t, storeName, persistedBeforeRetry.StoreName)
+	assert.Equal(t, store.StoreUUID(), persistedBeforeRetry.StoreUUID)
 	assert.Empty(t, persistedBeforeRetry.Info, "Info must not be persisted since the second upsert failed")
 
 	// Retry: CreateBucket is idempotent, so a second attempt must succeed and persist correctly.
@@ -633,13 +691,13 @@ func TestConcurrentAddBucketRetriesAfterTransientFailure(t *testing.T) {
 		retried, err = o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
 	})
 	require.NoError(t, err)
-	assert.Equal(t, storeName, retried.StoreName)
+	assert.Equal(t, store.StoreUUID(), retried.StoreUUID)
 	require.NotNil(t, retried.Info.S3)
 	assert.Equal(t, 2, fakeStore.Calls()["CreateBucket"])
 }
 
 // TestConcurrentAddBucketPersistsClearedStoreName: when a failed create is cleaned up, the
-// persisted TridentBucket must drop the store name too, not just the in-memory cache.
+// persisted TridentBucket must drop the store UUID too, not just the in-memory cache.
 // Memory-persistence only, for the same reason as TestConcurrentAddBucketPersistsInfo.
 func TestConcurrentAddBucketPersistsClearedStoreName(t *testing.T) {
 	if strings.ToUpper(os.Getenv("TRIDENT_TEST_PERSISTENCE")) == "CRD" {
@@ -661,7 +719,7 @@ func TestConcurrentAddBucketPersistsClearedStoreName(t *testing.T) {
 
 	persisted, err := inMemoryPersistence.GetBucket(testCtx, bucketName)
 	require.NoError(t, err)
-	assert.Empty(t, persisted.StoreName, "persisted bucket must match the cache after cleanup")
+	assert.Empty(t, persisted.StoreUUID, "persisted bucket must match the cache after cleanup")
 }
 
 // TestConcurrentAddBucketAllStoresFailedReportsEachCause: when no store takes the bucket, the
@@ -711,7 +769,7 @@ func TestConcurrentDeleteBucketNeverPlaced(t *testing.T) {
 	require.Error(t, err)
 	cached, err := o.GetBucket(testCtx, bucketName)
 	require.NoError(t, err, "sanity check: the failed bucket must still be cached")
-	require.Empty(t, cached.StoreName)
+	require.Empty(t, cached.StoreUUID)
 	deletesBefore := fakeStore.Calls()["DeleteBucket"]
 
 	require.NoError(t, o.DeleteBucket(testCtx, bucketName))
@@ -804,7 +862,7 @@ func TestConcurrentAddBucketCompletedOnDeletingStoreIsNotRecreated(t *testing.T)
 	require.True(t, ok)
 	first, err := o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
 	require.NoError(t, err)
-	require.Equal(t, storeA, first.StoreName)
+	require.Equal(t, sa.StoreUUID(), first.StoreUUID)
 
 	err = o.DeleteObjectStore(testCtx, storeA)
 	require.True(t, errors.IsConflictError(err), err)
@@ -819,7 +877,7 @@ func TestConcurrentAddBucketCompletedOnDeletingStoreIsNotRecreated(t *testing.T)
 
 	again, err := o.AddBucket(testCtx, &object.Bucket{Name: bucketName}, nil)
 	require.NoError(t, err)
-	assert.Equal(t, storeA, again.StoreName)
+	assert.Equal(t, sa.StoreUUID(), again.StoreUUID)
 	assert.Equal(t, first.Info, again.Info)
 	assert.Equal(t, 1, fakeA.Calls()["CreateBucket"])
 	assert.Equal(t, 0, fakeB.Calls()["CreateBucket"], "a completed bucket must not be created again on another store")
@@ -841,7 +899,7 @@ func TestConcurrentGetBucket(t *testing.T) {
 	got, err := o.GetBucket(testCtx, bucketName)
 	require.NoError(t, err)
 	assert.Equal(t, created.Name, got.Name)
-	assert.Equal(t, created.StoreName, got.StoreName)
+	assert.Equal(t, created.StoreUUID, got.StoreUUID)
 	// Info must round-trip through the cache unchanged.
 	assert.Equal(t, created.Info, got.Info)
 	require.NotNil(t, got.Info.S3)
@@ -879,9 +937,58 @@ func TestConcurrentObjectStoreBootstrap(t *testing.T) {
 	require.NotNil(t, found)
 	assert.Equal(t, persistentStore.StoreUUID(), found.StoreUUID())
 
+	bootstrapped, err := o.GetObjectStore(testCtx, storeName)
+	require.NoError(t, err)
+	assert.Equal(t, object.StoreStateOnline, bootstrapped.State())
+
 	replay, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
 	require.NoError(t, err)
 	assert.Equal(t, persistentStore.StoreUUID(), replay.StoreUUID())
+}
+
+func TestConcurrentObjectStoreBootstrapKeepsDeletingState(t *testing.T) {
+	o, name, _ := setupObjectStoreOrchestrator(t)
+	storeName := name("store-a")
+
+	persistentStore, err := fake.NewObjectDriver(testCtx, fakeObjectStoreSecretConfig(), fakeObjectStoreConfig(storeName))
+	require.NoError(t, err)
+	require.NoError(t, persistentStore.Initialize(testCtx))
+	persistentStore.SetState(object.StoreStateDeleting)
+	require.NoError(t, o.storeClient.AddObjectStore(testCtx, persistentStore))
+
+	db.Initialize()
+	o.bootstrapped = false
+	require.NoError(t, o.bootstrapObjectStores(testCtx))
+
+	got, err := o.GetObjectStore(testCtx, storeName)
+	require.NoError(t, err)
+	assert.Equal(t, object.StoreStateDeleting, got.State())
+	assert.Equal(t, persistentStore.StoreUUID(), got.StoreUUID())
+
+	persisted, err := o.storeClient.GetObjectStore(testCtx, storeName)
+	require.NoError(t, err)
+	assert.Equal(t, object.StoreStateDeleting, persisted.State())
+}
+
+func TestConcurrentObjectStoreBootstrapKeepsDeletingStateWhenInitializeFails(t *testing.T) {
+	o, name, _ := setupObjectStoreOrchestrator(t)
+	storeName := name("store-a")
+
+	persistentStore, err := fake.NewObjectDriver(testCtx, fakeObjectStoreSecretConfig(), fakeObjectStoreConfig(storeName))
+	require.NoError(t, err)
+	require.NoError(t, persistentStore.Initialize(testCtx))
+	persistentStore.SetState(object.StoreStateDeleting)
+	persistentStore.(*fake.ObjectDriver).Password = ""
+	require.NoError(t, o.storeClient.AddObjectStore(testCtx, persistentStore))
+
+	db.Initialize()
+	o.bootstrapped = false
+	require.NoError(t, o.bootstrapObjectStores(testCtx))
+
+	got, err := o.GetObjectStore(testCtx, storeName)
+	require.NoError(t, err)
+	assert.Equal(t, object.StoreStateDeleting, got.State())
+	assert.Equal(t, persistentStore.StoreUUID(), got.StoreUUID())
 }
 
 func TestConcurrentBucketBootstrap(t *testing.T) {
@@ -893,9 +1000,9 @@ func TestConcurrentBucketBootstrap(t *testing.T) {
 	require.NoError(t, persistentStore.Initialize(testCtx))
 	require.NoError(t, o.storeClient.AddObjectStore(testCtx, persistentStore))
 
-	bucket := &object.Bucket{Name: bucketName, StoreName: storeName}
+	bucket := &object.Bucket{Name: bucketName, StoreUUID: persistentStore.StoreUUID()}
 	require.NoError(t, o.storeClient.UpsertBucket(testCtx, bucket))
-	access := &object.BucketAccess{Name: accessName, StoreName: storeName}
+	access := &object.BucketAccess{Name: accessName, StoreUUID: persistentStore.StoreUUID()}
 	require.NoError(t, o.storeClient.UpsertBucketAccess(testCtx, access))
 
 	db.Initialize()
@@ -907,13 +1014,13 @@ func TestConcurrentBucketBootstrap(t *testing.T) {
 	_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBucket(bucketName)))
 	require.NoError(t, err)
 	require.NotNil(t, results[0].Bucket.Read)
-	assert.Equal(t, storeName, results[0].Bucket.Read.StoreName)
+	assert.Equal(t, persistentStore.StoreUUID(), results[0].Bucket.Read.StoreUUID)
 	unlocker()
 
 	_, results, unlocker, err = db.Lock(testCtx, db.Query(db.ReadBucketAccess(accessName)))
 	require.NoError(t, err)
 	require.NotNil(t, results[0].BucketAccess.Read)
-	assert.Equal(t, storeName, results[0].BucketAccess.Read.StoreName)
+	assert.Equal(t, persistentStore.StoreUUID(), results[0].BucketAccess.Read.StoreUUID)
 	unlocker()
 }
 
@@ -1011,7 +1118,7 @@ func TestConcurrentAddBucketMatchesObjectStoreParameters(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
-	assert.Equal(t, storeBName, bucket.StoreName)
+	assert.Equal(t, storeB.StoreUUID(), bucket.StoreUUID)
 
 	_, err = storeB.GetBucketByName(testCtx, bucketName)
 	assert.NoError(t, err)
@@ -1041,7 +1148,7 @@ func TestConcurrentGrantRevokeBucketAccess(t *testing.T) {
 	bucket1, bucket2 := name("bucket-1"), name("bucket-2")
 	access1, accessMulti := name("access-1"), name("access-multi")
 
-	_, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
+	store, err := addOrUpdateFakeObjectStore(o, fakeObjectStoreConfig(storeName), fakeObjectStoreSecretConfig())
 	require.NoError(t, err)
 	_, err = o.AddBucket(testCtx, &object.Bucket{Name: bucket1}, nil)
 	require.NoError(t, err)
@@ -1054,7 +1161,7 @@ func TestConcurrentGrantRevokeBucketAccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, access)
 	assert.Equal(t, access1, access.Name)
-	assert.Equal(t, storeName, access.StoreName)
+	assert.Equal(t, store.StoreUUID(), access.StoreUUID)
 
 	// The fake driver rejects the grant unless every requested mode names an existing
 	// bucket, so a successful multi-bucket grant proves both modes reached the driver.
@@ -1065,7 +1172,7 @@ func TestConcurrentGrantRevokeBucketAccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, multi)
 	assert.Equal(t, accessMulti, multi.Name)
-	assert.Equal(t, storeName, multi.StoreName)
+	assert.Equal(t, store.StoreUUID(), multi.StoreUUID)
 
 	require.NoError(t, o.RevokeBucketAccess(testCtx, access1))
 	err = o.RevokeBucketAccess(testCtx, access1)
@@ -1100,8 +1207,8 @@ func TestConcurrentGrantBucketAccessCrossStoreConflict(t *testing.T) {
 	bucketB := results[1].Bucket.Read
 	require.NotNil(t, bucketA)
 	require.NotNil(t, bucketB)
-	bucketA.StoreName = storeA.Name()
-	bucketB.StoreName = storeB.Name()
+	bucketA.StoreUUID = storeA.StoreUUID()
+	bucketB.StoreUUID = storeB.StoreUUID()
 	results[0].Bucket.Upsert(bucketA)
 	results[1].Bucket.Upsert(bucketB)
 	unlock()

@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/object"
 	"github.com/netapp/trident/object/factory"
@@ -25,9 +26,10 @@ func init() {
 }
 
 const (
-	driverName   = "fake"
-	fakeEndpoint = "https://localhost"
-	fakeRegion   = "fake-region-1"
+	driverName           = "fake"
+	fakeEndpoint         = "https://localhost"
+	fakeRegion           = "fake-region-1"
+	defaultStoragePrefix = config.OrchestratorName + "-"
 )
 
 type Credentials struct {
@@ -157,10 +159,9 @@ func (d *ObjectDriver) Initialize(_ context.Context) error {
 		d.UUID = uuid.NewString()
 	}
 	if d.Endpoint == "" || d.Credentials.User == "" || d.Credentials.Password == "" {
-		d.StoreState = object.StoreStateOffline
 		return fmt.Errorf("endpoint, user, and password are required")
 	}
-	d.StoreState = object.StoreStateOnline
+	// StoreState is left unchanged. Core sets online after a successful Initialize.
 	d.initialized = true
 	return nil
 }
@@ -201,33 +202,53 @@ func (d *ObjectDriver) GetBucketByName(_ context.Context, name string) (*object.
 	if err := d.record("GetBucketByName"); err != nil {
 		return nil, err
 	}
-	bucket, ok := d.buckets[name]
+	internalID := makeName(defaultStoragePrefix, name)
+	bucket, ok := d.buckets[internalID]
 	if !ok {
-		return nil, errors.NotFoundError("bucket %s not found", name)
+		return nil, errors.NotFoundError("bucket %s not found", internalID)
 	}
 	copied := bucket
 	return &copied, nil
 }
 
-// CreateBucket is idempotent on bucket.Name: a repeat call returns the existing bucket's Info.
-func (d *ObjectDriver) CreateBucket(ctx context.Context, bucket *object.Bucket) (*object.Bucket, error) {
-	if bucket == nil || bucket.Name == "" {
-		return nil, fmt.Errorf("bucket name is required")
+// makeName returns the name used for the fake resources: bucket, user, and group.
+func makeName(prefix, suffix string) string {
+	if suffix == "" {
+		suffix = uuid.NewString()
 	}
+
+	// If the prefix already ends with a separator, concatenate directly;
+	// otherwise insert a dash so the caller doesn't have to include one.
+	sep := "-"
+	if last := prefix[len(prefix)-1]; last == '-' {
+		sep = ""
+	}
+	name := prefix + sep + suffix
+	return name
+}
+
+// CreateBucket is idempotent on bucket.Name: a repeat call returns the existing bucket's Info.
+func (d *ObjectDriver) CreateBucket(ctx context.Context, bucket *object.Bucket) error {
+	if bucket == nil || bucket.Name == "" {
+		return fmt.Errorf("bucket name is required")
+	}
+
+	bucket.InternalID = makeName(defaultStoragePrefix, bucket.Name)
 
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	if err := d.record("CreateBucket"); err != nil {
-		return nil, err
+		return err
 	}
 
-	if existing, ok := d.buckets[bucket.Name]; ok {
+	if existing, ok := d.buckets[bucket.InternalID]; ok {
 		Logc(ctx).WithFields(LogFields{
-			"name":  bucket.Name,
-			"store": d.ObjectStoreName,
+			"name":       bucket.Name,
+			"internalID": bucket.InternalID,
+			"store":      d.ObjectStoreName,
 		}).Debug("Bucket already exists; returning existing bucket.")
 		bucket.Info = existing.Info
-		return bucket, nil
+		return nil
 	}
 
 	// Populate on the caller's pointer: core.AddBucket returns this same *object.Bucket back.
@@ -240,21 +261,23 @@ func (d *ObjectDriver) CreateBucket(ctx context.Context, bucket *object.Bucket) 
 	}
 
 	stored := object.Bucket{
-		Name:      bucket.Name,
-		StoreName: d.ObjectStoreName,
-		Info:      bucket.Info,
+		Name:       bucket.Name,
+		InternalID: bucket.InternalID,
+		StoreUUID:  d.StoreUUID(),
+		Info:       bucket.Info,
 	}
-	d.buckets[bucket.Name] = stored
+	d.buckets[bucket.InternalID] = stored
 
 	Logc(ctx).WithFields(LogFields{
-		"name":  bucket.Name,
-		"store": d.ObjectStoreName,
+		"name":       bucket.Name,
+		"internalID": bucket.InternalID,
+		"store":      d.ObjectStoreName,
 	}).Debug("Created fake bucket.")
 
 	if d.errAfterCreate != nil {
-		return bucket, d.errAfterCreate
+		return d.errAfterCreate
 	}
-	return bucket, nil
+	return nil
 }
 
 func (d *ObjectDriver) DeleteBucket(ctx context.Context, name string) error {
@@ -263,10 +286,11 @@ func (d *ObjectDriver) DeleteBucket(ctx context.Context, name string) error {
 	if err := d.record("DeleteBucket"); err != nil {
 		return err
 	}
-	delete(d.buckets, name)
+	internalID := makeName(defaultStoragePrefix, name)
+	delete(d.buckets, internalID)
 
 	Logc(ctx).WithFields(LogFields{
-		"name":  name,
+		"name":  internalID,
 		"store": d.ObjectStoreName,
 	}).Debug("Deleted fake bucket.")
 
@@ -279,22 +303,19 @@ func (d *ObjectDriver) GrantBucketAccess(
 	if access == nil {
 		return nil, fmt.Errorf("bucket access is required")
 	}
-	accessName := access.Name
-	if accessName == "" {
-		accessName = uuid.NewString()
-		access.Name = accessName
-	}
+	accessName := makeName(defaultStoragePrefix, access.Name)
 
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	for _, mode := range modes {
-		if _, ok := d.buckets[mode.BucketName]; !ok {
-			return nil, errors.NotFoundError("bucket %s not found", mode.BucketName)
+		internalBucketName := makeName(defaultStoragePrefix, mode.BucketName)
+		if _, ok := d.buckets[internalBucketName]; !ok {
+			return nil, errors.NotFoundError("bucket %s not found", internalBucketName)
 		}
 	}
 
 	stored := *access
-	stored.StoreName = d.ObjectStoreName
+	stored.StoreUUID = d.StoreUUID()
 	d.accesses[accessName] = stored
 
 	Logc(ctx).WithFields(LogFields{
@@ -316,10 +337,12 @@ func (d *ObjectDriver) RevokeBucketAccess(ctx context.Context, access *object.Bu
 
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
-	delete(d.accesses, access.Name)
+
+	accessName := makeName(defaultStoragePrefix, access.Name)
+	delete(d.accesses, accessName)
 
 	Logc(ctx).WithFields(LogFields{
-		"access": access.Name,
+		"access": accessName,
 		"store":  d.ObjectStoreName,
 	}).Debug("Revoked fake bucket access.")
 

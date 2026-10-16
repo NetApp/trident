@@ -678,7 +678,6 @@ func (in *TridentBucketAccess) DeepCopyInto(out *TridentBucketAccess) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	in.Spec.DeepCopyInto(&out.Spec)
 	return
 }
 

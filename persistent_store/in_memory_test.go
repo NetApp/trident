@@ -1613,6 +1613,11 @@ func TestInMemoryClient_ObjectStoreCRUD(t *testing.T) {
 	assert.Empty(t, stores)
 
 	require.NoError(t, client.AddObjectStore(ctx, store))
+	got, err := client.GetObjectStore(ctx, store.Name())
+	require.NoError(t, err)
+	assert.Equal(t, store.StoreUUID(), got.StoreUUID())
+	_, err = client.GetObjectStore(ctx, "missing")
+	assert.True(t, MatchKeyNotFoundErr(err))
 	err = client.AddObjectStore(ctx, store)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), alreadyExistsError)
@@ -1626,33 +1631,33 @@ func TestInMemoryClient_ObjectStoreCRUD(t *testing.T) {
 	store.SetState(object.StoreStateDeleting)
 	require.NoError(t, client.UpdateObjectStore(ctx, store))
 
-	bucket := &object.Bucket{Name: "bucket1", StoreName: store.Name()}
+	bucket := &object.Bucket{Name: "bucket1", StoreUUID: store.StoreUUID()}
 	require.NoError(t, client.UpsertBucket(ctx, bucket))
 	require.NoError(t, client.UpsertBucket(ctx, bucket))
 	listedBuckets, err := client.GetBuckets(ctx)
 	require.NoError(t, err)
 	require.Len(t, listedBuckets, 1)
 	assert.Equal(t, bucket.Name, listedBuckets[0].Name)
-	assert.Equal(t, bucket.StoreName, listedBuckets[0].StoreName)
-	listedBuckets[0].StoreName = "mutated"
+	assert.Equal(t, bucket.StoreUUID, listedBuckets[0].StoreUUID)
+	listedBuckets[0].StoreUUID = "mutated"
 	rereadBuckets, err := client.GetBuckets(ctx)
 	require.NoError(t, err)
-	assert.Equal(t, store.Name(), rereadBuckets[0].StoreName)
+	assert.Equal(t, store.StoreUUID(), rereadBuckets[0].StoreUUID)
 	require.NoError(t, client.DeleteBucket(ctx, bucket))
 	listedBuckets, err = client.GetBuckets(ctx)
 	require.NoError(t, err)
 	assert.Empty(t, listedBuckets)
 
-	access := &object.BucketAccess{Name: "access1", StoreName: store.Name()}
+	access := &object.BucketAccess{Name: "access1", StoreUUID: store.StoreUUID()}
 	require.NoError(t, client.UpsertBucketAccess(ctx, access))
 	listedAccesses, err := client.GetBucketAccesses(ctx)
 	require.NoError(t, err)
 	require.Len(t, listedAccesses, 1)
 	assert.Equal(t, access.Name, listedAccesses[0].Name)
-	listedAccesses[0].StoreName = "mutated"
+	listedAccesses[0].StoreUUID = "mutated"
 	rereadAccesses, err := client.GetBucketAccesses(ctx)
 	require.NoError(t, err)
-	assert.Equal(t, store.Name(), rereadAccesses[0].StoreName)
+	assert.Equal(t, store.StoreUUID(), rereadAccesses[0].StoreUUID)
 	require.NoError(t, client.DeleteBucketAccess(ctx, access))
 	listedAccesses, err = client.GetBucketAccesses(ctx)
 	require.NoError(t, err)
