@@ -14119,6 +14119,45 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestAddNodeConcurrentCore_InvalidatesCachedBackendNodeAccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	backend1 := getFakeBackend("testBackend1", "uuid1", nil)
+	backend2 := getFakeBackend("testBackend2", "uuid2", nil)
+	backend1.SetNodeAccessUpToDate()
+	backend2.SetNodeAccessUpToDate()
+	addBackendsToCache(t, backend1, backend2)
+
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	err := o.AddNode(testCtx, &models.Node{Name: "node1", IPs: []string{"10.0.0.1"}}, func(_, _, _ string) {})
+	require.NoError(t, err)
+
+	for _, b := range []*storage.StorageBackend{backend1, backend2} {
+		_, results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackend(b.BackendUUID())))
+		require.NoError(t, err)
+		cached := results[0].Backend.Read
+		unlocker()
+
+		require.NotNil(t, cached)
+		assert.False(t, cached.IsNodeAccessUpToDate(),
+			"backend %s must need a node access reconcile after a node registers", b.Name())
+
+		_, results, unlocker, err = db.Lock(testCtx, db.Query(db.ReadBackendByName(b.Name())))
+		require.NoError(t, err)
+		byName := results[0].Backend.Read
+		unlocker()
+
+		require.NotNil(t, byName, "backend %s must still be found by name", b.Name())
+		assert.Equal(t, b.BackendUUID(), byName.BackendUUID())
+	}
+}
+
 func TestUpdateNodeConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name          string

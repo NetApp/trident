@@ -1201,21 +1201,25 @@ func (d *NASStorageDriver) publishFlexVolShare(
 	// Ensure the flexVol has the correct export policy and rules applied.
 	backendPolicyName := getExportPolicyName(publishInfo.BackendUUID)
 	flexVolPolicyName := flexvol
-	// Trident versions <23.04 may not have the exportPolicy field set in the volume config,
-	// if this is the case we need to use the export policy from the volume info from ONTAP.
-	// The clone's cached policy can lag the shared source. Refresh it so republishing cannot replace rules
-	// still required by the source or sibling clones.
-	if volConfig.ReadOnlyClone || (volConfig.ExportPolicy != backendPolicyName && volConfig.ExportPolicy != flexvol &&
-		volConfig.ExportPolicy != getEmptyExportPolicyName(*d.Config.StoragePrefix)) {
-		volume, err := d.API.VolumeInfo(ctx, flexvol)
-		if err != nil {
-			return err
-		}
-		if volume == nil {
-			return errors.NotFoundError("volume not found")
-		}
-		volConfig.ExportPolicy = volume.ExportPolicy
+	// ONTAP's export policy is the source of truth; the cached one may be stale. It is unset for volumes created
+	// before 23.04, can lag the shared source of a read-only clone, and is not updated when a Trident release
+	// without per-volume policies moves the volume to the backend policy. Acting on a stale per-volume or empty
+	// policy would move the volume off a policy that still grants access to its other published nodes.
+	volume, err := d.API.VolumeInfo(ctx, flexvol)
+	if err != nil {
+		return err
 	}
+	if volume == nil {
+		return errors.NotFoundError("volume not found")
+	}
+	if volConfig.ExportPolicy != volume.ExportPolicy {
+		Logc(ctx).WithFields(LogFields{
+			"flexvol":      flexvol,
+			"cachedPolicy": volConfig.ExportPolicy,
+			"actualPolicy": volume.ExportPolicy,
+		}).Info("Cached export policy differs from ONTAP; using the ONTAP export policy.")
+	}
+	volConfig.ExportPolicy = volume.ExportPolicy
 
 	// If the flexVol already have backend policy, leave it as it is. We will have an opportunity to migrate it
 	// to flexVol policy during unpublish.

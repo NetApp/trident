@@ -1358,9 +1358,9 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context
 	return nil
 }
 
-// invalidateAllBackendNodeAccess sets nodeAccessUpToDate to false on all backends.  That value is
-// protected from concurrent modification, so under the principle of interior mutability, a backend
-// read lock is sufficient here.
+// invalidateAllBackendNodeAccess sets nodeAccessUpToDate to false on all backends.  The cache hands
+// out copies and nodeAccessUpToDate is a plain field, so the invalidated copy must be upserted back
+// into the cache under a backend write lock, or the next reconcile would still see it as up to date.
 func (o *ConcurrentTridentOrchestrator) invalidateAllBackendNodeAccess(ctx context.Context) error {
 	_, results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ListBackends()))
 	unlocker()
@@ -1373,7 +1373,7 @@ func (o *ConcurrentTridentOrchestrator) invalidateAllBackendNodeAccess(ctx conte
 
 	for _, b := range backends {
 		backendErr := func() error {
-			_, results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ReadBackend(b.BackendUUID())))
+			_, results, unlocker, dbErr = db.Lock(ctx, db.Query(db.UpsertBackend(b.BackendUUID(), "", "")))
 			defer unlocker()
 			if dbErr != nil {
 				return dbErr
@@ -1385,6 +1385,7 @@ func (o *ConcurrentTridentOrchestrator) invalidateAllBackendNodeAccess(ctx conte
 			}
 
 			backend.InvalidateNodeAccess()
+			results[0].Backend.Upsert(backend)
 			return nil
 		}()
 

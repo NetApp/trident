@@ -5752,6 +5752,7 @@ func TestPublishFlexVolShare_WithEmptyPolicy_Success(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
@@ -5788,6 +5789,7 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 
 	// CASE 1: Backend policy does not have the required node IP address
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[int]string), nil)
@@ -5805,6 +5807,7 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 
 	// CASE 2: Backend policy already have the required node IP address
 	mockAPI, driver = newMockOntapNASDriverWithSVM(t, "SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return node ip rules when asked for them
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
@@ -5914,6 +5917,7 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 	// CASE 1: Error in checking if export policy exists
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	driver.Config.AutoExportPolicy = true
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, mockError)
 
 	result1 := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
@@ -5923,6 +5927,7 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNASDriverWithSVM(t, "SVM1")
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
@@ -6024,6 +6029,121 @@ func TestPublishFlexVolShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *test
 
 	assert.Equal(t, backendPolicy, volConfig.ExportPolicy)
 	assert.NoError(t, result, "Expected no error in publishFlexVolShare, got error")
+}
+
+func TestPublishFlexVolShare_StaleCachedPolicyUsesONTAPPolicy(t *testing.T) {
+	flexVolName := "testFlexVol"
+	emptyPolicy := "test_empty"
+	backendPolicy := getExportPolicyName(BackendUUID)
+	nodeIP := "1.1.1.1"
+	otherNodeIP := "2.2.2.2"
+
+	tests := []struct {
+		name         string
+		cachedPolicy string
+		ontapPolicy  string
+		wantPolicy   string // policy the volume is published through; empty means publish is skipped
+	}{
+		{
+			name:         "empty policy cached, volume on backend policy",
+			cachedPolicy: emptyPolicy,
+			ontapPolicy:  backendPolicy,
+			wantPolicy:   backendPolicy,
+		},
+		{
+			name:         "per-volume policy cached, volume on backend policy",
+			cachedPolicy: flexVolName,
+			ontapPolicy:  backendPolicy,
+			wantPolicy:   backendPolicy,
+		},
+		{
+			name:         "backend policy cached, volume on per-volume policy",
+			cachedPolicy: backendPolicy,
+			ontapPolicy:  flexVolName,
+			wantPolicy:   flexVolName,
+		},
+		{
+			name:         "backend policy cached, volume on empty policy",
+			cachedPolicy: backendPolicy,
+			ontapPolicy:  emptyPolicy,
+			wantPolicy:   flexVolName,
+		},
+		{
+			name:         "per-volume policy cached, volume on unmanaged policy",
+			cachedPolicy: flexVolName,
+			ontapPolicy:  "default",
+			wantPolicy:   "",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			publishInfo := models.VolumePublishInfo{
+				BackendUUID: BackendUUID,
+				Nodes:       []*models.Node{{Name: "node1", IPs: []string{nodeIP}}},
+				HostName:    "node1",
+			}
+			volConfig := &storage.VolumeConfig{ExportPolicy: tc.cachedPolicy}
+
+			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+			driver.Config.AutoExportPolicy = true
+			driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+			mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: tc.ontapPolicy}, nil)
+			if tc.wantPolicy != "" {
+				mockAPI.EXPECT().ExportPolicyExists(ctx, tc.wantPolicy).Return(true, nil)
+				ruleList := mockAPI.EXPECT().ExportRuleList(ctx, tc.wantPolicy).
+					Return(map[int]string{1: otherNodeIP}, nil)
+				mockAPI.EXPECT().ExportRuleCreate(ctx, tc.wantPolicy, nodeIP, gomock.Any()).
+					After(ruleList).Return(nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, tc.wantPolicy).Return(nil)
+			}
+
+			err := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
+
+			assert.NoError(t, err)
+			if tc.wantPolicy != "" {
+				assert.Equal(t, tc.wantPolicy, volConfig.ExportPolicy)
+			} else {
+				assert.Equal(t, tc.ontapPolicy, volConfig.ExportPolicy)
+			}
+		})
+	}
+}
+
+func TestPublishFlexVolShare_VolumeInfoFailure(t *testing.T) {
+	flexVolName := "testFlexVol"
+
+	tests := []struct {
+		name         string
+		volume       *api.Volume
+		apiErr       error
+		wantNotFound bool
+	}{
+		{name: "API error", apiErr: mockError},
+		{name: "volume not found", wantNotFound: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			publishInfo := models.VolumePublishInfo{
+				BackendUUID: BackendUUID,
+				Nodes:       []*models.Node{{Name: "node1", IPs: []string{"1.1.1.1"}}},
+				HostName:    "node1",
+			}
+			volConfig := &storage.VolumeConfig{ExportPolicy: "test_empty"}
+
+			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+			driver.Config.AutoExportPolicy = true
+			mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(tc.volume, tc.apiErr)
+
+			err := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
+
+			assert.Error(t, err)
+			assert.Equal(t, tc.wantNotFound, errors.IsNotFoundError(err))
+			assert.Equal(t, "test_empty", volConfig.ExportPolicy, "cached policy must not change on failure")
+		})
+	}
 }
 
 func TestOntapNasUnpublish(t *testing.T) {
