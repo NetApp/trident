@@ -71,7 +71,9 @@ type VolumeConfig struct {
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
 	PeerVolumeHandle string `json:"requiredPeerVolumeHandle,omitempty"`
 	// InternalID is an optional, backend-specific identifier to help find an object
-	InternalID         string                 `json:"internalID,omitempty"`
+	InternalID string `json:"internalID,omitempty"`
+	// BackendVolumeID is a stable, backend-assigned identifier for the volume's backing object.
+	BackendVolumeID    string                 `json:"backendVolumeID,omitempty"`
 	ShareSourceVolume  string                 `json:"shareSourceVolume"`
 	SubordinateVolumes map[string]interface{} `json:"-"`
 	Namespace          string                 `json:"namespace"`

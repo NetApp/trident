@@ -1713,8 +1713,9 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		"encryption":      convert.ToPrintableBoolPtr(enableEncryption),
 	}).Debug("Creating Flexvol for qtrees.")
 
-	// Create the Flexvol
-	err = createFlexvol(ctx, d.API, api.Volume{
+	// Create the Flexvol. The qtree driver packs many qtrees into a shared flexvol whose lifecycle is
+	// not one-to-one with a volConfig, so the reported UUID is not recorded here.
+	_, err = createFlexvol(ctx, d.API, api.Volume{
 		Aggregates:      []string{aggregate},
 		Encrypt:         enableEncryption,
 		ExportPolicy:    exportPolicy,

@@ -212,8 +212,10 @@ type OntapAPI interface {
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
-	VolumeCreate(ctx context.Context, volume Volume) error
-	VolumeCreateBalanced(ctx context.Context, volume Volume) error
+	// VolumeCreate creates a volume and returns the UUID the backend assigned to it, which is empty
+	// when the backend does not report one (for example on the ZAPI path).
+	VolumeCreate(ctx context.Context, volume Volume) (string, error)
+	VolumeCreateBalanced(ctx context.Context, volume Volume) (string, error)
 	VolumeModify(ctx context.Context, volume Volume) error
 	// VolumeDestroy keeps both flags in the shared abstraction because ZAPI and REST expose
 	// delete semantics differently. ZAPI consumes force directly and may need a follow-up
@@ -221,6 +223,12 @@ type OntapAPI interface {
 	// the transport layer, so the REST adapter maps skipRecoveryQueue onto that flag while keeping
 	// this caller-facing signature stable.
 	VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
+	// VolumeDestroyByUUID deletes the volume identified by volumeUUID. Deleting by UUID avoids the
+	// name index, which ONTAP updates asynchronously and which can therefore report a newly created
+	// volume as missing. It returns a NotFoundError once the UUID no longer resolves, and an
+	// UnsupportedError when the caller must fall back to deleting by name (no UUID provided, or
+	// the ZAPI path which cannot delete by UUID).
+	VolumeDestroyByUUID(ctx context.Context, volumeUUID, volumeName string, force, skipRecoveryQueue bool) error
 	VolumeMove(
 		ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
 	) (string, error)

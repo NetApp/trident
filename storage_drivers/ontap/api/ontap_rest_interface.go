@@ -52,12 +52,12 @@ type RestClientInterface interface {
 		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 		snapshotReserve int, dpVolume bool,
-	) error
+	) (string, error)
 	VolumeCreateBalanced(
 		ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 		snapshotReserve int, dpVolume bool,
-	) error
+	) (string, error)
 	// VolumeModify modifies one or more volume attributes
 	VolumeModify(ctx context.Context, volume Volume) error
 	// VolumeExists tests for the existence of a flexvol
@@ -86,6 +86,9 @@ type RestClientInterface interface {
 	VolumeCloneSplitStart(ctx context.Context, volumeName string) error
 	// VolumeDestroy destroys a flexvol
 	VolumeDestroy(ctx context.Context, name string, force bool) error
+	// VolumeDestroyByUUID destroys the volume with the specified UUID, returning a NotFoundError if no
+	// volume with that UUID exists
+	VolumeDestroyByUUID(ctx context.Context, volumeUUID string, force bool) error
 	// VolumeRecoveryQueuePurge uses the cli passthrough REST API to purge a volume from the recovery queue.
 	// the cli does not support passing in the UUID of the verver instead of the name. This will not work with
 	// a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to
