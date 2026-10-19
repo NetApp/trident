@@ -5116,6 +5116,25 @@ func TestOntapRestListAllVolumeNamesBackedBySnapshot(t *testing.T) {
 	}
 }
 
+func TestOntapREST_VolumeCreate_AutosizeMaximumOverflow(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("overflow should fail before volume create: %s %s", r.Method, r.URL.RequestURI())
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	_, err := rs.VolumeCreate(ctx, "fakeVolume", "aggr1", "1g", "none",
+		"fakeSnapshotPolicy", "---rwxr-xr-x", "", "fake-exportpolicy", "unix", "fake-tier",
+		"comment", QosPolicyGroup{}, nil, 0, false, &VolumeAutosizePolicy{
+			Mode:                 VolumeAutosizeModeGrow,
+			GrowThresholdPercent: 80,
+			MaximumSizeBytes:     math.MaxUint64,
+		})
+
+	assert.ErrorContains(t, err, "convert autosize maximum to int64")
+}
+
 func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(mockRequestAccepted))
 	rs := newRestClient(server.Listener.Addr().String(), server.Client())
@@ -5321,6 +5340,25 @@ func TestOntapREST_VolumeSetAutosizePolicy(t *testing.T) {
 
 		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, "", grow)
 		assert.EqualError(t, err, "could not find volume uuid with name vol1")
+	})
+
+	t.Run("uuid lookup failure", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet || r.URL.Path != "/api/storage/volumes" {
+				t.Errorf("lookup failure should stop before volume modify: %s %s", r.Method, r.URL.RequestURI())
+			}
+			setHTTPResponseHeader(w, http.StatusInternalServerError)
+			assert.NoError(t, json.NewEncoder(w).Encode(models.ErrorResponse{
+				Error: &models.ReturnedError{Message: new("volume lookup failed")},
+			}))
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeSetAutosizePolicy(ctx, volumeName, "", grow)
+		assert.ErrorContains(t, err, "volume lookup failed")
 	})
 
 	t.Run("conversion overflow", func(t *testing.T) {

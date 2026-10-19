@@ -1353,6 +1353,28 @@ func TestOntapSanVolumeCreate_VolumeExistsRecordsAutosize(t *testing.T) {
 	assert.Equal(t, "50%", volConfig.OntapAutosizeMaximumSize)
 }
 
+func TestOntapSanVolumeCreate_AutosizeMaximumBelowFlexvolSize(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	threshold := 80
+	driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "1Mi",
+	}
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.Create(ctx, &volConfig, pool1, map[string]sa.Request{})
+
+	assert.ErrorContains(t, err, "ontapAutosize maximum 1048576 bytes is below required FlexVol size")
+}
+
 func TestOntapSanVolumeCreate_GetPool(t *testing.T) {
 	ctx := context.Background()
 
@@ -2171,6 +2193,79 @@ func TestOntapSanVolumeImport_AutosizeResolveFailSkipsRename(t *testing.T) {
 	err := driver.Import(ctx, &volConfig, originalVolumeName)
 
 	assert.ErrorContains(t, err, "below required FlexVol size")
+}
+
+func TestOntapSanVolumeImport_AutosizeUnparsableFlexvolSize(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	threshold := 80
+	driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+
+	originalVolumeName := "originalVolume"
+	volConfig := getVolumeConfig()
+	volConfig.ImportNotManaged = false
+
+	volume := api.Volume{AccessType: "rw", Size: "abc", UUID: "import-uuid"}
+	lun := api.Lun{
+		Size:  testDefaultVolumeSize,
+		Name:  "/vol/" + originalVolumeName + "/lun1",
+		State: "online",
+	}
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
+	mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeRename(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.Import(ctx, &volConfig, originalVolumeName)
+
+	assert.ErrorContains(t, err, "parse imported volume originalVolume size")
+}
+
+func TestOntapSanVolumeImport_AutosizeApplyFailure(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	threshold := 80
+	driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+
+	originalVolumeName := "originalVolume"
+	volConfig := getVolumeConfig()
+	volConfig.ImportNotManaged = false
+
+	volume := api.Volume{AccessType: "rw", Size: "1000", UUID: "import-uuid"}
+	lun := api.Lun{
+		Size:  testDefaultVolumeSize,
+		Name:  "/vol/" + originalVolumeName + "/lun1",
+		State: "online",
+	}
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
+	// Import does not undo these renames when the autosize apply below fails, so a retry cannot find the volume.
+	// When Import rolls back, expect the VolumeRename and LunRename back to the original names here.
+	mockAPI.EXPECT().LunRename(ctx, "/vol/"+originalVolumeName+"/lun1",
+		"/vol/"+originalVolumeName+"/lun0").Return(nil)
+	mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeSetAutosizePolicy(ctx, volConfig.InternalName, "import-uuid", api.VolumeAutosizePolicy{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: threshold,
+		MaximumSizeBytes:     1200,
+	}).Return(errors.New("autosize modify failed"))
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.Import(ctx, &volConfig, originalVolumeName)
+
+	assert.EqualError(t, err, "apply ONTAP autosize to volume trident-pvc-1234: autosize modify failed")
+	assert.Empty(t, volConfig.BackendVolumeID)
+	assert.Empty(t, volConfig.OntapAutosizeMode)
 }
 
 func TestOntapSanVolumeImport_VolumeInfoFail(t *testing.T) {
@@ -3912,6 +4007,30 @@ func TestOntapSANStorageDriverResize_AutosizeMaximumBelowRequestedSize(t *testin
 	err := driver.Resize(ctx, &volConfig, 2147483648)
 
 	assert.ErrorContains(t, err, "below required FlexVol size")
+}
+
+func TestOntapSANStorageDriverResize_CorruptSavedAutosizeThreshold(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volume := api.Volume{
+		Name:           "vol1",
+		Comment:        "",
+		Aggregates:     []string{"aggr1"},
+		SnapshotPolicy: "none",
+	}
+	volConfig := getVolumeConfig()
+	volConfig.OntapAutosizeMode = api.VolumeAutosizeModeGrow
+	volConfig.OntapAutosizeGrowThresholdPercent = "abc"
+	volConfig.OntapAutosizeMaximumSize = "20%"
+
+	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
+	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
+	mockAPI.EXPECT().VolumeSetSize(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.Resize(ctx, &volConfig, 2147483648)
+
+	assert.ErrorContains(t, err, `parse saved ontapAutosize growThresholdPercent "abc"`)
 }
 
 func TestOntapSANStorageDriverResize_UpdateSmallerSize(t *testing.T) {

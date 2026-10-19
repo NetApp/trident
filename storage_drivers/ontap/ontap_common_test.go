@@ -228,6 +228,25 @@ func TestPopulateAndValidateOntapAutosizeConfig(t *testing.T) {
 			wantErrorMessage: "maximumSize",
 		},
 		{
+			name:       "Maximum percentage overflows uint64",
+			driverName: tridentconfig.OntapSANStorageDriverName,
+			autosizeConfig: &drivers.OntapAutosizeConfig{
+				Mode:        api.VolumeAutosizeModeGrow,
+				MaximumSize: "99999999999999999999999%",
+			},
+			wantErrorMessage: `invalid ontapAutosize maximumSize "99999999999999999999999%": strconv.ParseUint`,
+		},
+		{
+			// Quantity.Value() wraps MaxInt64+1 to a negative int64, which the uint64 conversion rejects.
+			name:       "Maximum quantity overflows int64",
+			driverName: tridentconfig.OntapSANStorageDriverName,
+			autosizeConfig: &drivers.OntapAutosizeConfig{
+				Mode:        api.VolumeAutosizeModeGrow,
+				MaximumSize: "9223372036854775808",
+			},
+			wantErrorMessage: "size is out of range",
+		},
+		{
 			name:       "Maximum as Kubernetes quantity",
 			driverName: tridentconfig.OntapSANStorageDriverName,
 			autosizeConfig: &drivers.OntapAutosizeConfig{
@@ -384,14 +403,23 @@ func TestPopulateAndValidateOntapAutosizeConfig_GCNVUnsupported(t *testing.T) {
 
 func TestCalculateOntapAutosizeMaximum(t *testing.T) {
 	tests := []struct {
-		name      string
-		base      uint64
-		floor     uint64
-		maximum   string
-		expected  uint64
-		shouldErr bool
+		name             string
+		base             uint64
+		floor            uint64
+		maximum          string
+		expected         uint64
+		shouldErr        bool
+		wantErrorMessage string
 	}{
 		{name: "percentage", base: 1000, maximum: "20%", expected: 1200},
+		{
+			name: "zero percentage fails", base: 1000, maximum: "0%", shouldErr: true,
+			wantErrorMessage: `invalid ontapAutosize maximumSize "0%"`,
+		},
+		{
+			name: "invalid quantity fails", base: 1000, maximum: "abc", shouldErr: true,
+			wantErrorMessage: `convert ontapAutosize maximumSize "abc" to bytes`,
+		},
 		{name: "percentage floored at live size", base: 1000, floor: 1500, maximum: "20%", expected: 1500},
 		{name: "percentage multiplication overflow fails", base: 1000, maximum: "18446744073709551615%", shouldErr: true},
 		{name: "percentage addition overflow fails", base: math.MaxUint64 - 1, maximum: "1%", shouldErr: true},
@@ -408,6 +436,9 @@ func TestCalculateOntapAutosizeMaximum(t *testing.T) {
 
 			if test.shouldErr {
 				assert.Error(t, err)
+				if test.wantErrorMessage != "" {
+					assert.ErrorContains(t, err, test.wantErrorMessage)
+				}
 				return
 			}
 			assert.NoError(t, err)
@@ -562,6 +593,143 @@ func TestOntapAutosizeVolumeConfigRoundTrip(t *testing.T) {
 	assert.Equal(t, "grow", volConfig.OntapAutosizeMode)
 	assert.Equal(t, "80", volConfig.OntapAutosizeGrowThresholdPercent)
 	assert.Equal(t, "20%", volConfig.OntapAutosizeMaximumSize)
+}
+
+func TestOntapAutosizeFromVolConfig_ModeOffWithoutThreshold(t *testing.T) {
+	volConfig := &storage.VolumeConfig{
+		OntapAutosizeMode:        api.VolumeAutosizeModeOff,
+		OntapAutosizeMaximumSize: "20%",
+	}
+
+	actual, err := ontapAutosizeFromVolConfig(volConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, &drivers.OntapAutosizeConfig{
+		Mode:        api.VolumeAutosizeModeOff,
+		MaximumSize: "20%",
+	}, actual)
+	assert.Nil(t, actual.GrowThresholdPercent)
+}
+
+func TestOntapAutosizeFromVolConfig_InvalidSavedThreshold(t *testing.T) {
+	for _, threshold := range []string{"abc", "-5"} {
+		t.Run(threshold, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{
+				OntapAutosizeMode:                 api.VolumeAutosizeModeGrow,
+				OntapAutosizeGrowThresholdPercent: threshold,
+				OntapAutosizeMaximumSize:          "20%",
+			}
+
+			actual, err := ontapAutosizeFromVolConfig(volConfig)
+
+			assert.Nil(t, actual)
+			assert.ErrorContains(t, err,
+				fmt.Sprintf("parse saved ontapAutosize growThresholdPercent %q", threshold))
+		})
+	}
+}
+
+func TestApplyOntapAutosizePolicyToClone_Errors(t *testing.T) {
+	threshold := 80
+	autosizeConfig := &drivers.OntapAutosizeConfig{
+		Mode:                 api.VolumeAutosizeModeGrow,
+		GrowThresholdPercent: &threshold,
+		MaximumSize:          "20%",
+	}
+	const cloneName = "clone1"
+
+	tests := []struct {
+		name             string
+		mocks            func(mockAPI *mockapi.MockOntapAPI)
+		wantErrorMessage string
+	}{
+		{
+			name: "VolumeInfo fails",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(ctx, cloneName).Return(nil, errors.New("volume info failed"))
+			},
+			wantErrorMessage: "get clone volume clone1: volume info failed",
+		},
+		{
+			name: "clone not found",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(ctx, cloneName).Return(nil, nil)
+			},
+			wantErrorMessage: "clone volume clone1 not found after reaching the desired state",
+		},
+		{
+			name: "unparsable clone size",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(ctx, cloneName).Return(&api.Volume{Size: "abc", UUID: "clone-uuid"}, nil)
+			},
+			wantErrorMessage: "parse clone volume clone1 size",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			test.mocks(mockAPI)
+			mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			cloneVolConfig := &storage.VolumeConfig{InternalName: cloneName}
+
+			err := applyOntapAutosizePolicyToClone(ctx, mockAPI, cloneVolConfig, autosizeConfig)
+
+			assert.ErrorContains(t, err, test.wantErrorMessage)
+			assert.Empty(t, cloneVolConfig.BackendVolumeID)
+		})
+	}
+}
+
+func TestPopulateConfigurationDefaults_OntapAutosize(t *testing.T) {
+	tests := []struct {
+		name             string
+		disaggregated    bool
+		autosizeConfig   *drivers.OntapAutosizeConfig
+		wantErrorMessage string
+	}{
+		{
+			name:             "disaggregated backend rejects ontapAutosize",
+			disaggregated:    true,
+			autosizeConfig:   &drivers.OntapAutosizeConfig{Mode: api.VolumeAutosizeModeGrow},
+			wantErrorMessage: "ontapAutosize is not supported by disaggregated ONTAP backends",
+		},
+		{
+			name:             "invalid mode",
+			autosizeConfig:   &drivers.OntapAutosizeConfig{Mode: "shrink"},
+			wantErrorMessage: `invalid ontapAutosize mode "shrink"`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockOntapAPI := newMockOntapAPIWithFlags(t, true, test.disaggregated, false)
+			config := &drivers.OntapStorageDriverConfig{
+				CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+					StorageDriverName: tridentconfig.OntapSANStorageDriverName,
+					DebugTraceFlags:   map[string]bool{},
+				},
+				OntapAutosizePolicy: test.autosizeConfig,
+			}
+
+			err := PopulateConfigurationDefaults(ctx, config, mockOntapAPI)
+
+			assert.ErrorContains(t, err, test.wantErrorMessage)
+		})
+	}
+}
+
+func TestInitializeOntapConfig_OntapAutosizeUnsupportedDriver(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		StorageDriverName: tridentconfig.OntapNASStorageDriverName,
+		DebugTraceFlags:   map[string]bool{},
+	}
+	configJSON := `{"ontapAutosize": {"mode": "grow"}}`
+
+	config, err := InitializeOntapConfig(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil)
+
+	assert.Nil(t, config)
+	assert.EqualError(t, err, "ontapAutosize is not supported by storage driver ontap-nas")
 }
 
 func TestPopulateASAConfigurationDefaults_OntapAutosizeUnsupported(t *testing.T) {

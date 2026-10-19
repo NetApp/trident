@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -1935,6 +1936,20 @@ func TestZAPI_VolumeCreate_UnixGroupID(t *testing.T) {
 		assert.Error(t, err, "expected an error for an invalid group ID")
 		assert.Contains(t, err.Error(), "unixGroupID")
 	})
+}
+
+func TestZAPI_VolumeSetAutosize_MaximumOverflow(t *testing.T) {
+	// The conversion fails before any ZAPI request is built, so no server is needed.
+	client := Client{}
+
+	response, err := client.VolumeSetAutosizePolicy("test-vol", VolumeAutosizePolicy{
+		Mode:                 VolumeAutosizeModeGrow,
+		GrowThresholdPercent: 80,
+		MaximumSizeBytes:     math.MaxUint64,
+	})
+
+	assert.Nil(t, response)
+	assert.ErrorContains(t, err, "convert autosize maximum to int")
 }
 
 func TestZAPI_VolumeSetAutosize_Attributes(t *testing.T) {

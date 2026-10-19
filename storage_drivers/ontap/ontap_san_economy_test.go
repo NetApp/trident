@@ -2311,6 +2311,47 @@ func TestOntapSanEconomyVolumeImport_Autosize(t *testing.T) {
 
 		assert.ErrorContains(t, err, "limitVolumePoolSize")
 	})
+
+	t.Run("unparsable FlexVol size leaves names untouched", func(t *testing.T) {
+		mockAPI, d := newMockOntapSanEcoDriver(t)
+		d.flexvolNamePrefix = "test_lun_pool_"
+		d.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+			Mode:                 api.VolumeAutosizeModeGrow,
+			GrowThresholdPercent: &threshold,
+			MaximumSize:          "20%",
+		}
+		mockAPI.EXPECT().VolumeInfo(gomock.Any(), trackedFlexvol).Return(&api.Volume{
+			AccessType: "rw",
+			Name:       trackedFlexvol,
+			Size:       "abc",
+			UUID:       "import-uuid",
+		}, nil)
+		mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+			Return(&api.Lun{Name: "/vol/" + trackedFlexvol + "/my_LUN", State: "online", Size: "1073741824"}, nil)
+		mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+		err := d.Import(ctx, newVolConfig(), trackedFlexvol+"/my_LUN")
+
+		assert.ErrorContains(t, err, "parse imported volume "+trackedFlexvol+" size")
+	})
+
+	t.Run("autosize apply failure returns error", func(t *testing.T) {
+		mockAPI, d := newImportDriver(t, trackedFlexvol, "")
+		volConfig := newVolConfig()
+		gomock.InOrder(
+			mockAPI.EXPECT().LunRename(
+				gomock.Any(), "/vol/"+trackedFlexvol+"/my_LUN", "/vol/"+trackedFlexvol+"/pvc-1234",
+			).Return(nil),
+			mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), trackedFlexvol, "import-uuid", gomock.Any()).
+				Return(errors.New("autosize modify failed")),
+		)
+		mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Times(0)
+
+		err := d.Import(ctx, volConfig, trackedFlexvol+"/my_LUN")
+
+		assert.EqualError(t, err, "apply ONTAP autosize to volume "+trackedFlexvol+": autosize modify failed")
+		assert.Empty(t, volConfig.OntapAutosizeMode)
+	})
 }
 
 func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {

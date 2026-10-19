@@ -321,6 +321,80 @@ func TestResizeFlexvol_CapsAutosizeMaximumAtPoolLimit(t *testing.T) {
 	}
 }
 
+func TestResolveBucketAutosizePolicy_ResolveFailure(t *testing.T) {
+	_, driver := newMockOntapSanEcoDriver(t)
+	driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+		Mode:        api.VolumeAutosizeModeGrow,
+		MaximumSize: "20%",
+	}
+
+	autosizePolicy, err := driver.resolveBucketAutosizePolicy(context.Background(), testEcoFlexvolBytes, testEcoFlexvolBytes)
+
+	assert.Nil(t, autosizePolicy)
+	assert.EqualError(t, err, "ontapAutosize growThresholdPercent is required when mode is grow")
+}
+
+func TestSetBucketSizeWithAutosizePolicy_Errors(t *testing.T) {
+	testCtx := context.Background()
+	threshold := 80
+
+	tests := []struct {
+		name                string
+		maximumSize         string
+		limitVolumePoolSize string
+		setSizeErr          error
+		expectVolumeSetSize bool
+		wantErrorMessage    string
+	}{
+		{
+			name:                "invalid pool limit skips resize and autosize",
+			maximumSize:         "20%",
+			limitVolumePoolSize: "invalid",
+			wantErrorMessage:    "error parsing limitVolumePoolSize",
+		},
+		{
+			name:             "invalid maximum skips resize and autosize",
+			maximumSize:      "0%",
+			wantErrorMessage: `invalid ontapAutosize maximumSize "0%"`,
+		},
+		{
+			name:                "resize failure skips autosize",
+			maximumSize:         "20%",
+			setSizeErr:          errors.New("volume set size failed"),
+			expectVolumeSetSize: true,
+			wantErrorMessage:    "flexvol resize failed: volume set size failed",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSanEcoDriver(t)
+			driver.Config.LimitVolumePoolSize = test.limitVolumePoolSize
+			driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
+				Mode:                 api.VolumeAutosizeModeGrow,
+				GrowThresholdPercent: &threshold,
+				MaximumSize:          test.maximumSize,
+			}
+			vol := economyFlexvolForTest(testEcoFlexvolBytes, api.VolumeAutosizeModeOff)
+			vol.UUID = "uuid1"
+			if test.expectVolumeSetSize {
+				mockAPI.EXPECT().VolumeSetSize(
+					testCtx, testEcoFlexvolName, economySizeString(testEcoPrimaryLunBytes),
+				).Return(test.setSizeErr)
+			} else {
+				mockAPI.EXPECT().VolumeSetSize(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+			mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			err := driver.setBucketSizeWithAutosizePolicy(
+				testCtx, testEcoFlexvolName, testEcoPrimaryLunBytes, testEcoPrimaryLunBytes, vol,
+			)
+
+			assert.ErrorContains(t, err, test.wantErrorMessage)
+		})
+	}
+}
+
 func TestResizeFlexvol_OptimalWithoutGrowPolicy(t *testing.T) {
 	testCtx := context.Background()
 	luns := economyLuns(testEcoPrimaryLunBytes, "lun_a")
