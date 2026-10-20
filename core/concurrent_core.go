@@ -7548,6 +7548,8 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 	// Copy some values from existing node
 	if results[0].Node.Read != nil {
 		node.PublicationState = results[0].Node.Read.PublicationState
+		// Re-registration proves the node is live; clear any stale soft-delete tombstone.
+		node.Deleted = false
 	}
 
 	// Setting log level, log workflows and log layers on the node same as to what is set on the controller.
