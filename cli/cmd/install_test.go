@@ -615,6 +615,49 @@ func TestDeleteOpenShiftTridentSCC(t *testing.T) {
 	}
 }
 
+func TestDeleteNodeRemediationResources(t *testing.T) {
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+
+	const namespace = "trident"
+	clusterRoleYAML := k8sclient.GetNodeRemediationClusterRoleYAML()
+	templateYAML := k8sclient.GetNodeRemediationTemplateYAML(namespace)
+
+	t.Run("deletes the cluster role and template CR, never the CRD", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+		client = mockK8s
+
+		gomock.InOrder(
+			mockK8s.EXPECT().DeleteObjectByYAML(clusterRoleYAML, true).Return(nil),
+			mockK8s.EXPECT().DeleteObjectByYAML(templateYAML, true).Return(nil),
+		)
+
+		assert.NoError(t, deleteNodeRemediationResources(namespace))
+	})
+
+	t.Run("cluster role delete error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+		client = mockK8s
+
+		mockK8s.EXPECT().DeleteObjectByYAML(clusterRoleYAML, true).Return(fmt.Errorf("boom"))
+
+		assert.ErrorContains(t, deleteNodeRemediationResources(namespace), "clusterRole")
+	})
+
+	t.Run("template CR delete error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockK8s := mockK8sClient.NewMockKubernetesClient(ctrl)
+		client = mockK8s
+
+		mockK8s.EXPECT().DeleteObjectByYAML(clusterRoleYAML, true).Return(nil)
+		mockK8s.EXPECT().DeleteObjectByYAML(templateYAML, true).Return(fmt.Errorf("boom"))
+
+		assert.ErrorContains(t, deleteNodeRemediationResources(namespace), "TridentNodeRemediationTemplate CR")
+	})
+}
+
 func TestReadDeploymentFromFile(t *testing.T) {
 	tempDir := t.TempDir()
 

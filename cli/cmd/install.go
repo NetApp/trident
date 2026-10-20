@@ -1399,7 +1399,9 @@ func deleteNodeRemediationResources(namespace string) error {
 		return fmt.Errorf("could not delete TridentNodeRemediation clusterRole; %v", err)
 	}
 
-	yaml = k8sclient.GetNodeRemediationTemplateCRDYAML()
+	// Delete the template CR, not its CRD. The CRD carries the Trident finalizer, so deleting it here
+	// leaves it terminating and later template creates are rejected.
+	yaml = k8sclient.GetNodeRemediationTemplateYAML(namespace)
 	err = client.DeleteObjectByYAML(yaml, true)
 	if err != nil {
 		return fmt.Errorf("could not delete TridentNodeRemediationTemplate CR; %v", err)
