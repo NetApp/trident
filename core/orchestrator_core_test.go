@@ -4776,6 +4776,33 @@ func TestAddNode(t *testing.T) {
 	}
 }
 
+func TestAddNode_ClearsDeletedTombstoneOnReRegistration(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.storeClient = mockStoreClient
+
+	nodeName := "test-node-1"
+	orchestrator.nodes.Set(nodeName, &models.Node{
+		Name:             nodeName,
+		Deleted:          true,
+		PublicationState: models.NodeCleanable,
+	})
+
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err := orchestrator.AddNode(ctx(), &models.Node{Name: nodeName}, nil)
+	assert.NoError(t, err)
+
+	node := orchestrator.nodes.Get(nodeName)
+	assert.NotNil(t, node)
+	assert.False(t, node.Deleted, "re-registration should clear the soft-delete tombstone")
+	assert.Equal(t, models.NodeCleanable, node.PublicationState,
+		"re-registration should preserve publication state")
+}
+
 func TestUpdateNode(t *testing.T) {
 	nodeName := "FakeNode"
 
@@ -5156,6 +5183,80 @@ func TestDeleteNode_SoftDeletedNodeCleanedUpAfterLastUnpublish(t *testing.T) {
 	node = o.nodes.Get(nodeName)
 	assert.Nil(t, node,
 		"Node should be removed from cache after last volume is unpublished from soft-deleted node")
+}
+
+// TestDeleteNode_ReRegisteredNodeSurvivesStalePublicationUnpublish verifies that when a
+// soft-deleted node re-registers before its stale publications are unpublished, the node
+// is not hard-deleted when the final publication is removed.
+func TestDeleteNode_ReRegisteredNodeSurvivesStalePublicationUnpublish_Legacy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	backendUUID := "backend-uuid-1"
+	nodeName := "test-node-1"
+	volumeName := "test-vol-1"
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+
+	o.nodes.Set(nodeName, &models.Node{
+		Name:    nodeName,
+		IPs:     []string{"10.0.0.1"},
+		Deleted: false,
+	})
+
+	o.volumes = map[string]*storage.Volume{
+		volumeName: {
+			BackendUUID: backendUUID,
+			Config:      &storage.VolumeConfig{Name: volumeName},
+		},
+	}
+
+	err := o.volumePublications.Set(volumeName, nodeName, &models.VolumePublication{
+		NodeName:   nodeName,
+		VolumeName: volumeName,
+	})
+	assert.NoError(t, err)
+
+	// Step 1: Delete the node (soft-delete because publication exists).
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = o.DeleteNode(ctx(), nodeName)
+	assert.NoError(t, err)
+
+	node := o.nodes.Get(nodeName)
+	assert.NotNil(t, node, "Node should still be in cache after soft-delete")
+	assert.True(t, node.Deleted)
+
+	// Step 2: Re-register the node (simulates worker rejoining the cluster).
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = o.AddNode(ctx(), &models.Node{Name: nodeName, IPs: []string{"10.0.0.1"}}, nil)
+	assert.NoError(t, err)
+
+	node = o.nodes.Get(nodeName)
+	assert.NotNil(t, node)
+	assert.False(t, node.Deleted, "Re-registration should clear the soft-delete tombstone")
+
+	// Step 3: Unpublish the stale publication from the re-registered node.
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteNode(gomock.Any(), gomock.Any()).Times(0)
+
+	err = o.unpublishVolume(coreCtx, volumeName, nodeName)
+	assert.NoError(t, err)
+
+	node = o.nodes.Get(nodeName)
+	assert.NotNil(t, node,
+		"Node should survive stale publication unpublish after re-registration")
+	assert.False(t, node.Deleted)
 }
 
 func TestSnapshotVolumes(t *testing.T) {

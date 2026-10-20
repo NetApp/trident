@@ -6961,6 +6961,8 @@ func (o *TridentOrchestrator) AddNode(
 	existingNode := o.nodes.Get(node.Name)
 	if existingNode != nil {
 		node.PublicationState = existingNode.PublicationState
+		// Re-registration proves the node is live; clear any stale soft-delete tombstone.
+		node.Deleted = false
 	}
 
 	// Setting log level, log workflows and log layers on the node same as to what is set on the controller.

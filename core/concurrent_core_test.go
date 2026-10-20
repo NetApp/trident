@@ -14067,6 +14067,40 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			name: "Success with soft-deleted existing node clears tombstone",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				_, results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
+				defer unlocker()
+
+				results[0].Node.Upsert(&models.Node{
+					Name:             "node1",
+					Deleted:          true,
+					PublicationState: models.NodeCleanable,
+				})
+				return mockStoreClient
+			},
+			newNode: &models.Node{
+				Name: "node1",
+			},
+			expectedNode: &models.Node{
+				Name:             "node1",
+				Deleted:          false,
+				PublicationState: models.NodeCleanable,
+				LogLevel:         "debug",
+			},
+			verifyBehavior: func(o *ConcurrentTridentOrchestrator) {
+				assert.WithinDuration(t, time.Now(), o.getLastNodeRegistrationTime(), 10*time.Second)
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+		},
+		{
 			name: "Failure in store",
 			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
 				t.Helper()
@@ -16910,6 +16944,79 @@ func TestTryDeleteSoftDeletedNode(t *testing.T) {
 			persistenceCleanup(t, o)
 		})
 	}
+}
+
+// TestDeleteNode_ReRegisteredNodeSurvivesStalePublicationUnpublish verifies that when a
+// soft-deleted node re-registers before its stale publications are unpublished, the node
+// is not hard-deleted when the final publication is removed.
+func TestDeleteNode_ReRegisteredNodeSurvivesStalePublicationUnpublish_Concurrent(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	backendUUID := "backend-uuid-1"
+	nodeName := "test-node-1"
+	volumeName := "test-vol-1"
+
+	mockBackend := getMockBackend(mockCtrl, "testBackend", backendUUID)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().InvalidateNodeAccess().AnyTimes()
+	addBackendsToCache(t, mockBackend)
+
+	addNodesToCache(t, &models.Node{
+		Name:    nodeName,
+		IPs:     []string{"10.0.0.1"},
+		Deleted: false,
+	})
+
+	fakeVolume := getFakeVolume(volumeName, backendUUID)
+	addVolumesToCache(t, fakeVolume)
+	addVolumesToPersistence(t, o, fakeVolume)
+
+	fakePublication := getFakeVolumePublication(volumeName, nodeName)
+	addVolumePublicationsToCache(t, fakePublication)
+	addVolumePublicationsToPersistence(t, o, fakePublication)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o.storeClient = mockStoreClient
+
+	// Step 1: Delete the node (soft-delete because publication exists).
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err := o.DeleteNode(testCtx, nodeName)
+	assert.NoError(t, err)
+
+	cachedNode := getNodeByNameFromCache(t, nodeName)
+	assert.NotNil(t, cachedNode, "Node should still be in cache after soft-delete")
+	assert.True(t, cachedNode.Deleted)
+
+	// Step 2: Re-register the node (simulates worker rejoining the cluster).
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = o.AddNode(testCtx, &models.Node{Name: nodeName, IPs: []string{"10.0.0.1"}}, func(_, _, _ string) {})
+	assert.NoError(t, err)
+
+	cachedNode = getNodeByNameFromCache(t, nodeName)
+	assert.NotNil(t, cachedNode)
+	assert.False(t, cachedNode.Deleted, "Re-registration should clear the soft-delete tombstone")
+
+	// Step 3: Unpublish the stale publication from the re-registered node.
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteNode(gomock.Any(), gomock.Any()).Times(0)
+
+	err = o.UnpublishVolume(testCtx, volumeName, nodeName)
+	assert.NoError(t, err)
+
+	cachedNode = getNodeByNameFromCache(t, nodeName)
+	assert.NotNil(t, cachedNode,
+		"Node should survive stale publication unpublish after re-registration")
+	assert.False(t, cachedNode.Deleted)
+
+	persistenceCleanup(t, o)
 }
 
 func TestResizeVolumeConcurrentCore(t *testing.T) {
