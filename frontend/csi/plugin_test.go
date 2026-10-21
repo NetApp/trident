@@ -434,6 +434,7 @@ func TestPlugin_GetCSIErrorForOrchestratorError(t *testing.T) {
 	}{
 		{name: "MaxWaitExceededError", inputError: errors.MaxWaitExceededError("waited too long"), expectedCode: codes.Aborted},
 		{name: "NotReadyError", inputError: errors.NotReadyError(), expectedCode: codes.Unavailable},
+		{name: "SnapshotBusyError", inputError: errors.SnapshotBusyError(""), expectedCode: codes.Unavailable},
 		{name: "BootstrapError", inputError: errors.BootstrapError(errors.New("")), expectedCode: codes.FailedPrecondition},
 		{name: "PreconditionError", inputError: errors.PreconditionError(""), expectedCode: codes.FailedPrecondition},
 		{name: "NotFoundError", inputError: errors.NotFoundError(""), expectedCode: codes.NotFound},

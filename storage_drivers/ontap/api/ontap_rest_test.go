@@ -5022,10 +5022,11 @@ func TestOntapRestStartCloneSplitByNameAndStyle(t *testing.T) {
 	tests := []struct {
 		name         string
 		mockFunction func(w http.ResponseWriter, r *http.Request)
+		notFound     bool
 	}{
-		{"SplitCloneFail", mockModifyFailed},
-		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil},
-		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil},
+		{"SplitCloneFail", mockModifyFailed, false},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -5035,6 +5036,7 @@ func TestOntapRestStartCloneSplitByNameAndStyle(t *testing.T) {
 
 			err := rs.startCloneSplitByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
 			assert.Error(t, err, "split clone updated on volume")
+			assert.Equal(t, test.notFound, errors.IsNotFoundError(err))
 
 			server.Close()
 		})

@@ -3022,245 +3022,284 @@ func RestoreSnapshot(
 	return nil
 }
 
+const (
+	// snapshotDeleteRetryInitial is the first silence after a busy or SnapMirror-held delete
+	// when cloneSplitDelay is the default or longer. A shorter cloneSplitDelay does not arm
+	// this gate, so each caller retry issues the storage delete.
+	snapshotDeleteRetryInitial = 5 * time.Minute
+	// snapshotDeleteRetryMax caps the backoff so a stuck snapshot is not deleted on every retry.
+	snapshotDeleteRetryMax = time.Hour
+)
+
+// snapshotDeleteHold is stored in cloneSplitTimers.
+// splitAfter paces clone splits. deleteAfter paces snapshot DELETE calls.
+type snapshotDeleteHold struct {
+	splitAfter    time.Time
+	deleteAfter   time.Time
+	deleteBackoff time.Duration
+	cause         error
+}
+
+func heldSnapshotError(snapConfig *storage.SnapshotConfig, cause error) error {
+	if cause != nil {
+		return errors.WrapWithSnapshotBusyError(cause, "")
+	}
+	return errors.SnapshotBusyError("snapshot %s backing volume %s is busy",
+		snapConfig.InternalName, snapConfig.VolumeInternalName)
+}
+
+func loadSnapshotDeleteHold(cloneSplitTimers *sync.Map, snapshotID string) (snapshotDeleteHold, bool) {
+	value, ok := cloneSplitTimers.Load(snapshotID)
+	if !ok {
+		return snapshotDeleteHold{}, false
+	}
+	hold, ok := value.(snapshotDeleteHold)
+	return hold, ok
+}
+
+func nextSnapshotDeleteInterval(current time.Duration) time.Duration {
+	if current < snapshotDeleteRetryInitial {
+		return snapshotDeleteRetryInitial
+	}
+	if current >= snapshotDeleteRetryMax/2 {
+		return snapshotDeleteRetryMax
+	}
+	return current * 2
+}
+
+func nextSplitWait(cloneSplitDelay time.Duration, splitStarted bool) time.Duration {
+	// A successful split waits one hour before the next attempt, whatever cloneSplitDelay is.
+	// cloneSplitDelay paces only the wait before a split has started.
+	if splitStarted {
+		return time.Hour
+	}
+	return cloneSplitDelay
+}
+
+// snapshotDeleteGateEnabled is false when cloneSplitDelay is shorter than the default.
+// Those deletes stay on the caller's retry cadence instead of the five-minute gate.
+func snapshotDeleteGateEnabled(cloneSplitDelay time.Duration) bool {
+	return cloneSplitDelay >= time.Duration(DefaultCloneSplitDelay)*time.Second
+}
+
+func armSnapshotDeleteHold(
+	cloneSplitTimers *sync.Map, snapshotID string, cloneSplitDelay time.Duration, cause error,
+) snapshotDeleteHold {
+	hold := snapshotDeleteHold{
+		splitAfter: time.Now().Add(cloneSplitDelay),
+		cause:      cause,
+	}
+	if snapshotDeleteGateEnabled(cloneSplitDelay) {
+		hold.deleteAfter = time.Now().Add(snapshotDeleteRetryInitial)
+		hold.deleteBackoff = snapshotDeleteRetryInitial
+	}
+	cloneSplitTimers.Store(snapshotID, hold)
+	return hold
+}
+
+func advanceSnapshotDeleteBackoff(cloneSplitTimers *sync.Map, snapshotID string, cause error) {
+	hold, ok := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID)
+	if !ok || hold.deleteBackoff == 0 {
+		return
+	}
+	hold.deleteBackoff = nextSnapshotDeleteInterval(hold.deleteBackoff)
+	hold.deleteAfter = time.Now().Add(hold.deleteBackoff)
+	if cause != nil {
+		hold.cause = cause
+	}
+	cloneSplitTimers.Store(snapshotID, hold)
+}
+
+// startCloneSplitIfDue starts one clone split when splitAfter has passed.
+// nothingLeft means no child clone remains; that does not by itself delete the snapshot.
+func startCloneSplitIfDue(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	cloneSplitTimers *sync.Map, split func(context.Context) error,
+) (splitStarted, nothingLeft bool) {
+	snapshotID := snapConfig.ID()
+	hold, ok := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID)
+	cloneSplitDelay := getCloneSplitDelay(config)
+	if !ok {
+		armSnapshotDeleteHold(cloneSplitTimers, snapshotID, cloneSplitDelay, nil)
+		return false, false
+	}
+	if time.Now().Before(hold.splitAfter) {
+		return false, false
+	}
+
+	err := split(ctx)
+	if err == nil {
+		hold.splitAfter = time.Now().Add(nextSplitWait(cloneSplitDelay, true))
+		if snapshotDeleteGateEnabled(cloneSplitDelay) {
+			hold.deleteBackoff = snapshotDeleteRetryInitial
+			hold.deleteAfter = time.Now().Add(snapshotDeleteRetryInitial)
+		}
+		cloneSplitTimers.Store(snapshotID, hold)
+		Logc(ctx).WithField("snapshot", snapshotID).Info("Began splitting clone from snapshot.")
+		return true, false
+	}
+	if errors.IsNotFoundError(err) {
+		Logc(ctx).WithField("snapshot", snapshotID).Debug("No clone remains for this snapshot.")
+		return false, true
+	}
+
+	hold.splitAfter = time.Now().Add(cloneSplitDelay)
+	cloneSplitTimers.Store(snapshotID, hold)
+	Logc(ctx).WithFields(LogFields{"snapshot": snapshotID, "error": err}).Error(
+		"Could not begin splitting clone from snapshot.")
+	return false, false
+}
+
+func rememberNoCloneUntilDelete(cloneSplitTimers *sync.Map, snapshotID string) {
+	hold, ok := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID)
+	if !ok || hold.deleteAfter.IsZero() {
+		return
+	}
+	hold.splitAfter = hold.deleteAfter
+	cloneSplitTimers.Store(snapshotID, hold)
+}
+
+// deleteHeldSnapshot deletes a snapshot, or waits when it is busy or held by SnapMirror.
+// A busy snapshot gets one clone split per splitAfter. SnapMirror only waits.
+// When cloneSplitDelay is the default or longer, an empty clone list does not issue
+// another snapshot DELETE before deleteAfter. A shorter delay leaves that gate unset.
+func deleteHeldSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	cloneSplitTimers *sync.Map, deleteSnapshot func(context.Context) error, split func(context.Context) error,
+) error {
+	snapshotID := snapConfig.ID()
+	hold, found := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID)
+	if found && time.Now().Before(hold.deleteAfter) {
+		if !api.IsSnapshotReferencedByMirrorError(hold.cause) {
+			if _, nothingLeft := startCloneSplitIfDue(
+				ctx, snapConfig, config, cloneSplitTimers, split,
+			); nothingLeft {
+				rememberNoCloneUntilDelete(cloneSplitTimers, snapshotID)
+			}
+			if current, ok := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID); ok {
+				hold = current
+			}
+		}
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsUntilDelete": fmt.Sprintf("%3.2f", time.Until(hold.deleteAfter).Seconds()),
+		}).Debug("Skipping snapshot delete until the retry gate opens.")
+		return heldSnapshotError(snapConfig, hold.cause)
+	}
+
+	err := deleteSnapshot(ctx)
+	if err == nil || errors.IsNotFoundError(err) {
+		cloneSplitTimers.Delete(snapshotID)
+		return nil
+	}
+	if !api.IsSnapshotBusyError(err) && !api.IsSnapshotReferencedByMirrorError(err) {
+		return err
+	}
+	if !found {
+		armSnapshotDeleteHold(cloneSplitTimers, snapshotID, getCloneSplitDelay(config), err)
+		return heldSnapshotError(snapConfig, err)
+	}
+	if api.IsSnapshotReferencedByMirrorError(err) {
+		advanceSnapshotDeleteBackoff(cloneSplitTimers, snapshotID, err)
+		return heldSnapshotError(snapConfig, err)
+	}
+
+	started, nothingLeft := startCloneSplitIfDue(ctx, snapConfig, config, cloneSplitTimers, split)
+	if started {
+		if current, ok := loadSnapshotDeleteHold(cloneSplitTimers, snapshotID); ok {
+			current.cause = err
+			cloneSplitTimers.Store(snapshotID, current)
+		}
+		return heldSnapshotError(snapConfig, err)
+	}
+	advanceSnapshotDeleteBackoff(cloneSplitTimers, snapshotID, err)
+	if nothingLeft {
+		rememberNoCloneUntilDelete(cloneSplitTimers, snapshotID)
+	}
+	return heldSnapshotError(snapConfig, err)
+}
+
+func getCloneSplitDelay(config *drivers.OntapStorageDriverConfig) time.Duration {
+	delay, err := convert.ToPositiveInt64(config.CloneSplitDelay)
+	if err != nil || delay < 0 {
+		delay = DefaultCloneSplitDelay
+	}
+	return time.Duration(delay) * time.Second
+}
+
+// deleteVolumeSnapshot deletes a snapshot for the drivers sharing the flexvol workflow.
+func deleteVolumeSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI,
+	snapshotDelete func(context.Context, string, string) error,
+	cloneSplitStart func(context.Context, string) error,
+	cloneSplitTimers *sync.Map,
+) error {
+	return deleteHeldSnapshot(ctx, snapConfig, config, cloneSplitTimers,
+		func(ctx context.Context) error {
+			return snapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName)
+		},
+		func(ctx context.Context) error {
+			return SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
+		},
+	)
+}
+
+// splitFirstClone starts a split on the first child that still exists.
+func splitFirstClone(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	list func(context.Context) (api.VolumeNameList, error),
+	cloneSplitStart func(context.Context, string) error,
+) error {
+	childVolumes, err := list(ctx)
+	if err != nil {
+		return err
+	}
+	if len(childVolumes) == 0 {
+		return errors.NotFoundError("could not find volume backing snapshot %s", snapConfig.InternalName)
+	}
+
+	for _, cloneName := range childVolumes {
+		if err = cloneSplitStart(ctx, cloneName); err != nil {
+			if errors.IsNotFoundError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotName":    snapConfig.InternalName,
+					"cloneVolumeName": cloneName,
+				}).Warning("Clone dependency no longer exists, trying next child.")
+				continue
+			}
+			return fmt.Errorf("error splitting clone: %w", err)
+		}
+		return nil
+	}
+	return errors.NotFoundError("could not find volume backing snapshot %s", snapConfig.InternalName)
+}
+
 // SplitVolumeFromBusySnapshot gets the list of volumes backed by a busy snapshot and starts
-// a split operation on the first one (sorted by volume name).
+// a split on the first child that still exists.
 func SplitVolumeFromBusySnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
 ) error {
-	fields := LogFields{
-		"Method":       "SplitVolumeFromBusySnapshot",
-		"Type":         "ontap_common",
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}
-	Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitVolumeFromBusySnapshot")
-	defer Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitVolumeFromBusySnapshot")
-
-	childVolumes, err := client.VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
-		snapConfig.VolumeInternalName)
-	if err != nil {
-		return err
-	} else if childVolumes == nil || len(childVolumes) == 0 {
-		return nil
-	}
-
-	if err := cloneSplitStart(ctx, childVolumes[0]); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName":     snapConfig.InternalName,
-			"parentVolumeName": snapConfig.VolumeInternalName,
-			"cloneVolumeName":  childVolumes[0],
-			"error":            err,
-		}).Error("Could not begin splitting clone from snapshot.")
-		return fmt.Errorf("error splitting clone: %v", err)
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"snapshotName":     snapConfig.InternalName,
-		"parentVolumeName": snapConfig.VolumeInternalName,
-		"cloneVolumeName":  childVolumes[0],
-	}).Info("Began splitting clone from snapshot.")
-
-	return nil
+	return splitFirstClone(ctx, snapConfig,
+		func(ctx context.Context) (api.VolumeNameList, error) {
+			return client.VolumeListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName)
+		},
+		cloneSplitStart,
+	)
 }
 
+// SplitASAVolumeFromBusySnapshot is SplitVolumeFromBusySnapshot for ASA storage units.
 func SplitASAVolumeFromBusySnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
 ) error {
-	fields := LogFields{
-		"Method":       "SplitASAVolumeFromBusySnapshot",
-		"Type":         "ontap_common",
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}
-	Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitASAVolumeFromBusySnapshot")
-	defer Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitASAVolumeFromBusySnapshot")
-
-	childVolumes, err := client.StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName,
-		snapConfig.VolumeInternalName)
-	if err != nil {
-		return err
-	} else if childVolumes == nil || len(childVolumes) == 0 {
-		return nil
-	}
-
-	if err := cloneSplitStart(ctx, childVolumes[0]); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName":     snapConfig.InternalName,
-			"parentVolumeName": snapConfig.VolumeInternalName,
-			"cloneVolumeName":  childVolumes[0],
-			"error":            err,
-		}).Error("Could not begin splitting ASA clone from snapshot.")
-		return fmt.Errorf("error splitting ASA clone: %v", err)
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"snapshotName":     snapConfig.InternalName,
-		"parentVolumeName": snapConfig.VolumeInternalName,
-		"cloneVolumeName":  childVolumes[0],
-	}).Info("Began splitting ASA clone from snapshot.")
-
-	return nil
-}
-
-func SplitVolumeFromBusySnapshotWithDelay(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
-	cloneSplitTimers *sync.Map,
-) {
-	snapshotID := snapConfig.ID()
-	cloneSplitDelay, expired := hasCloneSplitTimerExpired(ctx, snapConfig, config, cloneSplitTimers)
-	if !expired {
-		// Clone split timer has not expired, so do nothing.
-		return
-	}
-
-	// The delay has expired, so start the split
-	splitErr := SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
-	if splitErr != nil {
-
-		// The split start failed, so reset the timer so we start again after another brief delay.
-		cloneSplitTimers.Store(snapshotID, time.Now())
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
-		}).Warning("Retried locked snapshot delete, clone split failed, restarted timer.")
-
-	} else {
-
-		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
-		cloneSplitTimers.Store(snapshotID, time.Now().Add(1*time.Hour))
-
-		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
-	}
-}
-
-// hasCloneSplitTimerExpired Checks whether clone split timer has expired. If yes, returns the clone split delay time.
-func hasCloneSplitTimerExpired(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
-	config *drivers.OntapStorageDriverConfig, cloneSplitTimers *sync.Map,
-) (time.Duration, bool) {
-	fields := LogFields{
-		"Method":       "hasCloneSplitTimerExpired",
-		"Type":         "ontap_common",
-		"snapshotID":   snapConfig.ID(),
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}
-
-	Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> hasCloneSplitTimerExpired")
-	defer Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< hasCloneSplitTimerExpired")
-
-	snapshotID := snapConfig.ID()
-
-	// Find the configured value for cloneSplitDelay
-	delay, err := convert.ToPositiveInt64(config.CloneSplitDelay)
-	if err != nil || delay < 0 {
-		// Should not come here, but just in case.
-		delay = DefaultCloneSplitDelay
-	}
-	cloneSplitDelay := time.Duration(delay) * time.Second
-
-	// If this is the first delete, just log the time and return.
-	firstDeleteTime, ok := cloneSplitTimers.Load(snapshotID)
-	if !ok {
-		cloneSplitTimers.Store(snapshotID, time.Now())
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
-		}).Warning("Initial locked snapshot delete, starting clone split timer.")
-
-		return 0, false
-	}
-
-	t, ok := firstDeleteTime.(time.Time)
-	if !ok {
-		Logc(ctx).WithFields(LogFields{
-			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
-		}).Warning("Time type conversion failed, restarting clone split timer.")
-		cloneSplitTimers.Store(snapshotID, time.Now())
-		return 0, false
-	}
-	elapsedTime := time.Now().Sub(t)
-
-	// This isn't the first delete, and the split is still running, so there is nothing to do.
-	if elapsedTime < 0 {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot": snapshotID,
-		}).Warning("Retried locked snapshot delete, clone split still running.")
-
-		return 0, false
-	}
-
-	// This isn't the first delete, and the delay has not expired, so there is nothing to do.
-	if elapsedTime < cloneSplitDelay {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", (cloneSplitDelay - elapsedTime).Seconds()),
-		}).Warning("Retried locked snapshot delete, clone split timer not yet expired.")
-
-		return 0, false
-	}
-
-	return cloneSplitDelay, true
-}
-
-func SplitASAVolumeFromBusySnapshotWithDelay(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
-	cloneSplitTimers *sync.Map,
-) {
-	fields := LogFields{
-		"Method":       "SplitASAVolumeFromBusySnapshotWithDelay",
-		"Type":         "ontap_common",
-		"snapshotID":   snapConfig.ID(),
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}
-
-	Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitASAVolumeFromBusySnapshotWithDelay")
-	defer Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitASAVolumeFromBusySnapshotWithDelay")
-
-	snapshotID := snapConfig.ID()
-	cloneSplitDelay, expired := hasCloneSplitTimerExpired(ctx, snapConfig, config, cloneSplitTimers)
-	if !expired {
-		// Clone split timer has not expired, so do nothing.
-		return
-	}
-
-	// The delay has expired, so start the split
-	splitErr := SplitASAVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
-	if splitErr != nil {
-
-		// The split start failed, so reset the timer so we start again after another brief delay.
-		cloneSplitTimers.Store(snapshotID, time.Now())
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
-		}).Warning("Retried locked snapshot delete, clone split failed, restarted timer.")
-
-	} else {
-
-		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
-		cloneSplitTimers.Store(snapshotID, time.Now().Add(1*time.Hour))
-
-		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
-	}
+	return splitFirstClone(ctx, snapConfig,
+		func(ctx context.Context) (api.VolumeNameList, error) {
+			return client.StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName)
+		},
+		cloneSplitStart,
+	)
 }
 
 // getVolumeExternal is a method that accepts info about a volume
@@ -6443,25 +6482,18 @@ func deleteASASnapshot(
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteASASnapshot")
 
-	err := client.StorageUnitSnapshotDelete(ctx, snapConfig.InternalName, internalVolName)
-	if err != nil {
-		if api.IsSnapshotBusyError(err) {
-			Logc(ctx).WithFields(LogFields{
-				"snapshotName": internalSnapName,
-				"volumeName":   internalVolName,
-			}).Debug("Snapshot busy.")
-
-			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			SplitASAVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, client,
-				client.StorageUnitCloneSplitStart, cloneSplitTimers)
-		}
-
-		// We must return the error, even if we started a split, so the snapshot delete is retried.
+	if err := deleteHeldSnapshot(ctx, snapConfig, config, cloneSplitTimers,
+		func(ctx context.Context) error {
+			return client.StorageUnitSnapshotDelete(ctx, internalSnapName, internalVolName)
+		},
+		func(ctx context.Context) error {
+			return SplitASAVolumeFromBusySnapshot(
+				ctx, snapConfig, config, client, client.StorageUnitCloneSplitStart,
+			)
+		},
+	); err != nil {
 		return err
 	}
-
-	// Clean up any split timer
-	cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,

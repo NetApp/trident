@@ -438,6 +438,11 @@ func TestUnwrapMethods(t *testing.T) {
 			description: "reconcileDeferredError should unwrap correctly",
 		},
 		{
+			name:        "SnapshotBusyError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithSnapshotBusyError(inner, "snapshot busy") },
+			description: "snapshotBusyError should unwrap correctly",
+		},
+		{
 			name:        "ReconcileIncompleteError_Unwrap",
 			createErr:   func(inner error) error { return WrapWithReconcileIncompleteError(inner, "incomplete") },
 			description: "reconcileIncompleteError should unwrap correctly",
@@ -588,6 +593,13 @@ func TestWrappingErrorTypes(t *testing.T) {
 			wrapWithErr: WrapWithReconcileDeferredError,
 			isErrFunc:   IsReconcileDeferredError,
 			errorType:   "reconcile deferred",
+		},
+		{
+			name:        "SnapshotBusyError",
+			createErr:   SnapshotBusyError,
+			wrapWithErr: WrapWithSnapshotBusyError,
+			isErrFunc:   IsSnapshotBusyError,
+			errorType:   "snapshot busy",
 		},
 		{
 			name:        "ReconcileIncompleteError",

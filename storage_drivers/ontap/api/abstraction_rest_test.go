@@ -3359,6 +3359,12 @@ func TestVolumeCloneSplitStart(t *testing.T) {
 		errors.New("volume splits clone failed"))
 	err = oapi.VolumeCloneSplitStart(ctx, "fake-cloneVolume")
 	assert.Error(t, err, "no error returned while doing a split clone on volume")
+
+	// case 3: A missing clone remains identifiable through the abstraction layer.
+	rsi.EXPECT().VolumeCloneSplitStart(ctx, "missing-clone").Return(
+		errors.NotFoundError("could not find volume with name missing-clone"))
+	err = oapi.VolumeCloneSplitStart(ctx, "missing-clone")
+	assert.True(t, errors.IsNotFoundError(err))
 }
 
 func TestSnapshotRestoreVolume(t *testing.T) {
@@ -3415,6 +3421,7 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(nil, nil)
 	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
 	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+	assert.True(t, errors.IsNotFoundError(err))
 
 	// case 4:  Response contain Snapshot UUID nil
 	snapshot.UUID = nil
@@ -3444,6 +3451,18 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(restErr)
 	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
 	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+	assert.True(t, api.IsSnapshotBusyError(err))
+
+	// case 8: Poll job status reports a SnapMirror reference.
+	payload = models.Job{State: new("failure"), Code: new(int64(1638483))}
+	restErr = api.NewRestErrorFromPayload(&payload)
+
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(restErr)
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned for a snapshot referenced by SnapMirror")
+	assert.True(t, api.IsSnapshotReferencedByMirrorError(err))
 }
 
 func TestFlexgroupSnapshotDelete(t *testing.T) {

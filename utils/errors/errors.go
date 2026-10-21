@@ -1956,3 +1956,45 @@ func IsTerminalReconciliationError(err error) bool {
 	var errPtr *terminalReconciliationError
 	return errors.As(err, &errPtr)
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// snapshotBusyError
+// ///////////////////////////////////////////////////////////////////////////
+
+type snapshotBusyError struct {
+	inner   error
+	message string
+}
+
+func (e *snapshotBusyError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *snapshotBusyError) Unwrap() error { return e.inner }
+
+func SnapshotBusyError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &snapshotBusyError{message: message}
+	}
+	return &snapshotBusyError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithSnapshotBusyError(err error, message string, a ...any) error {
+	return &snapshotBusyError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsSnapshotBusyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *snapshotBusyError
+	return errors.As(err, &errPtr)
+}
