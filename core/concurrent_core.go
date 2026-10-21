@@ -2410,11 +2410,11 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 
 	// Ensure volume doesn't exist
 	if err = func(volumeName string) error {
-		_, results, unlocker, err = db.Lock(
+		_, results, volumeCheckUnlocker, err := db.Lock(
 			ctx,
 			db.Query(db.InconsistentReadVolume(volConfig.Name)),
 			db.Query(db.InconsistentReadSubordinateVolume(volConfig.Name)))
-		defer unlocker()
+		defer volumeCheckUnlocker()
 		if err != nil {
 			return fmt.Errorf("error checking for existing volume; %w", err)
 		} else if results[0].Volume.Read != nil {
@@ -2434,8 +2434,8 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 	}
 
 	// Get an independent scratch copy of the storage class
-	_, results, unlocker, err = db.Lock(ctx, db.Query(db.InconsistentReadStorageClass(volConfig.StorageClass)))
-	unlocker()
+	_, results, scUnlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadStorageClass(volConfig.StorageClass)))
+	scUnlocker()
 	if err != nil {
 		return nil, err
 	}
@@ -2474,123 +2474,185 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, volTxn, unlocker)
 	}()
 
-	var volumeCreateErrors error
+	// Build a single list of candidate pools spanning every matching backend.
+	candidatePools, err := o.gatherCandidatePools(ctx, sc, protocol, volConfig, matchingBackendPools)
+	if err != nil {
+		return nil, err
+	}
 
-	// Loop through backends, exhausting pools on one before moving to the next.  This also shuffles the backends.
-	for backendName, poolNames := range matchingBackendPools {
+	Logc(ctx).WithField("volume", mutableConfig.Name).Debugf("Looking through %d storage pools.", len(candidatePools))
+
+	var volumeCreateErrors error
+	ineligibleBackends := make(map[string]struct{})
+
+	// releaseAttempt drops whatever lock the current candidate pool took and resets the state that the
+	// deferred cleanup inspects, so that the next candidate starts from a clean slate.
+	releaseAttempt := func() {
+		unlocker()
+		unlocker, backend = nil, nil
+	}
+
+	// The candidate pool list is already sorted by preferred topologies and shuffled within each preference
+	// bucket, so just try the pools in order.  The loop terminates when creation on all matching pools has failed.
+	for _, candidatePool := range candidatePools {
+
+		candidateBackend := candidatePool.Backend()
+		candidateBackendUUID := candidateBackend.BackendUUID()
+
+		// If the pool's backend cannot possibly work, skip trying
+		if _, ok := ineligibleBackends[candidateBackendUUID]; ok {
+			continue
+		}
+
+		backendName := candidateBackend.Name()
 
 		// Get a lock on the backend as well as the volume name
 		_, results, unlocker, err = db.Lock(ctx, db.Query(
 			db.UpsertVolumeByBackendName(volConfig.Name, backendName), db.ReadBackendByName(backendName)))
 		if err != nil {
-			return nil, fmt.Errorf("error locking backend for volume create; %w", err)
+			releaseAttempt()
+
+			// Lock blocks on mutexes without consulting the context and reports a cancelled or expired request
+			// as a lock failure, so check for that before blaming the backend.  The remaining candidates cannot
+			// recover from a cancelled request, so fail it rather than retrying every one of them.
+			if ctx.Err() != nil {
+				err = ctx.Err()
+				return nil, err
+			}
+
+			// The backend name no longer resolves, so it was removed or renamed since the candidate pools were
+			// gathered.  Record the failure and move on to the next pool rather than failing the whole create.
+			Logc(ctx).WithFields(LogFields{
+				"backend": backendName,
+				"volume":  volConfig.Name,
+				"error":   err,
+			}).Debug("Could not lock backend for volume create.")
+			volumeCreateErrors = multierr.Append(volumeCreateErrors,
+				fmt.Errorf("error locking backend %s for volume create; %w", backendName, err))
+			ineligibleBackends[candidateBackendUUID] = struct{}{}
+			continue
 		}
 		backend = results[0].Backend.Read
 		upserter = results[0].Volume.Upsert
 
 		if backend == nil {
 			Logc(ctx).WithField("backend", backendName).Debug("Backend not found.")
-			unlocker()
+			ineligibleBackends[candidateBackendUUID] = struct{}{}
+			releaseAttempt()
 			continue
 		}
 
-		// Get actual pools from backend
-		pools := make(map[string]*storage.Pool)
-		backend.StoragePools().Range(func(k, v interface{}) bool {
-			pools[k.(string)] = new(v.(storage.Pool))
-			return true
-		})
-
-		// Filter pools to those matching pool map.  This also shuffles the pools.
-		filteredPools := []storage.Pool{}
-		for poolName, pool := range pools {
-			if collection.ContainsString(poolNames, poolName) {
-				filteredPools = append(filteredPools, *pool)
-			}
+		// The backend name may since have been reassigned, for example by deleting a backend and adding a new
+		// one under the same name.  The candidate was filtered against the old backend, so it tells us nothing
+		// about the one we just locked.
+		if backend.BackendUUID() != candidateBackendUUID {
+			Logc(ctx).WithFields(LogFields{
+				"backend":              backendName,
+				"candidateBackendUUID": candidateBackendUUID,
+				"lockedBackendUUID":    backend.BackendUUID(),
+				"volume":               volConfig.Name,
+			}).Debug("Backend was replaced since the candidate pools were gathered.")
+			ineligibleBackends[candidateBackendUUID] = struct{}{}
+			releaseAttempt()
+			continue
 		}
 
-		// Update scratch storage class with pools
-		sc.SetPools(filteredPools)
-
-		// Further filter pools by protocol, topology, etc.  This also sorts the pools by preferred topologies.
-		filteredPools = sc.GetStoragePoolsForProtocolByBackend(ctx, protocol, volConfig.RequisiteTopologies,
-			volConfig.PreferredTopologies, volConfig.AccessMode)
-		if len(filteredPools) == 0 {
+		// Re-resolve the pool against the backend we just locked, since it may have changed in the meantime.
+		p, found := backend.StoragePools().Load(candidatePool.Name())
+		if !found {
 			Logc(ctx).WithFields(LogFields{
 				"backend": backendName,
-				"sc":      sc.GetName(),
+				"pool":    candidatePool.Name(),
 				"volume":  volConfig.Name,
-			}).Debug("No matching pools on backend for volume.")
-			unlocker()
+			}).Debug("Pool no longer present on backend.")
+			releaseAttempt()
+			continue
+		}
+		pool := p.(storage.Pool)
+
+		// The candidate was filtered against an unlocked snapshot of the backend, so re-apply those same
+		// constraints to the pool we just read under lock.
+		if !poolEligibleForVolume(ctx, pool, backend, sc, protocol, volConfig) {
+			Logc(ctx).WithFields(LogFields{
+				"backend": backendName,
+				"pool":    pool.Name(),
+				"volume":  volConfig.Name,
+			}).Debug("Pool no longer matches the volume's requirements.")
+			releaseAttempt()
 			continue
 		}
 
-		for _, pool := range filteredPools {
+		// Mirror destinations can only be placed on mirroring enabled backends
+		if mutableConfig.IsMirrorDestination && !backend.CanMirror() {
+			Logc(ctx).WithFields(LogFields{
+				"backend": backendName,
+				"pool":    pool.Name(),
+				"volume":  volConfig.Name,
+			}).Debug("Mirror destinations can only be placed on mirroring enabled backends.")
+			ineligibleBackends[candidateBackendUUID] = struct{}{}
+			releaseAttempt()
+			continue
+		}
 
-			// Mirror destinations can only be placed on mirroring enabled backends
-			if mutableConfig.IsMirrorDestination && !backend.CanMirror() {
-				Logc(ctx).Debugf("MirrorDestinations can only be placed on mirroring enabled backends")
-				break // Exit pool loop and move on to next backend
+		// CreatePrepare has a side effect that updates the mutableConfig with the backend-specific internal name
+		backend.CreatePrepare(ctx, mutableConfig, pool)
+
+		// Update transaction with updated mutableConfig
+		volTxn = &storage.VolumeTransaction{
+			Config: mutableConfig,
+			Op:     storage.AddVolume,
+		}
+		if err = o.storeClient.UpdateVolumeTransaction(ctx, volTxn); err != nil {
+			Logc(ctx).WithError(err).Error("Error updating volume transaction.")
+			volumeCreateErrors = multierr.Append(volumeCreateErrors, err)
+			releaseAttempt()
+			continue
+		}
+
+		// Create the volume, waiting as long as necessary for a successful completion
+		vol, err = o.addVolumeRetry(ctx, mutableConfig, pool, sc.GetAttributes())
+		if err != nil {
+			logFields := LogFields{
+				"backend":     backend.Name(),
+				"backendUUID": backend.BackendUUID(),
+				"pool":        pool.Name(),
+				"volume":      mutableConfig.Name,
+				"error":       err,
 			}
 
-			// CreatePrepare has a side effect that updates the mutableConfig with the backend-specific internal name
-			backend.CreatePrepare(ctx, mutableConfig, pool)
+			// Log failure and continue for loop to find a pool that can create the volume.
+			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
+			err = fmt.Errorf("failed to create volume %s on storage pool %s from backend %s; %w",
+				mutableConfig.Name, pool.Name(), backend.Name(), err)
+			volumeCreateErrors = multierr.Append(volumeCreateErrors, err)
 
-			// Update transaction with updated mutableConfig
-			volTxn = &storage.VolumeTransaction{
-				Config: mutableConfig,
-				Op:     storage.AddVolume,
-			}
-			if err = o.storeClient.UpdateVolumeTransaction(ctx, volTxn); err != nil {
-				Logc(ctx).WithError(err).Error("Error updating volume transaction.")
-				volumeCreateErrors = multierr.Append(volumeCreateErrors, err)
-				break // Exit pool loop and move on to next backend
+			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
+			var backendIneligibleError *drivers.BackendIneligibleError
+			if errors.As(err, &backendIneligibleError) {
+				ineligibleBackends[candidateBackendUUID] = struct{}{}
 			}
 
-			// Create the volume, waiting as long as necessary for a successful completion
-			vol, err = o.addVolumeRetry(ctx, mutableConfig, pool, sc.GetAttributes())
-			if err != nil {
-				logFields := LogFields{
-					"backend":     backend.Name(),
-					"backendUUID": backend.BackendUUID(),
-					"pool":        pool.Name(),
-					"volume":      mutableConfig.Name,
-					"error":       err,
-				}
+			// AddVolume has failed and the backend may have mutated the volume config used so reset the mutable
+			// config to a fresh copy of the original config. This prepares the mutable config for the next pool.
+			mutableConfig = volConfig.ConstructClone()
 
-				// Log failure and continue for loop to find a pool that can create the volume.
-				Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
-				err = fmt.Errorf("failed to create volume %s on storage pool %s from backend %s; %w",
-					mutableConfig.Name, pool.Name(), backend.Name(), err)
-				volumeCreateErrors = multierr.Append(volumeCreateErrors, err)
+			// Moving on to the next pool, so unlock the current backend
+			releaseAttempt()
+			continue
+		}
 
-				// If this backend cannot handle the new volume on any pool, remove it from further consideration.
-				var backendIneligibleError *drivers.BackendIneligibleError
-				if errors.As(err, &backendIneligibleError) {
-					break // Exit pool loop and move on to next backend
-				}
+		// Volume creation succeeded, so register it and return the result.
+		// If registration fails, then don't add to cache so that the cleanup
+		// code doesn't have to deal with it.  In this path we rely on cleanup
+		// to release the locks since we need to be holding it if the volume
+		// must be deleted.
+		externalVol, err = o.addVolumeFinish(ctx, volTxn, vol, backend, pool)
+		if err == nil {
+			upserter(vol)
+		}
+		return externalVol, err
 
-				// AddVolume has failed and the backend may have mutated the volume config used so reset the mutable
-				// config to a fresh copy of the original config. This prepares the mutable config for the next backend.
-				mutableConfig = volConfig.ConstructClone()
-			} else {
-				// Volume creation succeeded, so register it and return the result.
-				// If registration fails, then don't add to cache so that the cleanup
-				// code doesn't have to deal with it.  In this path we rely on cleanup
-				// to release the locks since we need to be holding it if the volume
-				// must be deleted.
-				volumeExternal, err := o.addVolumeFinish(ctx, volTxn, vol, backend, pool)
-				if err == nil {
-					upserter(vol)
-				}
-				return volumeExternal, err
-			}
-		} // end pool loop
-
-		// Moving on to the next backend, so unlock the current one
-		unlocker()
-
-	} // end backend loop
+	} // end pool loop
 
 	// We should never get here with a lock being held, so clear the unlocker to prevent
 	// it from being called again during cleanup.
@@ -2604,6 +2666,62 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 	}
 
 	return nil, err
+}
+
+// poolEligibleForVolume reports whether a pool on the supplied backend satisfies the protocol, requisite
+// topologies and NAS type required for the volume.  It is applied once while gathering candidate pools and again
+// on the freshly read pool once its backend is locked, so that a backend updated in between cannot receive a
+// volume it no longer matches.
+func poolEligibleForVolume(
+	ctx context.Context, pool storage.Pool, backend storage.Backend, sc *storageclass.StorageClass,
+	protocol config.Protocol, volConfig *storage.VolumeConfig,
+) bool {
+	if protocol != config.ProtocolAny && backend.GetProtocol(ctx) != protocol {
+		return false
+	}
+
+	pools := []storage.Pool{pool}
+	if len(storageclass.FilterPoolsOnTopology(ctx, pools, volConfig.RequisiteTopologies)) == 0 {
+		return false
+	}
+	return len(storageclass.FilterPoolsOnNasType(ctx, pools, sc.GetAttributes())) != 0
+}
+
+// gatherCandidatePools builds a single list of eligible pools spanning every backend that matches the storage
+// class, then orders that list by preferred topologies.  SortPoolsByPreferredTopologies applies rand.Shuffle
+// within each preference bucket, which is what keeps volume placement even across equivalent pools.  No backend
+// locks are taken here; each pool and its backend are re-read and re-validated under lock before a volume create
+// is attempted on it.
+func (o *ConcurrentTridentOrchestrator) gatherCandidatePools(
+	ctx context.Context, sc *storageclass.StorageClass, protocol config.Protocol,
+	volConfig *storage.VolumeConfig, matchingBackendPools map[string][]string,
+) ([]storage.Pool, error) {
+	_, backendResults, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends()))
+	defer unlocker()
+	if err != nil {
+		return nil, fmt.Errorf("error reading backends for volume create; %w", err)
+	}
+
+	candidatePools := make([]storage.Pool, 0)
+
+	for _, b := range backendResults[0].Backends {
+		poolNames, ok := matchingBackendPools[b.Name()]
+		if !ok {
+			continue
+		}
+		b.StoragePools().Range(func(k, v interface{}) bool {
+			if !collection.ContainsString(poolNames, k.(string)) {
+				return true
+			}
+			pool := v.(storage.Pool)
+			if poolEligibleForVolume(ctx, pool, b, sc, protocol, volConfig) {
+				candidatePools = append(candidatePools, pool)
+			}
+			return true
+		})
+	}
+
+	return storageclass.SortPoolsByPreferredTopologies(ctx, candidatePools, volConfig.PreferredTopologies), nil
 }
 
 // addVolumeRetry is used to retry volume creations in the case a driver returns VolumeCreatingError.

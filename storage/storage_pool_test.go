@@ -4,6 +4,7 @@ package storage
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -475,4 +476,37 @@ func TestDeleteProvisioningLabelsNotFoundSuccess(t *testing.T) {
 	newLabels := DeleteProvisioningLabels([]string{"foo", "bar"})
 
 	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not left as is")
+}
+
+// TestStoragePoolBackendConcurrentAccess guards the backend pointer shared by backend copies.
+// An upsert writes it through SetBackend while provisioning reads it through Backend.
+func TestStoragePoolBackendConcurrentAccess(t *testing.T) {
+	first := &StorageBackend{name: "first"}
+	second := &StorageBackend{name: "second"}
+	pool := NewStoragePool(first, "pool")
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 1000; i++ {
+			if i%2 == 0 {
+				pool.SetBackend(first)
+			} else {
+				pool.SetBackend(second)
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 1000; i++ {
+			backend := pool.Backend()
+			if backend != nil {
+				_ = backend.Name()
+			}
+		}
+	}()
+	wg.Wait()
+
+	assert.Contains(t, []string{"first", "second"}, pool.Backend().Name())
 }
