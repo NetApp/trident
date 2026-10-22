@@ -1011,6 +1011,11 @@ func TestZAPI_VolumeModificationAndCloneOperations(t *testing.T) {
 		assert.NoError(t, err) // Fake server supports this operation
 	})
 
+	t.Run("VolumeOnline", func(t *testing.T) {
+		_, err := client.VolumeOnline("test-vol")
+		assert.NoError(t, err) // Fake server supports this operation
+	})
+
 	t.Run("VolumeDestroy", func(t *testing.T) {
 		_, err := client.VolumeDestroy("test-vol", true)
 		assert.NoError(t, err) // Fake server supports this operation

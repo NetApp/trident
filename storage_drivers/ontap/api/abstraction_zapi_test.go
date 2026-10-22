@@ -567,6 +567,139 @@ func TestOntapAPIZAPI_VolumeCreate_JobExists(t *testing.T) {
 	assert.True(t, api.IsVolumeCreateJobExistsError(err))
 }
 
+// createInProgressReasonTests covers the ONTAP failure reasons that mean a volume create is already running,
+// and the reasons that share errno EAPIERROR but mean something else entirely.
+var createInProgressReasonTests = []struct {
+	name           string
+	errno          string
+	reason         string
+	wantInProgress bool
+}{
+	{
+		name:           "LegacyJobExists",
+		errno:          azgo.EAPIERROR,
+		reason:         "Job exists",
+		wantInProgress: true,
+	},
+	{
+		name:           "JobExistsSuffix",
+		errno:          azgo.EAPIERROR,
+		reason:         "  Volume create failed: job exists  ",
+		wantInProgress: true,
+	},
+	{
+		name:           "BusyWithVolumeCreateJobUUID",
+		errno:          azgo.EAPIERROR,
+		reason:         "Volume is busy with a volume create, job ID [b3f0a1d0-6f0e-11ee-9c3a-005056b3f0a1]",
+		wantInProgress: true,
+	},
+	{
+		name:           "VolumeIsBusyWithJobID",
+		errno:          azgo.EAPIERROR,
+		reason:         "Volume is busy, job id 1234",
+		wantInProgress: true,
+	},
+	{
+		name:           "BareVolumeBusy",
+		errno:          azgo.EAPIERROR,
+		reason:         "Volume busy.",
+		wantInProgress: false,
+	},
+	{
+		name:           "VolumeIsBusyWithoutJobID",
+		errno:          azgo.EAPIERROR,
+		reason:         "Volume is busy.",
+		wantInProgress: false,
+	},
+	{
+		name:           "BareAPIError",
+		errno:          azgo.EAPIERROR,
+		reason:         "API Error",
+		wantInProgress: false,
+	},
+	{
+		name:           "JobExistsWithDifferentErrno",
+		errno:          azgo.EVOLUMEDOESNOTEXIST,
+		reason:         "Job exists",
+		wantInProgress: false,
+	},
+}
+
+func TestOntapAPIZAPI_VolumeCreate_CreateInProgressReasons(t *testing.T) {
+	volume := api.Volume{
+		Name:       "test_volume",
+		Aggregates: []string{"aggr1"},
+		Size:       "1g",
+	}
+
+	for _, test := range createInProgressReasonTests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+
+			mock.EXPECT().ClientConfig().Return(api.ClientConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}).AnyTimes()
+
+			volumeCreateResponse := &azgo.VolumeCreateResponse{
+				Result: azgo.VolumeCreateResponseResult{
+					ResultStatusAttr: "failed",
+					ResultErrnoAttr:  test.errno,
+					ResultReasonAttr: test.reason,
+				},
+			}
+
+			mock.EXPECT().VolumeCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(volumeCreateResponse, nil).Times(1)
+
+			_, err := oapi.VolumeCreate(ctx, volume)
+			assert.Error(t, err, "expected an error for a failed volume create")
+			assert.Equal(t, test.wantInProgress, api.IsVolumeCreateJobExistsError(err),
+				"unexpected create-in-progress classification for reason %q", test.reason)
+		})
+	}
+}
+
+func TestOntapAPIZAPI_LunCreate_CreateInProgressReasons(t *testing.T) {
+	lun := api.Lun{
+		Name:           "/vol/test_volume/test_lun",
+		Size:           "1g",
+		OsType:         "linux",
+		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
+	}
+
+	for _, test := range createInProgressReasonTests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+
+			mock.EXPECT().ClientConfig().Return(api.ClientConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}).AnyTimes()
+
+			lunCreateResponse := &azgo.LunCreateBySizeResponse{
+				Result: azgo.LunCreateBySizeResponseResult{
+					ResultStatusAttr: "failed",
+					ResultErrnoAttr:  test.errno,
+					ResultReasonAttr: test.reason,
+				},
+			}
+
+			mock.EXPECT().LunCreate(lun.Name, 1073741824, lun.OsType, lun.Qos, *lun.SpaceReserved,
+				*lun.SpaceAllocated).Return(lunCreateResponse, nil).Times(1)
+
+			err := oapi.LunCreate(ctx, lun)
+			assert.Error(t, err, "expected an error for a failed LUN create")
+			assert.Equal(t, test.wantInProgress, api.IsVolumeCreateJobExistsError(err),
+				"unexpected create-in-progress classification for reason %q", test.reason)
+		})
+	}
+}
+
 func TestOntapAPIZAPI_VolumeDestroy_Success(t *testing.T) {
 	ctrl, mock, oapi := setupTestZAPIClient(t)
 	defer ctrl.Finish()
@@ -617,6 +750,72 @@ func TestOntapAPIZAPI_VolumeDestroy_VolumeDoesNotExist(t *testing.T) {
 
 	err := oapi.VolumeDestroy(ctx, volumeName, force, skipRecoveryQueue)
 	assert.NoError(t, err)
+}
+
+func TestOntapAPIZAPI_VolumeDestroy_RetriesBusyVolume(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	volumeName := "test_volume"
+
+	busyResponse := &azgo.VolumeDestroyResponse{
+		Result: azgo.VolumeDestroyResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EAPIERROR,
+			ResultReasonAttr: "Volume is busy with a volume destroy, job ID [b3f0a1d0-6f0e-11ee-9c3a-005056b3f0a1]",
+		},
+	}
+	passedResponse := &azgo.VolumeDestroyResponse{
+		Result: azgo.VolumeDestroyResponseResult{ResultStatusAttr: "passed"},
+	}
+
+	gomock.InOrder(
+		mock.EXPECT().VolumeDestroy(volumeName, true).Return(busyResponse, nil),
+		mock.EXPECT().VolumeDestroy(volumeName, true).Return(passedResponse, nil),
+	)
+
+	err := oapi.VolumeDestroy(ctx, volumeName, true, false)
+	assert.NoError(t, err, "a busy volume should be retried until the destroy is accepted")
+}
+
+func TestOntapAPIZAPI_VolumeDestroy_BusyVolumeTimesOut(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	volumeName := "test_volume"
+
+	busyResponse := &azgo.VolumeDestroyResponse{
+		Result: azgo.VolumeDestroyResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EAPIERROR,
+			ResultReasonAttr: "Volume is busy",
+		},
+	}
+
+	mock.EXPECT().VolumeDestroy(volumeName, true).Return(busyResponse, nil).MinTimes(2)
+
+	err := oapi.VolumeDestroy(ctx, volumeName, true, false)
+	assert.ErrorContains(t, err, "error destroying volume")
+}
+
+func TestOntapAPIZAPI_VolumeDestroy_NonBusyFailureIsNotRetried(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	volumeName := "test_volume"
+
+	failedResponse := &azgo.VolumeDestroyResponse{
+		Result: azgo.VolumeDestroyResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EAPIERROR,
+			ResultReasonAttr: "Volume is a SnapMirror destination",
+		},
+	}
+
+	mock.EXPECT().VolumeDestroy(volumeName, true).Return(failedResponse, nil).Times(1)
+
+	err := oapi.VolumeDestroy(ctx, volumeName, true, false)
+	assert.ErrorContains(t, err, "error destroying volume")
 }
 
 func TestOntapAPIZAPI_VolumeDestroy_WithRecoveryQueuePurge(t *testing.T) {
@@ -3070,6 +3269,116 @@ func TestOntapAPIZAPI_FlexgroupCreate(t *testing.T) {
 	}
 }
 
+func TestOntapAPIZAPI_FlexgroupCreate_CreateInProgressReasons(t *testing.T) {
+	volume := api.Volume{
+		Name:       "test_flexgroup",
+		Size:       "1073741824",
+		Aggregates: []string{"aggr1"},
+	}
+
+	for _, test := range createInProgressReasonTests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+
+			mock.EXPECT().ClientConfig().Return(api.ClientConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}).AnyTimes()
+
+			sizeBytes, _ := convert.ToPositiveInt(volume.Size)
+			mock.EXPECT().FlexGroupCreate(ctx, volume.Name, sizeBytes, volume.Aggregates,
+				volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions,
+				volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
+				volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+				Return(&azgo.VolumeCreateAsyncResponse{
+					Result: azgo.VolumeCreateAsyncResponseResult{
+						ResultStatusAttr: "failed",
+						ResultErrnoAttr:  test.errno,
+						ResultReasonAttr: test.reason,
+					},
+				}, nil).Times(1)
+
+			err := oapi.FlexgroupCreate(ctx, volume)
+			assert.Error(t, err, "expected an error for a failed FlexGroup create")
+			assert.Equal(t, test.wantInProgress, api.IsVolumeCreateJobExistsError(err),
+				"unexpected create-in-progress classification for reason %q", test.reason)
+		})
+	}
+}
+
+// TestVolumeInfoFromZapiAttrsHelper_CreateOnlyAttributes covers the attributes ONTAP only honors when a
+// volume is created, which a resumed create compares before it decides whether the volume can be reused.
+func TestVolumeInfoFromZapiAttrsHelper_CreateOnlyAttributes(t *testing.T) {
+	baseAttrs := func() *azgo.VolumeAttributesType {
+		return &azgo.VolumeAttributesType{
+			VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{
+				NamePtr: new("vol1"),
+			},
+			VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
+				SizePtr: new(1073741824),
+			},
+		}
+	}
+
+	tests := []struct {
+		name              string
+		attrs             func() *azgo.VolumeAttributesType
+		wantEncrypt       *bool
+		wantSecurityStyle string
+		wantTieringPolicy string
+		wantQos           api.QosPolicyGroup
+	}{
+		{
+			name: "AllAttributesReported",
+			attrs: func() *azgo.VolumeAttributesType {
+				attrs := baseAttrs()
+				attrs.EncryptPtr = new(true)
+				attrs.VolumeSecurityAttributesPtr = &azgo.VolumeSecurityAttributesType{
+					StylePtr: new("unix"),
+				}
+				attrs.VolumeCompAggrAttributesPtr = &azgo.VolumeCompAggrAttributesType{
+					TieringPolicyPtr: new("snapshot-only"),
+				}
+				attrs.VolumeQosAttributesPtr = &azgo.VolumeQosAttributesType{
+					PolicyGroupNamePtr: new("fast"),
+				}
+				return attrs
+			},
+			wantEncrypt:       new(true),
+			wantSecurityStyle: "unix",
+			wantTieringPolicy: "snapshot-only",
+			wantQos:           api.QosPolicyGroup{Name: "fast", Kind: api.QosPolicyGroupKind},
+		},
+		{
+			name: "AdaptiveQosPolicyGroup",
+			attrs: func() *azgo.VolumeAttributesType {
+				attrs := baseAttrs()
+				attrs.VolumeQosAttributesPtr = &azgo.VolumeQosAttributesType{
+					AdaptivePolicyGroupNamePtr: new("extreme"),
+				}
+				return attrs
+			},
+			wantQos: api.QosPolicyGroup{Name: "extreme", Kind: api.QosAdaptivePolicyGroupKind},
+		},
+		{
+			name:  "NoAttributesReported",
+			attrs: baseAttrs,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volume, err := api.VolumeInfoFromZapiAttrsHelper(test.attrs())
+
+			assert.NoError(t, err)
+			assert.Equal(t, test.wantEncrypt, volume.Encrypt, "unexpected encryption")
+			assert.Equal(t, test.wantSecurityStyle, volume.SecurityStyle, "unexpected security style")
+			assert.Equal(t, test.wantTieringPolicy, volume.TieringPolicy, "unexpected tiering policy")
+			assert.Equal(t, test.wantQos, volume.Qos, "unexpected QoS policy group")
+		})
+	}
+}
+
 func TestOntapAPIZAPI_FlexgroupInfo(t *testing.T) {
 	ctrl, mock, oapi := setupTestZAPIClient(t)
 	defer ctrl.Finish()
@@ -3155,7 +3464,12 @@ func TestOntapAPIZAPI_FlexgroupDestroy(t *testing.T) {
 		offlineError      error
 		destroyResponse   *azgo.VolumeDestroyAsyncResponse
 		destroyError      error
-		expectError       bool
+		// onlineCalls is how many times the FlexGroup is expected to be brought back online after a failed
+		// destroy; onlineResponse and onlineError are what each call returns.
+		onlineCalls    int
+		onlineResponse *azgo.VolumeOnlineResponse
+		onlineError    error
+		expectError    bool
 	}{
 		{
 			name:              "successful_flexgroup_destroy",
@@ -3231,7 +3545,88 @@ func TestOntapAPIZAPI_FlexgroupDestroy(t *testing.T) {
 			offlineError:    nil,
 			destroyResponse: nil,
 			destroyError:    errors.New("destroy failed"),
-			expectError:     true,
+			// The destroy left the FlexGroup offline, so it is brought back online for the next attempt.
+			onlineCalls: 1,
+			onlineResponse: &azgo.VolumeOnlineResponse{
+				Result: azgo.VolumeOnlineResponseResult{ResultStatusAttr: "passed"},
+			},
+			expectError: true,
+		},
+		{
+			name:              "destroy_rejected_brings_flexgroup_back_online",
+			volumeName:        "test_flexgroup",
+			force:             true,
+			skipRecoveryQueue: true,
+			unmountResponse: &azgo.VolumeUnmountResponse{
+				Result: azgo.VolumeUnmountResponseResult{ResultStatusAttr: "passed"},
+			},
+			offlineResponse: &azgo.VolumeOfflineResponse{
+				Result: azgo.VolumeOfflineResponseResult{ResultStatusAttr: "passed"},
+			},
+			destroyResponse: &azgo.VolumeDestroyAsyncResponse{
+				Result: azgo.VolumeDestroyAsyncResponseResult{
+					ResultStatusAttr: "failed", ResultErrnoAttr: "1234", ResultReasonAttr: "destroy rejected",
+				},
+			},
+			onlineCalls: 1,
+			onlineResponse: &azgo.VolumeOnlineResponse{
+				Result: azgo.VolumeOnlineResponseResult{ResultStatusAttr: "passed"},
+			},
+			expectError: true,
+		},
+		{
+			name:              "destroy_error_online_error_still_reports_destroy_error",
+			volumeName:        "test_flexgroup",
+			force:             true,
+			skipRecoveryQueue: true,
+			unmountResponse: &azgo.VolumeUnmountResponse{
+				Result: azgo.VolumeUnmountResponseResult{ResultStatusAttr: "passed"},
+			},
+			offlineResponse: &azgo.VolumeOfflineResponse{
+				Result: azgo.VolumeOfflineResponseResult{ResultStatusAttr: "passed"},
+			},
+			destroyError: errors.New("destroy failed"),
+			onlineCalls:  1,
+			onlineError:  errors.New("online failed"),
+			expectError:  true,
+		},
+		{
+			name:              "destroy_error_online_rejected_still_reports_destroy_error",
+			volumeName:        "test_flexgroup",
+			force:             true,
+			skipRecoveryQueue: true,
+			unmountResponse: &azgo.VolumeUnmountResponse{
+				Result: azgo.VolumeUnmountResponseResult{ResultStatusAttr: "passed"},
+			},
+			offlineResponse: &azgo.VolumeOfflineResponse{
+				Result: azgo.VolumeOfflineResponseResult{ResultStatusAttr: "passed"},
+			},
+			destroyError: errors.New("destroy failed"),
+			onlineCalls:  1,
+			onlineResponse: &azgo.VolumeOnlineResponse{
+				Result: azgo.VolumeOnlineResponseResult{
+					ResultStatusAttr: "failed", ResultErrnoAttr: "1234", ResultReasonAttr: "online rejected",
+				},
+			},
+			expectError: true,
+		},
+		{
+			// A FlexGroup that was already offline before the destroy is left as it was found.
+			name:              "destroy_error_already_offline_stays_offline",
+			volumeName:        "test_flexgroup",
+			force:             true,
+			skipRecoveryQueue: true,
+			unmountResponse: &azgo.VolumeUnmountResponse{
+				Result: azgo.VolumeUnmountResponseResult{ResultStatusAttr: "passed"},
+			},
+			offlineResponse: &azgo.VolumeOfflineResponse{
+				Result: azgo.VolumeOfflineResponseResult{
+					ResultStatusAttr: "failed", ResultErrnoAttr: azgo.EVOLUMEOFFLINE, ResultReasonAttr: "already offline",
+				},
+			},
+			destroyError: errors.New("destroy failed"),
+			onlineCalls:  0,
+			expectError:  true,
 		},
 	}
 
@@ -3246,10 +3641,17 @@ func TestOntapAPIZAPI_FlexgroupDestroy(t *testing.T) {
 				mock.EXPECT().VolumeOffline(tt.volumeName).
 					Return(tt.offlineResponse, tt.offlineError).Times(1)
 
-				if tt.offlineError == nil && (tt.offlineResponse == nil || tt.offlineResponse.Result.ResultStatusAttr == "passed") {
+				if tt.offlineError == nil && (tt.offlineResponse == nil ||
+					tt.offlineResponse.Result.ResultStatusAttr == "passed" ||
+					tt.offlineResponse.Result.ResultErrnoAttr == azgo.EVOLUMEOFFLINE) {
 					// Mock destroy call
 					mock.EXPECT().FlexGroupDestroy(ctx, tt.volumeName, tt.force).
 						Return(tt.destroyResponse, tt.destroyError).Times(1)
+
+					if tt.onlineCalls > 0 {
+						mock.EXPECT().VolumeOnline(tt.volumeName).
+							Return(tt.onlineResponse, tt.onlineError).Times(tt.onlineCalls)
+					}
 
 					if tt.destroyError == nil && tt.skipRecoveryQueue && (tt.destroyResponse == nil || tt.destroyResponse.Result.ResultStatusAttr == "passed") {
 						// Mock recovery queue operations
@@ -6614,6 +7016,101 @@ func TestOntapAPIZAPI_SnapmirrorResync(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestVolumeInfoFromZapiAttrsHelper_AggregatesAndState(t *testing.T) {
+	newAttrs := func() *azgo.VolumeAttributesType {
+		return &azgo.VolumeAttributesType{
+			VolumeIdAttributesPtr: &azgo.VolumeIdAttributesType{NamePtr: new("fg1")},
+			VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
+				SizePtr: new(1073741824),
+			},
+			VolumeStateAttributesPtr: &azgo.VolumeStateAttributesType{StatePtr: new("online")},
+		}
+	}
+
+	t.Run("FlexGroupAggregateList", func(t *testing.T) {
+		attrs := newAttrs()
+		attrs.VolumeIdAttributesPtr.ContainingAggregateNamePtr = new("aggr1")
+		attrs.VolumeIdAttributesPtr.AggrListPtr = &azgo.VolumeIdAttributesTypeAggrList{
+			AggrNamePtr: []string{"aggr1", "aggr2"},
+		}
+
+		info, err := api.VolumeInfoFromZapiAttrsHelper(attrs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"aggr1", "aggr2"}, info.Aggregates,
+			"every aggregate a FlexGroup spans must be reported, not just the containing one")
+		assert.Equal(t, "online", info.State)
+	})
+
+	t.Run("FlexVolContainingAggregate", func(t *testing.T) {
+		attrs := newAttrs()
+		attrs.VolumeIdAttributesPtr.ContainingAggregateNamePtr = new("aggr1")
+
+		info, err := api.VolumeInfoFromZapiAttrsHelper(attrs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"aggr1"}, info.Aggregates)
+	})
+
+	t.Run("StateNotReported", func(t *testing.T) {
+		attrs := newAttrs()
+		attrs.VolumeStateAttributesPtr = nil
+
+		info, err := api.VolumeInfoFromZapiAttrsHelper(attrs)
+
+		assert.NoError(t, err)
+		assert.Empty(t, info.State)
+	})
+}
+
+func TestOntapAPIZAPI_LunCreate_TargetExists(t *testing.T) {
+	lun := api.Lun{
+		Name:           "/vol/test_volume/test_lun",
+		Size:           "1g",
+		OsType:         "linux",
+		Qos:            api.QosPolicyGroup{Name: "qos_policy"},
+		SpaceReserved:  new(true),
+		SpaceAllocated: new(true),
+	}
+
+	tests := []struct {
+		name       string
+		errno      string
+		reason     string
+		wantExists bool
+	}{
+		{"VdiskExists", azgo.EVDISK_ERROR_VDISK_EXISTS, "LUN already exists", true},
+		{"DuplicateEntry", azgo.EDUPLICATEENTRY, "duplicate entry", true},
+		{"HardFailure", azgo.EINVALIDINPUTERROR, "invalid size", false},
+		{"GenericApiError", azgo.EAPIERROR, "some other failure", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+			mock.EXPECT().ClientConfig().Return(api.ClientConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}).AnyTimes()
+
+			response := &azgo.LunCreateBySizeResponse{
+				Result: azgo.LunCreateBySizeResponseResult{
+					ResultStatusAttr: "failed",
+					ResultErrnoAttr:  tt.errno,
+					ResultReasonAttr: tt.reason,
+				},
+			}
+			mock.EXPECT().LunCreate(lun.Name, 1073741824, lun.OsType, lun.Qos, *lun.SpaceReserved,
+				*lun.SpaceAllocated).Return(response, nil)
+
+			err := oapi.LunCreate(ctx, lun)
+
+			assert.Error(t, err)
+			assert.Equal(t, tt.wantExists, errors.IsAlreadyExistsError(err), "got %v", err)
+			assert.False(t, api.IsVolumeCreateJobExistsError(err))
 		})
 	}
 }

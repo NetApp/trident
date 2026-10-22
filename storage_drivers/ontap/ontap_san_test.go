@@ -74,7 +74,7 @@ func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, testDefaultPort, ONTAPTEST_VSERVER_AGGR_NAME, true, new(FSX_ID), mockAPI)
@@ -109,7 +109,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 
 // setupCommonMockExpectations sets up mock expectations that are commonly used across tests
 func setupCommonMockExpectations(mockAPI *mockapi.MockOntapAPI) {
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 }
@@ -123,7 +123,7 @@ func TestOntapSANStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -727,7 +727,7 @@ func TestOntapSanUnpublish(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-			mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+			mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 				gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -751,7 +751,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -798,7 +798,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -845,7 +845,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -892,7 +892,7 @@ func TestSANStorageDriverGetBackendState(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -958,166 +958,325 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 	assert.Error(t, err, "Error is nil")
 }
 
-func TestOntapSanVolume_CleanupIncompleteLUN(t *testing.T) {
+// testResumeLUNPath is the LUN path Create derives from the volume config the SAN tests share.
+const testResumeLUNPath = "/vol/trident-pvc-1234/lun0"
+
+// newResumeDesiredVolume returns the Flexvol a resumed Create asks reconcileLUNCreateState to validate against.
+func newResumeDesiredVolume() api.Volume {
+	return api.Volume{
+		Name:            "trident-pvc-1234",
+		Comment:         "testComment",
+		ExportPolicy:    "default",
+		Size:            "1000000000",
+		SnapshotPolicy:  "none",
+		SnapshotReserve: 0,
+		SpaceReserve:    "none",
+	}
+}
+
+// newResumeExistingVolume returns the Flexvol VolumeInfo reports for a volume that matches the request.
+func newResumeExistingVolume() *api.Volume {
+	existing := newResumeDesiredVolume()
+	existing.Aggregates = []string{ONTAPTEST_VSERVER_AGGR_NAME}
+	return &existing
+}
+
+// newResumeDesiredLUN returns the LUN a resumed Create asks reconcileLUNCreateState to validate against.
+func newResumeDesiredLUN() api.Lun {
+	return api.Lun{
+		Name:           testResumeLUNPath,
+		Size:           "1000000000",
+		OsType:         "linux",
+		SpaceReserved:  new(false),
+		SpaceAllocated: new(false),
+	}
+}
+
+// newResumeDesiredAttrs returns the attributes a resumed Create stamps onto the LUN it reconciles.
+func newResumeDesiredAttrs() lunAttributes {
+	return lunAttributes{
+		fsType:         "ext4",
+		driverContext:  "csi",
+		luksEncryption: "false",
+		formatOptions:  "",
+		poolName:       "testPool",
+	}
+}
+
+// expectExistingVolumeOnline sets up the reads every resumed create makes on a healthy existing Flexvol
+// whose attributes already match the request.
+func expectExistingVolumeOnline(mockAPI *mockapi.MockOntapAPI) {
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), "trident-pvc-1234", []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), "trident-pvc-1234").Return(newResumeExistingVolume(), nil)
+}
+
+// expectVolumeDestroyed sets up the destroy and the wait for the volume to disappear that
+// destroyUnusableVolume performs on a Flexvol this request cannot reuse.
+func expectVolumeDestroyed(mockAPI *mockapi.MockOntapAPI, name string) {
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), name, true, false).Return(nil)
+}
+
+// assertVolumeExistsError asserts a reconcile reported the pair as already matching this request.
+func assertVolumeExistsError(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+	return assert.True(t, drivers.IsVolumeExistsError(err), msgAndArgs...)
+}
+
+// expectLUNRestamped sets up the attribute write reconcile performs on a LUN whose attributes are missing or
+// were written for another pool.
+func expectLUNRestamped(mockAPI *mockapi.MockOntapAPI, err error) {
+	attrs := newResumeDesiredAttrs()
+	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), testResumeLUNPath, LUNAttributeFSType, attrs.fsType,
+		attrs.driverContext, attrs.luksEncryption, attrs.formatOptions, attrs.poolName).Return(err)
+}
+
+// expectLUNCreated sets up the create, the read-back and the attribute write reconcile performs when the
+// Flexvol exists without its LUN.
+func expectLUNCreated(mockAPI *mockapi.MockOntapAPI, createdLun *api.Lun) {
+	mockAPI.EXPECT().LunCreate(gomock.Any(), newResumeDesiredLUN()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(createdLun, nil)
+	expectLUNRestamped(mockAPI, nil)
+}
+
+func TestOntapSanVolume_ReconcileLUNCreateState(t *testing.T) {
 	ctx = context.Background()
-	mockAPI, driver := newMockOntapSANDriver(t)
 	volConfig := getVolumeConfig()
 
-	dummyLun := &api.Lun{
-		Comment:      "dummyLun",
-		SerialNumber: "testSerialNumber",
+	matchingLun := &api.Lun{
+		Name:           testResumeLUNPath,
+		Comment:        "dummyLun",
+		SerialNumber:   "testSerialNumber",
+		Size:           "1000000000",
+		SpaceAllocated: new(false),
 	}
 
 	tests := []struct {
 		name          string
 		mocks         func(mockAPI *mockapi.MockOntapAPI)
 		wantErr       assert.ErrorAssertionFunc
-		volExists     bool
 		assertMessage string // This message prints when the test case fails
 	}{
 		{
-			name: "VolumeExists_Fail",
+			name: "VolumeStillCreating",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false,
-					errors.New("volume checks fail"))
+				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+					[]string{"error"}, gomock.Any()).Return("creating", errors.New("timed out"))
 			},
 			wantErr:       assert.Error,
-			volExists:     false,
-			assertMessage: "Checking for volume succeeded.",
-		},
-		{
-			name: "VolumeDoesNotExist",
-			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
-			},
-			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Volume existed.",
+			assertMessage: "A volume ONTAP is still building must not be touched.",
 		},
 		{
 			name: "LUNExists_EmptyPoolName",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("", nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("", nil)
+				expectLUNRestamped(mockAPI, nil)
 			},
 			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Volume should be destroyed when pool name is empty",
+			assertMessage: "An unstamped LUN should be restamped rather than destroyed",
 		},
 		{
 			name: "LUNExists_PoolNameMatches",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("testPool", nil)
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("testPool", nil)
 			},
-			wantErr:       assert.NoError,
-			volExists:     true,
-			assertMessage: "LUN should exist with matching pool name",
+			wantErr:       assertVolumeExistsError,
+			assertMessage: "A LUN that already matches this request should be reported as existing",
 		},
 		{
 			name: "LUNExists_PoolNameMismatch",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("differentPool", nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("differentPool", nil)
+				expectLUNRestamped(mockAPI, nil)
 			},
 			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Volume should be destroyed due to pool name mismatch",
-		},
-		{
-			name: "LUNExists_PoolNameMismatch_VolumeDestroyFails",
-			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("differentPool", nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(errors.New("volume destroy failed"))
-			},
-			wantErr:       assert.Error,
-			volExists:     true,
-			assertMessage: "Should error when volume destroy fails after pool name mismatch",
+			assertMessage: "A LUN stamped for another pool should be restamped, not destroyed",
 		},
 		{
 			name: "LUNExists_GetPoolNameAttributeFails",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("", errors.New("failed to get attribute"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("",
+					errors.New("failed to get attribute"))
+				expectLUNRestamped(mockAPI, nil)
 			},
 			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Volume should be destroyed when pool name attribute retrieval fails",
+			assertMessage: "An unreadable pool name attribute should be rewritten",
+		},
+		{
+			name: "LUNExists_RestampFails",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("", nil)
+				expectLUNRestamped(mockAPI, errors.New("set attribute failed"))
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.True(t, errors.IsVolumeCreatingError(err), i...)
+			},
+			assertMessage: "A failed attribute write must keep the retry on this pool",
+		},
+		{
+			name: "LUNExists_Undersized",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				smallLun := *matchingLun
+				smallLun.Size = "500000000"
+
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(&smallLun, nil)
+				mockAPI.EXPECT().LunSetSize(gomock.Any(), testResumeLUNPath, "1000000000").Return(uint64(1000000000), nil)
+				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return("testPool", nil)
+			},
+			wantErr:       assertVolumeExistsError,
+			assertMessage: "An undersized LUN should be grown, not destroyed",
+		},
+		{
+			name: "LUNExists_Oversized",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				bigLun := *matchingLun
+				bigLun.Size = "2000000000"
+
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(&bigLun, nil)
+				expectVolumeDestroyed(mockAPI, volConfig.InternalName)
+			},
+			wantErr:       assert.Error,
+			assertMessage: "A LUN that cannot be shrunk should be destroyed",
+		},
+		{
+			name: "VolumeOnWrongAggregate",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				strayVolume := newResumeExistingVolume()
+				strayVolume.Aggregates = []string{"someOtherAggr"}
+
+				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+					[]string{"error"}, gomock.Any()).Return("online", nil)
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(strayVolume, nil)
+				expectVolumeDestroyed(mockAPI, volConfig.InternalName)
+			},
+			wantErr:       assert.Error,
+			assertMessage: "A volume on an aggregate this pool cannot use should be destroyed",
+		},
+		{
+			name: "VolumeSpaceReserveMismatch_DestroyFails",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				strayVolume := newResumeExistingVolume()
+				strayVolume.SpaceReserve = "volume"
+
+				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+					[]string{"error"}, gomock.Any()).Return("online", nil)
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(strayVolume, nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(
+					errors.New("volume destroy failed"))
+			},
+			wantErr:       assert.Error,
+			assertMessage: "Should error when the destroy of an unusable volume fails",
+		},
+		{
+			name: "VolumeNeedsRepair",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				staleVolume := newResumeExistingVolume()
+				staleVolume.Size = "500000000"
+				staleVolume.ExportPolicy = "stale-policy"
+				staleVolume.Comment = "stale comment"
+
+				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+					[]string{"error"}, gomock.Any()).Return("online", nil)
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(staleVolume, nil)
+				mockAPI.EXPECT().VolumeSetSize(gomock.Any(), volConfig.InternalName, "1000000000").Return(nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(gomock.Any(), volConfig.InternalName, "default").Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(gomock.Any(), volConfig.InternalName, volConfig.InternalName,
+					"testComment").Return(nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil,
+					errors.NotFoundError("LUN does not exist"))
+				expectLUNCreated(mockAPI, matchingLun)
+			},
+			wantErr:       assert.NoError,
+			assertMessage: "A repairable volume should be fixed and its LUN created",
 		},
 		{
 			name: "LUNFindError",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil, nil)
+				expectLUNCreated(mockAPI, matchingLun)
 			},
 			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Volume should be destroyed when LUN is not found (ambiguous state).",
+			assertMessage: "LUN create should resume on the existing volume when no LUN is returned.",
 		},
 		{
 			name: "LUNGetByName_ReturnsNonNotFoundError",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, errors.New("API connection error"))
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil,
+					errors.New("API connection error"))
 			},
 			wantErr:       assert.Error,
-			volExists:     false,
 			assertMessage: "Should return error when LunGetByName returns a non-NotFoundError",
 		},
 		{
-			name: "LUNDoesNotExist",
+			name: "LUNDoesNotExist_LUNCreated",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil,
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil,
 					errors.NotFoundError("LUN does not exist"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(errors.New("destroy fail"))
-			},
-			wantErr:       assert.Error,
-			volExists:     true,
-			assertMessage: "Successful volume cleanup.",
-		},
-		{
-			name: "LUNDoesNotExist_VolDestroy",
-			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil,
-					errors.NotFoundError("LUN does not exist"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
+				expectLUNCreated(mockAPI, matchingLun)
 			},
 			wantErr:       assert.NoError,
-			volExists:     false,
-			assertMessage: "Failed volume cleanup.",
+			assertMessage: "The volume must be kept and its LUN created on it.",
+		},
+		{
+			name: "LUNDoesNotExist_LUNCreateStillInProgress",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				// A LUN create ONTAP rejects because the Flexvol is still being built must leave both alone,
+				// so gomock fails the test if a destroy is attempted.
+				expectExistingVolumeOnline(mockAPI)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil,
+					errors.NotFoundError("LUN does not exist"))
+				mockAPI.EXPECT().LunCreate(gomock.Any(), newResumeDesiredLUN()).Return(
+					api.VolumeCreateJobExistsError("job exists"))
+			},
+			wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+				return assert.True(t, errors.IsVolumeCreatingError(err), msgAndArgs...)
+			},
+			assertMessage: "A Flexvol ONTAP is still building must be handed back to the core as still creating",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
 			test.mocks(mockAPI)
-			volExists, err := driver.cleanupIncompleteLUN(ctx, &volConfig, "testPool")
-			assert.Equal(t, test.volExists, volExists, "volume exist status is not expected.")
+
+			err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(),
+				newResumeDesiredLUN(), newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
 			}
 		})
 	}
+}
 
-	// Mirrored configuration coverage
-	volConfig.IsMirrorDestination = true
-	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-	t.Run("mirrored configuration", func(t *testing.T) {
-		volExists, err := driver.cleanupIncompleteLUN(ctx, &volConfig, "testPool")
-		assert.True(t, volExists, "volume does not exist")
-		assert.NoError(t, err, "volume exist check return error")
-	})
+func TestOntapSanVolume_ReconcileLUNCreateState_StillCreatingIsRetryable(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+
+	// A Flexvol ONTAP has not brought online yet must be left alone: no VolumeInfo, no LUN work and no
+	// destroy, so gomock fails the test if any of those are called.
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("creating", errors.New("timed out"))
+
+	err := driver.reconcileLUNCreateState(ctx, &volConfig, newResumeDesiredVolume(), newResumeDesiredLUN(),
+		newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
 }
 
 func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
@@ -1127,10 +1286,6 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
-	dummyLun := &api.Lun{
-		Comment:      "dummyLun",
-		SerialNumber: "testSerialNumber",
-	}
 
 	type args struct {
 		snapshotReserve   string
@@ -1165,7 +1320,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 			assertMessage: "Volume is not present in backend",
 		},
 		{
-			name: "Volume_Found",
+			name: "Volume_Found_Unusable",
 			arg: args{
 				snapshotReserve:  "10",
 				encryption:       "false",
@@ -1173,15 +1328,18 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				strayVolume := newSANCreateExistingVolume(volConfig.InternalName)
+				strayVolume.SnapshotPolicy = "some-other-policy"
+
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil).Times(1)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return("", nil).Times(1)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil).Times(1)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy").Times(1)
-				mockAPI.EXPECT().GetSVMAggregateSpace(gomock.Any(), "pool1").Return(nil, errors.New("aggregate not found")).Times(1)
+				mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+					[]string{"error"}, gomock.Any()).Return("online", nil).Times(1)
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(strayVolume, nil).Times(1)
+				expectVolumeDestroyed(mockAPI, volConfig.InternalName)
 			},
 			wantErr:       assert.Error,
-			assertMessage: "Volume is not present in backend",
+			assertMessage: "A leftover volume this request cannot reuse should be destroyed",
 		},
 		{
 			name: "SnapshotReserve_Fail",
@@ -1330,8 +1488,8 @@ func TestOntapSanVolumeCreate_VolumeExistsRecordsAutosize(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapSANDriver(t)
 
-	pool1 := storage.NewStoragePool(nil, "pool1")
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
+	driver.physicalPools = map[string]storage.Pool{ONTAPTEST_VSERVER_AGGR_NAME: pool1}
 	threshold := 80
 	driver.Config.OntapAutosizePolicy = &drivers.OntapAutosizeConfig{
 		Mode:                 api.VolumeAutosizeModeGrow,
@@ -1339,11 +1497,32 @@ func TestOntapSanVolumeCreate_VolumeExistsRecordsAutosize(t *testing.T) {
 		MaximumSize:          "50%",
 	}
 	volConfig := getVolumeConfig()
-	dummyLun := &api.Lun{Comment: "dummyLun", SerialNumber: "testSerialNumber"}
+	matchingLun := &api.Lun{
+		Name:           testResumeLUNPath,
+		Comment:        "dummyLun",
+		SerialNumber:   "testSerialNumber",
+		Size:           "1073741824",
+		SpaceAllocated: new(false),
+	}
 
 	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
-	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
-	mockAPI.EXPECT().LunGetAttribute(gomock.Any(), gomock.Any(), "poolName").Return(pool1.Name(), nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	existingVolume := newResumeExistingVolume()
+	existingVolume.Size = "9000000000"
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(existingVolume, nil)
+	// A FlexVol left by a create that never reached the autosize call has no policy, so the resume writes it.
+	mockAPI.EXPECT().VolumeSetAutosizePolicy(gomock.Any(), volConfig.InternalName, existingVolume.UUID, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, _ string, policy api.VolumeAutosizePolicy) error {
+			assert.Equal(t, api.VolumeAutosizeModeGrow, policy.Mode)
+			assert.Equal(t, threshold, policy.GrowThresholdPercent)
+			return nil
+		})
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), volConfig.InternalName, volConfig.InternalName,
+		gomock.Any()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(matchingLun, nil)
+	mockAPI.EXPECT().LunGetAttribute(gomock.Any(), testResumeLUNPath, "poolName").Return(ONTAPTEST_VSERVER_AGGR_NAME, nil)
 
 	err := driver.Create(ctx, &volConfig, pool1, map[string]sa.Request{})
 
@@ -1417,6 +1596,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		name          string
 		mocks         func(mockAPI *mockapi.MockOntapAPI)
 		wantErr       assert.ErrorAssertionFunc
+		wantTerminal  bool
 		assertMessage string // This message prints when the test case fails
 	}{
 		{
@@ -1431,28 +1611,18 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			assertMessage: "Volume is created",
 		},
 		{
-			name: "volumeCreateJobFail",
-			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("",
-					api.VolumeCreateJobExistsError("Volume creation failed"))
-				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			},
-			wantErr:       assert.Error,
-			assertMessage: "Volume is created",
-		},
-		{
 			name: "LunCreateFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("volume-uuid", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
+			wantTerminal:  true,
 			assertMessage: "LUN is created",
 		},
 		{
@@ -1473,44 +1643,27 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("volume-uuid", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.Error,
+			wantTerminal:  true,
 			assertMessage: "LUN attributes are updated",
-		},
-		{
-			name: "LunCreateFail_LunDestroyFail",
-			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
-				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
-				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(errors.New("LUN destroy failed"))
-				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			},
-			wantErr:       assert.Error,
-			assertMessage: "Lun deletion failed",
 		},
 		{
 			name: "LunCreateFail_VolumeDestroyFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
 				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
 				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
@@ -1527,8 +1680,220 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
 			}
+			if test.wantTerminal {
+				assert.False(t, errors.IsVolumeCreatingError(err),
+					"hard LUN failure must not be retryable after cleanup: %v", err)
+				assert.False(t, errors.IsVolumeDeletingError(err),
+					"confirmed cleanup must not report deletion still in progress: %v", err)
+				assert.Empty(t, volConfig.BackendVolumeID,
+					"the ID of a destroyed Flexvol must not be left on the volume config")
+			}
 		})
 	}
+}
+
+// newSANCreatePool returns a pool with the minimum attributes Create needs for a LUN-backed volume.
+func newSANCreatePool() storage.Pool {
+	pool := storage.NewStoragePool(nil, "pool1")
+	pool.SetInternalAttributes(map[string]string{
+		SnapshotPolicy:  "fake-snap-policy",
+		SnapshotReserve: "10",
+	})
+	return pool
+}
+
+// newSANCreateExistingVolume returns the Flexvol VolumeInfo reports for a leftover volume whose unfixable
+// attributes -- aggregate, snapshot policy and snapshot reserve -- already match newSANCreatePool.
+func newSANCreateExistingVolume(name string) *api.Volume {
+	return &api.Volume{
+		Name:            name,
+		Aggregates:      []string{"pool1"},
+		Size:            "10000000000000",
+		SnapshotPolicy:  "fake-snap-policy",
+		SnapshotReserve: 10,
+	}
+}
+
+func TestOntapSanVolumeCreate_VolumeCreateInProgress(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+	volAttrs := map[string]sa.Request{}
+
+	// ONTAP is still creating the volume; no LunCreate and no VolumeDestroy may be issued, so gomock fails
+	// the test if either is called.
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("",
+		api.VolumeCreateJobExistsError("volume vol1 is busy: Volume is busy with a volume create, job ID [abc]"))
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanVolumeCreate_LunCreateInProgress(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+	volAttrs := map[string]sa.Request{}
+
+	// The volume is still being created, so the LUN create is rejected; the volume must not be destroyed.
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("", nil)
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(
+		api.VolumeCreateJobExistsError("volume is busy creating LUN /vol/vol1/lun0: Volume is busy, job id 1234"))
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanVolumeCreate_LunCreateFailCleanupStillDeleting(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+	volAttrs := map[string]sa.Request{}
+
+	// The LUN create fails for good, but the Flexvol stays busy for the whole delete budget. The name is not
+	// free for any aggregate yet, so the create has to stay retryable on this pool instead of being reported
+	// as a terminal failure.
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil).Times(1)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return("volume-uuid", nil)
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", volConfig.InternalName, true, false).
+		Return(errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeDeletingError(err),
+		"a cleanup still in progress must keep the create retryable, got %v", err)
+	assert.False(t, errors.IsVolumeCreatingError(err),
+		"a delete still in progress is not a create in progress, got %v", err)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID,
+		"the volume ID must remain available while cleanup is still in progress")
+}
+
+func TestRollbackFailedCreate_ReturnsCauseAfterCleanup(t *testing.T) {
+	mockAPI, _ := newMockOntapSANDriver(t)
+	cause := errors.New("lun creation failed")
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "volume-uuid"}
+
+	// The FlexVol is destroyed by the UUID recorded when it was created; its LUN goes with it.
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", volConfig.InternalName, true, false).
+		Return(nil)
+
+	err := rollbackFailedCreate(context.Background(), mockAPI, volConfig, cause)
+
+	assert.ErrorIs(t, err, cause)
+	assert.False(t, errors.IsVolumeCreatingError(err))
+	assert.False(t, errors.IsVolumeDeletingError(err))
+	assert.Empty(t, volConfig.BackendVolumeID)
+}
+
+func TestOntapSanCreateLUN_AcceptedCreateReadBackFailureIsRetryable(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+
+	// Once ONTAP accepts the LUN create, a read-back failure must leave the LUN and Flexvol in place.
+	// No destroy is expected; gomock fails the test if cleanup is attempted.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(nil, nil)
+
+	volConfig := &storage.VolumeConfig{InternalName: newResumeDesiredVolume().Name}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), false)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanVolumeCreate_ResumesLunCreateOnExistingVolume(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+	volAttrs := map[string]sa.Request{}
+
+	// The volume exists without its LUN, so Create must keep the volume (no VolumeDestroy), skip VolumeCreate
+	// and create the LUN on the existing volume.
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(
+		newSANCreateExistingVolume(volConfig.InternalName), nil)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil).AnyTimes()
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil,
+		errors.NotFoundError("LUN does not exist")).Times(1)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(
+		&api.Lun{Size: "1", State: "online"}, nil).MaxTimes(10)
+	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool1, volAttrs)
+
+	assert.NoError(t, err, "expected Create to resume LUN creation on the existing volume")
+}
+
+func TestOntapSanVolumeCreate_ResumeDuplicateLunIsReconciledOnRetry(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	pool1 := newSANCreatePool()
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"},
+		[]string{"error"}, gomock.Any()).Return("online", nil)
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(
+		newSANCreateExistingVolume(volConfig.InternalName), nil)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil).AnyTimes()
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	// The first lookup misses because the LUN is not visible yet; the create then fails as a duplicate, and
+	// the LUN shows up afterwards. The Flexvol must survive and the LUN is reconciled by the next attempt:
+	// gomock fails the test on VolumeDestroy or on stamping the LUN in this attempt.
+	gomock.InOrder(
+		mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, errors.NotFoundError("not yet")),
+		mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.AlreadyExistsError("duplicate entry")),
+		mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(&api.Lun{Size: "1", State: "online"}, nil).
+			MaxTimes(10),
+	)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+
+	err := driver.Create(ctx, &volConfig, pool1, map[string]sa.Request{})
+
+	assert.True(t, errors.IsVolumeCreatingError(err),
+		"a LUN that turns out to exist must be reconciled on the retry, got %v", err)
 }
 
 func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
@@ -3477,7 +3842,7 @@ func TestOntapSanVolumeCreatePrepare_NilPool(t *testing.T) {
 
 	defer mockCtrl.Finish()
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -4333,7 +4698,7 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 
 		defer mockCtrl.Finish()
 
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -4410,7 +4775,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 
 		defer mockCtrl.Finish()
 
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -4497,7 +4862,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 
 		defer mockCtrl.Finish()
 
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -5007,7 +5372,7 @@ func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *t
 
 	defer mockCtrl.Finish()
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -5808,7 +6173,7 @@ func TestOntapSanVolumeValidate_ValidateSANDriver(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -6638,4 +7003,127 @@ func TestUnstageVolumeMove(t *testing.T) {
 			tt.assertErr(t, err)
 		})
 	}
+}
+
+func TestOntapSanReconcileLUNCreateState_LunLookupFailureStaysRetryable(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+
+	// The Flexvol is healthy but its LUN cannot be read. Both objects stay in place, so the create has to
+	// remain pinned to this pool; gomock fails the test if either is destroyed.
+	expectExistingVolumeOnline(mockAPI)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), testResumeLUNPath).Return(nil, errors.New("read failed"))
+
+	err := driver.reconcileLUNCreateState(context.Background(), &volConfig, newResumeDesiredVolume(),
+		newResumeDesiredLUN(), newResumeDesiredAttrs(), []string{ONTAPTEST_VSERVER_AGGR_NAME})
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+}
+
+func TestOntapSanCreateLUN_ResumedCreateFailureKeepsFlexvolWhenLunStaysInvisible(t *testing.T) {
+	shortenCreateLookupWait(t)
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+
+	// ONTAP reports the LUN as already existing, so an earlier attempt may have had it accepted: a slow lookup
+	// must not cost the Flexvol, and gomock fails the test on VolumeDestroy or LunDestroy.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(errors.AlreadyExistsError("LUN already exists"))
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(nil, errors.NotFoundError("not found")).AnyTimes()
+
+	volConfig := &storage.VolumeConfig{InternalName: newResumeDesiredVolume().Name, BackendVolumeID: "volume-uuid"}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), true)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID, "the Flexvol kept for the retry keeps its ID")
+}
+
+func TestOntapSanCreateLUN_AlreadyExistsKeepsFlexvolEvenWhenNotResuming(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+
+	// ONTAP says the LUN already exists, so it may be one an earlier attempt had accepted: the FlexVol is kept
+	// and the retry reconciles the LUN, whether or not this call is resuming. gomock fails the test on any
+	// destroy.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(errors.AlreadyExistsError("LUN already exists"))
+
+	volConfig := &storage.VolumeConfig{InternalName: newResumeDesiredVolume().Name, BackendVolumeID: "volume-uuid"}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), false)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID)
+}
+
+func TestOntapSanCreateLUN_ResumedHardCreateFailureRollsBack(t *testing.T) {
+	shortenCreateLookupWait(t)
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+	name := newResumeDesiredVolume().Name
+
+	// A create that failed for a reason other than a duplicate is a hard failure. The LUN never appears, so
+	// the Flexvol is removed rather than left to be retried forever.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(errors.New("insufficient space"))
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(nil, errors.NotFoundError("not found")).AnyTimes()
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", name, true, false).Return(nil)
+
+	volConfig := &storage.VolumeConfig{InternalName: name, BackendVolumeID: "volume-uuid"}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), true)
+
+	assert.ErrorContains(t, err, "insufficient space")
+	assert.False(t, errors.IsVolumeCreatingError(err), "a hard failure must not stay retryable, got %v", err)
+	assert.False(t, errors.IsVolumeDeletingError(err), "a confirmed cleanup is not a delete in progress, got %v", err)
+	assert.Empty(t, volConfig.BackendVolumeID)
+}
+
+func TestOntapSanCreateLUN_ResumedDuplicateWithVisibleLunIsReconciledOnRetry(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+
+	// The LUN was made by an earlier attempt and shows up after this create is rejected as a duplicate. It may
+	// not match this request, so it is not stamped here: the next attempt's first lookup finds it and runs the
+	// full reconcile. gomock fails the test on LunSetAttribute, LunDestroy or VolumeDestroy.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(errors.AlreadyExistsError("LUN already exists"))
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(&api.Lun{Name: lun.Name}, nil).AnyTimes()
+
+	volConfig := &storage.VolumeConfig{InternalName: newResumeDesiredVolume().Name, BackendVolumeID: "volume-uuid"}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), true)
+
+	assert.True(t, errors.IsVolumeCreatingError(err), "expected VolumeCreatingError, got %v", err)
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID)
+}
+
+func TestOntapSanCreateLUN_ResumedFreshLunAttributeFailureStillCleansUp(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	lun := newResumeDesiredLUN()
+
+	// This attempt created the LUN itself, so nothing else can depend on it and cleanup stays the response.
+	// Destroying the FlexVol removes the LUN with it; gomock fails the test on a separate LunDestroy.
+	mockAPI.EXPECT().LunCreate(gomock.Any(), lun).Return(nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), lun.Name).Return(&api.Lun{Name: lun.Name}, nil).AnyTimes()
+	expectLUNRestamped(mockAPI, errors.New("failed to set LUN attribute"))
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", newResumeDesiredVolume().Name, true, false).
+		Return(nil)
+
+	volConfig := &storage.VolumeConfig{InternalName: newResumeDesiredVolume().Name, BackendVolumeID: "volume-uuid"}
+	err := driver.createLUN(context.Background(), volConfig, lun, newResumeDesiredAttrs(), true)
+
+	assert.Error(t, err)
+	assert.False(t, errors.IsVolumeCreatingError(err), "a completed cleanup is not a create in progress: %v", err)
+	assert.Empty(t, volConfig.BackendVolumeID)
+}
+
+func TestRollbackFailedCreate_UnconfirmedDestroyKeepsTheCreateOnThisPool(t *testing.T) {
+	mockAPI, _ := newMockOntapSANDriver(t)
+	cause := errors.New("lun creation failed")
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", BackendVolumeID: "volume-uuid"}
+
+	// The FlexVol may still exist, so the failure must not read as a finished rollback: the pool loop would
+	// otherwise move on and create the same name on the next aggregate.
+	mockAPI.EXPECT().VolumeDestroyByUUID(gomock.Any(), "volume-uuid", "vol1", true, false).
+		Return(errors.New("permission denied"))
+
+	err := rollbackFailedCreate(context.Background(), mockAPI, volConfig, cause)
+
+	assert.True(t, errors.IsVolumeDeletingError(err), "expected VolumeDeletingError, got %v", err)
+	assert.ErrorContains(t, err, "permission denied")
+	assert.Equal(t, "volume-uuid", volConfig.BackendVolumeID, "the FlexVol may still exist, so its ID is kept")
 }

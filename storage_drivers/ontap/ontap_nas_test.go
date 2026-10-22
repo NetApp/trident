@@ -348,7 +348,7 @@ func newMockOntapNASDriverWithSVM(t *testing.T, svmName string) (*mockapi.MockOn
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	// Centralized SVMName mock expectation to reduce redundancy
@@ -4453,6 +4453,9 @@ func TestOntapNasStorageDriverVolumeCreate_VolumeExistsScenarios(t *testing.T) {
 
 			if tt.checkError == "" {
 				mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(tt.volumeExists, nil)
+				mockAPI.EXPECT().VolumeWaitForStates(
+					ctx, "vol1", []string{"online"}, []string{"error"}, maxFlexvolResumeWait,
+				).Return("creating", errors.New("still creating"))
 			} else {
 				mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(tt.volumeExists, errors.New(tt.checkError))
 			}
@@ -4818,12 +4821,12 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 	volAttrs := map[string]sa.Request{}
 
 	tests := []struct {
-		name        string
-		message     string
-		expectError bool
+		name             string
+		message          string
+		createInProgress bool
 	}{
-		{"VolumeCreationFailed", "volume creation failed", true},
-		{"VolumeCreateJobExistsError", "volume create job exists error", false},
+		{"VolumeCreationFailed", "volume creation failed", false},
+		{"VolumeCreateJobExistsError", "volume create job exists error", true},
 	}
 
 	for _, tt := range tests {
@@ -4833,19 +4836,19 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 
-			if tt.expectError {
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New(tt.message))
-			} else {
+			if tt.createInProgress {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", api.VolumeCreateJobExistsError(tt.message))
+			} else {
+				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", errors.New(tt.message))
 			}
 
 			result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
-			if tt.expectError {
-				assert.Error(t, result)
-			} else {
-				assert.NoError(t, result)
-			}
+			// A create that is still running must surface as VolumeCreatingError so the core retries it;
+			// it is not a success and it is not a permanent failure.
+			assert.Error(t, result)
+			assert.Equal(t, tt.createInProgress, errors.IsVolumeCreatingError(result),
+				"unexpected error type from Create: %v", result)
 		})
 	}
 }
@@ -7168,10 +7171,13 @@ func TestNASDriver_Create(t *testing.T) {
 			name: "VolumeExists",
 			setupMocks: func(m *mockapi.MockOntapAPI) {
 				m.EXPECT().VolumeExists(ctx, "test-vol").Return(true, nil)
+				m.EXPECT().VolumeWaitForStates(
+					ctx, "test-vol", []string{"online"}, []string{"error"}, maxFlexvolResumeWait,
+				).Return("creating", errors.New("still creating"))
 			},
-			volConfig:   &storage.VolumeConfig{InternalName: "test-vol"},
+			volConfig:   &storage.VolumeConfig{InternalName: "test-vol", Size: "1g"},
 			expectError: true,
-			errorMsg:    "volume test-vol already exists",
+			errorMsg:    "volume test-vol is not online yet",
 		},
 		{
 			name: "VolumeExistsError",
@@ -7189,7 +7195,11 @@ func TestNASDriver_Create(t *testing.T) {
 			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
 			pool := storage.NewStoragePool(nil, "pool1")
-			pool.SetInternalAttributes(map[string]string{"exportPolicy": "default"})
+			pool.SetInternalAttributes(map[string]string{
+				"exportPolicy": "default",
+				SnapshotDir:    "true",
+				TieringPolicy:  "none",
+			})
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool}
 
 			if tt.setupMocks != nil {

@@ -95,7 +95,7 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
@@ -1169,6 +1169,137 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 	assert.Contains(t, result.Error(), "volume creation failed")
 }
 
+func TestOntapNasFlexgroupStorageDriverVolumeCreate_CreateInProgress(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "400g",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm:vol1",
+	}
+
+	sb := storage.NewTestStorageBackend()
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
+	})
+	driver.managedPool = pool1
+	driver.Config.AutoExportPolicy = true
+	driver.timeout = 1 * time.Second
+	volAttrs := map[string]sa.Request{}
+
+	// ONTAP is still creating the FlexGroup, so it cannot be mounted or shared yet; gomock fails the test if
+	// Create tries to mount it.
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(
+		api.VolumeCreateJobExistsError("volume vol1 is busy: Volume is busy with a volume create, job ID [abc]"))
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.True(t, errors.IsVolumeCreatingError(result), "expected VolumeCreatingError, got %v", result)
+	assert.Equal(t, "400g", volConfig.Size,
+		"a create still in progress is retried with this config, so it must keep the requested size")
+}
+
+// newFlexgroupResumeTestPool returns a pool with a 10% snapshot reserve and snapshot directory access enabled,
+// and makes it the driver's managed pool.
+func newFlexgroupResumeTestPool(driver *NASFlexGroupStorageDriver) storage.Pool {
+	sb := storage.NewTestStorageBackend()
+	sb.SetBackendUUID(BackendUUID)
+	pool := storage.NewStoragePool(sb, "pool1")
+	pool.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		BalancedPlacement: "false",
+	})
+	driver.managedPool = pool
+	driver.Config.AutoExportPolicy = true
+	return pool
+}
+
+// The size recorded in the volume config includes the snapshot reserve once a create completes. A create that is
+// still in progress must not leave that size behind: the retry would apply the reserve to it again and grow the
+// FlexGroup, and report the larger size, every time.
+func TestOntapNasFlexgroupStorageDriverVolumeCreate_RetryDoesNotReapplySnapshotReserve(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "400g",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	pool1 := newFlexgroupResumeTestPool(driver)
+	volAttrs := map[string]sa.Request{}
+
+	var createdSizes []string
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil).Times(2)
+	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) error {
+			createdSizes = append(createdSizes, volume.Size)
+			if len(createdSizes) == 1 {
+				return api.VolumeCreateJobExistsError("volume vol1 is busy: Volume is busy with a volume create")
+			}
+			return nil
+		}).Times(2)
+	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
+
+	firstErr := driver.Create(ctx, volConfig, pool1, volAttrs)
+	assert.True(t, errors.IsVolumeCreatingError(firstErr), "expected VolumeCreatingError, got %v", firstErr)
+
+	secondErr := driver.Create(ctx, volConfig, pool1, volAttrs)
+	assert.NoError(t, secondErr)
+
+	if !assert.Len(t, createdSizes, 2) {
+		return
+	}
+	assert.Equal(t, createdSizes[0], createdSizes[1], "the retry must ask ONTAP for the same size as the first attempt")
+	assert.Equal(t, createdSizes[1], volConfig.Size, "a completed create records the size ONTAP was asked for")
+	assert.NotEqual(t, "400g", volConfig.Size)
+}
+
+// A resumed create that finds the FlexGroup not yet online reports it as still in progress, and must also leave
+// the requested size in the config.
+func TestOntapNasFlexgroupStorageDriverVolumeCreate_ResumeNotOnlineKeepsRequestedSize(t *testing.T) {
+	shortenFlexvolResumeWait(t)
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "400g",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	pool1 := newFlexgroupResumeTestPool(driver)
+
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
+	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&api.Volume{Name: "vol1", State: "creating"}, nil).AnyTimes()
+
+	result := driver.Create(ctx, volConfig, pool1, map[string]sa.Request{})
+
+	assert.True(t, errors.IsVolumeCreatingError(result), "expected VolumeCreatingError, got %v", result)
+	assert.Equal(t, "400g", volConfig.Size)
+}
+
 func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	volConfig := &storage.VolumeConfig{
@@ -1389,8 +1520,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy": "none",
-		SnapshotDir:     "true",
+		"tieringPolicy":   "none",
+		SnapshotDir:       "true",
+		BalancedPlacement: "false",
 	})
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -1407,11 +1539,15 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "flexgroupAlreadyExists" {
+				shortenFlexvolResumeWait(t)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, nil)
+				// The FlexGroup is read through FlexgroupInfo; the Flexvol state wait cannot see a FlexGroup.
+				mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&api.Volume{Name: "vol1", State: "creating"}, nil).
+					MinTimes(1)
 				result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
 				assert.Error(t, result, "Flexgroup volume exists")
-				assert.Contains(t, result.Error(), "volume vol1 already exists")
+				assert.True(t, errors.IsVolumeCreatingError(result))
 			} else {
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, errors.New(test.errMessage))
 				result := driver.Create(ctx, volConfig, pool1, volAttrs)

@@ -30,6 +30,46 @@ import (
 // Example path: /vol/<flexvol>/.snapshot/<snapshot>/<lun>
 var lunSnapPathRegex = regexp.MustCompile(`^/vol/(?P<flexvol>[^/]+)/\.snapshot/(?P<snapshot>[^/]+)/(?P<lun>.+)$`)
 
+// isVolumeCreateInProgressZapiError reports whether a ZAPI error means ONTAP has a job against the volume
+// that blocks this create attempt. Callers treat that as a retryable busy-on-create outcome and leave the
+// volume alone; the specific ONTAP reason (create, destroy, etc.) stays in the wrapped error text.
+//
+// ONTAP returns the generic EAPIERROR errno for many unrelated conditions, so the reason text must match a
+// narrow allow-list. A bare EAPIERROR, or a bare "volume is busy" without a create/job marker, is never
+// treated as in-progress.
+func isVolumeCreateInProgressZapiError(zerr azgo.ZapiError) bool {
+	if zerr.Code() != azgo.EAPIERROR {
+		return false
+	}
+
+	reason := strings.ToLower(strings.TrimSpace(zerr.Reason()))
+
+	// Any busy reason carrying a job ID (e.g. "Volume is busy with a volume create, job ID [<uuid>]") blocks the
+	// create the same way; ONTAP's specific operation stays in the returned error message.
+	return strings.HasSuffix(reason, "job exists") ||
+		(strings.Contains(reason, "volume is busy") && strings.Contains(reason, "job id"))
+}
+
+// isCreateTargetExistsZapiError reports whether a ZAPI error means a LUN create found the LUN already there.
+// An earlier attempt may have created it without it being visible yet, so it has to be looked up again before
+// anything is destroyed. Anything else is a hard create failure.
+func isCreateTargetExistsZapiError(zerr azgo.ZapiError) bool {
+	return zerr.Code() == azgo.EVDISK_ERROR_VDISK_EXISTS || zerr.Code() == azgo.EDUPLICATEENTRY
+}
+
+// isVolumeBusyZapiError reports whether a ZAPI error means ONTAP has another operation on the volume in
+// flight. This is the ZAPI rendering of the REST "Volume busy" response (VOLUME_BUSY_ERROR_REST) that
+// OntapAPIREST.VolumeDestroy already retries, and it clears on its own once the other operation finishes.
+//
+// ONTAP returns the generic EAPIERROR errno for many unrelated conditions, so the reason text has to say the
+// volume is busy; a bare EAPIERROR is never treated as busy.
+func isVolumeBusyZapiError(zerr azgo.ZapiError) bool {
+	if zerr.Code() != azgo.EAPIERROR {
+		return false
+	}
+	return strings.Contains(strings.ToLower(zerr.Reason()), "volume is busy")
+}
+
 func (d OntapAPIZAPI) IsREST() bool {
 	return false
 }
@@ -90,12 +130,11 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) (string, 
 	}
 	if err = azgo.GetError(ctx, volCreateResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
-			// Handle case where the Create is passed to every Docker Swarm node
-			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
+			if isVolumeCreateInProgressZapiError(zerr) {
 				Logc(ctx).WithField("volume", volume.Name).Warn(
-					"Volume create job already exists, skipping volume create on this node.",
+					"Volume is busy; skipping volume create on this node.",
 				)
-				err = VolumeCreateJobExistsError(fmt.Sprintf("volume create job already exists, %s", volume.Name))
+				err = VolumeCreateJobExistsError(fmt.Sprintf("volume %s is busy: %s", volume.Name, zerr.Reason()))
 			}
 		}
 	}
@@ -123,21 +162,51 @@ func (d OntapAPIZAPI) VolumeDestroyByUUID(
 //   - skipRecoveryQueue: when true, after a successful destroy, best-effort purge of the volume
 //     from the recovery queue via separate ZAPI calls (GetIter + Purge).
 //
+// A volume ONTAP reports as busy is retried within a bounded window, matching what
+// abstraction_rest.VolumeDestroy does with the equivalent REST response.
+//
 // REST/GCNV uses abstraction_rest.VolumeDestroy instead; there skipRecoveryQueue maps to REST
 // DELETE ?force= and there is no post-delete RQ purge in that path.
 func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
-	volDestroyResponse, err := d.api.VolumeDestroy(name, force)
-	if err != nil {
-		return fmt.Errorf("error destroying volume %v: %v", name, err)
-	}
+	destroyVolume := func() error {
+		volDestroyResponse, err := d.api.VolumeDestroy(name, force)
+		if err != nil {
+			return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, err))
+		}
 
-	if zerr := azgo.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
+		zerr := azgo.NewZapiError(volDestroyResponse)
+		if zerr.IsPassed() {
+			return nil
+		}
+
 		// It's not an error if the volume no longer exists
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
 			return nil
 		}
-		return fmt.Errorf("error destroying volume %v: %v", name, zerr)
+
+		if isVolumeBusyZapiError(zerr) {
+			return fmt.Errorf("error destroying volume %v: %v", name, zerr)
+		}
+
+		return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, zerr))
+	}
+	destroyNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"volume":    name,
+			"increment": duration,
+		}).Debug("Volume busy, waiting.")
+	}
+	bo := newOntapBackOffWithBudget(ctx, waitForVolumeDeleteMaxElapsed)
+
+	if err := backoff.RetryNotify(destroyVolume, backoff.WithContext(bo, ctx), destroyNotify); err != nil {
+		var perm *backoff.PermanentError
+		if errors.As(err, &perm) {
+			return perm.Err
+		}
+		Logc(ctx).WithField("volume", name).Warnf("Volume not destroyed after %3.2f seconds.",
+			bo.MaxElapsedTime.Seconds())
+		return err
 	}
 
 	if !skipRecoveryQueue {
@@ -261,23 +330,36 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		responseAccessType           string
 		responseAggregates           []string
 		responseComment              string
+		responseEncrypt              *bool
 		responseExportPolicy         string
 		responseJunctionPath         string
 		responseName                 string
+		responseQos                  QosPolicyGroup
+		responseSecurityStyle        string
 		responseSize                 string
 		responseSnapdirAccessEnabled *bool
 		responseSnapshotPolicy       string
 		responseSnapshotReserveInt   int
 		responseSnapshotSpaceUsed    int
 		responseSpaceReserve         string
+		responseState                string
+		responseTieringPolicy        string
 		responseUnixPermissions      string
+		responseUnixGroupID          string
 	)
 
 	if volumeGetResponse.VolumeIdAttributesPtr != nil {
 		volumeIdAttributes := volumeGetResponse.VolumeIdAttributes()
 
+		// A FlexVol reports the aggregate containing it. ONTAP does not report a FlexGroup's member aggregates
+		// on the FlexGroup's own record -- they live on its constituent volumes -- so a FlexGroup usually comes
+		// back with none here, and callers must treat an empty list as "not reported". aggr-list is used when a
+		// release does return it.
 		responseAggregates = []string{}
-		if volumeIdAttributes.ContainingAggregateNamePtr != nil {
+		if volumeIdAttributes.AggrListPtr != nil {
+			responseAggregates = append(responseAggregates, volumeIdAttributes.AggrListPtr.AggrName()...)
+		}
+		if len(responseAggregates) == 0 && volumeIdAttributes.ContainingAggregateNamePtr != nil {
 			responseAggregates = append(responseAggregates, volumeIdAttributes.ContainingAggregateName())
 		}
 
@@ -329,11 +411,38 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 
 	if volumeGetResponse.VolumeSecurityAttributesPtr != nil {
 		responseSecurityAttrs := volumeGetResponse.VolumeSecurityAttributesPtr
+		if responseSecurityAttrs.StylePtr != nil {
+			responseSecurityStyle = responseSecurityAttrs.Style()
+		}
 		if responseSecurityAttrs.VolumeSecurityUnixAttributesPtr != nil {
 			responseSecurityUnixAttrs := responseSecurityAttrs.VolumeSecurityUnixAttributes()
 			if responseSecurityUnixAttrs.PermissionsPtr != nil {
 				responseUnixPermissions = responseSecurityUnixAttrs.Permissions()
 			}
+			if responseSecurityUnixAttrs.GroupIdPtr != nil {
+				responseUnixGroupID = strconv.Itoa(responseSecurityUnixAttrs.GroupId())
+			}
+		}
+	}
+
+	if volumeGetResponse.EncryptPtr != nil {
+		responseEncrypt = convert.ToPtr(volumeGetResponse.Encrypt())
+	}
+
+	if volumeGetResponse.VolumeCompAggrAttributesPtr != nil {
+		responseCompAggrAttrs := volumeGetResponse.VolumeCompAggrAttributes()
+		if responseCompAggrAttrs.TieringPolicyPtr != nil {
+			responseTieringPolicy = responseCompAggrAttrs.TieringPolicy()
+		}
+	}
+
+	// A volume carries either a fixed or an adaptive QoS policy group, never both.
+	if volumeGetResponse.VolumeQosAttributesPtr != nil {
+		responseQosAttrs := volumeGetResponse.VolumeQosAttributes()
+		if name := responseQosAttrs.PolicyGroupName(); name != "" {
+			responseQos = QosPolicyGroup{Name: name, Kind: QosPolicyGroupKind}
+		} else if name = responseQosAttrs.AdaptivePolicyGroupName(); name != "" {
+			responseQos = QosPolicyGroup{Name: name, Kind: QosAdaptivePolicyGroupKind}
 		}
 	}
 
@@ -351,21 +460,31 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		responseAutosizeMode = *volumeGetResponse.VolumeAutosizeAttributesPtr.ModePtr
 	}
 
+	if volumeGetResponse.VolumeStateAttributesPtr != nil && volumeGetResponse.VolumeStateAttributesPtr.StatePtr != nil {
+		responseState = *volumeGetResponse.VolumeStateAttributesPtr.StatePtr
+	}
+
 	volumeInfo := &Volume{
 		AccessType:        responseAccessType,
 		Aggregates:        responseAggregates,
 		AutosizeMode:      responseAutosizeMode,
 		Comment:           responseComment,
+		Encrypt:           responseEncrypt,
 		ExportPolicy:      responseExportPolicy,
 		JunctionPath:      responseJunctionPath,
 		Name:              responseName,
+		Qos:               responseQos,
+		SecurityStyle:     responseSecurityStyle,
 		Size:              responseSize,
 		SnapshotDir:       responseSnapdirAccessEnabled,
 		SnapshotPolicy:    responseSnapshotPolicy,
 		SnapshotReserve:   responseSnapshotReserveInt,
 		SnapshotSpaceUsed: responseSnapshotSpaceUsed,
 		SpaceReserve:      responseSpaceReserve,
+		State:             responseState,
+		TieringPolicy:     responseTieringPolicy,
 		UnixPermissions:   responseUnixPermissions,
+		UnixGroupID:       responseUnixGroupID,
 		DPVolume:          responseAccessType == "dp",
 	}
 	return volumeInfo, nil
@@ -539,20 +658,12 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 
 	if err = azgo.GetError(ctx, lunCreateResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
-			// Handle case where the Create is passed to every Docker Swarm node
-			if zerr.Code() == azgo.EAPIERROR {
-				if strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-					Logc(ctx).WithField("LUN", lun.Name).Warn("LUN create job already exists, " +
-						"skipping LUN create on this node.")
-					err = VolumeCreateJobExistsError(fmt.Sprintf("LUN create job already exists, %s", lun.Name))
-				} else if strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-					// The originally chosen flexvol has hit the ONTAP hard limit of LUNs per flexvol.
-					// This limit is model dependent therefore we must handle the error after-the-fact.
-					// Add the full flexvol to the ignored list and find/create a new one
-					Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
-					err = TooManyLunsError(fmt.Sprintf("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol, %s",
-						lun.Name))
-				}
+			if isVolumeCreateInProgressZapiError(zerr) {
+				Logc(ctx).WithField("LUN", lun.Name).Warn("Volume is busy; skipping LUN create on this node.")
+				err = VolumeCreateJobExistsError(fmt.Sprintf("volume is busy creating LUN %s: %s",
+					lun.Name, zerr.Reason()))
+			} else if isCreateTargetExistsZapiError(zerr) {
+				err = errors.WrapWithAlreadyExistsError(err, "LUN %s already exists", lun.Name)
 			}
 		}
 	}
@@ -1376,12 +1487,11 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 
 	if err = azgo.GetError(ctx, flexgroupCreateResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
-			// Handle case where the Create is passed to every Docker Swarm node
-			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-				Logc(ctx).WithField("volume", volume.Name).Warn("Volume create job already exists, " +
-					"skipping volume create on this node.")
-				err = VolumeCreateJobExistsError(fmt.Sprintf("volume create job already exists, %s",
-					volume.Name))
+			if isVolumeCreateInProgressZapiError(zerr) {
+				Logc(ctx).WithField("volume", volume.Name).Warn(
+					"Volume is busy; skipping volume create on this node.",
+				)
+				err = VolumeCreateJobExistsError(fmt.Sprintf("volume %s is busy: %s", volume.Name, zerr.Reason()))
 			}
 		}
 	}
@@ -1521,9 +1631,11 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 		return fmt.Errorf("error taking Volume %v offline: %v", volumeName, offErr)
 	}
 
+	tookOffline := true
 	if zerr := azgo.NewZapiError(offlineResp); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EVOLUMEOFFLINE {
 			Logc(ctx).WithField("volume", volumeName).Warn("Volume already offline.")
+			tookOffline = false
 		} else if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", volumeName).Debug("Volume already deleted, skipping destroy.")
 			return nil
@@ -1532,18 +1644,11 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 		}
 	}
 
-	volDestroyResponse, err := d.api.FlexGroupDestroy(ctx, volumeName, force)
-	if err != nil {
-		return fmt.Errorf("error destroying volume %v: %v", volumeName, err)
-	}
-
-	if zerr := azgo.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
-		// It's not an error if the volume no longer exists
-		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
-			Logc(ctx).WithField("volume", volumeName).Warn("Volume already deleted.")
-		} else {
-			return fmt.Errorf("error destroying volume %v: %v", volumeName, zerr)
+	if err := d.destroyOfflineFlexgroup(ctx, volumeName, force); err != nil {
+		if tookOffline {
+			d.bringFlexgroupBackOnline(ctx, volumeName)
 		}
+		return err
 	}
 
 	if !skipRecoveryQueue {
@@ -1559,6 +1664,43 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 	_ = d.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
 
 	return nil
+}
+
+// destroyOfflineFlexgroup destroys a FlexGroup that has already been taken offline. A volume that no longer
+// exists is not an error.
+func (d OntapAPIZAPI) destroyOfflineFlexgroup(ctx context.Context, volumeName string, force bool) error {
+	volDestroyResponse, err := d.api.FlexGroupDestroy(ctx, volumeName, force)
+	if err != nil {
+		return fmt.Errorf("error destroying volume %v: %v", volumeName, err)
+	}
+
+	if zerr := azgo.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
+			Logc(ctx).WithField("volume", volumeName).Warn("Volume already deleted.")
+			return nil
+		}
+		return fmt.Errorf("error destroying volume %v: %v", volumeName, zerr)
+	}
+	return nil
+}
+
+// bringFlexgroupBackOnline returns a FlexGroup to the online state after a failed destroy took it offline. A
+// destroy that failed leaves the FlexGroup in place, and a later create or delete for the same name needs to
+// find it in a state it can use or retry the destroy on, not stranded offline. The failure is only logged: the
+// destroy error is what the caller has to act on, and the volume may in fact be going away.
+func (d OntapAPIZAPI) bringFlexgroupBackOnline(ctx context.Context, volumeName string) {
+	onlineResp, err := d.api.VolumeOnline(volumeName)
+	if err == nil {
+		if zerr := azgo.NewZapiError(onlineResp); !zerr.IsPassed() {
+			err = zerr
+		}
+	}
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).
+			Warn("Could not bring the FlexGroup back online after a failed destroy.")
+		return
+	}
+	Logc(ctx).WithField("volume", volumeName).Debug("Brought the FlexGroup back online after a failed destroy.")
 }
 
 func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error) {

@@ -296,7 +296,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 // Create a volume with the specified options
 func (d *NASFlexGroupStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
-) error {
+) (err error) {
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -308,12 +308,23 @@ func (d *NASFlexGroupStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// If the volume already exists, bail out
+	// The size recorded in the volume config below includes the snapshot reserve. A create that is still in
+	// progress is retried with the config as this call leaves it, so it has to carry the size that was requested,
+	// or each retry would add the reserve again and grow the FlexGroup.
+	requestedVolumeSize := volConfig.Size
+	defer func() {
+		if errors.IsVolumeCreatingError(err) || errors.IsVolumeDeletingError(err) {
+			volConfig.Size = requestedVolumeSize
+		}
+	}()
+
+	// Check now so backend connectivity failures are reported before resolving the request. If the FlexGroup
+	// exists, reconcile it after the desired attributes are known.
 	volExists, err := d.API.FlexgroupExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing FlexGroup: %v", err)
 	}
-	if volExists {
+	if volExists && volConfig.IsMirrorDestination {
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -443,26 +454,48 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return labelErr
 	}
 
+	desiredVolume := api.Volume{
+		Aggregates:      d.Config.FlexGroupAggregateList,
+		Comment:         labels,
+		Encrypt:         enableEncryption,
+		ExportPolicy:    exportPolicy,
+		Name:            name,
+		Qos:             qosPolicyGroup,
+		Size:            strconv.FormatUint(sizeBytes, 10),
+		SpaceReserve:    spaceReserve,
+		SnapshotPolicy:  snapshotPolicy,
+		SecurityStyle:   securityStyle,
+		SnapshotReserve: snapshotReserveInt,
+		TieringPolicy:   tieringPolicy,
+		UnixPermissions: unixPermissions,
+		UnixGroupID:     unixGroupID,
+		DPVolume:        volConfig.IsMirrorDestination,
+	}
+	if volExists {
+		if err = reconcileExistingFlexgroupForCreate(ctx, d.API, desiredVolume); err != nil {
+			return err
+		}
+
+		// The create that left this FlexGroup behind may have stopped before it turned snapshot directory
+		// access off, and ONTAP leaves it on by default.
+		if !enableSnapshotDir && !volConfig.IsMirrorDestination {
+			if err = d.API.FlexgroupModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
+				return errors.VolumeCreatingError("error disabling snapshot directory access for volume %s: %v",
+					name, err)
+			}
+		}
+		return drivers.NewVolumeExistsError(name)
+	}
+
 	// Create the FlexGroup
-	err = createFlexgroup(
-		ctx, d.API, api.Volume{
-			Aggregates:      d.Config.FlexGroupAggregateList,
-			Comment:         labels,
-			Encrypt:         enableEncryption,
-			ExportPolicy:    exportPolicy,
-			Name:            name,
-			Qos:             qosPolicyGroup,
-			Size:            strconv.FormatUint(sizeBytes, 10),
-			SpaceReserve:    spaceReserve,
-			SnapshotPolicy:  snapshotPolicy,
-			SecurityStyle:   securityStyle,
-			SnapshotReserve: snapshotReserveInt,
-			TieringPolicy:   tieringPolicy,
-			UnixPermissions: unixPermissions,
-			UnixGroupID:     unixGroupID,
-			DPVolume:        volConfig.IsMirrorDestination,
-		}, useBalancedPlacement)
+	err = createFlexgroup(ctx, d.API, desiredVolume, useBalancedPlacement)
 	if err != nil {
+		if api.IsVolumeCreateJobExistsError(err) {
+			// ONTAP has a job against this FlexGroup, so it cannot be mounted or shared yet. Report the
+			// volume as busy and let the core retry.
+			return errors.VolumeCreatingError("volume %s is busy: %v", name, err)
+		}
+
 		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
 		createErrors = append(createErrors, errors.New(errMessage))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)

@@ -94,7 +94,7 @@ func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeS
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newNASQtreeStorageDriver(mockAPI)
@@ -613,7 +613,7 @@ func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaResize(ctx, gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), gomock.Any(), false, "heartbeat",
 		gomock.Any(), gomock.Any(), gomock.Any(), tridentconfig.OrchestratorName, gomock.Any()).AnyTimes().Return()
 }
 

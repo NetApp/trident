@@ -891,8 +891,22 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 	ctx = context.WithoutCancel(GenerateRequestContextForLayer(ctx, LogLayerCore))
 
 	switch v.Op {
-	case storage.AddVolume, storage.DeleteVolume,
-		storage.ImportVolume, storage.ResizeVolume:
+	case storage.AddVolume:
+		if isResumableVolumeCreatingTransaction(v) {
+			Logc(ctx).WithFields(LogFields{
+				"volume":      v.VolumeCreatingConfig.Name,
+				"backendUUID": v.VolumeCreatingConfig.BackendUUID,
+				"op":          v.Op,
+			}).Debug("Preserving add transaction with volume create placement.")
+			return nil
+		}
+		Logc(ctx).WithFields(LogFields{
+			"volume":       v.Config.Name,
+			"size":         v.Config.Size,
+			"storageClass": v.Config.StorageClass,
+			"op":           v.Op,
+		}).Info("Processed volume transaction log.")
+	case storage.DeleteVolume, storage.ImportVolume, storage.ResizeVolume:
 		Logc(ctx).WithFields(LogFields{
 			"volume":       v.Config.Name,
 			"size":         v.Config.Size,
@@ -2242,7 +2256,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, mutableConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, mutableConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, mutableConfig, sc.GetAttributes())
 	}()
 
 	Logc(ctx).WithField("volume", mutableConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
@@ -2270,9 +2284,14 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		backend.Driver().CreatePrepare(ctx, mutableConfig, pool)
 
 		// Update transaction with updated mutableConfig
+		creatingConfig, stateErr := volumeCreatingConfig(backend, pool, mutableConfig, sc.GetAttributes())
+		if stateErr != nil {
+			return nil, stateErr
+		}
 		txn = &storage.VolumeTransaction{
-			Config: mutableConfig,
-			Op:     storage.AddVolume,
+			Config:               mutableConfig,
+			VolumeCreatingConfig: creatingConfig,
+			Op:                   storage.AddVolume,
 		}
 		if err = o.storeClient.UpdateVolumeTransaction(ctx, txn); err != nil {
 			return nil, err
@@ -2289,10 +2308,10 @@ func (o *TridentOrchestrator) addVolumeInitial(
 				"error":       err,
 			}
 
-			// If the volume is still creating, don't try another pool but let the cleanup logic
+			// If the create is still in progress, don't try another pool but let the cleanup logic
 			// save the state of this operation in a transaction.
-			if errors.IsVolumeCreatingError(err) {
-				Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
+			if isVolumeCreateInProgressError(err) {
+				Logc(ctx).WithFields(logFields).Warn("Volume create still in progress on this backend.")
 				return nil, err
 			}
 
@@ -2327,7 +2346,8 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	return nil, err
 }
 
-// addVolumeRetry continues a volume creation operation that previously failed with a VolumeCreatingError.
+// addVolumeRetry is used to retry volume creations while a driver reports the create as still in progress,
+// either with VolumeCreatingError or with VolumeDeletingError while an unusable leftover volume is removed.
 // This method should only be called from AddVolume, as it does not take locks or otherwise do much validation
 // of the volume config.
 func (o *TridentOrchestrator) addVolumeRetry(
@@ -2343,6 +2363,10 @@ func (o *TridentOrchestrator) addVolumeRetry(
 	}
 
 	volumeConfig := &txn.VolumeCreatingConfig.VolumeConfig
+	volumeAttributes, err := sa.UnmarshalRequestMap(txn.VolumeCreatingConfig.StorageClassAttributes)
+	if err != nil {
+		return nil, fmt.Errorf("restore storage class attributes for volume create retry: %w", err)
+	}
 
 	backend, found := o.backends[txn.VolumeCreatingConfig.BackendUUID]
 	if !found {
@@ -2363,11 +2387,12 @@ func (o *TridentOrchestrator) addVolumeRetry(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, volumeConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, volumeConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, volumeConfig, volumeAttributes)
 	}()
 
-	vol, err = backend.AddVolume(ctx, volumeConfig, pool, make(map[string]sa.Request), true)
+	vol, err = backend.AddVolume(ctx, volumeConfig, pool, volumeAttributes, true)
 	if err != nil {
+		err = abandonResumedCreate(ctx, backend, volumeConfig, err)
 
 		logFields := LogFields{
 			"backend":     backend.Name(),
@@ -2377,10 +2402,10 @@ func (o *TridentOrchestrator) addVolumeRetry(
 			"error":       err,
 		}
 
-		// If the volume is still creating, don't try another pool but let the cleanup logic
+		// If the create is still in progress, don't try another pool but let the cleanup logic
 		// save the state of this operation in a transaction.
-		if errors.IsVolumeCreatingError(err) {
-			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
+		if isVolumeCreateInProgressError(err) {
+			Logc(ctx).WithFields(logFields).Warn("Volume create still in progress on this backend.")
 		} else {
 			Logc(ctx).WithFields(logFields).Error("addVolumeRetry failed on this backend.")
 		}
@@ -2855,9 +2880,14 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	backend.Driver().CreatePrepare(ctx, cloneConfig, pool)
 
 	// Add transaction in case the operation must be rolled back later
+	creatingConfig, stateErr := volumeCreatingConfig(backend, pool, cloneConfig, nil)
+	if stateErr != nil {
+		return nil, stateErr
+	}
 	txn = &storage.VolumeTransaction{
-		Config: cloneConfig,
-		Op:     storage.AddVolume,
+		Config:               cloneConfig,
+		VolumeCreatingConfig: creatingConfig,
+		Op:                   storage.AddVolume,
 	}
 	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
 		return nil, err
@@ -2868,7 +2898,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, cloneConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig, nil)
 	}()
 
 	logFields := LogFields{
@@ -2884,10 +2914,10 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 
 		logFields["error"] = err
 
-		// If the volume is still creating, return the error to let the cleanup logic
+		// If the create is still in progress, return the error to let the cleanup logic
 		// save the state of this operation in a transaction.
-		if errors.IsVolumeCreatingError(err) {
-			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
+		if isVolumeCreateInProgressError(err) {
+			Logc(ctx).WithFields(logFields).Warn("Volume create still in progress on this backend.")
 			return nil, err
 		}
 
@@ -2900,6 +2930,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
+// cloneVolumeRetry is used to retry volume clones while a driver reports the clone as still in progress,
+// either with VolumeCreatingError or with VolumeDeletingError while an unusable leftover volume is removed.
 func (o *TridentOrchestrator) cloneVolumeRetry(
 	ctx context.Context, txn *storage.VolumeTransaction,
 ) (externalVol *storage.VolumeExternal, err error) {
@@ -2946,11 +2978,13 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, cloneConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig, nil)
 	}()
 
-	// Create the clone
+	// Create the clone. This retry is for a clone an earlier attempt already started on this backend, so a hard
+	// failure must remove that volume before the transaction is dropped.
 	if vol, err = backend.CloneVolume(ctx, sourceVolume.Config, cloneConfig, pool, true); err != nil {
+		err = abandonResumedCreate(ctx, backend, cloneConfig, err)
 
 		logFields := LogFields{
 			"backend":      backend.Name(),
@@ -2960,12 +2994,12 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 			"error":        err,
 		}
 
-		// If the volume is still creating, let the cleanup logic save the state
+		// If the create is still in progress, let the cleanup logic save the state
 		// of this operation in a transaction.
-		if errors.IsVolumeCreatingError(err) {
-			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
+		if isVolumeCreateInProgressError(err) {
+			Logc(ctx).WithFields(logFields).Warn("Volume create still in progress on this backend.")
 		} else {
-			Logc(ctx).WithFields(logFields).Error("addVolumeRetry failed on this backend.")
+			Logc(ctx).WithFields(logFields).Error("cloneVolumeRetry failed on this backend.")
 		}
 
 		return nil, err
@@ -3277,10 +3311,8 @@ func (o *TridentOrchestrator) GetVolumeCreatingTransaction(
 
 	if txn, err := o.storeClient.GetVolumeTransaction(ctx, volTxn); err != nil {
 		return nil, err
-	} else if txn != nil && txn.Op == storage.VolumeCreating {
-		return txn, nil
 	} else {
-		return nil, nil
+		return resumableCreatingTransaction(txn), nil
 	}
 }
 
@@ -3300,6 +3332,14 @@ func (o *TridentOrchestrator) DeleteVolumeTransaction(ctx context.Context, volTx
 	return o.storeClient.DeleteVolumeTransaction(ctx, volTxn)
 }
 
+// isVolumeCreateInProgressError reports whether err means the backend still has work in flight for a volume
+// create that has to finish before the request can succeed: either the create itself is still running, or a
+// volume left behind by an earlier attempt is still being deleted so the create can start over. Both cases
+// keep the volume transaction and retry rather than rolling the request back.
+func isVolumeCreateInProgressError(err error) bool {
+	return errors.IsVolumeCreatingError(err) || errors.IsVolumeDeletingError(err)
+}
+
 // addVolumeCleanup is used as a deferred method from the volume create/clone methods
 // to clean up in case anything goes wrong during the operation.
 func (o *TridentOrchestrator) addVolumeCleanup(
@@ -3309,7 +3349,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 	var cleanupErr, txErr error
 
 	// If in a retry situation, we already handled the error in addVolumeRetryCleanup.
-	if errors.IsVolumeCreatingError(err) {
+	if isVolumeCreateInProgressError(err) {
 		return err
 	}
 
@@ -3358,23 +3398,21 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 	return err
 }
 
-// addVolumeRetryCleanup is used as a deferred method from the volume create/clone methods
-// to handles the case where a volume creation took too long, is still ongoing, and must be
-// preserved in a transaction.
+// addVolumeRetryCleanup is used as a deferred method from the volume create/clone methods when the driver
+// returns isVolumeCreateInProgressError: the create or clone is still running, or an unusable leftover
+// volume is still being deleted. It preserves the operation in a VolumeCreating transaction.
 func (o *TridentOrchestrator) addVolumeRetryCleanup(
 	ctx context.Context, err error, backend storage.Backend, pool storage.Pool,
-	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig,
+	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig, volumeAttributes map[string]sa.Request,
 ) error {
 	// If not in a retry situation, return the original error so addVolumeCleanup can do its job.
-	if err == nil || !errors.IsVolumeCreatingError(err) {
+	if err == nil || !isVolumeCreateInProgressError(err) {
 		return err
 	}
 
-	// The volume is still creating.  There are two possible cases:
-	// 1.  The initial create failed, in which case we need to replace the
-	//     AddVolume transaction with a VolumeCreating transaction.
-	// 2.  The create failed after one or more retries, in which case we
-	//     leave the existing VolumeCreating transaction in place.
+	// The create is still in progress, so the stored transaction has to survive as a VolumeCreating transaction.
+	// One that already records the placement, whether from the initial create or from earlier retries, is updated
+	// in place. An AddVolume transaction without a placement is replaced with a new VolumeCreating one.
 
 	existingTxn, getTxnErr := o.storeClient.GetVolumeTransaction(ctx, volTxn)
 
@@ -3388,26 +3426,29 @@ func (o *TridentOrchestrator) addVolumeRetryCleanup(
 		return err
 	}
 
-	if existingTxn.Op == storage.AddVolume {
-
-		creatingTxn := &storage.VolumeTransaction{
-			VolumeCreatingConfig: &storage.VolumeCreatingConfig{
-				StartTime:    time.Now(),
-				BackendUUID:  backend.BackendUUID(),
-				Pool:         pool.Name(),
-				VolumeConfig: *volumeConfig,
-			},
-			Op: storage.VolumeCreating,
+	switch {
+	case isResumableVolumeCreatingTransaction(existingTxn):
+		// The stored transaction already records where the create was placed and when it began; only the volume
+		// config, which the driver may have changed, needs to be brought up to date.
+		if updateErr := updateResumedCreateTransaction(ctx, o.storeClient, existingTxn, volumeConfig); updateErr != nil {
+			Logc(ctx).WithError(updateErr).Warn("addVolumeRetryCleanup, could not update creating transaction.")
+			return err
 		}
+
+		Logc(ctx).Debug("addVolumeRetryCleanup, volume still creating, updated creating transaction.")
+
+	case existingTxn.Op == storage.AddVolume:
+		creatingConfig, configErr := volumeCreatingConfig(backend, pool, volumeConfig, volumeAttributes)
+		if configErr != nil {
+			return multierr.Combine(err, configErr)
+		}
+		creatingTxn := &storage.VolumeTransaction{VolumeCreatingConfig: creatingConfig, Op: storage.VolumeCreating}
 
 		if creatingErr := o.storeClient.UpdateVolumeTransaction(ctx, creatingTxn); creatingErr != nil {
 			return err
 		}
 
 		Logc(ctx).Debug("addVolumeRetryCleanup, volume still creating, replaced AddVolume transaction.")
-
-	} else if existingTxn.Op == storage.VolumeCreating {
-		Logc(ctx).Debug("addVolumeRetryCleanup, volume still creating, leaving VolumeCreating transaction.")
 	}
 	return err
 }

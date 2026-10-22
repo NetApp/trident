@@ -167,6 +167,8 @@ type ZapiClientInterface interface {
 	VolumeUnmount(name string, force bool) (*azgo.VolumeUnmountResponse, error)
 	// VolumeOffline offlines a volume
 	VolumeOffline(name string) (*azgo.VolumeOfflineResponse, error)
+	// VolumeOnline brings an offline volume back online
+	VolumeOnline(name string) (*azgo.VolumeOnlineResponse, error)
 	// VolumeDestroy destroys a volume
 	VolumeDestroy(name string, force bool) (*azgo.VolumeDestroyResponse, error)
 	// VolumeGet returns all relevant details for a single Flexvol

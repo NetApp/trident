@@ -76,6 +76,14 @@ import (
 // via abstraction layer (ONTAPI interface)
 // //////////////////////////////////////////////////////////////////////////////////////////
 
+// maxCreateLookupWait bounds how long a resumed Create waits for a LUN or namespace to appear after ONTAP
+// rejected its create, which is what a duplicate create looks like when the earlier object is not visible yet.
+var maxCreateLookupWait = 5 * time.Second
+
+// maxFlexvolResumeWait bounds how long a resumed Create waits for a Flexvol or FlexGroup left behind by an
+// earlier attempt to come online before reporting the volume as still being created.
+var maxFlexvolResumeWait = 10 * time.Second
+
 const (
 	MinimumVolumeSizeBytes          = 20971520 // 20 MiB
 	HousekeepingStartupDelay        = 10 * time.Second
@@ -6741,6 +6749,426 @@ func destroyFlexvol(
 		}
 		return err
 	}
+	return nil
+}
+
+// destroyLeftover removes a FlexVol or FlexGroup left behind by an earlier create attempt that the current
+// request cannot reuse. A nil error means the volume is gone: both transports complete the delete before the
+// destroy call returns, so its name can be reused immediately. Any failure is reported as VolumeDeletingError,
+// because a failed destroy does not prove the volume is gone: the core keeps the create's transaction and retries
+// on this pool instead of moving to another one and orphaning the leftover.
+//
+// Callers destroy into ONTAP's recovery queue: automatic reconciliation must be less destructive than an
+// explicit user delete, so a mistaken decision stays recoverable.
+func destroyLeftover(
+	ctx context.Context, kind, name, reason string, destroy func(context.Context) error,
+) error {
+	deleteCtx, cancel := context.WithTimeout(ctx, api.VolumeDeleteTimeout())
+	defer cancel()
+
+	Logc(ctx).WithFields(LogFields{"volume": name, "reason": reason}).
+		Warningf("Destroying %s left over from an earlier create attempt.", kind)
+
+	if err := destroy(deleteCtx); err != nil {
+		Logc(ctx).WithError(err).WithField("volume", name).Errorf("Could not clean up %s.", kind)
+		if api.IsVolumeBusyError(err) {
+			return errors.VolumeDeletingError("%s %s that could not be reused (%s) is still busy deleting: %v",
+				kind, name, reason, err)
+		}
+		return errors.VolumeDeletingError("could not destroy unusable %s %s (%s); cleanup will be retried: %v",
+			kind, name, reason, err)
+	}
+	return nil
+}
+
+// destroyUnusableVolume removes a leftover FlexVol, by its UUID when one is known: a REST destroy by UUID
+// addresses that exact volume and is not subject to the lag in ONTAP's name index.
+func destroyUnusableVolume(ctx context.Context, client api.OntapAPI, name, volumeID, reason string) error {
+	leftover := &storage.VolumeConfig{InternalName: name, BackendVolumeID: volumeID}
+	destroy := func(ctx context.Context) error { return destroyFlexvol(ctx, client, leftover, true, false) }
+	return destroyLeftover(ctx, "volume", name, reason, destroy)
+}
+
+// destroyUnusableVolumeForRetry removes a leftover FlexVol and, once it is confirmed gone, drops its UUID from
+// volConfig and asks the core to retry the create from scratch.
+func destroyUnusableVolumeForRetry(
+	ctx context.Context, client api.OntapAPI, volConfig *storage.VolumeConfig, volumeID, reason string,
+) error {
+	name := volConfig.InternalName
+	if err := destroyUnusableVolume(ctx, client, name, volumeID, reason); err != nil {
+		return err
+	}
+	volConfig.BackendVolumeID = ""
+	return errors.VolumeCreatingError("destroyed volume %s that could not be reused (%s); retrying the create",
+		name, reason)
+}
+
+// destroyUnusableFlexgroupForRetry removes a leftover FlexGroup and, once it is confirmed gone, asks the core to
+// retry the create from scratch.
+func destroyUnusableFlexgroupForRetry(ctx context.Context, client api.OntapAPI, name, reason string) error {
+	destroy := func(ctx context.Context) error { return client.FlexgroupDestroy(ctx, name, true, false) }
+	if err := destroyLeftover(ctx, "FlexGroup", name, reason, destroy); err != nil {
+		return err
+	}
+	return errors.VolumeCreatingError("destroyed FlexGroup %s that could not be reused (%s); retrying the create",
+		name, reason)
+}
+
+// rollbackFailedCreate removes the FlexVol a failed LUN or namespace create left behind and, once the FlexVol is
+// confirmed gone, returns failure so the caller can report it or try another pool. If the FlexVol may still
+// exist, because it stayed busy or the destroy failed, destroyUnusableVolume's VolumeDeletingError is returned
+// instead so the create stays on this pool: another attempt would collide with the same name.
+func rollbackFailedCreate(
+	ctx context.Context, client api.OntapAPI, volConfig *storage.VolumeConfig, failure error,
+) error {
+	if err := destroyUnusableVolume(ctx, client, volConfig.InternalName, volConfig.BackendVolumeID,
+		failure.Error()); err != nil {
+		return err
+	}
+	volConfig.BackendVolumeID = ""
+	return failure
+}
+
+// reconcileExistingVolumeForCreate prepares a FlexVol left behind by an earlier Create for reuse by the
+// current request: it waits for ONTAP to finish building the volume, validates its attributes and repairs
+// the ones ONTAP still accepts.
+//
+// A FlexVol that has not come online, or that cannot be read, is left in place and reported as still
+// creating, which keeps the core's transaction pinned to this backend and pool: destroying it would restart a
+// slow create or act on a volume whose state is unknown. A FlexVol that does not match the request, or cannot
+// be repaired (for instance because the aggregate has no room to grow it), is destroyed: no pod can be using
+// it before Create succeeds, and a retry from a clean create can fail over to another pool.
+func reconcileExistingVolumeForCreate(
+	ctx context.Context, client api.OntapAPI, volConfig *storage.VolumeConfig, desired api.Volume,
+	allowedAggregates []string,
+) error {
+	name := desired.Name
+
+	state, err := client.VolumeWaitForStates(ctx, name, []string{"online"}, []string{"error"},
+		maxFlexvolResumeWait)
+	if err != nil {
+		var terminal *api.TerminalStateError
+		if errors.As(err, &terminal) {
+			// Destroy the volume that is there now: a recorded UUID may belong to an earlier volume of the same
+			// name, and destroying that would report success and leave this one behind.
+			return destroyUnusableVolumeForRetry(ctx, client, volConfig, liveVolumeID(ctx, client, volConfig),
+				fmt.Sprintf("volume is in state %q", state))
+		}
+		return errors.VolumeCreatingError("volume %s is not online yet (state %q): %v", name, state, err)
+	}
+
+	existing, err := client.VolumeInfo(ctx, name)
+	if err != nil {
+		// Neither transport distinguishes a missing volume from an unreadable one here: ZAPI and REST both
+		// report a VolumeReadError. Ask whether the volume is still there only to report the more specific
+		// cause; either way the create is retried.
+		if exists, existsErr := client.VolumeExists(ctx, name); existsErr == nil && !exists {
+			return errors.VolumeCreatingError("volume %s is no longer present; retrying the create", name)
+		}
+		return errors.VolumeCreatingError("could not read existing volume %s; retrying the create: %v", name, err)
+	}
+
+	if err = reconcileExistingFlexvol(ctx, client, existing, desired, allowedAggregates); err != nil {
+		// Destroy the volume that was just inspected, by the UUID ONTAP reported for it when there is one.
+		volumeID := existing.UUID
+		if volumeID == "" {
+			volumeID = volConfig.BackendVolumeID
+		}
+		return destroyUnusableVolumeForRetry(ctx, client, volConfig, volumeID, err.Error())
+	}
+
+	// Record the UUID ONTAP just reported, so a later destroy addresses this exact volume and keeps the
+	// protection UUID addressing gives against the lag in ONTAP's name index. The volume name is derived from
+	// the PVC and is unique, so a same-name volume is the same logical volume even when it was recreated with a
+	// new UUID; the live UUID replaces any recorded one, which a destroy would otherwise treat as already gone.
+	if existing.UUID != "" {
+		volConfig.BackendVolumeID = existing.UUID
+	}
+
+	return nil
+}
+
+// reconcileExistingFlexgroupForCreate is the FlexGroup counterpart of reconcileExistingVolumeForCreate. The
+// state is read through FlexgroupInfo because the FlexVol state wait cannot see a FlexGroup.
+func reconcileExistingFlexgroupForCreate(ctx context.Context, client api.OntapAPI, desired api.Volume) error {
+	name := desired.Name
+	existing, err := api.WaitForVolumeInfoState(ctx, client.FlexgroupInfo, name, []string{"online"},
+		[]string{"error"}, maxFlexvolResumeWait)
+	if err != nil {
+		state := ""
+		if existing != nil {
+			state = existing.State
+		}
+		var terminal *api.TerminalStateError
+		if errors.As(err, &terminal) {
+			return destroyUnusableFlexgroupForRetry(ctx, client, name, fmt.Sprintf("FlexGroup is in state %q", state))
+		}
+		return errors.VolumeCreatingError("FlexGroup %s is not online yet (state %q): %v", name, state, err)
+	}
+
+	if err = reconcileExistingFlexgroup(ctx, client, existing, desired); err != nil {
+		return destroyUnusableFlexgroupForRetry(ctx, client, name, err.Error())
+	}
+	return nil
+}
+
+// liveVolumeID returns the UUID ONTAP reports for the volume named by volConfig, or the recorded one when the
+// volume cannot be read or reports none.
+func liveVolumeID(ctx context.Context, client api.OntapAPI, volConfig *storage.VolumeConfig) string {
+	if info, err := client.VolumeInfo(ctx, volConfig.InternalName); err == nil && info != nil && info.UUID != "" {
+		return info.UUID
+	}
+	return volConfig.BackendVolumeID
+}
+
+// checkCreateOnlyAttributes reports whether a FlexVol or FlexGroup left behind by an earlier Create differs from
+// the current request in an attribute ONTAP fixes when the volume is created: aggregate placement, space
+// guarantee, snapshot policy, snapshot reserve, encryption, security style, owner group, tiering policy and
+// whether it is a DP (mirror destination) volume. Such a volume belongs to a different request.
+//
+// Aggregate placement, encryption, security style, owner group and tiering policy are only compared when both
+// sides carry a value, because a request that does not ask for a specific setting takes whatever ONTAP chose, and
+// not every transport reports every value; in particular ZAPI does not report a FlexGroup's member aggregates.
+func checkCreateOnlyAttributes(existing *api.Volume, desired api.Volume, allowedAggregates []string) error {
+	// Balanced placement lets ONTAP choose the aggregates, and the pool stands in for them with a placeholder
+	// name no volume reports, so no aggregate is ruled out.
+	if len(allowedAggregates) > 0 && !collection.ContainsString(allowedAggregates, managedStoragePoolName) {
+		for _, aggregate := range existing.Aggregates {
+			if !collection.ContainsString(allowedAggregates, aggregate) {
+				return fmt.Errorf("volume uses aggregate %s, which this pool cannot use", aggregate)
+			}
+		}
+	}
+
+	switch {
+	case existing.DPVolume != desired.DPVolume:
+		return fmt.Errorf("DP volume is %t, request asks for %t", existing.DPVolume, desired.DPVolume)
+	case desired.SpaceReserve != "" && existing.SpaceReserve != desired.SpaceReserve:
+		return fmt.Errorf("space reserve is %q, request asks for %q", existing.SpaceReserve, desired.SpaceReserve)
+	case desired.SnapshotPolicy != "" && existing.SnapshotPolicy != desired.SnapshotPolicy:
+		return fmt.Errorf("snapshot policy is %q, request asks for %q", existing.SnapshotPolicy, desired.SnapshotPolicy)
+	case desired.SnapshotReserve >= 0 && existing.SnapshotReserve != desired.SnapshotReserve:
+		return fmt.Errorf("snapshot reserve is %d%%, request asks for %d%%",
+			existing.SnapshotReserve, desired.SnapshotReserve)
+	case desired.Encrypt != nil && existing.Encrypt != nil && *existing.Encrypt != *desired.Encrypt:
+		return fmt.Errorf("encryption is %t, request asks for %t", *existing.Encrypt, *desired.Encrypt)
+	case desired.SecurityStyle != "" && existing.SecurityStyle != "" && existing.SecurityStyle != desired.SecurityStyle:
+		return fmt.Errorf("security style is %q, request asks for %q", existing.SecurityStyle, desired.SecurityStyle)
+	case unixGroupIDMismatch(existing.UnixGroupID, desired.UnixGroupID):
+		return fmt.Errorf("unix group ID is %q, request asks for %q", existing.UnixGroupID, desired.UnixGroupID)
+	case desired.TieringPolicy != "" && existing.TieringPolicy != "" &&
+		!sameTieringPolicy(existing.TieringPolicy, desired.TieringPolicy):
+		return fmt.Errorf("tiering policy is %q, request asks for %q", existing.TieringPolicy, desired.TieringPolicy)
+	}
+	return nil
+}
+
+// lunSizeGranularity is the unit ONTAP rounds a LUN's size up to when it creates it.
+const lunSizeGranularity = 512
+
+// roundUpToMultiple returns size rounded up to the next multiple of unit. A unit of zero leaves size unchanged.
+func roundUpToMultiple(size, unit uint64) uint64 {
+	if unit == 0 || size%unit == 0 {
+		return size
+	}
+	return size + unit - size%unit
+}
+
+// parseSizes parses the size ONTAP reports for a leftover object and the size the current request asks for.
+func parseSizes(name, existing, desired string) (existingSize, desiredSize uint64, err error) {
+	if desiredSize, err = strconv.ParseUint(desired, 10, 64); err != nil {
+		return 0, 0, fmt.Errorf("could not parse requested size %q for %s: %w", desired, name, err)
+	}
+	if existingSize, err = strconv.ParseUint(existing, 10, 64); err != nil {
+		return 0, 0, fmt.Errorf("could not parse size %q of %s: %w", existing, name, err)
+	}
+	return existingSize, desiredSize, nil
+}
+
+// reconcileExistingFlexgroup validates a leftover FlexGroup with checkCreateOnlyAttributes and repairs what
+// ONTAP accepts on a live FlexGroup: size (grow only), export policy, unix permissions, the label comment and
+// the QoS policy group.
+func reconcileExistingFlexgroup(
+	ctx context.Context, client api.OntapAPI, existing *api.Volume, desired api.Volume,
+) error {
+	name := desired.Name
+	if err := checkCreateOnlyAttributes(existing, desired, desired.Aggregates); err != nil {
+		return err
+	}
+
+	existingSize, desiredSize, err := parseSizes("FlexGroup "+name, existing.Size, desired.Size)
+	if err != nil {
+		return err
+	}
+	if existingSize < desiredSize {
+		if err = client.FlexgroupSetSize(ctx, name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.ExportPolicy != "" && existing.ExportPolicy != desired.ExportPolicy {
+		if err = client.FlexgroupModifyExportPolicy(ctx, name, desired.ExportPolicy); err != nil {
+			return fmt.Errorf("could not set export policy on FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.UnixPermissions != "" && existing.UnixPermissions != desired.UnixPermissions {
+		if err = client.FlexgroupModifyUnixPermissions(ctx, name, name, desired.UnixPermissions); err != nil {
+			return fmt.Errorf("could not set unix permissions on FlexGroup %s: %w", name, err)
+		}
+	}
+	if existing.Comment != desired.Comment {
+		if err = client.FlexgroupSetComment(ctx, name, name, desired.Comment); err != nil {
+			return fmt.Errorf("could not set comment on FlexGroup %s: %w", name, err)
+		}
+	}
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.FlexgroupSetQosPolicyGroupName(ctx, name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on FlexGroup %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
+// reconcileExistingFlexvol validates a leftover FlexVol with checkCreateOnlyAttributes and repairs what ONTAP
+// accepts on a live volume: size, autosize policy, export policy, unix permissions, the label comment and the QoS
+// policy group.
+//
+// The autosize policy is always written when the request carries one. ZAPI and balanced-placement creates set it
+// in a separate call once the FlexVol exists, which a create that ONTAP reported as busy never reached, and
+// neither transport reports the policy a volume has, so there is nothing to compare it with.
+//
+// The FlexVol is only ever grown. Shrinking risks discarding blocks ONTAP has already placed, and an
+// oversized FlexVol is harmless because the LUN, not the FlexVol, is what the volume reports to the core.
+func reconcileExistingFlexvol(
+	ctx context.Context, client api.OntapAPI, existing *api.Volume, desired api.Volume,
+	allowedAggregates []string,
+) error {
+	name := desired.Name
+	if err := checkCreateOnlyAttributes(existing, desired, allowedAggregates); err != nil {
+		return err
+	}
+
+	existingSize, desiredSize, err := parseSizes("volume "+name, existing.Size, desired.Size)
+	if err != nil {
+		return err
+	}
+	if existingSize < desiredSize {
+		Logc(ctx).WithFields(LogFields{
+			"volume": name, "size": existingSize, "newSize": desiredSize,
+		}).Debug("Growing existing volume to the requested size.")
+		if err = client.VolumeSetSize(ctx, name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize volume %s: %w", name, err)
+		}
+	}
+
+	// The autosize maximum is derived from the size the request asks for, so it is written once the volume has
+	// been grown to that size.
+	if err = applyOntapAutosizePolicy(ctx, client, name, existing.UUID, desired.AutosizePolicy); err != nil {
+		return err
+	}
+
+	if desired.ExportPolicy != "" && existing.ExportPolicy != desired.ExportPolicy {
+		if err = client.VolumeModifyExportPolicy(ctx, name, desired.ExportPolicy); err != nil {
+			return fmt.Errorf("could not set export policy on volume %s: %w", name, err)
+		}
+	}
+
+	if desired.UnixPermissions != "" && existing.UnixPermissions != desired.UnixPermissions {
+		if err = client.VolumeModifyUnixPermissions(ctx, name, name, desired.UnixPermissions); err != nil {
+			return fmt.Errorf("could not set unix permissions on volume %s: %w", name, err)
+		}
+	}
+
+	if existing.Comment != desired.Comment {
+		if err = client.VolumeSetComment(ctx, name, name, desired.Comment); err != nil {
+			return fmt.Errorf("could not set comment on volume %s: %w", name, err)
+		}
+	}
+
+	// An empty desired policy group means the pool asks for no QoS at all, and ONTAP offers no way to strip one
+	// back off a FlexVol, so only a real policy name is worth applying. REST reports fixed and adaptive policy
+	// groups in the same field, so the two kinds are compared by name.
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.VolumeSetQosPolicyGroupName(ctx, name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on volume %s: %w", name, err)
+		}
+	}
+
+	return nil
+}
+
+// unixGroupIDMismatch reports whether a leftover volume's owner group differs from the one the request asks
+// for. A request that names no group takes whatever ONTAP chose, and a transport that cannot report the group
+// gives nothing to compare, so either side being empty is not a mismatch.
+func unixGroupIDMismatch(existing, desired string) bool {
+	if existing == "" || desired == "" {
+		return false
+	}
+	existingGID, existingErr := strconv.Atoi(existing)
+	desiredGID, desiredErr := strconv.Atoi(desired)
+	if existingErr != nil || desiredErr != nil {
+		return existing != desired
+	}
+	return existingGID != desiredGID
+}
+
+// sameTieringPolicy reports whether two ONTAP tiering policy values name the same policy. Trident's config
+// and ZAPI spell the multi-word policies with a hyphen ("snapshot-only") while REST uses an underscore
+// ("snapshot_only"), so the separator carries no meaning in a comparison.
+func sameTieringPolicy(a, b string) bool {
+	normalize := func(policy string) string {
+		return strings.ReplaceAll(strings.ToLower(policy), "-", "_")
+	}
+	return normalize(a) == normalize(b)
+}
+
+// reconcileExistingLun validates a LUN left behind by an earlier Create against the current request and
+// grows it or re-points its QoS policy group where ONTAP allows.
+//
+// OS type, space reservation and space allocation are fixed when the LUN is created, and shrinking a LUN would
+// discard blocks ONTAP has already reserved, so any of those means the LUN cannot be reused. Neither transport
+// reports the full picture -- ZAPI omits the OS type, and REST omits the space settings -- so each check only
+// runs when the value is actually available.
+func reconcileExistingLun(ctx context.Context, client api.OntapAPI, existing *api.Lun, desired api.Lun) error {
+	if existing.OsType != "" && desired.OsType != "" && existing.OsType != desired.OsType {
+		return fmt.Errorf("LUN OS type is %q, request asks for %q", existing.OsType, desired.OsType)
+	}
+	if existing.SpaceReserved != nil && desired.SpaceReserved != nil &&
+		*existing.SpaceReserved != *desired.SpaceReserved {
+		return fmt.Errorf("LUN space reservation is %t, request asks for %t",
+			*existing.SpaceReserved, *desired.SpaceReserved)
+	}
+	if existing.SpaceAllocated != nil && desired.SpaceAllocated != nil &&
+		*existing.SpaceAllocated != *desired.SpaceAllocated {
+		return fmt.Errorf("LUN space allocation is %t, request asks for %t",
+			*existing.SpaceAllocated, *desired.SpaceAllocated)
+	}
+
+	existingSize, desiredSize, err := parseSizes("LUN "+desired.Name, existing.Size, desired.Size)
+	if err != nil {
+		return err
+	}
+	// A LUN created for this request reports its size rounded up to a whole sector, so only a larger LUN is a
+	// different one.
+	if existingSize > roundUpToMultiple(desiredSize, lunSizeGranularity) {
+		return fmt.Errorf("LUN is %d bytes, request asks for %d", existingSize, desiredSize)
+	}
+	if existingSize < desiredSize {
+		Logc(ctx).WithFields(LogFields{
+			"LUN": desired.Name, "size": existingSize, "newSize": desiredSize,
+		}).Debug("Growing existing LUN to the requested size.")
+		if _, err = client.LunSetSize(ctx, desired.Name, desired.Size); err != nil {
+			return fmt.Errorf("could not resize LUN %s: %w", desired.Name, err)
+		}
+	}
+
+	// An empty desired policy group means the pool asks for no QoS at all, and ONTAP offers no way to strip
+	// one back off a LUN, so only a real policy name is worth applying.
+	if desired.Qos.Name != "" && existing.Qos.Name != desired.Qos.Name {
+		if err = client.LunSetQosPolicyGroup(ctx, desired.Name, desired.Qos); err != nil {
+			return fmt.Errorf("could not set QoS policy group on LUN %s: %w", desired.Name, err)
+		}
+	}
+
 	return nil
 }
 

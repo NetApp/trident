@@ -299,8 +299,12 @@ func TestErrorWrapping(t *testing.T) {
 					originalErr := errorType.createFunc(testErrorMessage)
 					wrappedErr := wrapTest.wrapFunc(originalErr)
 
-					// Type checker should not recognize wrapped errors
-					assert.Equal(t, wrapTest.shouldMatch, errorType.checkFunc(wrappedErr),
+					shouldMatch := wrapTest.shouldMatch
+					if errorType.name == "VolumeCreateJobExistsError" && wrapTest.testErrorsIs {
+						shouldMatch = true
+					}
+
+					assert.Equal(t, shouldMatch, errorType.checkFunc(wrappedErr),
 						"Wrapped error type checking failed for %s: %s", wrapTest.name, wrapTest.description)
 
 					// Original error should still be recognized
@@ -457,4 +461,13 @@ func TestIsVolumeBusyRESTError(t *testing.T) {
 			assert.Equal(t, tc.want, IsVolumeBusyRESTError(tc.err))
 		})
 	}
+}
+
+func TestCreateBusyError(t *testing.T) {
+	err := createBusyError("volume vol1",
+		errors.New("API State: failure, Message: Volume busy.,Code: "+VOLUME_BUSY_ERROR_REST))
+	assert.True(t, IsVolumeCreateJobExistsError(err), "a REST volume-busy response is a create in progress")
+	assert.ErrorContains(t, err, "volume is busy creating volume vol1")
+
+	assert.Nil(t, createBusyError("volume vol1", errors.New("boom")), "any other error is not a busy create")
 }

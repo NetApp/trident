@@ -2140,6 +2140,299 @@ func addBackendStorageClass(
 	}
 }
 
+// TestAddVolumeRetryCleanup_PreservesTransactionForInProgressCreate covers the errors a driver uses to say
+// the create has not finished: the create itself is still running, or an unusable volume left by an earlier
+// attempt is still being deleted so the create can start over. Both have to keep a retry transaction, or the
+// next attempt loses the state it needs and the volume is orphaned on the backend.
+func TestAddVolumeRetryCleanup_PreservesTransactionForInProgressCreate(t *testing.T) {
+	tests := []struct {
+		name          string
+		driverErr     error
+		wantTxnOp     storage.VolumeOperation
+		assertMessage string
+	}{
+		{
+			name:          "CreateStillInProgress",
+			driverErr:     errors.VolumeCreatingError("volume vol1 is busy: volume create job exists"),
+			wantTxnOp:     storage.VolumeCreating,
+			assertMessage: "A create still in progress must be preserved as a VolumeCreating transaction",
+		},
+		{
+			name:          "UnusableVolumeStillDeleting",
+			driverErr:     errors.VolumeDeletingError("volume vol1 delete is still in progress"),
+			wantTxnOp:     storage.VolumeCreating,
+			assertMessage: "A leftover volume still being deleted must be preserved for retry as well",
+		},
+		{
+			name:          "PermanentFailure",
+			driverErr:     errors.New("aggregate is full"),
+			wantTxnOp:     storage.AddVolume,
+			assertMessage: "A permanent failure must be left for addVolumeCleanup to roll back",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator := newTestTridentOrchestrator(t, persistentstore.NewInMemoryClient())
+
+			mockCtrl := gomock.NewController(t)
+			backend := mockstorage.NewMockBackend(mockCtrl)
+			backend.EXPECT().BackendUUID().Return("backend-uuid").AnyTimes()
+			pool := storage.NewStoragePool(backend, "pool1")
+
+			volumeConfig := tu.GenerateVolumeConfig("vol1", 1, "slow", config.File)
+			txn := &storage.VolumeTransaction{Config: volumeConfig, Op: storage.AddVolume}
+			require.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			err := orchestrator.addVolumeRetryCleanup(ctx(), test.driverErr, backend, pool, txn, volumeConfig, nil)
+
+			assert.Equal(t, test.driverErr, err, "addVolumeRetryCleanup must hand back the driver's error")
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			require.NoError(t, getErr)
+			require.NotNil(t, storedTxn, "the transaction must still be there")
+			assert.Equal(t, test.wantTxnOp, storedTxn.Op, test.assertMessage)
+		})
+	}
+}
+
+// TestAddVolumeRetryCleanup_RecordsDriverChangesToCreatingTransaction covers a create that is still in progress
+// after the driver changed the volume config, for instance by replacing the backend volume it had created. The
+// stored transaction has to follow, or a later cleanup addresses the volume the transaction used to describe; the
+// placement and the start time that drives the reaper must stay as they were.
+func TestAddVolumeRetryCleanup_RecordsDriverChangesToCreatingTransaction(t *testing.T) {
+	for _, storedOp := range []storage.VolumeOperation{storage.VolumeCreating, storage.AddVolume} {
+		t.Run(string(storedOp), func(t *testing.T) {
+			orchestrator := newTestTridentOrchestrator(t, persistentstore.NewInMemoryClient())
+
+			mockCtrl := gomock.NewController(t)
+			backend := mockstorage.NewMockBackend(mockCtrl)
+			backend.EXPECT().BackendUUID().Return("backend-uuid").AnyTimes()
+			pool := storage.NewStoragePool(backend, "pool1")
+
+			startTime := time.Now().Add(-2 * time.Hour)
+			attributes := json.RawMessage(`{"provisioningType":{"type":"string","value":"thin"}}`)
+			storedConfig := tu.GenerateVolumeConfig("vol1", 1, "slow", config.File)
+			storedConfig.BackendVolumeID = "uuid-a"
+			stored := &storage.VolumeTransaction{
+				Op: storedOp,
+				VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+					StartTime:              startTime,
+					BackendUUID:            "backend-uuid",
+					Pool:                   "pool1",
+					StorageClassAttributes: attributes,
+					VolumeConfig:           *storedConfig,
+				},
+			}
+			if storedOp == storage.AddVolume {
+				stored.Config = storedConfig
+			}
+			require.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), stored))
+
+			// The driver replaced the volume the transaction describes with another one.
+			driverConfig := storedConfig.ConstructClone()
+			driverConfig.BackendVolumeID = "uuid-b"
+
+			creatingErr := errors.VolumeCreatingError("volume vol1 is busy")
+			err := orchestrator.addVolumeRetryCleanup(ctx(), creatingErr, backend, pool, stored, driverConfig, nil)
+
+			assert.Equal(t, creatingErr, err)
+
+			updated, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), stored)
+			require.NoError(t, getErr)
+			require.NotNil(t, updated)
+			require.NotNil(t, updated.VolumeCreatingConfig)
+			assert.Equal(t, storage.VolumeCreating, updated.Op)
+			assert.Equal(t, "uuid-b", updated.VolumeCreatingConfig.BackendVolumeID)
+			assert.Equal(t, startTime, updated.VolumeCreatingConfig.StartTime, "the start time must not restart")
+			assert.Equal(t, "backend-uuid", updated.VolumeCreatingConfig.BackendUUID)
+			assert.Equal(t, "pool1", updated.VolumeCreatingConfig.Pool)
+			assert.JSONEq(t, string(attributes), string(updated.VolumeCreatingConfig.StorageClassAttributes),
+				"the storage class attributes of the original create must be kept")
+		})
+	}
+}
+
+// TestAddVolumeRetry_HardFailureRemovesVolumeBeforeReleasingPlacement covers a resumed create that fails for a
+// reason other than the create being in progress. An earlier attempt may have left the volume on the backend, so
+// the transaction that records where it is may only go once the backend confirms the volume is gone.
+func TestAddVolumeRetry_HardFailureRemovesVolumeBeforeReleasingPlacement(t *testing.T) {
+	createErr := errors.New("volume is not created because the backend is suspended")
+
+	tests := []struct {
+		name        string
+		removeErr   error
+		wantTxnKept bool
+	}{
+		{name: "VolumeRemoved", removeErr: nil, wantTxnKept: false},
+		{name: "VolumeCannotBeRemoved", removeErr: errors.New("backend unreachable"), wantTxnKept: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator := newTestTridentOrchestrator(t, persistentstore.NewInMemoryClient())
+
+			mockCtrl := gomock.NewController(t)
+			backend := mockstorage.NewMockBackend(mockCtrl)
+			backend.EXPECT().BackendUUID().Return("backend-uuid").AnyTimes()
+			backend.EXPECT().Name().Return("testBackend").AnyTimes()
+			pool := storage.NewStoragePool(backend, "pool1")
+			backend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": pool})).AnyTimes()
+			orchestrator.backends["backend-uuid"] = backend
+
+			txn := &storage.VolumeTransaction{
+				Op: storage.VolumeCreating,
+				VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+					StartTime:    time.Now().Add(-time.Hour),
+					BackendUUID:  "backend-uuid",
+					Pool:         "pool1",
+					VolumeConfig: *tu.GenerateVolumeConfig("vol1", 1, "slow", config.File),
+				},
+			}
+			require.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			backend.EXPECT().AddVolume(
+				gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), gomock.Any(), true,
+			).Return(nil, createErr)
+			backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(test.removeErr)
+
+			result, err := orchestrator.addVolumeRetry(ctx(), txn)
+
+			assert.Nil(t, result)
+			require.Error(t, err)
+			if test.wantTxnKept {
+				assert.True(t, errors.IsVolumeCreatingError(err), "the create must stay in progress: %v", err)
+				assert.ErrorContains(t, err, createErr.Error())
+			} else {
+				assert.ErrorIs(t, err, createErr)
+				assert.False(t, errors.IsVolumeCreatingError(err))
+			}
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			require.NoError(t, getErr)
+			assert.Equal(t, test.wantTxnKept, storedTxn != nil)
+		})
+	}
+}
+
+// TestCloneVolumeRetry_HardFailureRemovesVolumeBeforeReleasingPlacement covers a resumed clone that fails for a
+// reason other than the clone being in progress. An earlier attempt may have left the clone on the backend, so
+// the transaction that records where it is may only go once the backend confirms the volume is gone.
+func TestCloneVolumeRetry_HardFailureRemovesVolumeBeforeReleasingPlacement(t *testing.T) {
+	createErr := errors.New("volume is not created because the backend is suspended")
+
+	tests := []struct {
+		name        string
+		removeErr   error
+		wantTxnKept bool
+	}{
+		{name: "VolumeRemoved", removeErr: nil, wantTxnKept: false},
+		{name: "VolumeCannotBeRemoved", removeErr: errors.New("backend unreachable"), wantTxnKept: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator := newTestTridentOrchestrator(t, persistentstore.NewInMemoryClient())
+
+			mockCtrl := gomock.NewController(t)
+			backend := mockstorage.NewMockBackend(mockCtrl)
+			backend.EXPECT().BackendUUID().Return("backend-uuid").AnyTimes()
+			backend.EXPECT().Name().Return("testBackend").AnyTimes()
+			pool := storage.NewStoragePool(backend, "pool1")
+			backend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": pool})).AnyTimes()
+			orchestrator.backends["backend-uuid"] = backend
+
+			sourceConfig := tu.GenerateVolumeConfig("source", 1, "slow", config.File)
+			orchestrator.volumes[sourceConfig.Name] = &storage.Volume{
+				Config:      sourceConfig,
+				BackendUUID: "backend-uuid",
+			}
+			cloneConfig := tu.GenerateVolumeConfig("clone", 1, "slow", config.File)
+			cloneConfig.CloneSourceVolume = sourceConfig.Name
+			cloneConfig.CloneSourceVolumeInternal = sourceConfig.InternalName
+
+			txn := &storage.VolumeTransaction{
+				Op: storage.VolumeCreating,
+				VolumeCreatingConfig: &storage.VolumeCreatingConfig{
+					StartTime:    time.Now().Add(-time.Hour),
+					BackendUUID:  "backend-uuid",
+					Pool:         "pool1",
+					VolumeConfig: *cloneConfig,
+				},
+			}
+			require.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			backend.EXPECT().CloneVolume(
+				gomock.Any(), sourceConfig, &txn.VolumeCreatingConfig.VolumeConfig, gomock.Any(), true,
+			).Return(nil, createErr)
+			backend.EXPECT().RemoveVolume(gomock.Any(), &txn.VolumeCreatingConfig.VolumeConfig).Return(test.removeErr)
+
+			result, err := orchestrator.cloneVolumeRetry(ctx(), txn)
+
+			assert.Nil(t, result)
+			require.Error(t, err)
+			if test.wantTxnKept {
+				assert.True(t, errors.IsVolumeCreatingError(err), "the clone must stay in progress: %v", err)
+				assert.ErrorContains(t, err, createErr.Error())
+			} else {
+				assert.ErrorIs(t, err, createErr)
+				assert.False(t, errors.IsVolumeCreatingError(err))
+			}
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			require.NoError(t, getErr)
+			assert.Equal(t, test.wantTxnKept, storedTxn != nil)
+		})
+	}
+}
+
+// TestAddVolumeCleanup_KeepsTransactionForInProgressCreate is the other half of the retry path: the cleanup
+// that rolls a failed create back must not delete the transaction that addVolumeRetryCleanup just preserved.
+func TestAddVolumeCleanup_KeepsTransactionForInProgressCreate(t *testing.T) {
+	tests := []struct {
+		name          string
+		driverErr     error
+		wantTxnKept   bool
+		assertMessage string
+	}{
+		{
+			name:          "CreateStillInProgress",
+			driverErr:     errors.VolumeCreatingError("volume vol1 is busy: volume create job exists"),
+			wantTxnKept:   true,
+			assertMessage: "A create still in progress keeps its transaction for the next attempt",
+		},
+		{
+			name:          "UnusableVolumeStillDeleting",
+			driverErr:     errors.VolumeDeletingError("volume vol1 delete is still in progress"),
+			wantTxnKept:   true,
+			assertMessage: "A leftover volume still being deleted keeps its transaction too",
+		},
+		{
+			name:          "PermanentFailure",
+			driverErr:     errors.New("aggregate is full"),
+			assertMessage: "A permanent failure rolls the transaction back",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			orchestrator := newTestTridentOrchestrator(t, persistentstore.NewInMemoryClient())
+
+			volumeConfig := tu.GenerateVolumeConfig("vol1", 1, "slow", config.File)
+			txn := &storage.VolumeTransaction{Config: volumeConfig, Op: storage.AddVolume}
+			require.NoError(t, orchestrator.storeClient.AddVolumeTransaction(ctx(), txn))
+
+			err := orchestrator.addVolumeCleanup(ctx(), test.driverErr, nil, nil, txn, volumeConfig)
+
+			assert.Equal(t, test.driverErr, err, "addVolumeCleanup must hand back the driver's error")
+
+			storedTxn, getErr := orchestrator.storeClient.GetVolumeTransaction(ctx(), txn)
+			require.NoError(t, getErr)
+			assert.Equal(t, test.wantTxnKept, storedTxn != nil, test.assertMessage)
+		})
+	}
+}
+
 // TestBootstrapBackendRetryAfterInitialFailure exercises bootstrapBackends' addBackend-then-retry
 // path (see orchestrator_core.go), which previously had no test coverage. An invalid pool "size"
 // default makes fake driver Initialize() fail deterministically in validate() on every attempt

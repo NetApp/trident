@@ -59,6 +59,7 @@ type Volume struct {
 	SnapshotReserve   int
 	SnapshotSpaceUsed int
 	SpaceReserve      string
+	State             string
 	TieringPolicy     string
 	UnixPermissions   string
 	UnixGroupID       string

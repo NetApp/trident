@@ -2,7 +2,11 @@
 
 package api
 
-import "regexp"
+import (
+	"errors"
+	"regexp"
+	"strings"
+)
 
 // ///////////////////////////////////////////////////////////////////////////
 // REST error codes
@@ -23,6 +27,8 @@ const (
 	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
 	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
 	VOLUME_BUSY_ERROR_REST                     = "524486"
+	LUN_EXISTS_ERROR_REST                      = "5374242" // LUN create: a LUN already exists at the path
+	LUN_CREATE_IN_PROGRESS_ERROR_REST          = "5702832" // LUN create: the LUN is still being created
 	VOLUME_MOVE_INTERNAL_ERROR                 = "144182225"
 )
 
@@ -37,6 +43,34 @@ func IsVolumeBusyRESTError(err error) bool {
 	}
 	_, _, code := ExtractError(err)
 	return code == VOLUME_BUSY_ERROR_REST || VolumeBusyRESTCodeRegexp.MatchString(err.Error())
+}
+
+// createTargetExistsRESTCodeRegexp matches the REST errnos ONTAP returns when a LUN or NVMe namespace create
+// finds the object already there or still being created. DUPLICATE_ENTRY is the generic REST duplicate errno.
+var createTargetExistsRESTCodeRegexp = regexp.MustCompile(
+	`(?i)\bCode:\s*(` + LUN_EXISTS_ERROR_REST + `|` + LUN_CREATE_IN_PROGRESS_ERROR_REST + `|` +
+		DUPLICATE_ENTRY + `)\b`)
+
+// IsCreateTargetExistsRESTError reports whether err is the REST response to a LUN or NVMe namespace create
+// whose target already exists or is still being created. Such a create may have been accepted by an earlier
+// attempt without being visible yet, so the object has to be looked up again before anything is destroyed.
+//
+// The match is deliberately narrow: an error that is not recognized is treated as a hard create failure.
+func IsCreateTargetExistsRESTError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if createTargetExistsRESTCodeRegexp.MatchString(err.Error()) {
+		return true
+	}
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "already exists") || strings.Contains(message, "duplicate entry")
+}
+
+// IsVolumeBusyError reports whether ONTAP rejected an operation because another volume job is still active.
+func IsVolumeBusyError(err error) bool {
+	return err != nil &&
+		(IsVolumeBusyRESTError(err) || strings.Contains(strings.ToLower(err.Error()), "volume is busy"))
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -56,8 +90,8 @@ func IsVolumeCreateJobExistsError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*volumeCreateJobExistsError)
-	return ok
+	var target *volumeCreateJobExistsError
+	return errors.As(err, &target)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

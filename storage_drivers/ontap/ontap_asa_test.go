@@ -44,7 +44,7 @@ func newMockOntapASADriver(t *testing.T) (*mockapi.MockOntapAPI, *ASAStorageDriv
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 

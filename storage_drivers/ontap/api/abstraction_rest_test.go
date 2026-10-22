@@ -264,6 +264,13 @@ func TestNVMeNamespaceCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.Error(t, err)
+
+	// case 3: Volume busy on namespace create becomes typed VolumeCreateJobExistsError
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).
+		Return(errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	err = oapi.NVMeNamespaceCreate(ctx, ns)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err))
+
 }
 
 func TestNVMeNamespaceExists(t *testing.T) {
@@ -1665,6 +1672,48 @@ func TestVolumeDestroy(t *testing.T) {
 	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when the volume is already gone")
 }
 
+func TestVolumeDestroy_BusyRetryHonorsContext(t *testing.T) {
+	busyErr := stderrors.New("API State: failure, Message: Volume busy., Code: 524486")
+	tests := []struct {
+		name   string
+		expect func(context.Context, *mockapi.MockRestClientInterface)
+		run    func(context.Context, api.OntapAPIREST) error
+	}{
+		{
+			name: "Name",
+			expect: func(ctx context.Context, rsi *mockapi.MockRestClientInterface) {
+				rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(busyErr).Times(1)
+			},
+			run: func(ctx context.Context, oapi api.OntapAPIREST) error {
+				return oapi.VolumeDestroy(ctx, "vol1", false, false)
+			},
+		},
+		{
+			name: "UUID",
+			expect: func(ctx context.Context, rsi *mockapi.MockRestClientInterface) {
+				rsi.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+				rsi.EXPECT().VolumeDestroyByUUID(ctx, "uuid1", false).Return(busyErr).Times(1)
+			},
+			run: func(ctx context.Context, oapi api.OntapAPIREST) error {
+				return oapi.VolumeDestroyByUUID(ctx, "uuid1", "vol1", false, false)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			oapi, rsi := newMockOntapAPIREST(t)
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			test.expect(ctx, rsi)
+
+			err := test.run(ctx, oapi)
+
+			assert.ErrorIs(t, err, context.Canceled)
+		})
+	}
+}
+
 func TestVolumeDestroyByUUID(t *testing.T) {
 	uuid := "d0f1f979-2f7b-4a5b-9a7a-1c2b3c4d5e6f"
 	volName := "vol1"
@@ -1833,6 +1882,17 @@ func TestFlexgroupCreate(t *testing.T) {
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a flexgroup volume")
+
+	// case 3: Volume busy on FlexGroup create becomes typed VolumeCreateJobExistsError
+	busyErr := errors.New("API State: failure, Message: Volume busy., Code: 524486")
+	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(busyErr)
+	err = oapi.FlexgroupCreate(ctx, volume)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err), "expected VolumeCreateJobExistsError, got %v", err)
+	assert.ErrorContains(t, err, "volume is busy creating FlexGroup vol1")
+
 }
 
 func TestFlexgroupCreateBalanced(t *testing.T) {
@@ -1882,6 +1942,15 @@ func TestFlexgroupCreateBalanced(t *testing.T) {
 		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreateBalanced(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a balanced flexgroup volume")
+
+	// case 4: Volume busy on balanced FlexGroup create becomes typed VolumeCreateJobExistsError
+	rsi.EXPECT().SupportsFeature(ctx, api.BalancedPlacement).Return(true)
+	rsi.EXPECT().FlexGroupCreateBalanced(ctx, volume.Name, 1073741824000, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
+		Return(errors.New("API State: failure, Message: Volume busy., Code: 524486"))
+	err = oapi.FlexgroupCreateBalanced(ctx, volume)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err), "expected VolumeCreateJobExistsError, got %v", err)
 }
 
 func TestFlexgroupCloneSplitStart(t *testing.T) {
@@ -1917,9 +1986,15 @@ func TestFlexgroupDisableSnapshotDirectoryAccess(t *testing.T) {
 func TestFlexgroupInfo(t *testing.T) {
 	volume := getVolumeInfo()
 	oapi, rsi := newMockOntapAPIREST(t)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee", "snapshot_policy",
+		"snapshot_directory_access_enabled", "space.snapshot.used", "space.snapshot.reserve_percent",
+		"nas.export_policy.name", "nas.security_style", "nas.unix_permissions", "nas.gid",
+		"encryption.enabled", "tiering.policy", "qos.policy.name", "state",
+	}
 
 	// case 1: Flexgroup get by name
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", fields).Return(volume, nil)
 	_, err := oapi.FlexgroupInfo(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a flexgroup volume")
 
@@ -3957,6 +4032,18 @@ func TestLunCreate(t *testing.T) {
 		lun.SpaceAllocated).Return(errors.New("Failed to create LUN"))
 	err = oapi.LunCreate(ctx, lun)
 	assert.Error(t, err, "no error returned while creating a LUN info")
+	assert.False(t, api.IsVolumeCreateJobExistsError(err))
+	assert.ErrorContains(t, err, "error creating LUN")
+	assert.ErrorContains(t, err, "Failed to create LUN")
+
+	// case 3: Volume busy on LUN create becomes typed VolumeCreateJobExistsError
+	busyErr := errors.New("API State: failure, Message: Volume busy., Code: 524486")
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).Return(busyErr)
+	err = oapi.LunCreate(ctx, lun)
+	assert.True(t, api.IsVolumeCreateJobExistsError(err), "expected VolumeCreateJobExistsError, got %v", err)
+	assert.ErrorContains(t, err, "volume is busy creating LUN")
+
 }
 
 func TestLunDestroy(t *testing.T) {
@@ -5395,6 +5482,8 @@ func TestVolumeSnapshotInfo(t *testing.T) {
 				"snapshot_policy", "snapshot_directory_access_enabled",
 				"space.snapshot.used", "space.snapshot.reserve_percent",
 				"nas.export_policy.name", "autosize.mode",
+				"nas.security_style", "nas.unix_permissions", "nas.gid",
+				"encryption.enabled", "tiering.policy", "qos.policy.name",
 			}
 			rsi.EXPECT().VolumeGetByName(ctx, tt.sourceVolume, expectedFields).Return(tt.mockVolumeInfo, tt.mockVolumeErr)
 
@@ -5550,6 +5639,61 @@ func TestFcpInterfaceGet(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedNames, result)
 			}
+		})
+	}
+}
+
+// TestVolumeInfoFromRestAttrsHelper_CreateOnlyAttributes covers the attributes ONTAP only honors when a
+// volume is created, which a resumed create compares before it decides whether the volume can be reused.
+func TestVolumeInfoFromRestAttrsHelper_CreateOnlyAttributes(t *testing.T) {
+	baseVolume := func() *models.Volume {
+		return &models.Volume{
+			Name: new("vol1"),
+			Size: new(int64(1073741824)),
+		}
+	}
+
+	tests := []struct {
+		name              string
+		volume            func() *models.Volume
+		wantEncrypt       *bool
+		wantSecurityStyle string
+		wantTieringPolicy string
+		wantQos           api.QosPolicyGroup
+	}{
+		{
+			name: "AllAttributesReported",
+			volume: func() *models.Volume {
+				volume := baseVolume()
+				volume.Encryption = &models.VolumeInlineEncryption{Enabled: new(true)}
+				volume.Nas = &models.VolumeInlineNas{SecurityStyle: new("unix")}
+				volume.Tiering = &models.VolumeInlineTiering{Policy: new("snapshot_only")}
+				volume.Qos = &models.VolumeInlineQos{
+					Policy: &models.VolumeInlineQosInlinePolicy{Name: new("fast")},
+				}
+				return volume
+			},
+			wantEncrypt:       new(true),
+			wantSecurityStyle: "unix",
+			wantTieringPolicy: "snapshot_only",
+			// REST reports fixed and adaptive policy groups in the same field, so only the name is known.
+			wantQos: api.QosPolicyGroup{Name: "fast"},
+		},
+		{
+			name:   "NoAttributesReported",
+			volume: baseVolume,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volume, err := api.VolumeInfoFromRestAttrsHelper(test.volume())
+
+			assert.NoError(t, err)
+			assert.Equal(t, test.wantEncrypt, volume.Encrypt, "unexpected encryption")
+			assert.Equal(t, test.wantSecurityStyle, volume.SecurityStyle, "unexpected security style")
+			assert.Equal(t, test.wantTieringPolicy, volume.TieringPolicy, "unexpected tiering policy")
+			assert.Equal(t, test.wantQos, volume.Qos, "unexpected QoS policy group")
 		})
 	}
 }
@@ -6347,4 +6491,85 @@ func TestOntapAPIREST_VolumeMove(t *testing.T) {
 	jobID, err = oapi.VolumeMove(ctx, "vol1", "aggr1", true)
 	assert.NoError(t, err)
 	assert.Empty(t, jobID, "dry-run returns empty job ID")
+}
+
+func TestVolumeInfoFromRestAttrsHelper_AggregatesAndState(t *testing.T) {
+	volume := &models.Volume{
+		Name:  new("fg1"),
+		Size:  new(int64(1073741824)),
+		State: new("online"),
+		VolumeInlineAggregates: []*models.VolumeInlineAggregatesInlineArrayItem{
+			{Name: new("aggr1")},
+			nil,
+			{},
+			{Name: new("aggr2")},
+		},
+	}
+
+	info, err := api.VolumeInfoFromRestAttrsHelper(volume)
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"aggr1", "aggr2"}, info.Aggregates,
+		"every aggregate a FlexGroup spans must be reported, not just the first")
+	assert.Equal(t, "online", info.State)
+
+	volume.State = nil
+	info, err = api.VolumeInfoFromRestAttrsHelper(volume)
+	assert.NoError(t, err)
+	assert.Empty(t, info.State)
+}
+
+func TestIsCreateTargetExistsRESTError(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{"Nil", nil, false},
+		{"LunExistsCode", errors.New("API State: failure, Message: LUN exists., Code: 5374242"), true},
+		{"LunCreateInProgressCode", errors.New("API State: failure, Message: in progress., Code: 5702832"), true},
+		{"GenericDuplicateCode", errors.New("API State: failure, Message: Duplicate., Code: 1"), true},
+		{"AlreadyExistsText", errors.New("namespace \"/vol/v/ns\" already exists"), true},
+		{"DuplicateEntryText", errors.New("Duplicate entry"), true},
+		{"CodeBeginningWithOneIsNotDuplicate", errors.New("API State: failure, Message: x., Code: 13115"), false},
+		{"HardFailure", errors.New("API State: failure, Message: No space., Code: 917534"), false},
+		{"VolumeBusy", errors.New("API State: failure, Message: Volume busy., Code: 524486"), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, api.IsCreateTargetExistsRESTError(tt.err))
+		})
+	}
+}
+
+func TestLunCreate_TargetExistsBecomesAlreadyExistsError(t *testing.T) {
+	lun := api.Lun{
+		Name: "fake-lun", Size: "2147483648", OsType: "linux",
+		SpaceReserved: new(true), SpaceAllocated: new(true),
+	}
+	oapi, rsi := newMockOntapAPIREST(t)
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{DebugTraceFlags: map[string]bool{"method": true}}).AnyTimes()
+
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).Return(errors.New("API State: failure, Message: LUN exists., Code: 5374242"))
+	err := oapi.LunCreate(ctx, lun)
+
+	assert.True(t, errors.IsAlreadyExistsError(err), "expected AlreadyExistsError, got %v", err)
+	assert.False(t, api.IsVolumeCreateJobExistsError(err))
+	assert.ErrorContains(t, err, "5374242", "the ONTAP response must stay in the message")
+}
+
+func TestNVMeNamespaceCreate_TargetExistsBecomesAlreadyExistsError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+	mock.EXPECT().ClientConfig().Return(api.ClientConfig{DebugTraceFlags: map[string]bool{"method": true}}).AnyTimes()
+
+	ns := api.NVMeNamespace{Name: "fakeNS", UUID: "fakeUUID"}
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return(errors.New("namespace fakeNS already exists"))
+	err = oapi.NVMeNamespaceCreate(ctx, ns)
+
+	assert.True(t, errors.IsAlreadyExistsError(err), "expected AlreadyExistsError, got %v", err)
 }

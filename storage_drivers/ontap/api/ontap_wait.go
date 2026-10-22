@@ -12,6 +12,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -26,6 +27,10 @@ var (
 	waitForOntapInitialInterval = 100 * time.Millisecond
 	waitForOntapMaxInterval     = 2 * time.Second
 	waitForOntapMaxElapsed      = 30 * time.Second
+
+	// waitForVolumeDeleteMaxElapsed is the budget for removing an unusable volume before recreating it: the
+	// cleanup owner applies it as a context deadline, and the busy-destroy retry runs within it.
+	waitForVolumeDeleteMaxElapsed = 60 * time.Second
 )
 
 // ConfigureWaitForOntapBackoffForTests shortens read-after-write retry timing for unit tests.
@@ -34,6 +39,14 @@ func ConfigureWaitForOntapBackoffForTests() {
 	waitForOntapInitialInterval = 10 * time.Millisecond
 	waitForOntapMaxInterval = 50 * time.Millisecond
 	waitForOntapMaxElapsed = 30 * time.Second
+	// Test-only delete-wait budget: with the 10ms/50ms backoff above, 500ms still allows several
+	// retry cycles while keeping timeout-path unit tests from waiting the production 60s window.
+	waitForVolumeDeleteMaxElapsed = 500 * time.Millisecond
+}
+
+// VolumeDeleteTimeout returns the budget for removing an unusable volume before recreating it.
+func VolumeDeleteTimeout() time.Duration {
+	return waitForVolumeDeleteMaxElapsed
 }
 
 // VolumeInfoGetter reads a volume by name.
@@ -97,6 +110,51 @@ func WaitForJunctionPath(
 	return volume, nil
 }
 
+// WaitForVolumeInfoState retries getter until the volume reports one of desiredStates, ctx is done, or
+// maxElapsed passes. It exists for FlexGroups: VolumeWaitForStates resolves the volume as a FlexVol, which
+// cannot see a FlexGroup, so the state has to be read from the FlexGroup lookup instead.
+//
+// The volume from the last successful read is returned even on failure, so callers can report its state and
+// need not read it again. A volume in one of abortStates is terminal and returns a *TerminalStateError
+// without further retries; every other read failure or state is retried.
+func WaitForVolumeInfoState(
+	ctx context.Context, getter VolumeInfoGetter, volumeName string, desiredStates, abortStates []string,
+	maxElapsed time.Duration,
+) (*Volume, error) {
+	var volume *Volume
+
+	operation := func() error {
+		read, err := getter(ctx, volumeName)
+		if err != nil {
+			return fmt.Errorf("error getting volume %s: %w", volumeName, err)
+		}
+		if read == nil {
+			return fmt.Errorf("volume %s not found", volumeName)
+		}
+		volume = read
+		switch {
+		case volume.State == "":
+			return fmt.Errorf("volume %s state not yet populated", volumeName)
+		case collection.ContainsString(desiredStates, volume.State):
+			return nil
+		case collection.ContainsString(abortStates, volume.State):
+			return backoff.Permanent(TerminalState(
+				fmt.Errorf("volume %s is in abort state %s", volumeName, volume.State)))
+		}
+		return fmt.Errorf("volume %s is in state %s, waiting for one of %v", volumeName, volume.State, desiredStates)
+	}
+	notify := func(err error, d time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"volume":    volumeName,
+			"increment": d,
+		}).WithError(err).Debug("Waiting for volume state.")
+	}
+
+	bo := newOntapBackOffWithBudget(ctx, maxElapsed)
+	err := backoff.RetryNotify(operation, backoff.WithContext(bo, ctx), notify)
+	return volume, err
+}
+
 // LunGetter is the minimal surface needed for WaitForLunToExist. OntapAPI satisfies it.
 type LunGetter interface {
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
@@ -115,12 +173,18 @@ type NVMeNamespaceSizeGetter interface {
 // newOntapBackOff returns exponential backoff using the waitForOntap* vars, with
 // MaxElapsedTime shortened when ctx carries a sooner deadline.
 func newOntapBackOff(ctx context.Context) *backoff.ExponentialBackOff {
+	return newOntapBackOffWithBudget(ctx, waitForOntapMaxElapsed)
+}
+
+// newOntapBackOffWithBudget returns exponential backoff using the waitForOntap* intervals and the given
+// overall budget, shortened when ctx carries a sooner deadline.
+func newOntapBackOffWithBudget(ctx context.Context, maxElapsed time.Duration) *backoff.ExponentialBackOff {
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = waitForOntapInitialInterval
 	bo.MaxInterval = waitForOntapMaxInterval
 	bo.Multiplier = waitForOntapMultiplier
 	bo.RandomizationFactor = waitForOntapRandomization
-	bo.MaxElapsedTime = waitForOntapMaxElapsed
+	bo.MaxElapsedTime = maxElapsed
 	if deadline, ok := ctx.Deadline(); ok {
 		if remaining := time.Until(deadline); remaining > 0 && remaining < bo.MaxElapsedTime {
 			bo.MaxElapsedTime = remaining

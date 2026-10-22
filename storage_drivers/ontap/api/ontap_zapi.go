@@ -1501,6 +1501,14 @@ func (c Client) VolumeOffline(name string) (*azgo.VolumeOfflineResponse, error) 
 	return response, err
 }
 
+// VolumeOnline brings an offline volume back online
+func (c Client) VolumeOnline(name string) (*azgo.VolumeOnlineResponse, error) {
+	response, err := azgo.NewVolumeOnlineRequest().
+		SetName(name).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // VolumeDestroy destroys a volume
 func (c Client) VolumeDestroy(name string, force bool) (*azgo.VolumeDestroyResponse, error) {
 	response, err := azgo.NewVolumeDestroyRequest().

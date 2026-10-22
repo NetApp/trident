@@ -47,7 +47,10 @@ func newMockOntapASANVMeDriver(t *testing.T) (*mockapi.MockOntapAPI, *ASANVMeSto
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	// ctx is gomock.Any() because the EMS heartbeat fires from a background goroutine
+	// running a WithCancel(WithoutCancel(ctx)) derived from the caller's context, which
+	// does not DeepEqual the caller's context itself.
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)

@@ -32,7 +32,7 @@ func TestASASAN_ConcurrentUnpublish_SameIgroup(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapASADriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
@@ -116,7 +116,7 @@ func TestASASAN_ConcurrentUnpublish_DifferentIgroups(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapASADriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
@@ -196,7 +196,7 @@ func TestASANVMe_ConcurrentUnpublish_SameSubsystem(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -274,7 +274,7 @@ func TestASANVMe_ConcurrentUnpublish_DifferentSubsystems(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -347,7 +347,7 @@ func TestASANVMe_ConcurrentPublish_SameSubsystem(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -442,7 +442,7 @@ func TestASASAN_ConcurrentImportAndUnpublish_SameLUN(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapASADriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
@@ -561,7 +561,7 @@ func TestASANVMe_ConcurrentImport_SameNamespace(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 

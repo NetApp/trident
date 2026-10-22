@@ -2291,6 +2291,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeOffline(name any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeOffline), name)
 }
 
+// VolumeOnline mocks base method.
+func (m *MockZapiClientInterface) VolumeOnline(name string) (*azgo.VolumeOnlineResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeOnline", name)
+	ret0, _ := ret[0].(*azgo.VolumeOnlineResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeOnline indicates an expected call of VolumeOnline.
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeOnline(name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeOnline", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeOnline), name)
+}
+
 // VolumeRecoveryQueueGetIter mocks base method.
 func (m *MockZapiClientInterface) VolumeRecoveryQueueGetIter(volumeName string) (*azgo.VolumeRecoveryQueueGetIterResponse, error) {
 	m.ctrl.T.Helper()
@@ -2337,18 +2352,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeRename(volumeName, newVolum
 }
 
 // VolumeSetAutosizePolicy mocks base method.
-func (m *MockZapiClientInterface) VolumeSetAutosizePolicy(volumeName string, autosize api.VolumeAutosizePolicy) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeSetAutosizePolicy(volumeName string, autosizePolicy api.VolumeAutosizePolicy) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", volumeName, autosize)
+	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", volumeName, autosizePolicy)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeSetAutosizePolicy indicates an expected call of VolumeSetAutosizePolicy.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetAutosizePolicy(volumeName, autosize any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetAutosizePolicy(volumeName, autosizePolicy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetAutosizePolicy), volumeName, autosize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetAutosizePolicy), volumeName, autosizePolicy)
 }
 
 // VolumeSetComment mocks base method.

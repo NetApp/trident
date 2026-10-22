@@ -386,3 +386,91 @@ func TestWaitForNVMeNamespaceSize_RetriesNotFoundThenSucceeds(t *testing.T) {
 	assert.Equal(t, 1024, size)
 	assert.Equal(t, 2, g.i)
 }
+
+func TestWaitForVolumeInfoState(t *testing.T) {
+	readErr := errors.New("read failed")
+
+	tests := []struct {
+		name         string
+		responses    []*Volume
+		errs         []error
+		wantState    string
+		wantErr      bool
+		wantTerminal bool
+		wantCalls    int
+	}{
+		{
+			name:      "online immediately",
+			responses: []*Volume{{Name: "fg1", State: "online"}},
+			wantState: "online",
+			wantCalls: 1,
+		},
+		{
+			name:      "retries until online",
+			responses: []*Volume{{Name: "fg1", State: "creating"}, {Name: "fg1", State: "online"}},
+			wantState: "online",
+			wantCalls: 2,
+		},
+		{
+			name:      "retries read failures and empty state",
+			responses: []*Volume{nil, {Name: "fg1"}, {Name: "fg1", State: "online"}},
+			errs:      []error{readErr},
+			wantState: "online",
+			wantCalls: 3,
+		},
+		{
+			name:         "abort state is terminal",
+			responses:    []*Volume{{Name: "fg1", State: "creating"}, {Name: "fg1", State: "error"}},
+			wantState:    "error",
+			wantErr:      true,
+			wantTerminal: true,
+			wantCalls:    2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			getter := func(_ context.Context, name string) (*Volume, error) {
+				i := calls
+				calls++
+				assert.Equal(t, "fg1", name)
+				if i < len(tt.errs) && tt.errs[i] != nil {
+					return nil, tt.errs[i]
+				}
+				return tt.responses[i], nil
+			}
+
+			volume, err := WaitForVolumeInfoState(context.Background(), getter, "fg1", []string{"online"},
+				[]string{"error"}, 5*time.Second)
+
+			if assert.NotNil(t, volume) {
+				assert.Equal(t, tt.wantState, volume.State)
+			}
+			assert.Equal(t, tt.wantCalls, calls)
+			if !tt.wantErr {
+				assert.NoError(t, err)
+				return
+			}
+			assert.Error(t, err)
+			var terminal *TerminalStateError
+			assert.Equal(t, tt.wantTerminal, errors.As(err, &terminal), "got %v", err)
+		})
+	}
+}
+
+func TestWaitForVolumeInfoState_TimesOutWhileNotOnline(t *testing.T) {
+	getter := func(context.Context, string) (*Volume, error) {
+		return &Volume{Name: "fg1", State: "creating"}, nil
+	}
+
+	volume, err := WaitForVolumeInfoState(context.Background(), getter, "fg1", []string{"online"},
+		[]string{"error"}, 100*time.Millisecond)
+
+	assert.Error(t, err)
+	if assert.NotNil(t, volume) {
+		assert.Equal(t, "creating", volume.State)
+	}
+	var terminal *TerminalStateError
+	assert.False(t, errors.As(err, &terminal), "a volume that is merely not online yet is not terminal")
+}
