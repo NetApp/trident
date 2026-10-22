@@ -7,6 +7,7 @@ package storagegrid
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
@@ -80,17 +81,18 @@ type ObjectDriver struct {
 	ObjectStoreDriver  string `json:"objectStoreDriver"`
 	ManagementEndpoint string `json:"managementEndpoint"`
 	// AccountID is the 20-digit tenant account ID, not the tenant display name.
-	AccountID           string `json:"accountId"`
-	Credentials         `json:"-"`
-	S3Endpoint          string            `json:"s3Endpoint"`
-	Region              string            `json:"region,omitempty"`
-	Labels              map[string]string `json:"labels,omitempty"`
-	UUID                string            `json:"uuid"`
-	StoragePrefix       string            `json:"storagePrefix,omitempty"`
-	InsecureSkipVerify  bool              `json:"insecureSkipVerify,omitempty"`
-	EmptyBucketOnDelete bool              `json:"emptyBucketOnDelete,omitempty"`
-	StoreState          object.StoreState `json:"state"`
-	client              tenantAPI
+	AccountID            string `json:"accountId"`
+	Credentials          `json:"-"`
+	S3Endpoint           string            `json:"s3Endpoint"`
+	Region               string            `json:"region,omitempty"`
+	Labels               map[string]string `json:"labels,omitempty"`
+	UUID                 string            `json:"uuid"`
+	StoragePrefix        string            `json:"storagePrefix,omitempty"`
+	InsecureSkipVerify   bool              `json:"insecureSkipVerify,omitempty"`
+	TrustedCACertificate string            `json:"trustedCACertificate,omitempty"`
+	EmptyBucketOnDelete  bool              `json:"emptyBucketOnDelete,omitempty"`
+	StoreState           object.StoreState `json:"state"`
+	client               tenantAPI
 }
 
 // NewObjectDriver constructs an ObjectDriver from backend JSON.
@@ -203,12 +205,22 @@ func (d *ObjectDriver) Initialize(ctx context.Context) error {
 
 // openClient builds the Tenant Management API client and confirms the StorageGRID version.
 func (d *ObjectDriver) openClient(ctx context.Context) error {
+
+	if d.InsecureSkipVerify && d.TrustedCACertificate != "" {
+		return fmt.Errorf("insecureSkipVerify and trustedCACertificate cannot both be set")
+	}
+	certBytes, err := base64.StdEncoding.DecodeString(d.TrustedCACertificate)
+	if err != nil {
+		return fmt.Errorf("decode trustedCACertificate error: %w", err)
+	}
+
 	client, err := newTenantClient(sgapi.Config{
 		Endpoint:  d.ManagementEndpoint,
 		AccountID: d.AccountID,
 		Username:  d.Username,
 		Password:  d.Password,
 		Insecure:  d.InsecureSkipVerify,
+		CACert:    certBytes,
 	})
 	if err != nil {
 		return fmt.Errorf("storage-grid client: %w", err)
