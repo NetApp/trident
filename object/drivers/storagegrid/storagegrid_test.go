@@ -4,8 +4,11 @@ package storagegrid
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -163,6 +166,55 @@ func TestInitializeCallsVersionsAndAuthorize(t *testing.T) {
 	assert.Equal(t, 1, fake.versionsCalls)
 	assert.Equal(t, 1, fake.authorizeCalls)
 	assert.NotEmpty(t, store.StoreUUID())
+}
+
+// TestInitializeTrustedCACertificate uses the real Tenant Management API client.
+// The fake client swapped in by the other tests never opens TLS, so it cannot
+// show that trustedCACertificate is what makes the server certificate trusted.
+func TestInitializeTrustedCACertificate(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.Method + " " + r.URL.Path {
+		case http.MethodGet + " /api/v4/versions":
+			_, _ = w.Write([]byte(`{"status":"success","apiVersion":"4.0","data":[4]}`))
+		case http.MethodPost + " /api/v4/authorize":
+			_, _ = w.Write([]byte(`{"status":"success","apiVersion":"4.0","data":"test-token"}`))
+		default:
+			http.Error(w, "unexpected "+r.Method+" "+r.URL.Path, http.StatusNotFound)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	cert := server.Certificate()
+	require.NotNil(t, cert)
+	trustedCA := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert.Raw,
+	}))
+
+	t.Run("trusted CA", func(t *testing.T) {
+		d := newTLSTestDriver(server.URL, trustedCA)
+		require.NoError(t, d.Initialize(context.Background()))
+		assert.NotEmpty(t, d.StoreUUID())
+	})
+
+	t.Run("untrusted server certificate", func(t *testing.T) {
+		d := newTLSTestDriver(server.URL, "")
+		err := d.Initialize(context.Background())
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "certificate signed by unknown authority")
+	})
+}
+
+func newTLSTestDriver(endpoint, trustedCA string) *ObjectDriver {
+	return &ObjectDriver{
+		ObjectStoreName:      "sg",
+		ManagementEndpoint:   endpoint,
+		S3Endpoint:           "https://s3.grid.example",
+		AccountID:            "12345678901234567890",
+		Credentials:          Credentials{Username: "root", Password: "secret"},
+		TrustedCACertificate: trustedCA,
+	}
 }
 
 func TestCreateGetDeleteBucket(t *testing.T) {
