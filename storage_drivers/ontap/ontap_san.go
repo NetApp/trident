@@ -57,6 +57,8 @@ type SANStorageDriver struct {
 	virtualPools  map[string]storage.Pool
 
 	cloneSplitTimers *sync.Map
+	// cloneJobs tracks clone creates whose ONTAP job outlived the client's poll, keyed by clone volume name.
+	cloneJobs *sync.Map
 }
 
 func (d *SANStorageDriver) GetConfig() drivers.DriverConfig {
@@ -209,6 +211,7 @@ func (d *SANStorageDriver) Initialize(
 
 	// Set up the clone split timers
 	d.cloneSplitTimers = &sync.Map{}
+	d.cloneJobs = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -1053,7 +1056,7 @@ func (d *SANStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 	cloneErr := cloneFlexvol(
-		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{}, true,
+		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{}, true, d.cloneJobs,
 	)
 	cloneExists := drivers.IsVolumeExistsError(cloneErr)
 	if cloneErr != nil && !cloneExists {
@@ -1076,7 +1079,12 @@ func (d *SANStorageDriver) CreateClone(
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
 		err = setLUNQos(ctx, d.API, lunPath(name), cloneVolConfig.BackendVolumeID, qosPolicyGroup)
 		if err != nil {
-			return fmt.Errorf("error setting QoS policy group: %w", err)
+			err = fmt.Errorf("error setting QoS policy group: %w", err)
+			if errors.IsNotFoundError(err) {
+				// On a clone that already exists, its LUN can trail it, so ask the caller to retry.
+				return retryableIfExisting(cloneExists, name, err)
+			}
+			return err
 		}
 	}
 
@@ -1230,6 +1238,13 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
+	// The record of a clone create that outlived the poll must not outlive the volume.
+	defer func() {
+		if err == nil {
+			forgetPendingClone(d.cloneJobs, name)
+		}
+	}()
+
 	var (
 		lunID         int
 		iSCSINodeName string
@@ -1269,6 +1284,10 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			}
 		}
 	}
+
+	// The config may have lost the name of the automatic snapshot made for this clone, for example when the
+	// create was interrupted. Read it back while the volume still exists, so it is deleted with the volume.
+	recoverAutomaticSnapshot(ctx, d.API, volConfig)
 
 	skipRecoveryQueue := false
 	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {

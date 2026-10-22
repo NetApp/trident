@@ -3814,9 +3814,12 @@ func (c *RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkR
 		return false, err
 	}
 
+	if jobResult == nil || jobResult.Payload == nil {
+		return false, fmt.Errorf("incomplete response reading job %s", *jobUUID)
+	}
 	jobState := jobResult.Payload.State
 	if jobState == nil {
-		return false, fmt.Errorf("unexpected nil job state ")
+		return false, fmt.Errorf("job %s reported no state", *jobUUID)
 	}
 
 	switch *jobState {
@@ -3835,9 +3838,22 @@ func (c *RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkR
 		return false, nil
 	// END non-terminal states
 	default:
-		return false, fmt.Errorf("unexpected job state %v", jobState)
+		return false, &unexpectedJobStateError{detail: fmt.Sprintf("unexpected job state %v", *jobState)}
 	}
 }
+
+// unexpectedJobStateError is returned when ONTAP reports a job state outside the known set. Reading the job
+// again returns the same state, so unlike a failure to read the job it is not an unknown outcome to keep waiting on.
+type unexpectedJobStateError struct {
+	detail string
+}
+
+func (e *unexpectedJobStateError) Error() string {
+	return e.detail
+}
+
+// jobStatusPollTimeout is how long PollJobStatus waits for a job to reach a terminal state.
+var jobStatusPollTimeout = 2 * time.Minute
 
 // PollJobStatus polls for the ONTAP job to complete, with backoff retry logic
 func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkResponse) error {
@@ -3856,7 +3872,7 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 			return err
 		}
 		if !isDone {
-			return fmt.Errorf("job %v not yet done", jobUUID)
+			return &JobNotDoneError{JobUUID: string(jobUUID)}
 		}
 		return nil
 	}
@@ -3868,13 +3884,19 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 	jobStatusBackoff.MaxInterval = 2 * time.Second
 	jobStatusBackoff.Multiplier = 1.414
 	jobStatusBackoff.RandomizationFactor = 0.1
-	jobStatusBackoff.MaxElapsedTime = 2 * time.Minute
+	jobStatusBackoff.MaxElapsedTime = jobStatusPollTimeout
 
 	// Run the job status check using an exponential backoff
 	if err := backoff.RetryNotify(checkJobStatus, jobStatusBackoff, jobStatusNotify); err != nil {
 		Logc(ctx).WithField("UUID", jobUUID).Warnf("Job not completed after %3.2f seconds.",
 			jobStatusBackoff.MaxElapsedTime.Seconds())
-		return err
+		var stateErr *unexpectedJobStateError
+		if _, ok := AsJobNotDoneError(err); ok || errors.As(err, &stateErr) {
+			return err
+		}
+		// The job was accepted but its state could not be read when the time ran out. That is not a
+		// confirmed failure, so the caller must keep the job's UUID instead of treating the create as failed.
+		return &JobNotDoneError{JobUUID: string(jobUUID), Cause: err}
 	}
 
 	Logc(ctx).WithField("UUID", jobUUID).Debugf("Job completed after %3.2f seconds.",
@@ -3883,10 +3905,15 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 	fields := []string{"**"} // we need to get all available fields
 	jobResult, err := c.JobGet(ctx, string(jobUUID), fields)
 	if err != nil {
-		return err
+		// The job is known to have finished, but whether it succeeded is not. Keep its UUID so the caller
+		// can read the outcome later instead of treating the create as failed.
+		return &JobNotDoneError{JobUUID: string(jobUUID), Cause: err}
 	}
-	if jobResult == nil {
-		return fmt.Errorf("missing job result for job UUID %v", jobUUID)
+	if jobResult == nil || jobResult.Payload == nil {
+		return &JobNotDoneError{
+			JobUUID: string(jobUUID),
+			Cause:   fmt.Errorf("incomplete response reading job %v", jobUUID),
+		}
 	}
 
 	// EXAMPLE 1
@@ -3919,7 +3946,7 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 
 	jobState := jobResult.Payload.State
 	if jobState == nil {
-		return fmt.Errorf("unexpected nil job state ")
+		return &JobNotDoneError{JobUUID: string(jobUUID), Cause: fmt.Errorf("job %v reported no state", jobUUID)}
 	}
 
 	switch *jobState {

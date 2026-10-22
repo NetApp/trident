@@ -8248,7 +8248,7 @@ func TestCloneFlexvol(t *testing.T) {
 
 			err := cloneFlexvol(
 				ctx, &params.cloneVolumeConfig, label, params.split, &params.storageDriverConfig, mockAPI, qosPolicyGroup,
-				false,
+				false, nil,
 			)
 			if params.expectError {
 				assert.Error(t, err)
@@ -8261,6 +8261,39 @@ func TestCloneFlexvol(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A failed clone whose volume is not found by name once the visibility wait has passed is taken as gone.
+func TestRemoveLeftover_NotFoundAfterWaitClearsPending(t *testing.T) {
+	ctx := context.Background()
+	const name = "dummy"
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	cloneJobs := &sync.Map{}
+	rec := pendingClone{cleanupPending: true, failureCode: "1", failedAt: time.Now().Add(-2 * cloneLeftoverVisibilityWait)}
+	storePendingClone(cloneJobs, name, rec)
+
+	mockAPI.EXPECT().VolumeInfo(ctx, name).Return(nil, errors.NotFoundError("not found"))
+
+	assert.NoError(t, removeLeftover(ctx, mockAPI, name, &rec, cloneJobs))
+	assert.False(t, rec.cleanupPending)
+	stored, _ := loadPendingClone(cloneJobs, name)
+	assert.False(t, stored.cleanupPending)
+}
+
+// Inside the visibility wait the same lookup keeps the cleanup pending.
+func TestRemoveLeftover_NotFoundInsideWaitStaysPending(t *testing.T) {
+	ctx := context.Background()
+	const name = "dummy"
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	cloneJobs := &sync.Map{}
+	rec := pendingClone{cleanupPending: true, failureCode: "1", failedAt: time.Now()}
+	storePendingClone(cloneJobs, name, rec)
+
+	mockAPI.EXPECT().VolumeInfo(ctx, name).Return(nil, errors.NotFoundError("not found"))
+
+	err := removeLeftover(ctx, mockAPI, name, &rec, cloneJobs)
+	assert.True(t, errors.IsVolumeCreatingError(err), "got %v", err)
+	assert.True(t, rec.cleanupPending)
 }
 
 func TestCreateFlexvolSnapshot(t *testing.T) {

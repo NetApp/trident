@@ -57,6 +57,8 @@ type NVMeStorageDriver struct {
 	virtualPools  map[string]storage.Pool
 
 	cloneSplitTimers *sync.Map
+	// cloneJobs tracks clone creates whose ONTAP job outlived the client's poll, keyed by clone volume name.
+	cloneJobs *sync.Map
 }
 
 const (
@@ -215,6 +217,7 @@ func (d *NVMeStorageDriver) Initialize(
 
 	// Set up the clone split timers
 	d.cloneSplitTimers = &sync.Map{}
+	d.cloneJobs = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -774,10 +777,12 @@ func (d *NVMeStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err = cloneFlexvol(
-		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{}, false,
-	); err != nil {
-		return err
+	cloneErr := cloneFlexvol(
+		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{}, false, d.cloneJobs,
+	)
+	cloneExists := drivers.IsVolumeExistsError(cloneErr)
+	if cloneErr != nil && !cloneExists {
+		return cloneErr
 	}
 
 	// Extract the namespace name from volConfig.InternalID because
@@ -788,12 +793,13 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
 	if err != nil {
-		return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
+		// On a clone that already exists, the namespace lookup can trail it, so ask the caller to retry.
+		return retryableIfExisting(cloneExists, cloneFlexVolName, fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err))
 	}
 	// Populate access info in the cloneVolConfig
 	cloneVolConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
 	cloneVolConfig.InternalID = nsPath
-	return nil
+	return cloneErr // nil, or the existing-clone error the caller expects once the clone is complete
 }
 
 // Import adds non managed ONTAP volume to trident.
@@ -926,7 +932,7 @@ func (d *NVMeStorageDriver) Rename(ctx context.Context, name, newName string) er
 }
 
 // Destroy the requested (volume,namespace) storage tuple.
-func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -937,7 +943,12 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
-	var err error
+	// The record of a clone create that outlived the poll must not outlive the volume.
+	defer func() {
+		if err == nil {
+			forgetPendingClone(d.cloneJobs, name)
+		}
+	}()
 
 	// Volumes without a recorded ONTAP UUID (created before it was tracked, or on a backend that does
 	// not report one) fall back to a name-based existence check so an out-of-band deletion is still
@@ -962,6 +973,10 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 		// TODO(sphadnis): Check if we need to do anything for docker.
 		Logc(ctx).Debug("No actions for Destroy for Docker.")
 	}
+
+	// The config may have lost the name of the automatic snapshot made for this clone, for example when the
+	// create was interrupted. Read it back while the volume still exists, so it is deleted with the volume.
+	recoverAutomaticSnapshot(ctx, d.API, volConfig)
 
 	skipRecoveryQueue := false
 	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {

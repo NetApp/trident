@@ -1631,7 +1631,7 @@ func (d OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string
 func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error {
 	err := d.api.VolumeCloneCreateAsync(ctx, cloneName, sourceName, snapshot)
 	if err != nil {
-		return fmt.Errorf("error creating clone; %v", err)
+		return fmt.Errorf("error creating clone; %w", err)
 	}
 
 	return nil

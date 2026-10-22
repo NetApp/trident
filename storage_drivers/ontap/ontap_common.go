@@ -4520,6 +4520,10 @@ func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err err
 	if err == nil || drivers.IsVolumeExistsError(err) {
 		return
 	}
+	// A clone still being built is kept, with its parent snapshot, for the retry to finish.
+	if errors.IsVolumeCreatingError(err) {
+		return
+	}
 
 	Logc(ctx).WithFields(LogFields{
 		"clonedVolume": clonedVolName,
@@ -4549,14 +4553,74 @@ func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err err
 	}
 }
 
-// cloneFlexvol creates a volume clone
+// volumeCloneJobAPI reads the state of a FlexClone create job, and of the clone itself, so a retry can tell
+// a clone that is still being built, or that failed, from one that is complete. The REST abstraction
+// implements it; ZAPI does not.
+type volumeCloneJobAPI interface {
+	CloneJobStatus(ctx context.Context, jobUUID string) (*api.CloneJobStatus, error)
+	VolumeCloneSplitState(ctx context.Context, name string) (*api.CloneSplitState, error)
+}
+
+var _ volumeCloneJobAPI = api.OntapAPIREST{}
+
+// pendingClone is a clone create whose ONTAP job was still running when the client stopped polling it.
+type pendingClone struct {
+	// jobUUID is the ONTAP job that creates the clone. It is empty once that job has failed.
+	jobUUID string
+	// createdSnapName is the parent snapshot Trident created for the clone, if it created one.
+	createdSnapName string
+	// cleanupPending is set once the clone's create job has failed and the volume it left behind has not yet been
+	// deleted. It keeps the failed outcome after ONTAP expires the job, so the leftover is never taken for a
+	// finished clone.
+	cleanupPending bool
+	// failureCode is the failed job's ONTAP code, kept for the cleanup messages.
+	failureCode string
+	// leftoverUUID is the UUID of the volume the failed job left behind, once it is known. The delete is addressed
+	// by it, because a name lookup can trail the volume.
+	leftoverUUID string
+	// failedAt is when the failure was recorded. It bounds cloneLeftoverVisibilityWait.
+	failedAt time.Time
+}
+
+// cloneLeftoverVisibilityWait is how long a failed clone's leftover may stay invisible by name, with no UUID
+// known, before it is taken for a volume that is gone. A name lookup can trail a volume ONTAP still holds, so
+// until then the cleanup stays pending.
+var cloneLeftoverVisibilityWait = 2 * time.Minute
+
+func loadPendingClone(pending *sync.Map, name string) (pendingClone, bool) {
+	if pending == nil {
+		return pendingClone{}, false
+	}
+	value, ok := pending.Load(name)
+	if !ok {
+		return pendingClone{}, false
+	}
+	rec, ok := value.(pendingClone)
+	return rec, ok
+}
+
+func storePendingClone(pending *sync.Map, name string, rec pendingClone) {
+	if pending != nil {
+		pending.Store(name, rec)
+	}
+}
+
+func forgetPendingClone(pending *sync.Map, name string) {
+	if pending != nil {
+		pending.Delete(name)
+	}
+}
+
+// cloneFlexvol creates a volume clone. A clone create whose ONTAP job outlives the client's poll is not a
+// failure: it returns a VolumeCreatingError and remembers the job in cloneJobs, so the retry waits on the job
+// instead of mistaking the half-built volume for a finished clone. When the clone already exists it returns
+// a VolumeExistsError only once the clone is finished, including the split when one was requested.
 func cloneFlexvol(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
-	captureBackendVolumeID bool,
-) error {
+	captureBackendVolumeID bool, cloneJobs *sync.Map,
+) (err error) {
 	// Vars used in failed clone cleanup
-	var err error
 	var clonedVolName string   // Holds the cloned volume name
 	var createdSnapName string // Holds the snapshot name of a Trident created snapshot
 
@@ -4588,13 +4652,70 @@ func cloneFlexvol(
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneFlexvol")
 
-	// If the specified volume already exists, return an error
 	volExists, err := client.VolumeExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
-	if volExists {
+
+	// Only the REST abstraction can read a clone's create job and split state. A client without them (ZAPI)
+	// reports an existing clone as existing and fails the create when the split fails. It never has a record
+	// either, because a record is stored only after a REST poll timeout.
+	jobAPI, _ := client.(volumeCloneJobAPI)
+	if volExists && jobAPI == nil {
 		return drivers.NewVolumeExistsError(name)
+	}
+
+	// An earlier attempt may have left a record of its create job. A name lookup can trail a volume ONTAP is
+	// still building, so a missing name does not mean the job is gone: read the job before touching the
+	// clone or the parent snapshot the job is using.
+	rec, hasRecord := loadPendingClone(cloneJobs, name)
+	if hasRecord {
+		var jobVolumeUUID string
+		if jobVolumeUUID, err = resolvePendingClone(ctx, client, jobAPI, name, volExists, &rec, cloneJobs); err != nil {
+			return err
+		}
+		if jobVolumeUUID != "" {
+			// The job names the volume it created, so the caller need not look the clone up by name.
+			cloneVolConfig.BackendVolumeID = jobVolumeUUID
+		}
+	}
+
+	if volExists {
+		// The core builds a fresh config for each CreateVolume the sidecar sends, so a retry that arrives after the
+		// core's own retry budget ran out does not name the parent snapshot Trident created for this clone (a PVC
+		// cloned from another PVC, not from a VolumeSnapshot). Restore it, from the record or else from the clone
+		// itself, so deleting the clone later deletes that snapshot too.
+		if hasRecord && snapshot == "" {
+			cloneVolConfig.CloneSourceSnapshotInternal = rec.createdSnapName
+		}
+		recoverAutomaticSnapshot(ctx, client, cloneVolConfig)
+
+		// Whatever the first attempt did not reach is done now. The volume itself reports whether it is still
+		// a FlexClone and whether a split has started, so the split is requested only when it is needed.
+		if err = finishFlexvolClone(ctx, cloneVolConfig, name, labels, split, config, client, jobAPI, qosPolicyGroup, true); err != nil {
+			var terminalErr *api.TerminalStateError
+			if errors.As(err, &terminalErr) {
+				// The create fails, so no volume is returned and nothing else would remove this clone.
+				if rec.createdSnapName == "" && cloneVolConfig.CloneSourceSnapshot == "" {
+					rec.createdSnapName = cloneVolConfig.CloneSourceSnapshotInternal
+				}
+				return removeAbortedClone(ctx, client, name, rec, cloneJobs, err)
+			}
+			return err
+		}
+		forgetPendingClone(cloneJobs, name)
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	if hasRecord {
+		// The job failed or expired and its volume is gone. Keep using the parent snapshot that attempt
+		// created, so it is cleaned up with this attempt rather than left behind.
+		if snapshot == "" || snapshot == rec.createdSnapName {
+			snapshot = rec.createdSnapName
+			createdSnapName = rec.createdSnapName
+			cloneVolConfig.CloneSourceSnapshotInternal = snapshot
+		}
+		forgetPendingClone(cloneJobs, name)
 	}
 
 	// If no specific snapshot was requested, create one
@@ -4623,30 +4744,237 @@ func cloneFlexvol(
 		clonedVolName = name
 	}
 	if err != nil {
+		if jobErr, ok := api.AsJobNotDoneError(err); ok {
+			// ONTAP is still building the clone. Keep the volume and its parent snapshot, and remember the
+			// job so a retry waits for it.
+			storePendingClone(cloneJobs, name, pendingClone{jobUUID: jobErr.JobUUID, createdSnapName: createdSnapName})
+			return errors.VolumeCreatingError("clone volume %s is still being created by job %s", name, jobErr.JobUUID)
+		}
 		return err
 	}
 
+	return finishFlexvolClone(ctx, cloneVolConfig, name, labels, split, config, client, jobAPI, qosPolicyGroup, false)
+}
+
+// resolvePendingClone reads the job an earlier attempt recorded for a clone. It returns a VolumeCreatingError
+// while the job is running or cannot be read, when the job finished but the volume is not visible by name yet,
+// and after removing what a failed job left behind. It returns nil once the job succeeded, with the UUID of
+// the volume it created, or is no longer held by ONTAP.
+func resolvePendingClone(
+	ctx context.Context, client api.OntapAPI, jobAPI volumeCloneJobAPI, name string, volExists bool,
+	rec *pendingClone, cloneJobs *sync.Map,
+) (string, error) {
+	if rec.cleanupPending {
+		// The clone's create job failed and its leftover is still here, whatever ONTAP's job history now says.
+		if err := removeLeftover(ctx, client, name, rec, cloneJobs); err != nil {
+			return "", err
+		}
+		return "", errors.VolumeCreatingError("clone job for volume %s failed (code %s); retrying the clone",
+			name, rec.failureCode)
+	}
+	if rec.jobUUID == "" {
+		return "", nil
+	}
+
+	status, err := jobAPI.CloneJobStatus(ctx, rec.jobUUID)
+	switch {
+	case err != nil && errors.IsNotFoundError(err):
+		// ONTAP drops finished jobs after a few minutes, so there is nothing left to wait for.
+		rec.jobUUID = ""
+		return "", nil
+	case err != nil:
+		return "", errors.VolumeCreatingError("clone job %s for volume %s could not be read: %v",
+			rec.jobUUID, name, err)
+	case status.Failed():
+		return "", removeFailedClone(ctx, client, name, *rec, status, cloneJobs)
+	case status.Succeeded() && !volExists:
+		return "", errors.VolumeCreatingError("clone volume %s is not visible yet after job %s finished",
+			name, rec.jobUUID)
+	case status.Succeeded():
+		return status.VolumeUUID, nil
+	default:
+		return "", errors.VolumeCreatingError("clone volume %s is still being created by job %s (state %s)",
+			name, rec.jobUUID, status.State)
+	}
+}
+
+// removeFailedClone deletes the volume a failed clone job left behind and asks the caller to retry the clone.
+// The parent snapshot stays on record for the retry to reuse.
+func removeFailedClone(
+	ctx context.Context, client api.OntapAPI, name string, rec pendingClone, status *api.CloneJobStatus,
+	cloneJobs *sync.Map,
+) error {
+	Logc(ctx).WithFields(LogFields{
+		"volume":  name,
+		"jobUUID": rec.jobUUID,
+		"code":    status.Code,
+		"message": status.Message,
+	}).Warning("Clone job failed; removing the volume it left behind.")
+
+	// Record the failure before deleting, so the leftover is still deleted, and never taken for a finished
+	// clone, if the delete fails and ONTAP expires the job before the retry. The failed job is spent; the record
+	// keeps the parent snapshot for the retry.
+	rec.jobUUID = ""
+	rec.cleanupPending, rec.failureCode = true, status.Code
+	rec.leftoverUUID, rec.failedAt = status.VolumeUUID, time.Now()
+	storePendingClone(cloneJobs, name, rec)
+	if err := removeLeftover(ctx, client, name, &rec, cloneJobs); err != nil {
+		return err
+	}
+
+	// The messages returned carry only the volume name and the failure code, not the job UUID or ONTAP's
+	// message (which names the job), so the same failure repeats the same message and the provisioner's
+	// repeated-failure accounting can see it.
+	return errors.VolumeCreatingError("clone job for volume %s failed (code %s); retrying the clone",
+		name, status.Code)
+}
+
+// removeAbortedClone deletes an existing clone whose volume reached the abort state and asks the caller to retry
+// the clone. A volume in that state never comes online, and the create that found it returns no volume, so
+// nothing else removes it. The record keeps the pending cleanup until the delete succeeds, and the parent
+// snapshot for the retry to reuse.
+func removeAbortedClone(
+	ctx context.Context, client api.OntapAPI, name string, rec pendingClone, cloneJobs *sync.Map, cause error,
+) error {
+	Logc(ctx).WithFields(LogFields{"volume": name, "error": cause}).
+		Warning("Clone volume reached the abort state; removing it.")
+
+	rec.jobUUID = ""
+	rec.cleanupPending, rec.failureCode = true, "abort state"
+	rec.leftoverUUID, rec.failedAt = "", time.Now()
+	storePendingClone(cloneJobs, name, rec)
+	if err := removeLeftover(ctx, client, name, &rec, cloneJobs); err != nil {
+		return err
+	}
+	return errors.VolumeCreatingError("clone volume %s reached the abort state and was removed; retrying the clone",
+		name)
+}
+
+// removeLeftover deletes the volume a failed clone job left behind, by UUID. The UUID is the one recorded from
+// the job, or when none is known the one the volume reports under its name, which is then recorded so a retry
+// does not depend on the name lookup again. A volume that is gone is done.
+func removeLeftover(
+	ctx context.Context, client api.OntapAPI, name string, rec *pendingClone, cloneJobs *sync.Map,
+) error {
+	notRemoved := func() error {
+		return errors.VolumeCreatingError("clone job for volume %s failed (code %s) and the volume it left "+
+			"could not be removed", name, rec.failureCode)
+	}
+
+	if rec.leftoverUUID == "" {
+		volume, err := client.VolumeInfo(ctx, name)
+		switch {
+		case err == nil && volume != nil:
+			rec.leftoverUUID = volume.UUID
+			storePendingClone(cloneJobs, name, *rec)
+		case err != nil && !errors.IsNotFoundError(err) && !api.IsVolumeReadError(err),
+			time.Since(rec.failedAt) < cloneLeftoverVisibilityWait:
+			// A volume that is not there is reported as a not-found or a read error by the REST adapter, as is
+			// one the name index has not caught up with.
+			return notRemoved()
+		}
+		if rec.leftoverUUID == "" {
+			Logc(ctx).WithFields(LogFields{
+				"volume": name,
+				"code":   rec.failureCode,
+				"waited": cloneLeftoverVisibilityWait,
+			}).Warning("Failed clone's volume was not found by name; assuming it is gone.")
+		}
+	}
+	if rec.leftoverUUID != "" {
+		leftover := &storage.VolumeConfig{InternalName: name, BackendVolumeID: rec.leftoverUUID}
+		if err := destroyFlexvol(ctx, client, leftover, true, true); err != nil {
+			return notRemoved()
+		}
+	}
+
+	rec.cleanupPending, rec.leftoverUUID = false, ""
+	storePendingClone(cloneJobs, name, *rec)
+	return nil
+}
+
+// recoverAutomaticSnapshot puts the name of the parent snapshot Trident created for a clone back on its config
+// when the config has lost it, which is what lets deleting the clone delete that snapshot as well. A clone whose
+// request named no snapshot was necessarily made from an automatic one, and ONTAP reports a clone's parent
+// snapshot on the volume while it is still a FlexClone. Once the clone is split ONTAP no longer reports it, so
+// the name is then not recoverable. This is best effort: any failure leaves the config as it was.
+func recoverAutomaticSnapshot(ctx context.Context, client api.OntapAPI, config *storage.VolumeConfig) {
+	if config.CloneSourceVolumeInternal == "" || config.CloneSourceSnapshot != "" ||
+		config.CloneSourceSnapshotInternal != "" {
+		return
+	}
+	jobAPI, ok := client.(volumeCloneJobAPI)
+	if !ok {
+		return
+	}
+
+	state, err := jobAPI.VolumeCloneSplitState(ctx, config.InternalName)
+	if err != nil || state.ParentSnapshot == "" {
+		Logc(ctx).WithFields(LogFields{"volume": config.InternalName, "error": err}).
+			Debug("Could not recover the clone's automatic parent snapshot from the volume.")
+		return
+	}
+	adoptParentSnapshot(config, state.ParentSnapshot)
+}
+
+// adoptParentSnapshot records the parent snapshot a clone reports as its automatic snapshot, when the config
+// does not already name one and the request did not ask for a specific snapshot.
+func adoptParentSnapshot(config *storage.VolumeConfig, parentSnapshot string) {
+	if parentSnapshot == "" || config.CloneSourceVolumeInternal == "" || config.CloneSourceSnapshot != "" ||
+		config.CloneSourceSnapshotInternal != "" {
+		return
+	}
+	config.CloneSourceSnapshotInternal = parentSnapshot
+}
+
+// retryableIfExisting reports a step that failed on a clone that already existed as still creating, so the
+// caller retries the step instead of ending the create. An error already classified as still creating is
+// returned as it is.
+func retryableIfExisting(existing bool, name string, err error) error {
+	if existing && !errors.IsVolumeCreatingError(err) {
+		return errors.VolumeCreatingError("clone volume %s setup is not finished: %v", name, err)
+	}
+	return err
+}
+
+// finishFlexvolClone completes a clone once ONTAP has created it: it waits for the volume to come online,
+// applies labels, mount and QoS, and starts the split when one was requested. On an existing clone, a step
+// that cannot finish yet is reported as still creating so the caller retries, rather than as a failure that
+// would remove the volume.
+func finishFlexvolClone(
+	ctx context.Context, cloneVolConfig *storage.VolumeConfig, name, labels string, split bool,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, jobAPI volumeCloneJobAPI,
+	qosPolicyGroup api.QosPolicyGroup, existing bool,
+) error {
 	desiredStates, abortStates := []string{"online"}, []string{"error"}
 	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
 	if err != nil {
+		var terminalErr *api.TerminalStateError
+		switch {
+		case existing && errors.As(err, &terminalErr):
+			// A volume in the abort state will never come online, so waiting on it again only delays the failure.
+			return fmt.Errorf("clone volume %s reached state %q: %w", name, volState, err)
+		case existing:
+			return errors.VolumeCreatingError("clone volume %s is not online yet (state %q): %v", name, volState, err)
+		}
 		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
 	}
 
 	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
-		return err
+		return retryableIfExisting(existing, name, err)
 	}
 
 	if config.StorageDriverName == tridentconfig.OntapNASStorageDriverName {
 		// Mount the new volume
 		if err = client.VolumeMount(ctx, name, "/"+name); err != nil {
-			return err
+			return retryableIfExisting(existing, name, err)
 		}
 	}
 
 	// Set the QoS Policy if necessary
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
 		if err = client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
-			return err
+			return retryableIfExisting(existing, name, err)
 		}
 	}
 
@@ -4654,13 +4982,36 @@ func cloneFlexvol(
 		return err
 	}
 
-	// Split the clone if requested
-	if split {
-		if err = client.VolumeCloneSplitStart(ctx, name); err != nil {
-			return fmt.Errorf("error splitting clone: %v", err)
+	if !split {
+		return nil
+	}
+
+	if existing && jobAPI != nil {
+		// A retry splits only a clone that is still a FlexClone and has not started splitting. ONTAP reports
+		// split_initiated as true only while a split is running, and false again after a split fails, so a
+		// failed split is split again here. The REST split call does not poll the split job, so this state is
+		// the only way a failed split is noticed.
+		state, stateErr := jobAPI.VolumeCloneSplitState(ctx, name)
+		if stateErr != nil {
+			return errors.VolumeCreatingError("clone volume %s split state is unavailable: %v", name, stateErr)
+		}
+		// A clone that was not yet reporting its parent when the retry began reports it now, and a split makes
+		// it unrecoverable, so take the name before the split is requested.
+		adoptParentSnapshot(cloneVolConfig, state.ParentSnapshot)
+		if !state.IsFlexclone || state.SplitInitiated {
+			return nil
 		}
 	}
 
+	// Split the clone. A lookup that misses a clone ONTAP just created is retried against the existing clone.
+	if err = client.VolumeCloneSplitStart(ctx, name); err != nil {
+		if jobAPI == nil {
+			// Without a job lookup (ZAPI) a retry cannot tell a clone whose split never started from a
+			// finished one, so fail the create and let the cleanup remove the clone.
+			return fmt.Errorf("error splitting clone: %v", err)
+		}
+		return errors.VolumeCreatingError("clone volume %s split did not start: %v", name, err)
+	}
 	return nil
 }
 

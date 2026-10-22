@@ -3516,3 +3516,114 @@ func TestNVMeStorageDriverGetStoragePrefixSubsystemName(t *testing.T) {
 		})
 	}
 }
+
+// A clone that already exists must come back with its namespace metadata, or be retried while the namespace
+// lookup trails the volume, instead of being bound with incomplete metadata.
+func TestCreateClone_ExistingClone(t *testing.T) {
+	pool := storage.NewStoragePool(nil, "fakepool")
+	pool.InternalAttributes()[FileSystemType] = filesystem.Ext4
+	pool.InternalAttributes()[SplitOnClone] = "false"
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{"type": "clone"})
+
+	tests := map[string]struct {
+		ns             *api.NVMeNamespace
+		nsErr          error
+		expectCreating bool
+		expectExists   bool
+	}{
+		"namespace readable": {
+			ns:           &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", UUID: "ns-uuid"},
+			expectExists: true,
+		},
+		"namespace trails the volume": {
+			nsErr:          errors.NotFoundError("namespace not found"),
+			expectCreating: true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			d.Config.Labels = pool.GetLabels(ctx, "")
+			mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"data"}}, nil)
+			mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/cloneVol1/namespace0").Return(tc.ns, tc.nsErr)
+
+			_, volConfig, _ := getNVMeCreateArgs(d)
+			volConfig.InternalID = "/vol/cloneVol1/namespace0"
+			cloneVolConfig := storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			}
+
+			err := d.CreateClone(ctx, volConfig, &cloneVolConfig, pool)
+
+			assert.Error(t, err)
+			assert.Equal(t, tc.expectCreating, errors.IsVolumeCreatingError(err), "got %v", err)
+			assert.Equal(t, tc.expectExists, drivers.IsVolumeExistsError(err), "got %v", err)
+			if tc.expectExists {
+				assert.Equal(t, "ns-uuid", cloneVolConfig.AccessInfo.NVMeNamespaceUUID)
+				assert.Equal(t, "/vol/cloneVol1/namespace0", cloneVolConfig.InternalID)
+			}
+		})
+	}
+}
+
+// The record of a clone create that outlived the poll must not outlive the volume.
+func TestNVMeDestroy_ForgetsPendingCloneRecord(t *testing.T) {
+	tests := map[string]struct {
+		volumeExists bool
+		destroyErr   error
+		expectError  bool
+		expectRecord bool
+	}{
+		"volume destroyed":    {volumeExists: true},
+		"volume already gone": {volumeExists: false},
+		"destroy fails":       {volumeExists: true, destroyErr: errors.New("busy"), expectError: true, expectRecord: true},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			_, volConfig, _ := getNVMeCreateArgs(d)
+			d.cloneJobs = &sync.Map{}
+			storePendingClone(d.cloneJobs, volConfig.InternalName, pendingClone{jobUUID: "job-1"})
+			mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(tc.volumeExists, nil)
+			if tc.volumeExists {
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(tc.destroyErr)
+			}
+
+			err := d.Destroy(ctx, volConfig)
+
+			assert.Equal(t, tc.expectError, err != nil, "got %v", err)
+			_, ok := loadPendingClone(d.cloneJobs, volConfig.InternalName)
+			assert.Equal(t, tc.expectRecord, ok)
+		})
+	}
+}
+
+// A clone whose config lost the name of its automatic snapshot gets it back from the volume, so the snapshot is
+// deleted along with the clone.
+func TestNVMeDestroy_DeletesRecoveredAutomaticSnapshot(t *testing.T) {
+	const sourceInternal = "sourceVolInternal"
+	d, mockAPI := newNVMeDriverAndMockApi(t)
+	d.API = &cloneJobMockAPI{
+		MockOntapAPI: mockAPI, split: &api.CloneSplitState{IsFlexclone: true, ParentSnapshot: "snapshot-auto"},
+	}
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	volConfig.CloneSourceVolumeInternal = sourceInternal
+	volConfig.CloneSourceSnapshot, volConfig.CloneSourceSnapshotInternal = "", ""
+	mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), "snapshot-auto", sourceInternal).Return(nil)
+
+	err := d.Destroy(ctx, volConfig)
+
+	assert.NoError(t, err)
+}

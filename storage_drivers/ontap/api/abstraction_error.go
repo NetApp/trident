@@ -4,6 +4,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -106,6 +107,37 @@ func IsVolumeCreateJobExistsError(err error) bool {
 	}
 	var target *volumeCreateJobExistsError
 	return errors.As(err, &target)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// JobNotDoneError
+// ///////////////////////////////////////////////////////////////////////////
+
+// JobNotDoneError reports that an ONTAP job was still running when the caller stopped polling it. ONTAP
+// keeps working on the job, so the object the job creates may still appear, or the job may still fail.
+type JobNotDoneError struct {
+	JobUUID string
+	// Cause is the error that stopped the last status check, when polling ran out of time on an error
+	// rather than on a job observed still running.
+	Cause error
+}
+
+func (e *JobNotDoneError) Error() string {
+	if e.Cause == nil {
+		return fmt.Sprintf("job %v not yet done", e.JobUUID)
+	}
+	return fmt.Sprintf("job %v not yet done: %v", e.JobUUID, e.Cause)
+}
+
+func (e *JobNotDoneError) Unwrap() error { return e.Cause }
+
+// AsJobNotDoneError returns the JobNotDoneError in err's chain, if any.
+func AsJobNotDoneError(err error) (*JobNotDoneError, bool) {
+	var target *JobNotDoneError
+	if errors.As(err, &target) {
+		return target, true
+	}
+	return nil, false
 }
 
 // ///////////////////////////////////////////////////////////////////////////
