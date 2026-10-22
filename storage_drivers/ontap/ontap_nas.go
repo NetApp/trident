@@ -67,6 +67,8 @@ type NASStorageDriver struct {
 	virtualPools  map[string]storage.Pool
 
 	cloneSplitTimers *sync.Map
+	// cloneJobs tracks clone creates whose ONTAP job outlived the client's poll, keyed by clone volume name.
+	cloneJobs *sync.Map
 }
 
 func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
@@ -186,6 +188,7 @@ func (d *NASStorageDriver) Initialize(
 
 	// Set up the clone split timers
 	d.cloneSplitTimers = &sync.Map{}
+	d.cloneJobs = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -661,13 +664,21 @@ func (d *NASStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 
-	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), qosPolicyGroup); err != nil {
-		return err
+	cloneErr := cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), qosPolicyGroup, d.cloneJobs)
+	cloneExists := drivers.IsVolumeExistsError(cloneErr)
+	if cloneErr != nil && !cloneExists {
+		return cloneErr
 	}
 
 	// Cloned volume in ontap by default will use the same export policy as the source volume.
 	// We need to make sure the correct export policy is set on the clone.
 	exportPolicy := collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+
+	// A clone of a volume with no storage pool (for example an imported volume) has no pool attribute to read, and
+	// ONTAP rejects an empty export policy name. Use the backend's policy, as a newly created volume does.
+	if exportPolicy == "" {
+		exportPolicy = d.Config.ExportPolicy
+	}
 
 	// only create the empty policy if autoExportPolicy = true
 	if d.Config.AutoExportPolicy {
@@ -676,7 +687,7 @@ func (d *NASStorageDriver) CreateClone(
 
 		err = ensureExportPolicyExists(ctx, exportPolicy, d.API)
 		if err != nil {
-			return fmt.Errorf("error ensuring export policy exists: %v", err)
+			return retryableIfExisting(cloneExists, cloneVolConfig.InternalName, fmt.Errorf("error ensuring export policy exists: %v", err))
 		}
 	}
 
@@ -684,7 +695,7 @@ func (d *NASStorageDriver) CreateClone(
 	err = d.API.VolumeModifyExportPolicy(ctx, cloneVolConfig.InternalName, exportPolicy)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", cloneVolConfig.InternalName)
-		return err
+		return retryableIfExisting(cloneExists, cloneVolConfig.InternalName, err)
 	}
 
 	cloneVolConfig.ExportPolicy = exportPolicy
@@ -692,14 +703,17 @@ func (d *NASStorageDriver) CreateClone(
 	if d.Config.NASType == sa.SMB {
 		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName,
 			cloneVolConfig.SMBShareACL, cloneVolConfig.SecureSMBEnabled); err != nil {
-			return err
+			return retryableIfExisting(cloneExists, cloneVolConfig.InternalName, err)
 		}
 	}
-	return nil
+
+	// nil, or the existing-clone error the caller expects once the clone is complete. The export policy and
+	// share above are applied the same way on a retry.
+	return cloneErr
 }
 
 // Destroy the volume
-func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -709,6 +723,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
+
+	// The record of a clone create that outlived the poll must not outlive the volume.
+	defer func() {
+		if err == nil {
+			forgetPendingClone(d.cloneJobs, name)
+		}
+	}()
 
 	// Handle ReadOnlyClone case early
 	if volConfig.ReadOnlyClone {
@@ -726,8 +747,6 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	// utilized space. Is that what we want? Or should we just deny the delete, and force the
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
-
-	var err error
 
 	// Volumes without a recorded ONTAP UUID (created before it was tracked, or on a backend that
 	// does not report one) fall back to a name-based existence check so an out-of-band deletion is
@@ -748,6 +767,10 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	defer func() {
 		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
 	}()
+
+	// The config may have lost the name of the automatic snapshot made for this clone, for example when the
+	// create was interrupted. Read it back while the volume still exists, so it is deleted with the volume.
+	recoverAutomaticSnapshot(ctx, d.API, volConfig)
 
 	skipRecoveryQueue := false
 	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
@@ -788,6 +811,10 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	if err = destroyFlexvol(ctx, d.API, volConfig, true, skipRecoveryQueue); err != nil {
 		return err
 	}
+
+	// The volume is gone, so a failure of the steps below must not leave its record behind to be taken for
+	// the leftover of a later clone with the same name.
+	forgetPendingClone(d.cloneJobs, name)
 
 	if d.Config.NASType == sa.SMB {
 		if err = d.DestroySMBShare(ctx, name); err != nil {

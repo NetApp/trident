@@ -3858,6 +3858,45 @@ func TestRequiresOrphanScan(t *testing.T) {
 	}
 }
 
+// cloneRetryDriver is a driver whose clone create is still in progress. Calls the clone path should not make
+// panic through the nil embedded interface.
+type cloneRetryDriver struct {
+	Driver
+	createErr error
+	getCalls  int
+}
+
+func (d *cloneRetryDriver) CreateClone(context.Context, *VolumeConfig, *VolumeConfig, Pool) error {
+	return d.createErr
+}
+
+func (d *cloneRetryDriver) Get(context.Context, *VolumeConfig) error {
+	d.getCalls++
+	return nil
+}
+
+func TestStorageBackend_CloneVolume_CloneStillCreatingIsNotSuccess(t *testing.T) {
+	driver := &cloneRetryDriver{createErr: errors.VolumeCreatingError("clone is still being created")}
+	backend := &StorageBackend{
+		name:        "test-backend",
+		driver:      driver,
+		state:       Online,
+		stateLock:   new(sync.RWMutex),
+		volumes:     &sync.Map{},
+		backendUUID: "uuid",
+	}
+	source := &VolumeConfig{Name: "source", InternalName: "internal-source"}
+	clone := &VolumeConfig{
+		Name: "clone", InternalName: "internal-clone", CloneSourceVolumeInternal: "internal-source",
+	}
+
+	vol, err := backend.CloneVolume(context.Background(), source, clone, NewStoragePool(nil, "pool"), false)
+
+	assert.Nil(t, vol, "a clone that is still being created is not returned as a volume")
+	assert.True(t, errors.IsVolumeCreatingError(err), "the creating error reaches the caller's retry loop")
+	assert.Zero(t, driver.getCalls, "the volume is not looked up and reported as found")
+}
+
 type plainDriver struct{ Driver }
 
 func (*plainDriver) StoreConfig(context.Context, *PersistentStorageBackendConfig) {}

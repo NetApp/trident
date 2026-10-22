@@ -1912,3 +1912,8 @@ func TestTerminalReconciliationError(t *testing.T) {
 	// Should be false for unrelated error
 	assert.False(t, IsTerminalReconciliationError(errors.New("other error")))
 }
+
+func TestVolumeCreatingErrorRemainsDetectableWhenWrapped(t *testing.T) {
+	assert.True(t, IsVolumeCreatingError(fmt.Errorf("create retry: %w", VolumeCreatingError("still creating"))))
+	assert.False(t, IsVolumeCreatingError(fmt.Errorf("create retry: %w", errors.New("other"))))
+}

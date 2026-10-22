@@ -950,6 +950,37 @@ func TestOntapNasStorageDriverValidate_ErrorScenarios(t *testing.T) {
 	}
 }
 
+// A clone of a volume with no storage pool, such as an imported volume, has no pool export policy to read.
+// The backend's export policy is applied instead of an empty name, which ONTAP rejects.
+func TestOntapNasStorageDriverVolumeClone_UnsetPoolUsesBackendExportPolicy(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.SplitOnClone = "false"
+	driver.Config.ExportPolicy = "backendPolicy"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
+	}
+	flexVol := api.Volume{Name: "flexvol", Comment: "flexvol"}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "backendPolicy").Return(nil)
+
+	unsetPool := storage.NewStoragePool(nil, drivers.UnsetPool)
+
+	assert.NoError(t, driver.CreateClone(ctx, nil, volConfig, unsetPool))
+	assert.Equal(t, "backendPolicy", volConfig.ExportPolicy)
+}
+
 func TestOntapNasStorageDriverVolumeClone_NASTypes(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
@@ -7838,4 +7869,194 @@ func TestNASDriver_GetCommonConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A retry that finds the clone already there still applies the export policy before it is reported as existing.
+func TestOntapNasStorageDriverVolumeClone_ExistingCloneStillGetsExportPolicy(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	volConfig := &storage.VolumeConfig{Size: "1g", Encryption: "false", FileSystem: "nfs"}
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{"tieringPolicy": "none"})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{"type": "clone"})
+	pool1.InternalAttributes()[ExportPolicy] = "default"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.Labels = pool1.GetLabels(ctx, "")
+	driver.Config.AutoExportPolicy = false
+	prefix := "trident-"
+	driver.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "flexvol"}, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(true, nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.True(t, drivers.IsVolumeExistsError(result), "got %v", result)
+	assert.Equal(t, "default", volConfig.ExportPolicy)
+}
+
+// On a clone that already existed, a failed export policy step is retried; on a new clone it stays a plain error.
+func TestOntapNasStorageDriverVolumeClone_ExportPolicyFailure(t *testing.T) {
+	for _, exists := range []bool{true, false} {
+		t.Run(fmt.Sprintf("clone already existed=%v", exists), func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+			volConfig := &storage.VolumeConfig{Size: "1g", Encryption: "false", FileSystem: "nfs"}
+
+			pool1 := storage.NewStoragePool(nil, "pool1")
+			pool1.SetInternalAttributes(map[string]string{"tieringPolicy": "none"})
+			pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{"type": "clone"})
+			pool1.InternalAttributes()[ExportPolicy] = "default"
+
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+			driver.Config.SplitOnClone = "false"
+			driver.Config.Labels = pool1.GetLabels(ctx, "")
+			driver.Config.AutoExportPolicy = false
+			prefix := "trident-"
+			driver.Config.StoragePrefix = &prefix
+
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "flexvol"}, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, "").Return(exists, nil)
+			if !exists {
+				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+					gomock.Any(), false).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, gomock.Any()).
+					Return(nil)
+				mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+			}
+			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").
+				Return(fmt.Errorf("export policy not ready"))
+
+			result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+			assert.Error(t, result)
+			assert.Equal(t, exists, errors.IsVolumeCreatingError(result), "got %v", result)
+		})
+	}
+}
+
+// The record of a clone create that outlived the poll must not outlive the volume.
+func TestOntapNasStorageDriverVolumeDestroy_ForgetsPendingCloneRecord(t *testing.T) {
+	const volNameInternal = "testVolInternal"
+	tests := map[string]struct {
+		configure    func(mockAPI *mockapi.MockOntapAPI)
+		expectError  bool
+		expectRecord bool
+	}{
+		"volume destroyed": {
+			configure: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true, false).Return(nil)
+			},
+		},
+		"volume already gone": {
+			configure: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(false, nil)
+			},
+		},
+		"destroy fails": {
+			configure: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true, false).Return(errors.New("busy"))
+			},
+			expectError:  true,
+			expectRecord: true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+			driver.cloneJobs = &sync.Map{}
+			storePendingClone(driver.cloneJobs, volNameInternal, pendingClone{jobUUID: "job-1"})
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			if name != "volume already gone" {
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, "SVM1").Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, "SVM1").Return(nil)
+			}
+			tc.configure(mockAPI)
+			volConfig := &storage.VolumeConfig{
+				Size: "1g", Name: "testVol", InternalName: volNameInternal, Encryption: "false", FileSystem: "xfs",
+			}
+
+			err := driver.Destroy(ctx, volConfig)
+
+			assert.Equal(t, tc.expectError, err != nil, "got %v", err)
+			_, ok := loadPendingClone(driver.cloneJobs, volNameInternal)
+			assert.Equal(t, tc.expectRecord, ok)
+		})
+	}
+}
+
+// Once the volume is deleted its record is dropped even when the SMB share cleanup that follows fails.
+func TestOntapNasStorageDriverVolumeDestroy_ForgetsPendingCloneRecordWhenShareCleanupFails(t *testing.T) {
+	const volNameInternal = "testVolInternal"
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.Config.NASType = sa.SMB
+	driver.cloneJobs = &sync.Map{}
+	storePendingClone(driver.cloneJobs, volNameInternal, pendingClone{cleanupPending: true})
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, "SVM1").Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, "SVM1").Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true, false).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false, errors.New("share lookup failed"))
+	volConfig := &storage.VolumeConfig{Size: "1g", Name: "testVol", InternalName: volNameInternal}
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.Error(t, err)
+	_, ok := loadPendingClone(driver.cloneJobs, volNameInternal)
+	assert.False(t, ok)
+}
+
+// An FSx delete returns before the ONTAP delete, so it must clear the pending clone record on its own.
+func TestOntapNasStorageDriverVolumeDestroy_FSxForgetsPendingCloneRecord(t *testing.T) {
+	const volNameInternal = "testVolInternal"
+	mockAPI, mockAWSAPI, driver := newMockAWSOntapNASDriver(t)
+	driver.cloneJobs = &sync.Map{}
+	storePendingClone(driver.cloneJobs, volNameInternal, pendingClone{jobUUID: "job-1"})
+	volConfig := &storage.VolumeConfig{
+		Size: "1g", Name: "testVol", InternalName: volNameInternal, Encryption: "false", FileSystem: "xfs",
+	}
+	vol := awsapi.Volume{State: awsapi.StateAvailable}
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, &vol, nil)
+	mockAWSAPI.EXPECT().WaitForVolumeStates(
+		ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+	mockAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.NoError(t, err)
+	_, ok := loadPendingClone(driver.cloneJobs, volNameInternal)
+	assert.False(t, ok)
+}
+
+// A clone whose config lost the name of its automatic snapshot gets it back from the volume, so the snapshot is
+// deleted along with the clone.
+func TestOntapNasStorageDriverVolumeDestroy_DeletesRecoveredAutomaticSnapshot(t *testing.T) {
+	const volNameInternal = "testVolInternal"
+	const sourceInternal = "sourceVolInternal"
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	driver.API = &cloneJobMockAPI{
+		MockOntapAPI: mockAPI, split: &api.CloneSplitState{IsFlexclone: true, ParentSnapshot: "snapshot-auto"},
+	}
+	volConfig := &storage.VolumeConfig{
+		Size: "1g", Name: "testVol", InternalName: volNameInternal, Encryption: "false", FileSystem: "xfs",
+		CloneSourceVolumeInternal: sourceInternal,
+	}
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, "SVM1").Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, "SVM1").Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true, false).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), "snapshot-auto", sourceInternal).Return(nil)
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.NoError(t, err)
 }

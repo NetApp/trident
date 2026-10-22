@@ -10035,6 +10035,7 @@ func TestCloneFlexvol(t *testing.T) {
 
 			err := cloneFlexvol(
 				ctx, &params.cloneVolumeConfig, label, params.split, &params.storageDriverConfig, mockAPI, qosPolicyGroup,
+				nil,
 			)
 			if params.expectError {
 				assert.Error(t, err)
@@ -10085,8 +10086,73 @@ func TestCloneFlexvol_MountFailureCleansUpAfterCallerCancel(t *testing.T) {
 
 	err := cloneFlexvol(
 		callerCtx, &cloneVolumeConfig, "fakeLabel", false, &storageDriverConfig, mockAPI, api.QosPolicyGroup{},
+		nil,
 	)
 	assert.Error(t, err)
+}
+
+// A transient autosize failure on a clone that already exists is retried, as the other setup steps are, while the
+// same failure on a clone this attempt just created fails the create.
+func TestFinishFlexvolClone_AutosizeFailureIsRetryableOnExistingClone(t *testing.T) {
+	const internalName = "dummy"
+	for _, existing := range []bool{true, false} {
+		t.Run(fmt.Sprintf("existing=%v", existing), func(t *testing.T) {
+			ctx := context.Background()
+			mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+			config := &drivers.OntapStorageDriverConfig{
+				CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+					DebugTraceFlags:   map[string]bool{"method": true},
+					StorageDriverName: tridentconfig.OntapSANStorageDriverName,
+				},
+				OntapAutosizePolicy: &drivers.OntapAutosizeConfig{},
+			}
+			volConfig := &storage.VolumeConfig{InternalName: internalName}
+
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+				maxFlexvolCloneWait).Return("online", nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "labels").Return(nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, internalName).Return(nil, errors.New("lookup failed"))
+
+			err := finishFlexvolClone(ctx, volConfig, internalName, "labels", false, config, mockAPI, nil,
+				api.QosPolicyGroup{Kind: api.InvalidQosPolicyGroupKind}, existing)
+
+			assert.Error(t, err)
+			assert.Equal(t, existing, errors.IsVolumeCreatingError(err), "got %v", err)
+		})
+	}
+}
+
+// A failed clone whose volume is not found by name once the visibility wait has passed is taken as gone.
+func TestRemoveLeftover_NotFoundAfterWaitClearsPending(t *testing.T) {
+	ctx := context.Background()
+	const name = "dummy"
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	cloneJobs := &sync.Map{}
+	rec := pendingClone{cleanupPending: true, failureCode: "1", failedAt: time.Now().Add(-2 * cloneLeftoverVisibilityWait)}
+	storePendingClone(cloneJobs, name, rec)
+
+	mockAPI.EXPECT().VolumeInfo(ctx, name).Return(nil, errors.NotFoundError("not found"))
+
+	assert.NoError(t, removeLeftover(ctx, mockAPI, name, &rec, cloneJobs))
+	assert.False(t, rec.cleanupPending)
+	stored, _ := loadPendingClone(cloneJobs, name)
+	assert.False(t, stored.cleanupPending)
+}
+
+// Inside the visibility wait the same lookup keeps the cleanup pending.
+func TestRemoveLeftover_NotFoundInsideWaitStaysPending(t *testing.T) {
+	ctx := context.Background()
+	const name = "dummy"
+	mockAPI := mockapi.NewMockOntapAPI(gomock.NewController(t))
+	cloneJobs := &sync.Map{}
+	rec := pendingClone{cleanupPending: true, failureCode: "1", failedAt: time.Now()}
+	storePendingClone(cloneJobs, name, rec)
+
+	mockAPI.EXPECT().VolumeInfo(ctx, name).Return(nil, errors.NotFoundError("not found"))
+
+	err := removeLeftover(ctx, mockAPI, name, &rec, cloneJobs)
+	assert.True(t, errors.IsVolumeCreatingError(err), "got %v", err)
+	assert.True(t, rec.cleanupPending)
 }
 
 func TestCreateFlexvolSnapshot(t *testing.T) {
