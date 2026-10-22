@@ -131,8 +131,11 @@ func (o *OSUtils) getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([
 
 	allLinks, err := netLink.LinkList()
 	if err != nil {
-		Logc(ctx).Error(err)
-		return nil, err
+		if !errors.Is(err, netlink.ErrDumpInterrupted) {
+			Logc(ctx).Error(err)
+			return nil, err
+		}
+		Logc(ctx).WithError(err).Warn("Interface list may be incomplete; using the interfaces returned.")
 	}
 
 	links := make([]netlink.Link, 0)
@@ -161,7 +164,12 @@ func (o *OSUtils) getIPAddressesExceptingNondefaultRoutes(ctx context.Context) (
 	var routes []netlink.Route
 
 	getRoutesByDestination := func(family int, dst *net.IPNet) ([]netlink.Route, error) {
-		return netLink.RouteListFiltered(family, &netlink.Route{Dst: dst}, netlink.RT_FILTER_DST)
+		routes, err := netLink.RouteListFiltered(family, &netlink.Route{Dst: dst}, netlink.RT_FILTER_DST)
+		if errors.Is(err, netlink.ErrDumpInterrupted) {
+			Logc(ctx).WithError(err).Warn("Route list may be incomplete; using the routes returned.")
+			return routes, nil
+		}
+		return routes, err
 	}
 
 	ipv4Routes, err := getRoutesByDestination(netlink.FAMILY_ALL, &net.IPNet{
@@ -214,8 +222,12 @@ func (o *OSUtils) getUsableAddressesFromLinks(ctx context.Context, links []netli
 
 		linkAddrs, err := netLink.AddrList(link, netlink.FAMILY_ALL)
 		if err != nil {
-			Log().WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
-			continue
+			if !errors.Is(err, netlink.ErrDumpInterrupted) {
+				Log().WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
+				continue
+			}
+			Log().WithFields(logFields).WithError(err).Warn(
+				"Address list may be incomplete; using the addresses returned.")
 		}
 
 		for _, linkAddr := range linkAddrs {
