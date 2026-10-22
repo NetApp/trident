@@ -256,6 +256,56 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	assert.Equal(t, defaultNamespacesPerSuperSubsystem, d.maxNamespacesPerSuperSubsystem)
 }
 
+func TestNVMeInitialize_PersistedBackendName(t *testing.T) {
+	const persistedName = "ontapsan_1.1.1.1"
+
+	tests := []struct {
+		name           string
+		refresh        bool
+		configuredName string
+		expectedName   string
+	}{
+		{"RefreshEnabled", true, "", persistedName},
+		{"RefreshDisabled", false, "", "ontapsan_0.0.0.0"},
+		{"NamedBackend", true, "named", "named"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orig := tridentconfig.EnableDataLIFRefresh
+			tridentconfig.EnableDataLIFRefresh = tt.refresh
+			defer func() { tridentconfig.EnableDataLIFRefresh = orig }()
+
+			d, mAPI := newNVMeDriverAndMockApi(t)
+			d.Config.CommonStorageDriverConfig = nil
+			commonConfig := &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "ontap-san",
+				DriverContext:     tridentconfig.ContextCSI,
+				BackendName:       tt.configuredName,
+				StoragePrefix:     new("trident_"),
+			}
+			configJSON := `{"SANType": "nvme", "storage": [{}]}`
+			mAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).Return(true)
+			mAPI.EXPECT().NetInterfaceGetDataLIFs(gomock.Any(), sa.NVMeTransport).Return(mockIPs, nil)
+			mAPI.EXPECT().IsSVMDRCapable(gomock.Any()).Return(true, nil)
+			mAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).Return([]string{"data"}, nil)
+			mAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(nil, nil)
+			mAPI.EXPECT().SVMName().Return("svm").AnyTimes()
+			mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
+			mAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+			mAPI.EXPECT().GetSVMUUID().Return("svm-uuid").AnyTimes()
+
+			err := d.Initialize(storage.WithPersistedBackendName(ctx, persistedName), tridentconfig.ContextCSI,
+				configJSON, commonConfig, nil, BackendUUID)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedName, d.BackendName())
+			assert.Contains(t, d.virtualPools, tt.expectedName+"_pool_0")
+		})
+	}
+}
+
 func TestNVMeInitialize_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	d.Config.MaxNamespacesPerSuperSubsystem = "100"
@@ -3705,6 +3755,7 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 	tests := []struct {
 		name         string
 		enabled      bool
+		published    bool
 		seed         []string
 		observed     []string
 		expectChange bool
@@ -3721,6 +3772,7 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 		{
 			name:         "enabled_true_change",
 			enabled:      true,
+			published:    true,
 			seed:         []string{"1.1.1.1"},
 			observed:     []string{"1.2.3.4"},
 			expectChange: true,
@@ -3729,9 +3781,18 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 		{
 			name:         "enabled_true_unchanged",
 			enabled:      true,
+			published:    true,
 			seed:         []string{"1.1.1.1"},
 			observed:     []string{"1.1.1.1"},
 			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+		{
+			name:         "enabled_true_first_poll_unchanged",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.1.1.1"},
+			expectChange: true,
 			expectLIFs:   []string{"1.1.1.1"},
 		},
 	}
@@ -3744,6 +3805,7 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 
 			driver, mockAPI := newNVMeDriverAndMockApi(t)
 			driver.ips = tt.seed
+			driver.dataLIFsPublished = tt.published
 
 			mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("running", nil).Times(1)
 			mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
@@ -3759,6 +3821,59 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
 		})
 	}
+}
+
+func TestGetBackendState_DataLIFsReportedUntilConfirmed(t *testing.T) {
+	original := tridentconfig.EnableDataLIFRefresh
+	tridentconfig.EnableDataLIFRefresh = true
+	defer func() { tridentconfig.EnableDataLIFRefresh = original }()
+
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	driver.ips = []string{"1.1.1.1"}
+
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("running", nil).Times(4)
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data", "pool1"}, nil).Times(4)
+	gomock.InOrder(
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"1.1.1.1"}, nil).Times(3),
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"1.2.3.4"}, nil).Times(1),
+	)
+	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(4)
+	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(4)
+
+	_, first := driver.GetBackendState(ctx)
+	assert.True(t, first.Contains(storage.BackendStateDataAccessChange),
+		"the first healthy poll must publish the data LIFs")
+
+	_, second := driver.GetBackendState(ctx)
+	assert.True(t, second.Contains(storage.BackendStateDataAccessChange),
+		"an unconfirmed publish must be retried by the next poll")
+
+	driver.ConfirmDataLIFsPublished()
+	_, third := driver.GetBackendState(ctx)
+	assert.False(t, third.Contains(storage.BackendStateDataAccessChange),
+		"a confirmed publish must not be repeated while the data LIFs are unchanged")
+
+	_, fourth := driver.GetBackendState(ctx)
+	assert.True(t, fourth.Contains(storage.BackendStateDataAccessChange),
+		"a data LIF change after a confirmed publish must be reported")
+	assert.False(t, driver.dataLIFsPublished)
+}
+
+func TestGetBackendState_UnhealthyPollDoesNotMarkPublished(t *testing.T) {
+	original := tridentconfig.EnableDataLIFRefresh
+	tridentconfig.EnableDataLIFRefresh = true
+	defer func() { tridentconfig.EnableDataLIFRefresh = original }()
+
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	driver.ips = []string{"1.1.1.1"}
+
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("stopped", nil).Times(1)
+
+	reason, changeMap := driver.GetBackendState(ctx)
+	assert.NotEmpty(t, reason)
+	assert.False(t, changeMap.Contains(storage.BackendStateDataAccessChange))
+	assert.False(t, driver.dataLIFsPublished, "an unhealthy poll must leave the first publish to a healthy one")
 }
 
 func TestEnablePublishEnforcement(t *testing.T) {

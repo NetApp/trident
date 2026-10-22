@@ -5714,6 +5714,29 @@ func refreshDataLIFCache(
 	return true
 }
 
+// updateDataLIFPublishPending marks a driver's data LIF cache unpublished if it just changed, then
+// reports whether the cache still has to be published. A new driver instance starts unpublished,
+// as its cache is seeded during Initialize and a LIF change made while refresh was disabled or
+// Trident was down is otherwise never detected. It stays pending until the core confirms the
+// publish with confirmDataLIFsPublished, so a publish that fails is retried by the next poll.
+func updateDataLIFPublishPending(published *bool, changed bool) bool {
+	dataLIFMutex.Lock()
+	defer dataLIFMutex.Unlock()
+
+	if changed {
+		*published = false
+	}
+	return !*published
+}
+
+// confirmDataLIFsPublished records that the core persisted a driver's data LIF cache.
+func confirmDataLIFsPublished(published *bool) {
+	dataLIFMutex.Lock()
+	defer dataLIFMutex.Unlock()
+
+	*published = true
+}
+
 // reconcileDataLIFs folds the LIFs just observed on an SVM into a driver's cached LIF list.
 //
 //	cached   - the LIF addresses currently in the driver's cache

@@ -3857,3 +3857,96 @@ func TestRequiresOrphanScan(t *testing.T) {
 		})
 	}
 }
+
+type plainDriver struct{ Driver }
+
+func (*plainDriver) StoreConfig(context.Context, *PersistentStorageBackendConfig) {}
+
+type reportingDriver struct {
+	plainDriver
+	lifs []string
+}
+
+func (d *reportingDriver) DataLIFs() []string {
+	return d.lifs
+}
+
+func TestStorageBackend_DataLIFs(t *testing.T) {
+	plain := &StorageBackend{}
+	plain.SetDriver(&plainDriver{})
+	assert.False(t, plain.CanRefreshDataAccess())
+	assert.Nil(t, plain.DataLIFs())
+
+	lifs := []string{"192.0.2.10", "192.0.2.11"}
+	reporting := &StorageBackend{}
+	reporting.SetDriver(&reportingDriver{lifs: lifs})
+	assert.True(t, reporting.CanRefreshDataAccess())
+	assert.Equal(t, lifs, reporting.DataLIFs())
+
+	unknown := &StorageBackend{}
+	unknown.SetDriver(&reportingDriver{})
+	assert.True(t, unknown.CanRefreshDataAccess())
+	assert.Nil(t, unknown.DataLIFs())
+}
+
+func TestStorageBackend_ConstructPersistent_DataLIFs(t *testing.T) {
+	lifs := []string{"192.0.2.10", "192.0.2.11"}
+
+	tests := []struct {
+		name     string
+		enabled  bool
+		driver   Driver
+		expected *[]string
+	}{
+		{
+			name:     "snapshot published when refresh is enabled",
+			enabled:  true,
+			driver:   &reportingDriver{lifs: lifs},
+			expected: &lifs,
+		},
+		{
+			name:     "empty snapshot published as empty",
+			enabled:  true,
+			driver:   &reportingDriver{lifs: []string{}},
+			expected: &[]string{},
+		},
+		{
+			name:    "unknown snapshot not published",
+			enabled: true,
+			driver:  &reportingDriver{},
+		},
+		{
+			name:    "non-reporting driver not published",
+			enabled: true,
+			driver:  &plainDriver{},
+		},
+		{
+			name:    "nothing published when refresh is disabled",
+			enabled: false,
+			driver:  &reportingDriver{lifs: lifs},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			previous := tridentconfig.EnableDataLIFRefresh
+			tridentconfig.EnableDataLIFRefresh = tc.enabled
+			t.Cleanup(func() { tridentconfig.EnableDataLIFRefresh = previous })
+
+			backend := NewTestStorageBackend()
+			backend.SetDriver(tc.driver)
+
+			persistent := backend.ConstructPersistent(context.Background())
+
+			assert.Equal(t, tc.expected, persistent.DataLIFs)
+		})
+	}
+}
+
+func TestPersistedBackendName(t *testing.T) {
+	ctx := context.Background()
+	assert.Empty(t, PersistedBackendName(ctx))
+
+	ctx = WithPersistedBackendName(ctx, "ontapsan_1.1.1.1")
+	assert.Equal(t, "ontapsan_1.1.1.1", PersistedBackendName(ctx))
+}
