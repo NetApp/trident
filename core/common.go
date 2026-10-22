@@ -117,6 +117,25 @@ func isBackendBootstrapTimeout(ctx context.Context, err error) bool {
 	return err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded)
 }
 
+// restorePersistedBackendName keeps a bootstrapped or updated backend under its existing name.
+// Drivers without a configured backendName derive one from their first data LIF, so a LIF change
+// would otherwise rename the backend on restart or on the next update. Only applied with data LIF
+// refresh, and only for drivers that support it, since that is what persists the backend after
+// such a change.
+func restorePersistedBackendName(ctx context.Context, backend storage.Backend, persistedName string) {
+	if !config.EnableDataLIFRefresh || persistedName == "" || backend.Name() == persistedName ||
+		!backend.CanRefreshDataAccess() {
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"backendUUID":   backend.BackendUUID(),
+		"generatedName": backend.Name(),
+		"persistedName": persistedName,
+	}).Info("Restoring persisted backend name.")
+	backend.SetName(persistedName)
+}
+
 var (
 	// VP sync rate limiter tuning (overridden in unit tests for speed).
 	// Production limits VP field propagation to 1 QPS with burst of 2.

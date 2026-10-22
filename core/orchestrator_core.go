@@ -234,7 +234,8 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 
 		// Bound this backend's bootstrap work (including any retry below) so an unreachable
 		// backend can't hang bootstrap or double its worst-case time via a second timeout.
-		bCtx, cancel := context.WithTimeout(ctx, config.BackendBootstrapTimeout)
+		bCtx, cancel := context.WithTimeout(
+			storage.WithPersistedBackendName(ctx, b.Name), config.BackendBootstrapTimeout)
 		newBackendExternal, backendErr := o.addBackend(bCtx, serializedConfig, b.BackendUUID, b.ConfigRef)
 
 		if backendErr == nil {
@@ -313,6 +314,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 				if b.State == storage.Deleting {
 					newBackend.SetState(storage.Deleting)
 				}
+				restorePersistedBackendName(ctx, newBackend, b.Name)
 			}
 			Logc(ctx).WithFields(LogFields{
 				"backend":                        newBackend.Name(),
@@ -1528,7 +1530,8 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	Logc(ctx).WithFields(logFields).Debug(">>>>>> updateBackendByBackendUUID")
 
 	// Second, validate the update.
-	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, callingConfigRef, backendUUID)
+	backend, err = o.validateAndCreateBackendFromConfig(
+		storage.WithPersistedBackendName(ctx, originalBackend.Name()), configJSON, callingConfigRef, backendUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -1540,6 +1543,10 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	//       when we called validateAndCreateBackendFromConfig() above.
 	if backend.Driver().GetCommonConfig(ctx).UserState == "" {
 		backend.SetUserState(originalBackend.UserState())
+	}
+
+	if backend.Driver().GetCommonConfig(ctx).BackendName == "" {
+		restorePersistedBackendName(ctx, backend, originalBackend.Name())
 	}
 
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
@@ -6796,6 +6803,9 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 			changeMap.Contains(storage.BackendStateDataAccessChange) {
 			if err := o.storeClient.UpdateBackend(ctx, b); err != nil {
 				return err
+			}
+			if confirmer, ok := b.(storage.DataLIFPublishConfirmer); ok {
+				confirmer.ConfirmDataLIFsPublished()
 			}
 		}
 

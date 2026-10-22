@@ -2199,6 +2199,102 @@ func TestBootstrapBackendRetryAfterInitialFailure(t *testing.T) {
 	assert.Equal(t, backendName, registered.Name())
 }
 
+// unnamedFakeBackendConfig returns a fake backend config without a backendName, so the driver
+// generates a name of its own. A failing config builds a backend that fails to initialize.
+func unnamedFakeBackendConfig(t *testing.T, failing bool) string {
+	t.Helper()
+
+	pools := map[string]*fake.StoragePool{
+		"primary": {
+			Attrs: map[string]sa.Offer{sa.Media: sa.NewStringOffer("hdd")},
+			Bytes: 100 * 1024 * 1024 * 1024,
+		},
+	}
+
+	var configJSON string
+	var err error
+	if failing {
+		badDefaults := drivers.FakeStorageDriverPool{
+			FakeStorageDriverConfigDefaults: drivers.FakeStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: "not-a-valid-size",
+				},
+			},
+		}
+		configJSON, err = fakedriver.NewFakeStorageDriverConfigJSONWithVirtualPools(
+			"unused", config.File, pools, badDefaults, nil)
+	} else {
+		configJSON, err = fakedriver.NewFakeStorageDriverConfigJSON("unused", config.File, pools, []fake.Volume{})
+	}
+	require.NoError(t, err)
+
+	var configMap map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(configJSON), &configMap))
+	delete(configMap, "backendName")
+
+	unnamed, err := json.Marshal(configMap)
+	require.NoError(t, err)
+	return string(unnamed)
+}
+
+func TestBootstrapBackendsRestoresPersistedName(t *testing.T) {
+	const (
+		persistedName = "ontapsan_A"
+		backendUUID   = "restore-name-backend-uuid"
+	)
+
+	tests := []struct {
+		name                 string
+		enableDataLIFRefresh bool
+		failing              bool
+		expectPersistedName  bool
+	}{
+		// The fake driver cannot refresh data access, so its generated name stands even with refresh enabled.
+		{name: "DataLIFRefreshEnabledDriverCannotRefresh", enableDataLIFRefresh: true, expectPersistedName: false},
+		{name: "DataLIFRefreshDisabled", enableDataLIFRefresh: false, expectPersistedName: false},
+		// A failed backend is registered under its persisted name whether or not refresh is enabled.
+		{name: "FailedBackend", enableDataLIFRefresh: true, failing: true, expectPersistedName: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := config.EnableDataLIFRefresh
+			config.EnableDataLIFRefresh = tt.enableDataLIFRefresh
+			defer func() { config.EnableDataLIFRefresh = original }()
+
+			store := persistentstore.NewInMemoryClient()
+
+			seeded, err := newTestTridentOrchestrator(t, store).validateAndCreateBackendFromConfig(
+				ctx(), unnamedFakeBackendConfig(t, tt.failing), "", backendUUID)
+			require.Equal(t, tt.failing, err != nil)
+			require.NotNil(t, seeded)
+			require.NotEqual(t, persistedName, seeded.Name(), "driver must generate a different name")
+			seeded.SetName(persistedName)
+			require.NoError(t, store.AddBackend(ctx(), seeded))
+
+			o := newTestTridentOrchestrator(t, store)
+			require.NoError(t, o.bootstrapBackends(ctx()))
+
+			bootstrapped, found := o.backends[backendUUID]
+			require.True(t, found)
+			assert.Equal(t, tt.failing, bootstrapped.State().IsFailed())
+
+			_, lookupErr := o.getBackendByBackendName(persistedName)
+			updateErr := o.storeClient.UpdateBackend(ctx(), bootstrapped)
+
+			if tt.expectPersistedName {
+				assert.Equal(t, persistedName, bootstrapped.Name())
+				assert.NoError(t, lookupErr)
+				assert.NoError(t, updateErr)
+			} else {
+				assert.NotEqual(t, persistedName, bootstrapped.Name())
+				assert.Error(t, lookupErr)
+				assert.True(t, persistentstore.MatchKeyNotFoundErr(updateErr))
+			}
+		})
+	}
+}
+
 func captureOutput(f func()) string {
 	var buf bytes.Buffer
 	logging.InitLogOutput(&buf)
@@ -10592,6 +10688,75 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 	}
 }
 
+func TestUpdateBackendByBackendUUID_UnnamedConfig(t *testing.T) {
+	bName := "fake-backend"
+	namedConfig := map[string]interface{}{
+		"version": 1, "storageDriverName": "fake", "backendName": bName, "protocol": config.File,
+	}
+	unnamedConfig := map[string]interface{}{
+		"version": 1, "storageDriverName": "fake", "protocol": config.File,
+	}
+
+	tests := []struct {
+		name                   string
+		enableDataLIFRefresh   bool
+		mocks                  func(mockStoreClient *mockpersistentstore.MockStoreClient)
+		expectOriginalNameKept bool
+	}{
+		{
+			name:                 "DataLIFRefreshEnabledDriverCannotRefreshRenames",
+			enableDataLIFRefresh: true,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil).Times(1)
+			},
+			expectOriginalNameKept: false,
+		},
+		{
+			name:                 "DataLIFRefreshDisabledRenames",
+			enableDataLIFRefresh: false,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil).Times(1)
+			},
+			expectOriginalNameKept: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := config.EnableDataLIFRefresh
+			config.EnableDataLIFRefresh = tt.enableDataLIFRefresh
+			defer func() { config.EnableDataLIFRefresh = original }()
+
+			mockCtrl := gomock.NewController(t)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+
+			configJSON, err := json.Marshal(namedConfig)
+			require.NoError(t, err)
+			oldBackendExt, err := o.AddBackend(ctx(), string(configJSON), "")
+			require.NoError(t, err)
+
+			tt.mocks(mockStoreClient)
+
+			configJSON, err = json.Marshal(unnamedConfig)
+			require.NoError(t, err)
+			result, err := o.UpdateBackendByBackendUUID(ctx(), bName, string(configJSON), oldBackendExt.BackendUUID, "")
+			require.NoError(t, err)
+
+			if tt.expectOriginalNameKept {
+				assert.Equal(t, bName, result.Name)
+			} else {
+				assert.NotEqual(t, bName, result.Name)
+			}
+		})
+	}
+}
+
 func TestReconcileVolumePublications_AddsPublicationForLegacyVolume(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
@@ -11357,6 +11522,52 @@ func TestReconcileBackendState(t *testing.T) {
 			} else {
 				assert.NoError(t, err, "should be no error")
 			}
+		})
+	}
+}
+
+// confirmingBackend counts the data LIF publish confirmations the core sends to a backend.
+type confirmingBackend struct {
+	storage.Backend
+	confirmed int
+}
+
+func (b *confirmingBackend) ConfirmDataLIFsPublished() { b.confirmed++ }
+
+func (b *confirmingBackend) SmartCopy() interface{} { return b }
+
+func TestReconcileBackendStateConfirmsDataLIFPublish(t *testing.T) {
+	tests := []struct {
+		name            string
+		storeErr        error
+		expectConfirmed int
+	}{
+		{name: "PersistSucceeds", expectConfirmed: 1},
+		{name: "PersistFails", storeErr: fmt.Errorf("returning error on UpdateBackend")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			backend := &confirmingBackend{Backend: mockBackend}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+
+			changeMap := roaring.New()
+			changeMap.Add(storage.BackendStateDataAccessChange)
+			mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+			mockBackend.EXPECT().CanGetState().Return(true)
+			mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", changeMap)
+			mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "")
+			mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), backend).Return(tt.storeErr)
+
+			err := o.reconcileBackendState(ctx(), backend)
+
+			assert.Equal(t, tt.storeErr, err)
+			assert.Equal(t, tt.expectConfirmed, backend.confirmed)
 		})
 	}
 }

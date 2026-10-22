@@ -108,6 +108,26 @@ type DataAccessRefresher interface {
 	DataLIFs() []string
 }
 
+// DataLIFPublishConfirmer is implemented by drivers that keep reporting BackendStateDataAccessChange
+// until the core confirms it persisted their data LIFs.
+type DataLIFPublishConfirmer interface {
+	ConfirmDataLIFsPublished()
+}
+
+type persistedBackendNameKey struct{}
+
+// WithPersistedBackendName records the name a backend was persisted under, so a driver recreated
+// for that backend during Initialize can keep it rather than deriving a new one.
+func WithPersistedBackendName(ctx context.Context, name string) context.Context {
+	return context.WithValue(ctx, persistedBackendNameKey{}, name)
+}
+
+// PersistedBackendName returns the name recorded by WithPersistedBackendName, or "" if none.
+func PersistedBackendName(ctx context.Context) string {
+	name, _ := ctx.Value(persistedBackendNameKey{}).(string)
+	return name
+}
+
 type GroupSnapshotter interface {
 	GetGroupSnapshotTarget(ctx context.Context, volConfigs []*VolumeConfig) (*GroupSnapshotTargetInfo, error)
 	CreateGroupSnapshot(ctx context.Context, config *GroupSnapshotConfig, target *GroupSnapshotTargetInfo) error
@@ -1649,6 +1669,13 @@ func (b *StorageBackend) DataLIFs() []string {
 		return nil
 	}
 	return reporter.DataLIFs()
+}
+
+// ConfirmDataLIFsPublished tells the driver that its data LIFs were persisted.
+func (b *StorageBackend) ConfirmDataLIFsPublished() {
+	if confirmer, ok := b.driver.(DataLIFPublishConfirmer); ok {
+		confirmer.ConfirmDataLIFsPublished()
+	}
 }
 
 func (b *StorageBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {

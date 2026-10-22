@@ -311,7 +311,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 		}
 
 		// Bound this backend's init so an unreachable backend can't hang bootstrap.
-		bCtx, cancel := context.WithTimeout(ctx, config.BackendBootstrapTimeout)
+		bCtx, cancel := context.WithTimeout(
+			storage.WithPersistedBackendName(ctx, storageBackend.Name), config.BackendBootstrapTimeout)
 		backend, backendErr := o.addBackend(bCtx, configJSON, storageBackend.BackendUUID, storageBackend.ConfigRef)
 		cancel()
 
@@ -340,6 +341,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 			// If we couldn't create a backend, even a failed one, skip this backend.
 			continue
 		}
+
+		restorePersistedBackendName(ctx, backend, storageBackend.Name)
 
 		_, results, unlocker, lockErr := db.Lock(
 			ctx, db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
@@ -2047,7 +2050,8 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 	Logc(ctx).WithFields(logFields).Debug(">>>>>> updateBackend")
 
 	// Second, validate the update.
-	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, callingConfigRef, backendUUID)
+	backend, err = o.validateAndCreateBackendFromConfig(
+		storage.WithPersistedBackendName(ctx, originalBackend.Name()), configJSON, callingConfigRef, backendUUID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2059,6 +2063,10 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(
 	//       when we called validateAndCreateBackendFromConfig() above.
 	if backend.Driver().GetCommonConfig(ctx).UserState == "" {
 		backend.SetUserState(originalBackend.UserState())
+	}
+
+	if backend.Driver().GetCommonConfig(ctx).BackendName == "" {
+		restorePersistedBackendName(ctx, backend, originalBackend.Name())
 	}
 
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
@@ -7877,8 +7885,8 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 	reason, changeMap := backend.GetBackendState(ctx)
 	unlocker()
 
-	// A driver reports a data LIF change only on the poll that refreshed its cache, so the
-	// re-check under the write lock below cannot be relied on to report it again.
+	// A driver may report a data LIF change only once, so the re-check under the write lock
+	// below cannot be relied on to report it again.
 	dataLIFsChanged := changeMap != nil && changeMap.Contains(storage.BackendStateDataAccessChange)
 
 	if changeMap != nil && !changeMap.IsEmpty() {
@@ -7930,6 +7938,9 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 			changeMap.Contains(storage.BackendStateDataAccessChange) {
 			if err := o.storeClient.UpdateBackend(ctx, backend); err != nil {
 				return err
+			}
+			if confirmer, ok := backend.(storage.DataLIFPublishConfirmer); ok {
+				confirmer.ConfirmDataLIFsPublished()
 			}
 		}
 

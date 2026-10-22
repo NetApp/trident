@@ -963,6 +963,71 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestBootstrapBackendsConcurrentCoreRestoresPersistedName(t *testing.T) {
+	const (
+		persistedName = "ontapsan_A"
+		backendUUID   = "restore-name-backend-uuid"
+	)
+
+	tests := []struct {
+		name                 string
+		enableDataLIFRefresh bool
+		failing              bool
+		expectPersistedName  bool
+	}{
+		// The fake driver cannot refresh data access, so its generated name stands even with refresh enabled.
+		{name: "DataLIFRefreshEnabledDriverCannotRefresh", enableDataLIFRefresh: true, expectPersistedName: false},
+		{name: "DataLIFRefreshDisabled", enableDataLIFRefresh: false, expectPersistedName: false},
+		// Failed backends go through the same restore, so the fake driver's generated name stands here too.
+		{name: "FailedBackendDriverCannotRefresh", enableDataLIFRefresh: true, failing: true, expectPersistedName: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := config.EnableDataLIFRefresh
+			config.EnableDataLIFRefresh = tt.enableDataLIFRefresh
+			defer func() { config.EnableDataLIFRefresh = original }()
+
+			db.Initialize()
+
+			store := persistentstore.NewInMemoryClient()
+			o := getConcurrentOrchestrator()
+			o.storeClient = store
+			o.bootstrapped = false
+
+			seeded, err := o.validateAndCreateBackendFromConfig(
+				testCtx, unnamedFakeBackendConfig(t, tt.failing), "", backendUUID)
+			require.Equal(t, tt.failing, err != nil)
+			require.NotNil(t, seeded)
+			require.NotEqual(t, persistedName, seeded.Name(), "driver must generate a different name")
+			seeded.SetName(persistedName)
+			require.NoError(t, store.AddBackend(testCtx, seeded))
+
+			require.NoError(t, o.bootstrapBackends(testCtx))
+
+			bootstrapped := getBackendByUuidFromCache(t, backendUUID)
+			require.NotNil(t, bootstrapped)
+			assert.Equal(t, tt.failing, bootstrapped.State().IsFailed())
+
+			byName := getBackendByNameFromCache(t, persistedName)
+			updateErr := o.storeClient.UpdateBackend(testCtx, bootstrapped)
+
+			if tt.expectPersistedName {
+				assert.Equal(t, persistedName, bootstrapped.Name())
+				require.NotNil(t, byName)
+				assert.Equal(t, backendUUID, byName.BackendUUID())
+				assert.NoError(t, updateErr)
+			} else {
+				assert.NotEqual(t, persistedName, bootstrapped.Name())
+				assert.Nil(t, byName)
+				assert.True(t, persistentstore.MatchKeyNotFoundErr(updateErr))
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
 // TestBootstrapBackendsConcurrentCoreTimeoutLogged verifies that when a backend's bounded
 // bootstrap context (config.BackendBootstrapTimeout) has already expired by the time addBackend
 // fails, bootstrapBackends logs the distinguishing "timed out" message via
@@ -2654,6 +2719,58 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			name: "UnnamedConfigRenamedWithDataLIFRefreshWhenDriverCannotRefresh",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				original := config.EnableDataLIFRefresh
+				config.EnableDataLIFRefresh = true
+				t.Cleanup(func() { config.EnableDataLIFRefresh = original })
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), fakeBackend, gomock.Any()).
+					Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.NotEqual(t, existingBackendName, backend.Name)
+			},
+		},
+		{
+			name: "UnnamedConfigRenamedWithoutDataLIFRefresh",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				original := config.EnableDataLIFRefresh
+				config.EnableDataLIFRefresh = false
+				t.Cleanup(func() { config.EnableDataLIFRefresh = original })
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), fakeBackend, gomock.Any()).
+					Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.NotEqual(t, existingBackendName, backend.Name)
+			},
+		},
+		{
 			name: "BackendRenameWithNameAlreadyExistsError",
 			newBackendConfig: map[string]interface{}{
 				"version":           1,
@@ -3061,6 +3178,58 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 			},
 			verifyResult: func(backend *storage.BackendExternal) {
 				assert.Equal(t, "new", backend.Name)
+			},
+		},
+		{
+			name: "UnnamedConfigRenamedWithDataLIFRefreshWhenDriverCannotRefresh",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				original := config.EnableDataLIFRefresh
+				config.EnableDataLIFRefresh = true
+				t.Cleanup(func() { config.EnableDataLIFRefresh = original })
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), fakeBackend, gomock.Any()).
+					Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.NotEqual(t, existingBackendName, backend.Name)
+			},
+		},
+		{
+			name: "UnnamedConfigRenamedWithoutDataLIFRefresh",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				original := config.EnableDataLIFRefresh
+				config.EnableDataLIFRefresh = false
+				t.Cleanup(func() { config.EnableDataLIFRefresh = original })
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), fakeBackend, gomock.Any()).
+					Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.NotEqual(t, existingBackendName, backend.Name)
 			},
 		},
 		{
@@ -15043,8 +15212,8 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			// The driver reports a data LIF change only on the poll that refreshed its cache, so
-			// the re-check under the write lock sees no change and the CR must still be written.
+			// A driver may report a data LIF change only once, so the re-check under the write
+			// lock sees no change and the CR must still be written.
 			name:        "ReconcileBackendDataLIFsChangeReportedOnce",
 			backendUUID: "uuid1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
@@ -15220,6 +15389,44 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				tt.verifyError(t, err)
 			}
 
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestReconcileBackendStateConfirmsDataLIFPublishConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name            string
+		storeErr        error
+		expectConfirmed int
+	}{
+		{name: "PersistSucceeds", expectConfirmed: 1},
+		{name: "PersistFails", storeErr: failed},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+			backend := &confirmingBackend{Backend: mockBackend}
+			changeMap := roaring.New()
+			changeMap.Add(storage.BackendStateDataAccessChange)
+			mockBackend.EXPECT().CanGetState().Return(true)
+			mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", changeMap).Times(2)
+			mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "")
+			mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), backend).Return(tt.storeErr)
+			addBackendsToCache(t, backend)
+
+			err := o.reconcileBackendState(testCtx, "uuid1")
+
+			assert.Equal(t, tt.storeErr, err)
+			assert.Equal(t, tt.expectConfirmed, backend.confirmed)
 			persistenceCleanup(t, o)
 		})
 	}

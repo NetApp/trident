@@ -47,6 +47,7 @@ type NVMeStorageDriver struct {
 	initialized                    bool
 	Config                         drivers.OntapStorageDriverConfig
 	ips                            []string
+	dataLIFsPublished              bool
 	backendName                    string
 	API                            api.OntapAPI
 	AWSAPI                         awsapi.AWSAPI
@@ -143,6 +144,11 @@ func (d *NVMeStorageDriver) DataLIFs() []string {
 	return readDataLIFCache(&d.ips)
 }
 
+// ConfirmDataLIFsPublished records that the core persisted the driver's data LIFs.
+func (d *NVMeStorageDriver) ConfirmDataLIFsPublished() {
+	confirmDataLIFsPublished(&d.dataLIFsPublished)
+}
+
 // refreshDataLIFs folds a freshly observed LIF set into the driver's cache, reporting whether
 // anything changed.
 func (d *NVMeStorageDriver) refreshDataLIFs(ctx context.Context, observed []string) bool {
@@ -219,8 +225,12 @@ func (d *NVMeStorageDriver) Initialize(
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found LIFs.")
 	}
 
-	// Pin the generated backend name now, before the reconcile loop can alter the LIF list.
+	// Pin the backend name now, before the reconcile loop can alter the LIF list. A driver recreated
+	// for an existing backend keeps its persisted name, so its pools are named consistently with it.
 	d.backendName = d.generatedBackendName()
+	if name := storage.PersistedBackendName(ctx); name != "" && tridentconfig.EnableDataLIFRefresh {
+		d.backendName = name
+	}
 
 	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
@@ -1922,8 +1932,11 @@ func (d *NVMeStorageDriver) GetBackendState(ctx context.Context) (string, *roari
 	// Only refresh once the backend looks healthy. There is nothing to learn from an SVM that is
 	// unreachable, stopped, or reporting all of its data LIFs down, and a degraded answer must
 	// not be mistaken for a LIF change.
-	if reason == "" && d.refreshDataLIFs(ctx, dataLIFs) {
-		changeMap.Add(storage.BackendStateDataAccessChange)
+	if reason == "" {
+		changed := d.refreshDataLIFs(ctx, dataLIFs)
+		if updateDataLIFPublishPending(&d.dataLIFsPublished, changed) {
+			changeMap.Add(storage.BackendStateDataAccessChange)
+		}
 	}
 	return reason, changeMap
 }

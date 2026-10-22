@@ -1305,3 +1305,44 @@ func TestIsBackendBootstrapTimeout(t *testing.T) {
 		})
 	}
 }
+
+type refreshCapableTestBackend struct {
+	storage.Backend
+	canRefresh bool
+}
+
+func (b *refreshCapableTestBackend) CanRefreshDataAccess() bool {
+	return b.canRefresh
+}
+
+func TestRestorePersistedBackendName(t *testing.T) {
+	tests := []struct {
+		name          string
+		refresh       bool
+		canRefresh    bool
+		generatedName string
+		persistedName string
+		expected      string
+	}{
+		{"RefreshEnabled_NameDrifted", true, true, "ontapsan_10.0.0.2", "ontapsan_10.0.0.1", "ontapsan_10.0.0.1"},
+		{"RefreshEnabled_NameUnchanged", true, true, "ontapsan_10.0.0.1", "ontapsan_10.0.0.1", "ontapsan_10.0.0.1"},
+		{"RefreshEnabled_NoPersistedName", true, true, "ontapsan_10.0.0.2", "", "ontapsan_10.0.0.2"},
+		{"RefreshDisabled_NameDrifted", false, true, "ontapsan_10.0.0.2", "ontapsan_10.0.0.1", "ontapsan_10.0.0.2"},
+		{"RefreshEnabled_DriverCannotRefresh", true, false, "ontapnas_10.0.0.2", "ontapnas_10.0.0.1", "ontapnas_10.0.0.2"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orig := config.EnableDataLIFRefresh
+			config.EnableDataLIFRefresh = tt.refresh
+			defer func() { config.EnableDataLIFRefresh = orig }()
+
+			backend := &refreshCapableTestBackend{Backend: storage.NewTestStorageBackend(), canRefresh: tt.canRefresh}
+			backend.SetName(tt.generatedName)
+
+			restorePersistedBackendName(context.Background(), backend, tt.persistedName)
+
+			assert.Equal(t, tt.expected, backend.Name())
+		})
+	}
+}

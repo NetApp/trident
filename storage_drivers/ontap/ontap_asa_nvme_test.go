@@ -503,6 +503,45 @@ func TestInitializeASANVMe_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testin
 	assert.Equal(t, int64(100), driver.maxNamespacesPerSuperSubsystem)
 }
 
+func TestInitializeASANVMe_PersistedBackendName(t *testing.T) {
+	const persistedName = "ontapasanvme_1.1.1.1"
+
+	tests := []struct {
+		name           string
+		refresh        bool
+		configuredName string
+		expectedName   string
+	}{
+		{"RefreshEnabled", true, "", persistedName},
+		{"RefreshDisabled", false, "", "ontapasanvme_127.0.0.1"},
+		{"NamedBackend", true, "named", "named"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orig := tridentconfig.EnableDataLIFRefresh
+			tridentconfig.EnableDataLIFRefresh = tt.refresh
+			defer func() { tridentconfig.EnableDataLIFRefresh = orig }()
+
+			mockAPI, driver := newMockOntapASANVMeDriver(t)
+			driver.Config.BackendName = tt.configuredName
+			driver.Config.Storage = []drivers.OntapStorageDriverPool{{}}
+			commonConfig := driver.GetCommonConfig(ctx)
+			mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.NVMeProtocol).Return(true).Times(1)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(gomock.Any(), sa.NVMeTransport).
+				Return([]string{"127.0.0.1"}, nil).Times(1)
+			mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).AnyTimes()
+
+			err := initializeWithTelemetryCleanup(t, driver, storage.WithPersistedBackendName(ctx, persistedName),
+				driverContextCSI, "", commonConfig, nil, uuid.NewString())
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedName, driver.BackendName())
+			assert.Contains(t, driver.virtualPools, tt.expectedName+"_pool_0")
+		})
+	}
+}
+
 func TestInitializeASANVMe_InvalidMaxNamespacesPerSuperSubsystem(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 	driver.Config.MaxNamespacesPerSuperSubsystem = "1025"
@@ -3184,6 +3223,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 	tests := []struct {
 		name         string
 		enabled      bool
+		published    bool
 		seed         []string
 		observed     []string
 		expectChange bool
@@ -3200,6 +3240,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 		{
 			name:         "DataLIFRefresh_true_change",
 			enabled:      true,
+			published:    true,
 			seed:         []string{"1.1.1.1"},
 			observed:     []string{"1.2.3.4"},
 			expectChange: true,
@@ -3208,9 +3249,18 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 		{
 			name:         "DataLIFRefresh_true_unchanged",
 			enabled:      true,
+			published:    true,
 			seed:         []string{"1.1.1.1"},
 			observed:     []string{"1.1.1.1"},
 			expectChange: false,
+			expectLIFs:   []string{"1.1.1.1"},
+		},
+		{
+			name:         "DataLIFRefresh_true_first_poll_unchanged",
+			enabled:      true,
+			seed:         []string{"1.1.1.1"},
+			observed:     []string{"1.1.1.1"},
+			expectChange: true,
 			expectLIFs:   []string{"1.1.1.1"},
 		},
 	}
@@ -3223,6 +3273,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 
 			mockAPI, driver := newMockOntapASANVMeDriver(t)
 			driver.ips = tt.seed
+			driver.dataLIFsPublished = tt.published
 			derivedPools := []string{ONTAPTEST_VSERVER_AGGR_NAME}
 
 			pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
@@ -3250,6 +3301,14 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 			assert.Equal(t, tt.expectLIFs, driver.DataLIFs())
 		})
 	}
+}
+
+func TestConfirmDataLIFsPublishedASANVMe(t *testing.T) {
+	_, driver := newMockOntapASANVMeDriver(t)
+
+	driver.ConfirmDataLIFsPublished()
+
+	assert.True(t, driver.dataLIFsPublished)
 }
 
 func TestEnablePublishEnforcementASANVMe(t *testing.T) {
