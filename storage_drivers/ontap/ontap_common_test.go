@@ -10370,7 +10370,40 @@ func TestSplitVolumeFromBusySnapshot(t *testing.T) {
 
 	err = SplitVolumeFromBusySnapshot(ctx, snapConfig, config, mockAPI, mockCloneSplitStart)
 
+	assert.True(t, errors.IsNotFoundError(err))
+
+	// Test5: Start a split only for the first child that holds the snapshot busy.
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName).Return(api.VolumeNameList{"vol1", "vol2", "vol3"}, nil)
+	splitChildren := make([]string, 0, 1)
+	err = SplitVolumeFromBusySnapshot(
+		ctx, snapConfig, config, mockAPI,
+		func(_ context.Context, cloneName string) error {
+			splitChildren = append(splitChildren, cloneName)
+			return nil
+		},
+	)
+
 	assert.NoError(t, err)
+	assert.Equal(t, []string{"vol1"}, splitChildren)
+
+	// Test6: A missing first child does not block splitting the next one in this attempt.
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName).Return(api.VolumeNameList{"vol1", "vol2"}, nil)
+	splitChildren = nil
+	err = SplitVolumeFromBusySnapshot(
+		ctx, snapConfig, config, mockAPI,
+		func(_ context.Context, cloneName string) error {
+			splitChildren = append(splitChildren, cloneName)
+			if cloneName == "vol1" {
+				return errors.NotFoundError("could not find volume with name %s", cloneName)
+			}
+			return nil
+		},
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"vol1", "vol2"}, splitChildren)
 
 	// Test3 : Error flow: splitting clone returns error
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
@@ -10389,40 +10422,23 @@ func TestSplitVolumeFromBusySnapshot(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestSplitVolumeFromBusySnapshotWithDelay(t *testing.T) {
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	commonConfig := &drivers.CommonStorageDriverConfig{
-		DebugTraceFlags: map[string]bool{"method": true},
-	}
-	config := &drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: commonConfig,
-	}
-	snapConfig := &storage.SnapshotConfig{
-		VolumeInternalName: "fakeVolInternalName",
-		InternalName:       "fakeInternalName",
-	}
+func TestNextSnapshotDeleteInterval(t *testing.T) {
+	assert.Equal(t, snapshotDeleteRetryInitial, nextSnapshotDeleteInterval(0))
+	assert.Equal(t, 10*time.Minute, nextSnapshotDeleteInterval(snapshotDeleteRetryInitial))
+	assert.Equal(t, 20*time.Minute, nextSnapshotDeleteInterval(10*time.Minute))
+	assert.Equal(t, 40*time.Minute, nextSnapshotDeleteInterval(20*time.Minute))
+	assert.Equal(t, snapshotDeleteRetryMax, nextSnapshotDeleteInterval(40*time.Minute))
+	assert.Equal(t, snapshotDeleteRetryMax, nextSnapshotDeleteInterval(snapshotDeleteRetryMax))
+}
 
-	// Test 1: No snap found
-	cloneSplitTimers := &sync.Map{}
-	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+func TestNextSplitWait(t *testing.T) {
+	short := 10 * time.Second
+	long := time.Duration(DefaultCloneSplitDelay) * time.Second
 
-	// Test 2: time difference is < 0
-	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(10*time.Millisecond))
-	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
-
-	time.Sleep(50 * time.Millisecond)
-	// Test 3: time difference < config.CloneSplitDelay.
-	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
-
-	// Test 4: SplitVolumeFromBusySnapshot returning error
-	// Add the time for first delete in past so that SplitVolume is called.
-	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
-	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
-		snapConfig.VolumeInternalName).Return(api.VolumeNameList{},
-		errors.New("error returned by VolumeListBySnapshotParent"))
-	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+	assert.Equal(t, time.Hour, nextSplitWait(short, true))
+	assert.Equal(t, time.Hour, nextSplitWait(long, true))
+	assert.Equal(t, short, nextSplitWait(short, false))
+	assert.Equal(t, long, nextSplitWait(long, false))
 }
 
 func TestGetVolumeExternalCommon(t *testing.T) {
@@ -12760,11 +12776,11 @@ func TestSplitASAVolumeFromBusySnapshot(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "Positive - Test2 - There are no child volumes to be returned",
+			name: "Negative - Test2 - There are no child volumes to be returned",
 			setupMock: func() {
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{}, nil).Times(1)
 			},
-			expectedError: false,
+			expectedError: true,
 		},
 		{
 			name: "Negative - Test1 - Error while fetching childVolumes of a snapshot",
@@ -12784,89 +12800,6 @@ func TestSplitASAVolumeFromBusySnapshot(t *testing.T) {
 			} else {
 				assert.NoError(t, err, "Shouldn't be any error")
 			}
-		})
-	}
-}
-
-func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
-	type testCase struct {
-		name          string
-		setupMock     func()
-		expectedError bool
-		verify        func(*testing.T)
-	}
-
-	mockAPI, driver := newMockOntapASADriver(t)
-	volumeName := "testVolInternalName"
-	snapConfig := storage.SnapshotConfig{
-		Version:            "1",
-		Name:               "testSnap",
-		InternalName:       "testSnap",
-		VolumeName:         "testVol",
-		VolumeInternalName: volumeName,
-	}
-	funcCloneSplitStart := mockAPI.StorageUnitCloneSplitStart
-	var cloneSplitTimer *sync.Map
-
-	tests := []testCase{
-		{
-			name: "Positive - First Delete",
-			setupMock: func() {
-				cloneSplitTimer = &sync.Map{}
-			},
-			expectedError: false,
-			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer.Load(snapConfig.ID())
-				assert.True(t, ok, "A timer should be present")
-			},
-		},
-		{
-			name: "Positive - Not a first delete, and timer hasn't moved past cloneSplitDelay",
-			setupMock: func() {
-				cloneSplitTimer = &sync.Map{}
-				cloneSplitTimer.Store(snapConfig.ID(), time.Now())
-			},
-			expectedError: false,
-			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer.Load(snapConfig.ID())
-				assert.True(t, ok, "A timer should be present")
-			},
-		},
-		{
-			name: "Positive - Not a first delete, and timer has moved past cloneSplitDelay",
-			setupMock: func() {
-				cloneSplitTimer = &sync.Map{}
-				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add((-1*DefaultCloneSplitDelay-1)*time.Second))
-				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil).Times(1)
-			},
-			expectedError: false,
-			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer.Load(snapConfig.ID())
-				assert.True(t, ok, "A timer should be present")
-			},
-		},
-		{
-			name: "Negative - Error is returned when SplitASAVolumeFromBusySnapshot call is made",
-			setupMock: func() {
-				cloneSplitTimer = &sync.Map{}
-				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add((-1*DefaultCloneSplitDelay-1)*time.Second))
-				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(errors.New("error")).Times(1)
-			},
-			expectedError: true,
-			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer.Load(snapConfig.ID())
-				assert.True(t, ok, "A timer should be present")
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.setupMock()
-			SplitASAVolumeFromBusySnapshotWithDelay(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, cloneSplitTimer)
-			tt.verify(t)
 		})
 	}
 }

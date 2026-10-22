@@ -3302,15 +3302,15 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 
 	snapBusyError := api.SnapshotBusyError("Snapshot is in use")
 	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, snapshotConfig.InternalName,
-		snapshotConfig.VolumeInternalName).Return(snapBusyError)
+		snapshotConfig.VolumeInternalName).Return(snapBusyError).Times(1)
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapshotConfig.InternalName,
 		snapshotConfig.VolumeInternalName).Return(nil, nil)
 
-	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers.Store(snapshotConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
+	driver.cloneSplitTimers = &sync.Map{}
+	driver.cloneSplitTimers.Store(snapshotConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(-time.Second)})
 	err := driver.DeleteSnapshot(ctx, snapshotConfig, new(getVolumeConfig()))
 
-	assert.Error(t, err, "Snapshot destroyed, expected an error")
+	assert.True(t, errors.IsSnapshotBusyError(err), "expected a deferred snapshot-busy error")
 }
 
 func TestOntapSanVolumeSnapshotGet(t *testing.T) {

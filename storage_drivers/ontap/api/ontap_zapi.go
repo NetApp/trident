@@ -35,7 +35,8 @@ const (
 	MaxSANLabelLength = 254
 
 	// errors
-	ESNAPSHOTBUSY_REST = "1638555"
+	ESNAPSHOTBUSY_REST               = "1638555"
+	ESNAPSHOTREFERENCEDBYMIRROR_REST = "1638483"
 
 	SVMSubtypeSyncSource      = "sync_source"
 	SVMSubtypeSyncDestination = "sync_destination"

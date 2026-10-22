@@ -66,6 +66,12 @@ func getAllErrorTestCases() []errorTestCase {
 			errorTypeName: "*api.snapshotBusyError",
 		},
 		{
+			name:          "SnapshotReferencedByMirrorError",
+			createFunc:    SnapshotReferencedByMirrorError,
+			checkFunc:     IsSnapshotReferencedByMirrorError,
+			errorTypeName: "*api.snapshotReferencedByMirrorError",
+		},
+		{
 			name:          "ApiError",
 			createFunc:    ApiError,
 			checkFunc:     IsApiError,

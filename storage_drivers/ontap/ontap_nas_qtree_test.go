@@ -6298,11 +6298,32 @@ func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
 
 	driver.cloneSplitTimers = &sync.Map{}
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(-time.Second)})
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.NotNil(t, result, "result is nil")
 	assert.Error(t, result, "expecting an error")
+}
+
+func TestDeleteSnapshot_DeferredExistenceCheckUsesFlexvol(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{InternalID: volInternalID}
+	snapConfig := &storage.SnapshotConfig{
+		Name:               "snap1",
+		VolumeName:         "pvc",
+		InternalName:       "snap1",
+		VolumeInternalName: "trident_pvc_92c02355",
+	}
+
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(time.Hour)})
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", flexvol).
+		Return(errors.NotFoundError("snapshot snap1 not found"))
+
+	err := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NoError(t, err)
+	_, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	assert.False(t, ok)
 }
 
 func TestDeleteSnapshot_FailureWrongVolumeID(t *testing.T) {

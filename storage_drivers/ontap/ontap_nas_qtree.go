@@ -1549,19 +1549,14 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 		return errors.WrapWithNotFoundError(err, "error while getting flexvol")
 	}
 
-	if err = d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, flexvol); err != nil {
-		if api.IsSnapshotBusyError(err) {
-			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, &d.Config, d.API,
-				d.API.VolumeCloneSplitStart, d.cloneSplitTimers)
-		}
-
-		// We must return the error, even if we started a split, so the snapshot delete is retried.
+	snapshotDelete := func(ctx context.Context, snapshotName, _ string) error {
+		return d.API.VolumeSnapshotDelete(ctx, snapshotName, flexvol)
+	}
+	if err = deleteVolumeSnapshot(
+		ctx, snapConfig, &d.Config, d.API, snapshotDelete, d.API.VolumeCloneSplitStart, d.cloneSplitTimers,
+	); err != nil {
 		return err
 	}
-
-	// Clean up any split timer.
-	d.cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

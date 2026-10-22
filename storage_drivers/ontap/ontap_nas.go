@@ -1462,19 +1462,11 @@ func (d *NASStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	if err := d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
-		if api.IsSnapshotBusyError(err) {
-			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, &d.Config, d.API,
-				d.API.VolumeCloneSplitStart, d.cloneSplitTimers)
-		}
-
-		// We must return the error, even if we started a split, so the snapshot delete is retried.
+	if err := deleteVolumeSnapshot(
+		ctx, snapConfig, &d.Config, d.API, d.API.VolumeSnapshotDelete, d.API.VolumeCloneSplitStart, d.cloneSplitTimers,
+	); err != nil {
 		return err
 	}
-
-	// Clean up any split timer
-	d.cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

@@ -420,7 +420,8 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 
 	var code codes.Code
 	switch {
-	case errors.IsNotReadyError(err):
+	case errors.IsNotReadyError(err),
+		errors.IsSnapshotBusyError(err):
 		code = codes.Unavailable
 	case errors.IsBootstrapError(err),
 		errors.IsPreconditionError(err),

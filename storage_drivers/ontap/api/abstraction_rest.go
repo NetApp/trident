@@ -100,6 +100,10 @@ func (e RestError) IsSnapshotBusy() bool {
 	return e.code == ESNAPSHOTBUSY_REST
 }
 
+func (e RestError) IsSnapshotReferencedByMirror() bool {
+	return e.code == ESNAPSHOTREFERENCEDBYMIRROR_REST
+}
+
 func (e RestError) State() string {
 	return e.state
 }
@@ -784,7 +788,7 @@ func (d OntapAPIREST) FlexgroupModify(ctx context.Context, volume Volume) error 
 
 func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error {
 	if err := d.api.FlexgroupCloneSplitStart(ctx, cloneName); err != nil {
-		return fmt.Errorf("error splitting clone; %v", err)
+		return fmt.Errorf("error splitting clone: %w", err)
 	}
 	return nil
 }
@@ -1917,7 +1921,7 @@ func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name stri
 
 func (d OntapAPIREST) VolumeCloneSplitStart(ctx context.Context, cloneName string) error {
 	if err := d.api.VolumeCloneSplitStart(ctx, cloneName); err != nil {
-		return fmt.Errorf("error splitting clone; %v", err)
+		return fmt.Errorf("error splitting clone: %w", err)
 	}
 	return nil
 }
@@ -1946,10 +1950,13 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 	// GET the snapshot by name
 	snapshot, err := d.api.SnapshotGetByName(ctx, sourceVolumeUUID, snapshotName)
 	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return err
+		}
 		return fmt.Errorf("error checking for snapshot; %v", err)
 	}
 	if snapshot == nil {
-		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
+		return errors.NotFoundError("snapshot %s not found for volume %s", snapshotName, sourceVolume)
 	}
 	if snapshot.UUID == nil {
 		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
@@ -1976,6 +1983,12 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 				Logc(ctx).Debug("Snapshot was busy, going to split it")
 				return SnapshotBusyError(fmt.Sprintf("snapshot %s backing volume %s is busy", snapshotName,
 					sourceVolume))
+			}
+			if restErr.IsSnapshotReferencedByMirror() {
+				return SnapshotReferencedByMirrorError(
+					fmt.Sprintf("snapshot %s backing volume %s is referenced by a SnapMirror relationship",
+						snapshotName, sourceVolume),
+				)
 			}
 		}
 		return snapshotDeleteErr
@@ -4112,7 +4125,10 @@ func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
 		}
 		return fmt.Errorf("error checking for snapshot; %w", err)
 	}
-	if snapshot == nil || snapshot.UUID == nil {
+	if snapshot == nil {
+		return errors.NotFoundError("snapshot %s not found for storage unit %s", snapshotName, suName)
+	}
+	if snapshot.UUID == nil {
 		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
 	}
 
@@ -4140,6 +4156,12 @@ func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
 				Logc(ctx).Debugf("Could not delete the snapshot %s, snapshot is busy.", snapshotName)
 				return SnapshotBusyError(fmt.Sprintf("snapshot %s backing the storage unit %s is busy", snapshotName,
 					suName))
+			}
+			if restErr.IsSnapshotReferencedByMirror() {
+				return SnapshotReferencedByMirrorError(
+					fmt.Sprintf("snapshot %s backing storage unit %s is referenced by a SnapMirror relationship",
+						snapshotName, suName),
+				)
 			}
 		}
 		return snapshotDeleteErr

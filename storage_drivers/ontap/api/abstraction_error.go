@@ -148,6 +148,28 @@ func IsSnapshotBusyError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// snapshotReferencedByMirrorError
+// ///////////////////////////////////////////////////////////////////////////
+
+type snapshotReferencedByMirrorError struct {
+	message string
+}
+
+func (e *snapshotReferencedByMirrorError) Error() string { return e.message }
+
+func SnapshotReferencedByMirrorError(message string) error {
+	return &snapshotReferencedByMirrorError{message}
+}
+
+func IsSnapshotReferencedByMirrorError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*snapshotReferencedByMirrorError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // ApiError
 // ///////////////////////////////////////////////////////////////////////////
 

@@ -15,6 +15,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -2738,11 +2739,255 @@ func TestOntapNasStorageDriverVolumeDeleteSnapshot_Failure(t *testing.T) {
 	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "vol1").Return(nil)
 
 	driver.cloneSplitTimers = &sync.Map{}
-	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(-time.Second)})
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_MissingCloneWaitsForDeleteGate(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").
+		Return(api.SnapshotBusyError("snapshot is busy")).Times(1)
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", "vol1").
+		Return(api.VolumeNameList{"clone1"}, nil)
+	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "clone1").
+		Return(errors.NotFoundError("could not find volume with name clone1"))
+
+	driver.cloneSplitTimers = &sync.Map{}
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(-time.Second)})
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(result))
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_SnapMirrorRetryDeferred(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	snapMirrorErr := api.SnapshotReferencedByMirrorError("snapshot is referenced by SnapMirror")
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(snapMirrorErr).Times(1)
+
+	firstErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	secondErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(firstErr))
+	assert.True(t, errors.IsSnapshotBusyError(secondErr))
+	assert.Contains(t, firstErr.Error(), "snapshot is referenced by SnapMirror")
+	assert.Contains(t, secondErr.Error(), "snapshot is referenced by SnapMirror")
+
+	value, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred := value.(snapshotDeleteHold)
+	deferred.deleteAfter = time.Now().Add(-time.Second)
+	driver.cloneSplitTimers.Store(snapConfig.ID(), deferred)
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(snapMirrorErr)
+
+	thirdErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	assert.True(t, errors.IsSnapshotBusyError(thirdErr))
+	assert.Contains(t, thirdErr.Error(), "snapshot is referenced by SnapMirror")
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_BusyRetryIsThrottled(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").
+		Return(api.SnapshotBusyError("snapshot is busy")).Times(1)
+
+	firstErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	secondErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(firstErr))
+	assert.True(t, errors.IsSnapshotBusyError(secondErr))
+	stored, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred, isDeferred := stored.(snapshotDeleteHold)
+	require.True(t, isDeferred)
+	assert.True(t, deferred.deleteAfter.After(time.Now()))
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_DeferredRetryDeletesFreedSnapshot(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{
+		splitAfter:  time.Now().Add(time.Hour),
+		deleteAfter: time.Now().Add(-time.Second),
+		cause:       api.SnapshotBusyError("snapshot is busy"),
+	})
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(nil)
+
+	err := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.NoError(t, err)
+	_, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	assert.False(t, ok)
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_DeferredDeleteEndsWhenSnapshotIsGone(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	driver.cloneSplitTimers = &sync.Map{}
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(time.Hour)})
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").
+		Return(errors.NotFoundError("snapshot snap1 not found"))
+
+	err := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.NoError(t, err)
+	_, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	assert.False(t, ok, "a missing snapshot clears the retry deadline")
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_ShortCloneSplitDelayRetriesDelete(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	driver.Config.CloneSplitDelay = "10"
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").
+		Return(api.SnapshotBusyError("snapshot is busy"))
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", "vol1").
+		Return(api.VolumeNameList{"clone1"}, nil)
+	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "clone1").Return(nil)
+
+	driver.cloneSplitTimers = &sync.Map{}
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{splitAfter: time.Now().Add(-time.Second)})
+
+	firstErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	assert.True(t, errors.IsSnapshotBusyError(firstErr))
+
+	stored, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	assert.True(t, ok)
+	deferred, isDeferred := stored.(snapshotDeleteHold)
+	assert.True(t, isDeferred)
+	assert.InDelta(t, time.Hour.Seconds(), time.Until(deferred.splitAfter).Seconds(), 5,
+		"a successful split waits an hour before the next one")
+	assert.True(t, deferred.deleteAfter.IsZero(), "a short cloneSplitDelay must not arm the delete gate")
+	assert.Zero(t, deferred.deleteBackoff)
+
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{deleteAfter: time.Now().Add(-time.Second)})
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(nil)
+
+	secondErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	assert.NoError(t, secondErr)
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_ShortCloneSplitDelaySkipsDeleteGate(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	driver.Config.CloneSplitDelay = "10"
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").
+		Return(api.SnapshotBusyError("snapshot is busy")).Times(2)
+
+	firstErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+	secondErr := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(firstErr))
+	assert.True(t, errors.IsSnapshotBusyError(secondErr))
+	stored, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred, isDeferred := stored.(snapshotDeleteHold)
+	require.True(t, isDeferred)
+	assert.True(t, deferred.deleteAfter.IsZero())
+	assert.Zero(t, deferred.deleteBackoff)
+	assert.Less(t, time.Until(deferred.splitAfter), 30*time.Second)
+	assert.Positive(t, time.Until(deferred.splitAfter))
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_ClosedGateSplitsWithoutDelete(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	driver.Config.CloneSplitDelay = "10"
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{
+		splitAfter:    time.Now().Add(-time.Second),
+		deleteAfter:   time.Now().Add(snapshotDeleteRetryInitial),
+		deleteBackoff: snapshotDeleteRetryInitial,
+		cause:         api.SnapshotBusyError("snapshot is busy"),
+	})
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", "vol1").
+		Return(api.VolumeNameList{"clone1"}, nil)
+	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "clone1").Return(nil)
+
+	err := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(err))
+	stored, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred := stored.(snapshotDeleteHold)
+	assert.Equal(t, snapshotDeleteRetryInitial, deferred.deleteBackoff)
+	assert.Greater(t, time.Until(deferred.deleteAfter), 4*time.Minute)
+	assert.InDelta(t, time.Hour.Seconds(), time.Until(deferred.splitAfter).Seconds(), 5,
+		"a successful split waits an hour before the next one")
+}
+
+func TestOntapNasStorageDriverVolumeDeleteSnapshot_DeleteGateBacksOff(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	driver.Config.CloneSplitDelay = "10"
+	snapMirrorErr := api.SnapshotReferencedByMirrorError("snapshot is referenced by SnapMirror")
+	driver.cloneSplitTimers.Store(snapConfig.ID(), snapshotDeleteHold{
+		splitAfter:    time.Now().Add(-time.Second),
+		deleteAfter:   time.Now().Add(-time.Second),
+		deleteBackoff: snapshotDeleteRetryInitial,
+		cause:         snapMirrorErr,
+	})
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(snapMirrorErr)
+
+	err := driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(err))
+	stored, ok := driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred := stored.(snapshotDeleteHold)
+	assert.Equal(t, 10*time.Minute, deferred.deleteBackoff)
+	assert.InDelta(t, (10 * time.Minute).Seconds(), time.Until(deferred.deleteAfter).Seconds(), 5)
+
+	deferred.splitAfter = time.Now().Add(-time.Second)
+	deferred.deleteAfter = time.Now().Add(-time.Second)
+	deferred.deleteBackoff = 40 * time.Minute
+	driver.cloneSplitTimers.Store(snapConfig.ID(), deferred)
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", "vol1").Return(snapMirrorErr)
+
+	err = driver.DeleteSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
+
+	assert.True(t, errors.IsSnapshotBusyError(err))
+	stored, ok = driver.cloneSplitTimers.Load(snapConfig.ID())
+	require.True(t, ok)
+	deferred = stored.(snapshotDeleteHold)
+	assert.Equal(t, snapshotDeleteRetryMax, deferred.deleteBackoff)
+	assert.InDelta(t, snapshotDeleteRetryMax.Seconds(), time.Until(deferred.deleteAfter).Seconds(), 5)
 }
 
 func TestOntapNasStorageDriverVolumeGet(t *testing.T) {

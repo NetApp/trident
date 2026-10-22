@@ -1479,10 +1479,10 @@ func (c *RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNa
 		return err
 	}
 	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
+		return errors.NotFoundError("could not find volume with name %v", volumeName)
 	}
 	if volume.UUID == nil {
-		return fmt.Errorf("could not find volume uuid with name %v", volumeName)
+		return errors.NotFoundError("could not find volume uuid with name %v", volumeName)
 	}
 
 	uuid := *volume.UUID
