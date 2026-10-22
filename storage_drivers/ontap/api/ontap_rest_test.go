@@ -2492,6 +2492,92 @@ func mockSnapshotInternalError(hasNextLink bool, w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(volumeResponse)
 }
 
+func TestOntapREST_ConsistencyGroupGet(t *testing.T) {
+	cgName := "cg-snapshot-1234"
+	cgRecord := &models.ConsistencyGroupResponseInlineRecordsInlineArrayItem{Name: new(cgName), UUID: new("cg-uuid")}
+
+	tests := []struct {
+		name            string
+		response        models.ConsistencyGroupResponse
+		isErrorExpected bool
+	}{
+		{
+			name: "OneRecord",
+			response: models.ConsistencyGroupResponse{
+				NumRecords:                            new(int64(1)),
+				ConsistencyGroupResponseInlineRecords: []*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem{cgRecord},
+			},
+		},
+		{
+			name:            "NumRecordsZero",
+			response:        models.ConsistencyGroupResponse{NumRecords: new(int64(0))},
+			isErrorExpected: true,
+		},
+		{
+			name:            "NumRecordsNil",
+			response:        models.ConsistencyGroupResponse{},
+			isErrorExpected: true,
+		},
+		{
+			name: "NilRecord",
+			response: models.ConsistencyGroupResponse{
+				NumRecords:                            new(int64(1)),
+				ConsistencyGroupResponseInlineRecords: []*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem{nil},
+			},
+			isErrorExpected: true,
+		},
+		{
+			name: "MultipleRecords",
+			response: models.ConsistencyGroupResponse{
+				NumRecords:                            new(int64(2)),
+				ConsistencyGroupResponseInlineRecords: []*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem{cgRecord, cgRecord},
+			},
+			isErrorExpected: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				setHTTPResponseHeader(w, http.StatusOK)
+				json.NewEncoder(w).Encode(test.response)
+			}))
+			defer server.Close()
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			require.NotNil(t, rs)
+
+			cg, err := rs.ConsistencyGroupGet(ctx, cgName)
+			if !test.isErrorExpected {
+				require.NoError(t, err)
+				assert.Equal(t, "cg-uuid", *cg.UUID)
+				return
+			}
+			assert.Error(t, err)
+			assert.Nil(t, cg)
+		})
+	}
+}
+
+func TestOntapREST_ConsistencyGroupNotFound(t *testing.T) {
+	cgName := "cg-snapshot-1234"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("unexpected %s %s after an empty consistency group lookup", r.Method, r.URL.Path)
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(models.ConsistencyGroupResponse{NumRecords: new(int64(0))})
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	require.NotNil(t, rs)
+
+	var err error
+	assert.NotPanics(t, func() { err = rs.ConsistencyGroupSnapshotAndWait(ctx, cgName, "snapshot-1234") })
+	assert.ErrorContains(t, err, "not found")
+
+	err = rs.ConsistencyGroupDelete(ctx, cgName)
+	assert.ErrorContains(t, err, "not found")
+}
+
 func TestOntapREST_SnapshotList(t *testing.T) {
 	tests := []struct {
 		name            string
