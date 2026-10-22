@@ -102,6 +102,79 @@ func TestGetIPAddressesExceptingDummyInterfaces_DummyType(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestGetIPAddressesExceptingDummyInterfaces_DumpInterrupted(t *testing.T) {
+	link := &netlink.Device{LinkAttrs: netlink.LinkAttrs{Name: "ens192"}}
+	addrs := []netlink.Addr{{IPNet: &net.IPNet{IP: net.IPv4(10, 58, 43, 100), Mask: net.CIDRMask(24, 32)}}}
+
+	defer func(originalNetlink NetLink) {
+		netLink = originalNetlink
+	}(netLink)
+
+	t.Run("interfaces returned are used", func(t *testing.T) {
+		mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
+		mockNetLink.EXPECT().LinkList().Return([]netlink.Link{link}, netlink.ErrDumpInterrupted)
+		mockNetLink.EXPECT().AddrList(link, netlink.FAMILY_ALL).Return(addrs, nil)
+		netLink = mockNetLink
+
+		result, err := NewDetailed(nil, afero.NewMemMapFs()).getIPAddressesExceptingDummyInterfaces(context.TODO())
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Equal(t, "10.58.43.100/24", result[0].String())
+	})
+
+	t.Run("no interfaces returned is not an error", func(t *testing.T) {
+		mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
+		mockNetLink.EXPECT().LinkList().Return(nil, netlink.ErrDumpInterrupted)
+		netLink = mockNetLink
+
+		result, err := NewDetailed(nil, afero.NewMemMapFs()).getIPAddressesExceptingDummyInterfaces(context.TODO())
+
+		assert.NoError(t, err)
+		assert.Empty(t, result)
+	})
+}
+
+func TestGetIPAddressesExceptingNondefaultRoutes_DumpInterrupted(t *testing.T) {
+	link := &netlink.Device{LinkAttrs: netlink.LinkAttrs{Name: "ens192", Index: 2}}
+	addrs := []netlink.Addr{{IPNet: &net.IPNet{IP: net.IPv4(10, 58, 43, 100), Mask: net.CIDRMask(24, 32)}}}
+
+	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
+	gomock.InOrder(
+		mockNetLink.EXPECT().RouteListFiltered(netlink.FAMILY_ALL, gomock.Any(), uint64(netlink.RT_FILTER_DST)).
+			Return([]netlink.Route{{LinkIndex: 2}}, netlink.ErrDumpInterrupted),
+		mockNetLink.EXPECT().RouteListFiltered(netlink.FAMILY_ALL, gomock.Any(), uint64(netlink.RT_FILTER_DST)).
+			Return(nil, nil),
+	)
+	mockNetLink.EXPECT().LinkByIndex(2).Return(link, nil)
+	mockNetLink.EXPECT().AddrList(link, netlink.FAMILY_ALL).Return(addrs, nil)
+	defer func(originalNetlink NetLink) {
+		netLink = originalNetlink
+	}(netLink)
+	netLink = mockNetLink
+
+	result, err := NewDetailed(nil, afero.NewMemMapFs()).getIPAddressesExceptingNondefaultRoutes(context.TODO())
+
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "10.58.43.100/24", result[0].String())
+}
+
+func TestGetIPAddressesExceptingNondefaultRoutes_Error(t *testing.T) {
+	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
+	mockNetLink.EXPECT().RouteListFiltered(netlink.FAMILY_ALL, gomock.Any(), uint64(netlink.RT_FILTER_DST)).
+		Return(nil, errors.New("error"))
+	defer func(originalNetlink NetLink) {
+		netLink = originalNetlink
+	}(netLink)
+	netLink = mockNetLink
+
+	result, err := NewDetailed(nil, afero.NewMemMapFs()).getIPAddressesExceptingNondefaultRoutes(context.TODO())
+
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
 func TestGetIPAddressesExceptingNondefaultRoutes(t *testing.T) {
 	osUtils := New()
 	addrs, err := osUtils.getIPAddressesExceptingNondefaultRoutes(context.TODO())
@@ -244,4 +317,27 @@ func TestGetUsableAddressesFromLinks(t *testing.T) {
 	addresses := osUtils.getUsableAddressesFromLinks(context.TODO(), mockLinks)
 	assert.Equal(t, 1, len(addresses))
 	assert.Equal(t, "10.10.10.10/24", addresses[0].String())
+}
+
+func TestGetUsableAddressesFromLinks_DumpInterrupted(t *testing.T) {
+	ens192 := &netlink.Device{LinkAttrs: netlink.LinkAttrs{Name: "ens192", Index: 2}}
+	ens224 := &netlink.Device{LinkAttrs: netlink.LinkAttrs{Name: "ens224", Index: 3}}
+
+	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
+	mockNetLink.EXPECT().AddrList(ens192, netlink.FAMILY_ALL).Return([]netlink.Addr{
+		{IPNet: &net.IPNet{IP: net.IPv4(10, 58, 43, 100), Mask: net.CIDRMask(24, 32)}},
+	}, netlink.ErrDumpInterrupted)
+	mockNetLink.EXPECT().AddrList(ens224, netlink.FAMILY_ALL).Return([]netlink.Addr{
+		{IPNet: &net.IPNet{IP: net.IPv4(10, 58, 79, 100), Mask: net.CIDRMask(24, 32)}},
+	}, errors.New("error"))
+	defer func(originalNetlink NetLink) {
+		netLink = originalNetlink
+	}(netLink)
+	netLink = mockNetLink
+
+	osUtils := NewDetailed(exec.NewCommand(), afero.NewMemMapFs())
+	addresses := osUtils.getUsableAddressesFromLinks(context.TODO(), []netlink.Link{ens192, ens224})
+
+	assert.Len(t, addresses, 1)
+	assert.Equal(t, "10.58.43.100/24", addresses[0].String())
 }

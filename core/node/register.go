@@ -6,6 +6,7 @@ package node
 
 import (
 	"context"
+	"runtime"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -26,7 +27,19 @@ var (
 	registerBackoffMultiplier          = 2.0
 	registerBackoffMaxInterval         = 120 * time.Second
 	registerBackoffRandomizationFactor = 0.1
+
+	ipDiscoveryAttempts      = defaultIPDiscoveryAttempts()
+	ipDiscoveryRetryInterval = 2 * time.Second
 )
+
+// defaultIPDiscoveryAttempts returns 1 (no retries) where IP discovery is not implemented and always
+// fails, such as Windows.
+func defaultIPDiscoveryAttempts() int {
+	if runtime.GOOS == "linux" {
+		return 3
+	}
+	return 1
+}
 
 // ChapClient is the subset of the legacy Trident controller REST surface the node core still
 // needs directly: CHAP credential lookup has not been migrated onto the tridentcontroller.Client
@@ -89,7 +102,7 @@ func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
 		Logc(ctx).WithField("IQN", iscsiWWN).Info("Discovered iSCSI initiator name.")
 	}
 
-	ips, err := c.osutils.GetIPAddresses(ctx)
+	ips, err := c.discoverIPAddresses(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not get IP addresses.")
 	} else if len(ips) == 0 {
@@ -167,6 +180,29 @@ func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
 		// state will be used instead. Otherwise, node state defaults to clean.
 		PublicationState: models.NodeClean,
 	}
+}
+
+// discoverIPAddresses retries IP discovery a bounded number of times while it fails or finds no
+// usable addresses, which can happen while the host network is still being configured at boot.
+// The node's export policy rules are built from these addresses, and they are only discovered at
+// registration. After the last attempt, the result is returned as-is so registration never blocks
+// on a host that genuinely has no usable addresses.
+func (c *Core) discoverIPAddresses(ctx context.Context) ([]string, error) {
+	ips, err := c.osutils.GetIPAddresses(ctx)
+	for attempt := 1; attempt < ipDiscoveryAttempts && (err != nil || len(ips) == 0); attempt++ {
+		Logc(ctx).WithFields(LogFields{
+			"attempt": attempt,
+			"error":   err,
+		}).Warn("No usable IP addresses discovered, will retry.")
+
+		select {
+		case <-ctx.Done():
+			return ips, err
+		case <-time.After(ipDiscoveryRetryInterval):
+		}
+		ips, err = c.osutils.GetIPAddresses(ctx)
+	}
+	return ips, err
 }
 
 // register builds this node's identity and registers it with the Trident controller, retrying

@@ -112,7 +112,7 @@ func newTestMocks(t *testing.T) *testMocks {
 // don't fail on host discovery calls unrelated to the scenario under test.
 func expectNodeInfoDiscovery(mocks *testMocks) {
 	mocks.OsUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil).AnyTimes()
-	mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
+	mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"192.0.2.10"}, nil).AnyTimes()
 	mocks.OsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
 	mocks.ISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
