@@ -2470,7 +2470,7 @@ func (c *RestClient) sendPassThroughCliCommand(ctx context.Context, request *htt
 func (c *RestClient) ConsistencyGroupCreateAndWait(ctx context.Context, cgName string, flexVols []string) error {
 	CGCreateResult, err := c.ConsistencyGroupCreate(ctx, cgName, flexVols)
 	if err != nil {
-		return fmt.Errorf("could not create consistency group; %v", err)
+		return fmt.Errorf("could not create consistency group; %w", err)
 	}
 	if CGCreateResult == nil {
 		return fmt.Errorf("could not create consistency group: %v", "unexpected result")
@@ -2526,14 +2526,18 @@ func (c *RestClient) ConsistencyGroupGet(ctx context.Context, cgName string) (*m
 		return nil, err
 	}
 	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
-		return nil, err
+		return nil, fmt.Errorf("consistency group %q not found", cgName)
 	}
-	if *result.Payload.NumRecords == 1 && result.Payload.ConsistencyGroupResponseInlineRecords != nil {
-		return result.Payload.ConsistencyGroupResponseInlineRecords[0], nil
+	if *result.Payload.NumRecords == 1 && len(result.Payload.ConsistencyGroupResponseInlineRecords) == 1 {
+		record := result.Payload.ConsistencyGroupResponseInlineRecords[0]
+		if record == nil {
+			return nil, fmt.Errorf("consistency group %q not found", cgName)
+		}
+		return record, nil
 	}
 
 	return nil, fmt.Errorf("could not find unique consistency group with name '%v'; found %d matching groups",
-		cgName, result.Payload.NumRecords)
+		cgName, *result.Payload.NumRecords)
 }
 
 // ConsistencyGroupDelete deletes the consistency group
@@ -2574,7 +2578,7 @@ func (c *RestClient) ConsistencyGroupDelete(ctx context.Context, cgName string) 
 func (c *RestClient) ConsistencyGroupSnapshotAndWait(ctx context.Context, cgName, snapName string) error {
 	CGSnapshotCreated, CGSnapshotAccepted, err := c.ConsistencyGroupSnapshot(ctx, cgName, snapName)
 	if err != nil {
-		return fmt.Errorf("could not create consistency group snapshot; %v", err)
+		return fmt.Errorf("could not create consistency group snapshot; %w", err)
 	}
 	if CGSnapshotCreated != nil {
 		return nil
@@ -2599,8 +2603,8 @@ func (c *RestClient) ConsistencyGroupSnapshot(ctx context.Context, cgName, snapN
 	if err != nil {
 		return nil, nil, err
 	}
-	if cg.UUID == nil {
-		return nil, nil, fmt.Errorf("consistency group UUID is empty")
+	if cg == nil || cg.UUID == nil {
+		return nil, nil, fmt.Errorf("consistency group %q not found", cgName)
 	}
 	params.SetConsistencyGroupUUID(*cg.UUID)
 

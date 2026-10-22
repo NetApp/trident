@@ -7,6 +7,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -4642,6 +4643,100 @@ func TestConsistencyGroupSnapshot(t *testing.T) {
 	// return createErr
 	assert.Error(t, err)
 	assert.Equal(t, createErr, err)
+
+	// case 5: CG already exists from an earlier attempt. Snapshot it instead of deleting it first.
+	cgExistsErr := fmt.Errorf("[POST /application/consistency-groups][409] {\"error\":{\"code\":\"%s\"}}", api.CONSISTENCY_GROUP_EXISTS_ERROR)
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(cgExistsErr).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.NoError(t, err)
+
+	expectSnapshotLookup := func(found bool) {
+		rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).
+			Return(&models.Volume{Name: new("vol1"), UUID: new("vol1-uuid")}, nil).Times(1)
+		payload := &models.SnapshotResponse{NumRecords: new(int64(0))}
+		if found {
+			payload = &models.SnapshotResponse{
+				NumRecords:                    new(int64(1)),
+				SnapshotResponseInlineRecords: []*models.Snapshot{{Name: new(snapshotName), CreateTime: &strfmt.DateTime{}}},
+			}
+		}
+		rsi.EXPECT().SnapshotListByName(ctx, "vol1-uuid", snapshotName).
+			Return(&storage.SnapshotCollectionGetOK{Payload: payload}, nil).Times(1)
+	}
+
+	// case 6: snapshot name is already in use. Treat that as success and delete the temporary CG.
+	snapExistsErr := fmt.Errorf("could not create consistency group snapshot; API State: failure, Message: already in use, Code: %s", api.CONSISTENCY_GROUP_SNAP_EXISTS_ERROR)
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(snapExistsErr).Times(1)
+	expectSnapshotLookup(true)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.NoError(t, err)
+
+	// case 7: same code, but the snapshot does not exist. ONTAP uses the code for other failures too.
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(snapExistsErr).Times(1)
+	expectSnapshotLookup(false)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.Equal(t, snapExistsErr, err)
+
+	// case 8: a panic while snapshotting still deletes the CG.
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).DoAndReturn(
+		func(context.Context, string, string) error { panic("snapshot panic") }).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	assert.Panics(t, func() { _ = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes) })
+}
+
+func TestConsistencyGroupSnapshot_CollidingCGName(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	snapshotName := fmt.Sprintf("snapshot-%s", uuid.New().String())
+	otherSnapshotName := snapshotName[:len(snapshotName)-1] + "x" // Truncates to the same CG name.
+	cgName := fmt.Sprintf("cg-%s", snapshotName)[:30]
+	volumes := []string{"vol1", "vol2"}
+
+	var mu sync.Mutex
+	var calls []string
+	record := func(call string) int {
+		mu.Lock()
+		defer mu.Unlock()
+		calls = append(calls, call)
+		return len(calls)
+	}
+	firstCreating, releaseFirst := make(chan struct{}), make(chan struct{})
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Times(2).DoAndReturn(
+		func(context.Context, string, []string) error {
+			if record("create") == 1 {
+				close(firstCreating)
+				<-releaseFirst
+			}
+			return nil
+		})
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, gomock.Any()).Times(2).DoAndReturn(
+		func(_ context.Context, _, name string) error {
+			record(name)
+			return nil
+		})
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Times(2).DoAndReturn(
+		func(context.Context, string) error {
+			record("delete")
+			return nil
+		})
+
+	firstErr, secondErr := make(chan error, 1), make(chan error, 1)
+	go func() { firstErr <- oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes) }()
+	<-firstCreating
+	go func() { secondErr <- oapi.ConsistencyGroupSnapshot(ctx, otherSnapshotName, volumes) }()
+	time.Sleep(50 * time.Millisecond) // Gives an unserialized second call time to reach ONTAP.
+	close(releaseFirst)
+
+	assert.NoError(t, <-firstErr)
+	assert.NoError(t, <-secondErr)
+	assert.Equal(t, []string{"create", snapshotName, "delete", "create", otherSnapshotName, "delete"}, calls)
 }
 
 func TestNVMeNamespaceSetComment(t *testing.T) {

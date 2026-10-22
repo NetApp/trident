@@ -5,6 +5,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -18,6 +19,7 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
@@ -4254,6 +4256,38 @@ func TerminalState(err error) *TerminalStateError {
 	}
 }
 
+// consistencyGroupSnapshotLocks serializes REST snapshot attempts that share a temporary CG name.
+// Different snapshot IDs can truncate to the same 30-character CG name.
+var consistencyGroupSnapshotLocks = locks.NewGCNamedMutex()
+
+func lockConsistencyGroupSnapshot(cgName string) func() {
+	consistencyGroupSnapshotLocks.Lock(cgName)
+	return func() {
+		consistencyGroupSnapshotLocks.Unlock(cgName)
+	}
+}
+
+// ontapRESTErrorCode returns an ONTAP REST error code from a RestError or from a client error string.
+// Consistency-group create failures arrive as go-swagger errors, not RestError values.
+func ontapRESTErrorCode(err error) string {
+	if err == nil {
+		return ""
+	}
+	var restErr RestError
+	if stderrors.As(err, &restErr) && restErr.Code() != "" {
+		return restErr.Code()
+	}
+	message := err.Error()
+	switch {
+	case strings.Contains(message, CONSISTENCY_GROUP_EXISTS_ERROR):
+		return CONSISTENCY_GROUP_EXISTS_ERROR
+	case strings.Contains(message, CONSISTENCY_GROUP_SNAP_EXISTS_ERROR):
+		return CONSISTENCY_GROUP_SNAP_EXISTS_ERROR
+	default:
+		return ""
+	}
+}
+
 // ConsistencyGroupSnapshot will create a consistency group (CG), take a snapshot of that CG and then delete the CG
 func (d OntapAPIREST) ConsistencyGroupSnapshot(ctx context.Context, snapshotName string, volumes []string) error {
 	var err error
@@ -4265,35 +4299,50 @@ func (d OntapAPIREST) ConsistencyGroupSnapshot(ctx context.Context, snapshotName
 		return fmt.Errorf("group snapshot must have at least one volume")
 	}
 
-	// max length of cg name is 30
-	cgName := fmt.Sprintf("cg-%s", snapshotName)[:30]
+	// ONTAP consistency group names are limited to 30 characters.
+	cgName := fmt.Sprintf("cg-%s", snapshotName)
+	if len(cgName) > 30 {
+		cgName = cgName[:30]
+	}
 
-	// Clean up consistency group if create or snapshot fails
+	unlock := lockConsistencyGroupSnapshot(cgName)
+	defer unlock()
+
+	// Attempt cleanup on errors or panic unwinding unless the temporary CG
+	// has already been successfully deleted.
+	cgDeleted := false
 	defer func() {
-		if err != nil {
+		if !cgDeleted {
 			err = d.api.ConsistencyGroupDelete(ctx, cgName)
 		}
 	}()
 
 	err = d.api.ConsistencyGroupCreateAndWait(ctx, cgName, volumes)
-	if err != nil {
+	if err != nil && ontapRESTErrorCode(err) != CONSISTENCY_GROUP_EXISTS_ERROR {
 		return err
 	}
-	err = d.api.ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName)
 	if err != nil {
-		if restErr, ok := err.(RestError); ok {
-			// Error code for existing snapshot exists
-			if restErr.code != CONSISTENCY_GROUP_SNAP_EXISTS_ERROR {
-				return err
-			}
-		} else {
+		Logc(ctx).WithField("consistencyGroup", cgName).Info("Consistency group already exists; continuing with snapshot.")
+		err = nil
+	}
+	err = d.api.ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName)
+	if err != nil && ontapRESTErrorCode(err) != CONSISTENCY_GROUP_SNAP_EXISTS_ERROR {
+		return err
+	}
+	if err != nil {
+		// This code also covers other CG snapshot failures. Verify the snapshot on one volume;
+		// ProcessGroupSnapshot validates all constituent snapshots.
+		if _, lookupErr := d.VolumeSnapshotInfo(ctx, snapshotName, volumes[0]); lookupErr != nil {
 			return err
 		}
+		Logc(ctx).WithField("snapshot", snapshotName).Info("Consistency group snapshot already exists; continuing with cleanup.")
+		err = nil
 	}
 	err = d.api.ConsistencyGroupDelete(ctx, cgName)
 	if err != nil {
 		return err
 	}
+	cgDeleted = true
 
 	return err
 }

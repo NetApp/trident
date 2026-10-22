@@ -338,8 +338,13 @@ func TestOntapAPIZAPI_ConsistencyGroupSnapshot_success(t *testing.T) {
 			ResultStatusAttr: "passed",
 		},
 	}
+	cgCommitResponse := &azgo.CgCommitResponse{
+		Result: azgo.CgCommitResponseResult{
+			ResultStatusAttr: "passed",
+		},
+	}
 	mock.EXPECT().ConsistencyGroupStart(snapshotName, volumes).Return(cgStartResponse, nil).Times(1)
-	mock.EXPECT().ConsistencyGroupCommit(*cgStartResponse.Result.CgIdPtr).Return(nil, nil).Times(1)
+	mock.EXPECT().ConsistencyGroupCommit(*cgStartResponse.Result.CgIdPtr).Return(cgCommitResponse, nil).Times(1)
 
 	err := oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
 	assert.NoError(t, err)
@@ -369,6 +374,94 @@ func TestOntapAPIZAPI_ConsistencyGroupSnapshot_fail(t *testing.T) {
 
 	err := oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
 	assert.Error(t, err)
+}
+
+func TestOntapAPIZAPI_ConsistencyGroupSnapshot_snapshotExists(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	snapshotName := "snapshot-12345"
+	volumes := []string{"vol1", "vol2"}
+
+	// A retry after an earlier attempt took the snapshot; cg-commit must not be called.
+	cgStartResponse := &azgo.CgStartResponse{
+		Result: azgo.CgStartResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.ESNAPSHOTEXISTS,
+			ResultReasonAttr: "Operation failed: Snapshot already exists.",
+		},
+	}
+	mock.EXPECT().ConsistencyGroupStart(snapshotName, volumes).Return(cgStartResponse, nil).Times(1)
+
+	err := oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.NoError(t, err)
+}
+
+func TestOntapAPIZAPI_ConsistencyGroupSnapshot_commitFails(t *testing.T) {
+	snapshotName := "snapshot-12345"
+	volumes := []string{"vol1", "vol2"}
+	cgStartResponse := &azgo.CgStartResponse{
+		Result: azgo.CgStartResponseResult{
+			CgIdPtr:          new(123),
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	tests := []struct {
+		name             string
+		cgStartResponse  *azgo.CgStartResponse
+		cgCommitResponse *azgo.CgCommitResponse
+		cgCommitErr      error
+	}{
+		{
+			name:            "CommitFailedResult",
+			cgStartResponse: cgStartResponse,
+			cgCommitResponse: &azgo.CgCommitResponse{
+				Result: azgo.CgCommitResponseResult{
+					ResultStatusAttr: "failed",
+					ResultErrnoAttr:  "123",
+					ResultReasonAttr: "error, forced failure",
+				},
+			},
+		},
+		{
+			name:            "CommitTransportError",
+			cgStartResponse: cgStartResponse,
+			cgCommitErr:     fmt.Errorf("connection reset"),
+		},
+		{
+			name:            "CommitNilResponse",
+			cgStartResponse: cgStartResponse,
+		},
+		{
+			name: "StartWithoutCGID",
+			cgStartResponse: &azgo.CgStartResponse{
+				Result: azgo.CgStartResponseResult{
+					ResultStatusAttr: "passed",
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl, mock, oapi := setupTestZAPIClient(t)
+			defer ctrl.Finish()
+			mock.EXPECT().ClientConfig().Return(api.ClientConfig{}).AnyTimes()
+
+			mock.EXPECT().ConsistencyGroupStart(snapshotName, volumes).Return(test.cgStartResponse, nil).Times(1)
+			if test.cgStartResponse.Result.CgIdPtr != nil {
+				mock.EXPECT().ConsistencyGroupCommit(*test.cgStartResponse.Result.CgIdPtr).
+					Return(test.cgCommitResponse, test.cgCommitErr).Times(1)
+			}
+
+			err := oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+			assert.Error(t, err)
+		})
+	}
 }
 
 // Volume Operations Tests

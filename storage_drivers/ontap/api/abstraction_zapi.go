@@ -3152,16 +3152,18 @@ func (d OntapAPIZAPI) ConsistencyGroupSnapshot(ctx context.Context, snapshotName
 
 	cgStartResponse, err := d.api.ConsistencyGroupStart(snapshotName, volumes)
 	if err = azgo.GetError(ctx, cgStartResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok && zerr.Code() == azgo.ESNAPSHOTEXISTS {
+			Logc(ctx).WithField("snapshot", snapshotName).Info("Consistency group snapshot already exists.")
+			return nil
+		}
 		return err
 	}
 
-	if cgStartResponse != nil && cgStartResponse.Result.CgIdPtr != nil {
-		cgID := cgStartResponse.Result.CgId()
-		_, err := d.api.ConsistencyGroupCommit(cgID)
-		if err = azgo.GetError(ctx, cgStartResponse, err); err != nil {
-			return err
-		}
+	if cgStartResponse == nil || cgStartResponse.Result.CgIdPtr == nil {
+		return fmt.Errorf("cg-start returned no consistency group ID for snapshot %s", snapshotName)
 	}
 
-	return err
+	cgID := cgStartResponse.Result.CgId()
+	cgCommitResponse, err := d.api.ConsistencyGroupCommit(cgID)
+	return azgo.GetError(ctx, cgCommitResponse, err)
 }

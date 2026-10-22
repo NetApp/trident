@@ -24,6 +24,7 @@ const (
 	EAPIERROR                          = "13001"
 	EAPIPRIVILEGE                      = "13003"
 	EAPINOTFOUND                       = "13005"
+	ESNAPSHOTEXISTS                    = "13020"
 	ESNAPSHOTBUSY                      = "13024"
 	EVOLUMEDOESNOTEXIST                = "13040"
 	EVOLUMEOFFLINE                     = "13042"
