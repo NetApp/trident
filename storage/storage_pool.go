@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"sort"
 	"strings"
+	"sync"
 
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -21,7 +22,10 @@ const ProvisioningLabelTag = "provisioning"
 type StoragePool struct {
 	name string
 	// A Trident storage pool can potentially satisfy more than one storage class.
-	storageClasses      []string
+	storageClasses []string
+	// backendMutex guards backend.  A backend upsert rewrites the backend of every pool it owns while readers
+	// that hold no backend lock, such as the concurrent core gathering candidate pools, may be reading it.
+	backendMutex        sync.RWMutex
 	backend             Backend
 	attributes          map[string]sa.Offer // These attributes are used to match storage classes
 	internalAttributes  map[string]string   // These attributes are defined & used internally by storage drivers
@@ -45,10 +49,16 @@ func (p *StoragePool) SetStorageClasses(storageClasses []string) {
 }
 
 func (p *StoragePool) Backend() Backend {
+	p.backendMutex.RLock()
+	defer p.backendMutex.RUnlock()
+
 	return p.backend
 }
 
 func (p *StoragePool) SetBackend(backend Backend) {
+	p.backendMutex.Lock()
+	defer p.backendMutex.Unlock()
+
 	p.backend = backend
 }
 
