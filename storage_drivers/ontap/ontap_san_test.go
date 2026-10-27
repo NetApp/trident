@@ -6183,3 +6183,103 @@ func TestUnstageVolumeMove(t *testing.T) {
 		})
 	}
 }
+
+// On a clone that already exists, a LUN that trails the volume is retried; any other QoS failure stays permanent.
+func TestOntapSanVolumeClone_ExistingCloneLUNQos(t *testing.T) {
+	tests := map[string]struct {
+		qosErr          error
+		expectCreating  bool
+		expectExistsErr bool
+	}{
+		"QoS applied":         {expectExistsErr: true},
+		"LUN not visible yet": {qosErr: errors.NotFoundError("could not find LUN"), expectCreating: true},
+		"genuine QoS failure": {qosErr: errors.New("policy group not found")},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			mockAPI, driver := newMockOntapSANDriver(t)
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+			pool := storage.NewStoragePool(nil, "pool1")
+			pool.SetInternalAttributes(map[string]string{SplitOnClone: "false"})
+			volConfig := getVolumeConfig()
+			volConfig.CloneSourceVolume = "source"
+			volConfig.CloneSourceVolumeInternal = "source-internal"
+			volConfig.QosPolicy = "qos-policy"
+
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&api.Volume{Name: "source"}, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).
+				Return(&api.Volume{Name: volConfig.InternalName, UUID: "clone-volume-uuid"}, nil).AnyTimes()
+			mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, lunPath(volConfig.InternalName), gomock.Any()).Return(tc.qosErr)
+
+			err := driver.CreateClone(ctx, nil, &volConfig, pool)
+
+			assert.Error(t, err)
+			assert.Equal(t, tc.expectCreating, errors.IsVolumeCreatingError(err), "got %v", err)
+			assert.Equal(t, tc.expectExistsErr, drivers.IsVolumeExistsError(err), "got %v", err)
+		})
+	}
+}
+
+// The record of a clone create that outlived the poll must not outlive the volume.
+func TestOntapSanVolumeDestroy_ForgetsPendingCloneRecord(t *testing.T) {
+	tests := map[string]struct {
+		volumeExists bool
+		destroyErr   error
+		expectError  bool
+		expectRecord bool
+	}{
+		"volume destroyed":    {volumeExists: true},
+		"volume already gone": {volumeExists: false},
+		"destroy fails":       {volumeExists: true, destroyErr: errors.New("busy"), expectError: true, expectRecord: true},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapSANDriver(t)
+			driver.Config.DriverContext = tridentconfig.ContextCSI
+			volConfig := getVolumeConfig()
+			driver.cloneJobs = &sync.Map{}
+			storePendingClone(driver.cloneJobs, volConfig.InternalName, pendingClone{jobUUID: "job-1"})
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(tc.volumeExists, nil)
+			if tc.volumeExists {
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(tc.destroyErr)
+			}
+
+			err := driver.Destroy(ctx, &volConfig)
+
+			assert.Equal(t, tc.expectError, err != nil, "got %v", err)
+			_, ok := loadPendingClone(driver.cloneJobs, volConfig.InternalName)
+			assert.Equal(t, tc.expectRecord, ok)
+		})
+	}
+}
+
+// A clone whose config lost the name of its automatic snapshot gets it back from the volume, so the snapshot is
+// deleted along with the clone.
+func TestOntapSanVolumeDestroy_DeletesRecoveredAutomaticSnapshot(t *testing.T) {
+	const sourceInternal = "sourceVolInternal"
+	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+	driver.API = &cloneJobMockAPI{
+		MockOntapAPI: mockAPI, split: &api.CloneSplitState{IsFlexclone: true, ParentSnapshot: "snapshot-auto"},
+	}
+	volConfig := getVolumeConfig()
+	volConfig.CloneSourceVolumeInternal = sourceInternal
+	volConfig.CloneSourceSnapshot, volConfig.CloneSourceSnapshotInternal = "", ""
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), volConfig.InternalName, true, false).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), "snapshot-auto", sourceInternal).Return(nil)
+
+	err := driver.Destroy(ctx, &volConfig)
+
+	assert.NoError(t, err)
+}

@@ -1883,3 +1883,11 @@ func TestTerminalReconciliationError(t *testing.T) {
 	// Should be false for unrelated error
 	assert.False(t, IsTerminalReconciliationError(errors.New("other error")))
 }
+
+func TestIsVolumeCreatingError_Wrapped(t *testing.T) {
+	err := VolumeCreatingError("still creating")
+	assert.True(t, IsVolumeCreatingError(err))
+	assert.True(t, IsVolumeCreatingError(fmt.Errorf("failed to create cloned volume: %w", err)))
+	assert.False(t, IsVolumeCreatingError(fmt.Errorf("failed to create cloned volume: %v", err)))
+	assert.False(t, IsVolumeCreatingError(nil))
+}

@@ -9228,3 +9228,111 @@ func TestRestClientVolumeMove(t *testing.T) {
 		})
 	}
 }
+
+// A job that was accepted must not be reported as failed because the last status read errored as the time ran out.
+func TestOntapREST_PollJobStatus_ErrorAtExpiryKeepsTheJob(t *testing.T) {
+	previous := jobStatusPollTimeout
+	jobStatusPollTimeout = 50 * time.Millisecond
+	defer func() { jobStatusPollTimeout = previous }()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobID := strfmt.UUID("1234")
+
+	err := rs.PollJobStatus(ctx, &models.JobLinkResponse{Job: &models.JobLink{UUID: &jobID}})
+
+	jobErr, ok := AsJobNotDoneError(err)
+	assert.True(t, ok, "got %v", err)
+	assert.Equal(t, "1234", jobErr.JobUUID)
+	assert.Error(t, jobErr.Cause, "the status-read error is kept as the cause")
+}
+
+// A job that finished must keep its UUID when the read of its detail fails, because whether it succeeded is unknown.
+func TestOntapREST_PollJobStatus_DetailReadErrorKeepsTheJob(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("fields") == "state" {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"uuid":"1234","state":"success"}`))
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobID := strfmt.UUID("1234")
+
+	err := rs.PollJobStatus(ctx, &models.JobLinkResponse{Job: &models.JobLink{UUID: &jobID}})
+
+	jobErr, ok := AsJobNotDoneError(err)
+	assert.True(t, ok, "got %v", err)
+	assert.Equal(t, "1234", jobErr.JobUUID)
+	assert.Error(t, jobErr.Cause)
+}
+
+// A job state ONTAP does not define is not an unknown outcome to keep waiting on, so it is not reported as a
+// job still in progress.
+func TestOntapREST_PollJobStatus_UnexpectedStateIsNotJobNotDone(t *testing.T) {
+	previous := jobStatusPollTimeout
+	jobStatusPollTimeout = 50 * time.Millisecond
+	defer func() { jobStatusPollTimeout = previous }()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"uuid":"1234","state":"bogus"}`))
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobID := strfmt.UUID("1234")
+
+	err := rs.PollJobStatus(ctx, &models.JobLinkResponse{Job: &models.JobLink{UUID: &jobID}})
+
+	assert.Error(t, err)
+	_, ok := AsJobNotDoneError(err)
+	assert.False(t, ok, "got %v", err)
+}
+
+// A finished job whose detail comes back without a state has an unknown outcome, so its UUID is kept.
+func TestOntapREST_PollJobStatus_DetailWithoutStateKeepsTheJob(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Query().Get("fields") == "state" {
+			_, _ = w.Write([]byte(`{"uuid":"1234","state":"success"}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"uuid":"1234"}`))
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobID := strfmt.UUID("1234")
+
+	err := rs.PollJobStatus(ctx, &models.JobLinkResponse{Job: &models.JobLink{UUID: &jobID}})
+
+	jobErr, ok := AsJobNotDoneError(err)
+	assert.True(t, ok, "got %v", err)
+	assert.Equal(t, "1234", jobErr.JobUUID)
+}
+
+// A status response with no state is an incomplete read, so the job is kept as still in progress rather than
+// reported as an error that would clean up the clone.
+func TestOntapREST_PollJobStatus_MissingStateKeepsTheJob(t *testing.T) {
+	previous := jobStatusPollTimeout
+	jobStatusPollTimeout = 50 * time.Millisecond
+	defer func() { jobStatusPollTimeout = previous }()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"uuid":"1234"}`))
+	}))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	jobID := strfmt.UUID("1234")
+
+	err := rs.PollJobStatus(ctx, &models.JobLinkResponse{Job: &models.JobLink{UUID: &jobID}})
+
+	jobErr, ok := AsJobNotDoneError(err)
+	assert.True(t, ok, "got %v", err)
+	assert.Equal(t, "1234", jobErr.JobUUID)
+}

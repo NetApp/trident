@@ -9022,6 +9022,7 @@ func TestCloneFlexvol(t *testing.T) {
 
 			err := cloneFlexvol(
 				ctx, &params.cloneVolumeConfig, label, params.split, &params.storageDriverConfig, mockAPI, qosPolicyGroup,
+				nil,
 			)
 			if params.expectError {
 				assert.Error(t, err)
