@@ -354,6 +354,8 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 		name     string
 		build    func() models.VolumeTrackingInfo
 		expected models.StorageProtocol
+		// expectedSAN is the SANType backfilled after storageProtocol; empty for NAS volumes (no second write).
+		expectedSAN string
 	}{
 		{
 			name: "NFS from nfsServerIP",
@@ -383,7 +385,8 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 				ti.IscsiTargetIQN = "iqn.1992-08.com.netapp:sn.test"
 				return ti
 			},
-			expected: models.ISCSI,
+			expected:    models.ISCSI,
+			expectedSAN: sa.ISCSI,
 		},
 		{
 			name: "FCP from target WWNN",
@@ -393,7 +396,8 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 				ti.FCTargetWWNN = "20:00:00:25:b5:11:11:11"
 				return ti
 			},
-			expected: models.FCP,
+			expected:    models.FCP,
+			expectedSAN: sa.FCP,
 		},
 		{
 			name: "NVMe from legacy SANType",
@@ -403,7 +407,8 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 				ti.SANType = sa.NVMe
 				return ti
 			},
-			expected: models.NVMe,
+			expected:    models.NVMe,
+			expectedSAN: sa.NVMe,
 		},
 	}
 	for _, tc := range protocolCases {
@@ -415,17 +420,32 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 			jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackFile, "volume tracking info").
 				SetArg(1, tc.build()).
 				Return(nil)
+			// storageProtocol is backfilled and written first; SAN volumes then get a second write for SANType.
+			// A tracking file that already carries SANType needs no second write.
+			expectedWrites := 1
+			if tc.expectedSAN != "" && tc.build().SANType == "" {
+				expectedWrites = 2
+			}
+			writes := 0
 			jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpFile, "volume tracking info").
 				DoAndReturn(func(_ context.Context, ti *models.VolumeTrackingInfo, _ string, _ string) error {
+					writes++
 					assert.Equal(t, tc.expected, ti.StorageProtocol)
+					if writes == expectedWrites {
+						assert.Equal(t, tc.expectedSAN, ti.SANType)
+					}
+					// WriteTrackingInfo renames the tmp file into place, so recreate it for any later write.
+					_, createErr := osFs.Create(tmpFile)
+					assert.NoError(t, createErr)
 					return nil
-				})
+				}).Times(expectedWrites)
 			_, err := osFs.Create(tmpFile)
 			assert.NoError(t, err)
 
 			needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), vol, nil, nil)
 			assert.False(t, needsDelete)
 			assert.NoError(t, err)
+			assert.Equal(t, expectedWrites, writes)
 		})
 	}
 
@@ -447,11 +467,15 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 		jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
 			SetArg(1, stagedPublishInfo).
 			Return(nil)
+		// First write backfills storageProtocol, second backfills SANType (inferred from the NVMe protocol).
 		jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
 			DoAndReturn(func(_ context.Context, ti *models.VolumeTrackingInfo, _ string, _ string) error {
 				assert.Equal(t, models.NVMe, ti.StorageProtocol)
+				// WriteTrackingInfo renames the tmp file into place, so recreate it for the second write.
+				_, createErr := osFs.Create(tmpTrackingInfoFile)
+				assert.NoError(t, createErr)
 				return nil
-			})
+			}).Times(2)
 		_, err := osFs.Create(tmpTrackingInfoFile)
 		assert.NoError(t, err)
 
@@ -473,9 +497,10 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 		jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackFile, "volume tracking info").
 			SetArg(1, tracking).
 			Return(nil)
+		// The staged file is consulted once by each backfill (storageProtocol, then SANType).
 		jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
-			Return(errors.NotFoundError("no staged publish info"))
-		// No WriteJSONFile call expected; the protocol could not be inferred so nothing is backfilled.
+			Return(errors.NotFoundError("no staged publish info")).Times(2)
+		// No WriteJSONFile call expected; nothing could be inferred so nothing is backfilled.
 
 		needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), vol, nil, nil)
 		assert.False(t, needsDelete)
@@ -495,9 +520,10 @@ func TestUpgradeVolumeTrackingFile_StorageProtocolBackfill(t *testing.T) {
 		jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackFile, "volume tracking info").
 			SetArg(1, tracking).
 			Return(nil)
+		// The staged file is consulted once by each backfill (storageProtocol, then SANType).
 		jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
 			SetArg(1, models.VolumePublishInfo{}).
-			Return(nil)
+			Return(nil).Times(2)
 		// No WriteJSONFile call expected; the staged file itself has no protocol-identifying fields.
 
 		needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), vol, nil, nil)
@@ -743,6 +769,270 @@ func TestBackfillStorageProtocol(t *testing.T) {
 			tc.setupMocks(t, jsonReaderWriter, osFs, volumeId)
 
 			err := v.backfillStorageProtocol(context.Background(), volumeId, trackingInfo)
+
+			tc.checkErr(t, err)
+			tc.checkTracking(t, trackingInfo)
+		})
+	}
+}
+
+// TestBackfillSANType exercises every code path in backfillSANType directly, mirroring TestBackfillStorageProtocol:
+// already set, NAS volumes, inferred from the tracking file's identity fields (iSCSI/NVMe/FCP), inferred from the
+// staged publish info fallback, and the un-inferrable/write-failure cases. SANType must never be assumed.
+func TestBackfillSANType(t *testing.T) {
+	trackPath := "/bar"
+
+	assertNoError := func(t *testing.T, err error) {
+		assert.NoError(t, err)
+	}
+	assertWriteFailureWrapped := func(t *testing.T, err error) {
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to backfill SANType")
+		assert.ErrorContains(t, err, "disk full")
+	}
+	assertSANType := func(sanType string) func(t *testing.T, trackingInfo *models.VolumeTrackingInfo) {
+		return func(t *testing.T, trackingInfo *models.VolumeTrackingInfo) {
+			assert.Equal(t, sanType, trackingInfo.SANType)
+		}
+	}
+	assertSANTypeUnset := func(t *testing.T, trackingInfo *models.VolumeTrackingInfo) {
+		assert.Empty(t, trackingInfo.SANType)
+	}
+	noMocksNeeded := func(*testing.T, *mock_filesystem.MockJSONReaderWriter, afero.Fs, string) {}
+	expectWrite := func(succeeds bool) func(*testing.T, *mock_filesystem.MockJSONReaderWriter, afero.Fs, string) {
+		return func(t *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, osFs afero.Fs, volumeId string) {
+			tmpFile := path.Join(trackPath, "tmp-"+volumeId+".json")
+			if !succeeds {
+				jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpFile, "volume tracking info").
+					Return(fmt.Errorf("disk full"))
+				return
+			}
+			jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpFile, "volume tracking info").
+				Return(nil)
+			_, err := osFs.Create(tmpFile)
+			assert.NoError(t, err)
+		}
+	}
+
+	testCases := []struct {
+		name          string
+		trackingInfo  func() *models.VolumeTrackingInfo
+		setupMocks    func(t *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, osFs afero.Fs, volumeId string)
+		checkErr      func(t *testing.T, err error)
+		checkTracking func(t *testing.T, trackingInfo *models.VolumeTrackingInfo)
+	}{
+		{
+			name: "SANType already set is left untouched and nothing is written",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.IscsiTargetIQN = "iqn.test"
+				ti.SANType = sa.ISCSI
+				return ti
+			},
+			setupMocks:    noMocksNeeded,
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.ISCSI),
+		},
+		{
+			name: "NFS volume has no SANType and nothing is written",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = "nfs"
+				ti.NfsServerIP = "10.0.0.1"
+				return ti
+			},
+			setupMocks:    noMocksNeeded,
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "SMB volume has no SANType and nothing is written",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.StorageProtocol = models.SMB
+				return ti
+			},
+			setupMocks:    noMocksNeeded,
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "iSCSI inferred from the target IQN",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.IscsiTargetIQN = "iqn.test"
+				return ti
+			},
+			setupMocks:    expectWrite(true),
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.ISCSI),
+		},
+		{
+			name: "NVMe inferred from the subsystem NQN",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.NVMeSubsystemNQN = "nqn.test"
+				return ti
+			},
+			setupMocks:    expectWrite(true),
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.NVMe),
+		},
+		{
+			name: "FCP inferred from the target WWNN",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.FCTargetWWNN = "wwnn.test"
+				return ti
+			},
+			setupMocks:    expectWrite(true),
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.FCP),
+		},
+		{
+			name: "SANType inferred from the persisted storageProtocol when identity fields are absent",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.StorageProtocol = models.FCP
+				return ti
+			},
+			setupMocks:    expectWrite(true),
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.FCP),
+		},
+		{
+			name: "inferred from identity fields but the backfill write fails",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.IscsiTargetIQN = "iqn.test"
+				return ti
+			},
+			setupMocks: expectWrite(false),
+			checkErr:   assertWriteFailureWrapped,
+			// The in-memory struct is still mutated before the write is attempted.
+			checkTracking: assertSANType(sa.ISCSI),
+		},
+		{
+			name: "conflicting identity fields are never guessed and nothing is written",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.IscsiTargetIQN = "iqn.test"
+				ti.NVMeSubsystemNQN = "nqn.test"
+				return ti
+			},
+			setupMocks:    noMocksNeeded,
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "no signals in the tracking file and no staged file to fall back to",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				return ti
+			},
+			setupMocks:    noMocksNeeded,
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "staged publish info file cannot be read",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.GlobalMount = "/staging/vol"
+				return ti
+			},
+			setupMocks: func(_ *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, _ afero.Fs, _ string) {
+				stagedFile := path.Join("/staging/vol", volumePublishInfoFilename)
+				jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedFile, "publish info").
+					Return(errors.NotFoundError("no staged publish info"))
+			},
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "staged publish info file is readable but has no SAN identity signals",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.GlobalMount = "/staging/vol"
+				return ti
+			},
+			setupMocks: func(_ *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, _ afero.Fs, _ string) {
+				stagedFile := path.Join("/staging/vol", volumePublishInfoFilename)
+				jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedFile, "publish info").
+					SetArg(1, models.VolumePublishInfo{}).
+					Return(nil)
+			},
+			checkErr:      assertNoError,
+			checkTracking: assertSANTypeUnset,
+		},
+		{
+			name: "staged publish info file infers the SANType and the backfill write succeeds",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.GlobalMount = "/staging/vol"
+				return ti
+			},
+			setupMocks: func(t *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, osFs afero.Fs, volumeId string) {
+				stagedFile := path.Join("/staging/vol", volumePublishInfoFilename)
+				stagedPublishInfo := models.VolumePublishInfo{}
+				stagedPublishInfo.NVMeSubsystemNQN = "nqn.test"
+				jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedFile, "publish info").
+					SetArg(1, stagedPublishInfo).
+					Return(nil)
+				expectWrite(true)(t, jsonReaderWriter, osFs, volumeId)
+			},
+			checkErr:      assertNoError,
+			checkTracking: assertSANType(sa.NVMe),
+		},
+		{
+			name: "staged publish info file infers the SANType but the backfill write fails",
+			trackingInfo: func() *models.VolumeTrackingInfo {
+				ti := &models.VolumeTrackingInfo{}
+				ti.FilesystemType = filesystem.Raw
+				ti.GlobalMount = "/staging/vol"
+				return ti
+			},
+			setupMocks: func(t *testing.T, jsonReaderWriter *mock_filesystem.MockJSONReaderWriter, osFs afero.Fs, volumeId string) {
+				stagedFile := path.Join("/staging/vol", volumePublishInfoFilename)
+				stagedPublishInfo := models.VolumePublishInfo{}
+				stagedPublishInfo.NVMeSubsystemNQN = "nqn.test"
+				jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedFile, "publish info").
+					SetArg(1, stagedPublishInfo).
+					Return(nil)
+				expectWrite(false)(t, jsonReaderWriter, osFs, volumeId)
+			},
+			checkErr:      assertWriteFailureWrapped,
+			checkTracking: assertSANType(sa.NVMe),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+			defer func(previousJsonRW filesystem.JSONReaderWriter) {
+				jsonRW = previousJsonRW
+			}(jsonRW)
+			jsonRW = jsonReaderWriter
+
+			osFs := afero.NewMemMapFs()
+			v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
+
+			volumeId := "pvc-123"
+			trackingInfo := tc.trackingInfo()
+			tc.setupMocks(t, jsonReaderWriter, osFs, volumeId)
+
+			err := v.backfillSANType(context.Background(), volumeId, trackingInfo)
 
 			tc.checkErr(t, err)
 			tc.checkTracking(t, trackingInfo)

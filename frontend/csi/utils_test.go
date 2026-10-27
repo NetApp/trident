@@ -429,3 +429,26 @@ func TestUnstashIscsiTargetPortals_MissingTargetPortalKeyIsSilentlyEmpty(t *test
 	assert.NoError(t, err)
 	assert.Empty(t, publishInfo.IscsiTargetPortal)
 }
+
+func TestSANTypeFromPublishContext(t *testing.T) {
+	cases := []struct {
+		name     string
+		ctx      map[string]string
+		expected string
+	}{
+		{"explicit SANType is returned as-is", map[string]string{"SANType": "nvme", "iscsiTargetIqn": "iqn.test"}, "nvme"},
+		{"22.10-style iSCSI context without SANType", map[string]string{
+			"protocol": "block", "iscsiTargetIqn": "iqn.test", "iscsiLunNumber": "3", "useCHAP": "false",
+		}, "iscsi"},
+		{"NVMe keys without SANType", map[string]string{"nvmeSubsystemNqn": "nqn.test"}, "nvme"},
+		{"FCP keys without SANType", map[string]string{"fcTargetWWNN": "wwnn.test"}, "fcp"},
+		{"empty identity values are ignored", map[string]string{"iscsiTargetIqn": ""}, ""},
+		{"conflicting keys are not guessed", map[string]string{"iscsiTargetIqn": "iqn.test", "fcTargetWWNN": "wwnn"}, ""},
+		{"nil context", nil, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, sanTypeFromPublishContext(tc.ctx))
+		})
+	}
+}

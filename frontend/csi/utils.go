@@ -379,6 +379,22 @@ func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *m
 	addAccessInfoPortalsToPublishInfo(publishInfo, volumePublishInfo.VolumeAccessInfo)
 }
 
+// sanTypeFromPublishContext returns the SAN type from a CSI publish context. Publish contexts produced by Trident
+// controllers older than 23.07 don't carry "SANType", and Kubernetes keeps replaying them from the VolumeAttachment
+// after an upgrade. In that case the SAN type is inferred from the protocol identity keys in the context.
+// Exactly one identity key must be non-empty; if none or more than one is set the SAN type can't be determined
+// and an empty string is returned.
+func sanTypeFromPublishContext(publishContext map[string]string) string {
+	if sanType := publishContext["SANType"]; sanType != "" {
+		return sanType
+	}
+	return models.InferSANTypeFromIdentityKeys(
+		publishContext["iscsiTargetIqn"],
+		publishContext["nvmeSubsystemNqn"],
+		publishContext["fcTargetWWNN"],
+	)
+}
+
 // unstashIscsiTargetPortals reconstructs the iSCSI target portal list from the flattened
 // p1..pN keys the controller stashes in the CSI publish context.
 func unstashIscsiTargetPortals(publishInfo *models.VolumePublishInfo, reqPublishInfo map[string]string) error {

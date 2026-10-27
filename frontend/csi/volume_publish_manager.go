@@ -362,6 +362,9 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		if err := v.backfillStorageProtocol(ctx, volumeId, volumeTrackingInfo); err != nil {
 			return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
 		}
+		if err := v.backfillSANType(ctx, volumeId, volumeTrackingInfo); err != nil {
+			return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
+		}
 		return false, nil
 	}
 
@@ -391,6 +394,12 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 			"Example: \"storageProtocol\": \"iscsi\".")
 	}
 
+	// Legacy publish info may also lack the SAN type. Infer it from the protocol identity fields; this is a
+	// no-op for NAS volumes and is left empty if it can't be determined.
+	if publishInfo.SANType == "" {
+		publishInfo.SANType = publishInfo.GetSANType()
+	}
+
 	volumeTrackingInfo.VolumePublishInfo = *publishInfo
 	volumeTrackingInfo.PublishedPaths = publishedPaths
 
@@ -417,9 +426,9 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 // backfillStorageProtocol populates StorageProtocol on tracking files written before
 // node core when the field is missing. Node activation runs this via UpgradeVolumeTrackingFile.
 func (v *VolumePublishManager) backfillStorageProtocol(
-	ctx context.Context, volumeId string, volumeTrackingInfo *models.VolumeTrackingInfo,
+	ctx context.Context, volumeId string, trackingInfo *models.VolumeTrackingInfo,
 ) error {
-	publishInfo := &volumeTrackingInfo.VolumePublishInfo
+	publishInfo := &trackingInfo.VolumePublishInfo
 	if publishInfo.StorageProtocol != "" {
 		return nil
 	}
@@ -449,11 +458,60 @@ func (v *VolumePublishManager) backfillStorageProtocol(
 	}
 
 	publishInfo.StorageProtocol = protocol
-	if err := v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo); err != nil {
+	if err := v.WriteTrackingInfo(ctx, volumeId, trackingInfo); err != nil {
 		return fmt.Errorf("failed to backfill storageProtocol: %w", err)
 	}
 	Logc(ctx).WithFields(LogFields{"volumeId": volumeId, "storageProtocol": protocol}).Debug(
 		"Volume tracking file storageProtocol backfilled.")
+	return nil
+}
+
+// backfillSANType populates SANType on SAN tracking files written before the field existed (Trident < 23.07) or
+// before it was persisted, when the field is missing. The SAN type is inferred from the volume's protocol identity
+// fields (iSCSI target IQN, NVMe subsystem NQN, FCP target WWNN) and is never assumed.
+// Node activation runs this via UpgradeVolumeTrackingFile.
+func (v *VolumePublishManager) backfillSANType(
+	ctx context.Context, volumeId string, trackingInfo *models.VolumeTrackingInfo,
+) error {
+	publishInfo := &trackingInfo.VolumePublishInfo
+	if publishInfo.SANType != "" {
+		return nil
+	}
+
+	// NAS volumes have no SAN type.
+	if protocol := publishInfo.GetStorageProtocol(); protocol == models.NFS || protocol == models.SMB {
+		return nil
+	}
+
+	sanType := publishInfo.GetSANType()
+	if sanType == "" && publishInfo.GlobalMount != "" {
+		stagedPublishInfo := &models.VolumePublishInfo{}
+		stagedFile := path.Join(publishInfo.GlobalMount, volumePublishInfoFilename)
+		if err := jsonRW.ReadJSONFile(ctx, stagedPublishInfo, stagedFile, "publish info"); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeId":    volumeId,
+				"publishInfo": publishInfo,
+			}).Warn("Unable to infer \"SANType\" for volume; node operations may fail until remediated. " +
+				"Please set the \"SANType\" field to a supported SAN type before detaching the volume. " +
+				"Example: \"SANType\": \"iscsi\"")
+			return nil
+		}
+		sanType = stagedPublishInfo.GetSANType()
+	}
+	if sanType == "" {
+		Logc(ctx).WithFields(LogFields{
+			"volumeId":    volumeId,
+			"publishInfo": publishInfo,
+		}).Warn("No inferred \"SANType\" from tracking file upgrade.")
+		return nil
+	}
+
+	publishInfo.SANType = sanType
+	if err := v.WriteTrackingInfo(ctx, volumeId, trackingInfo); err != nil {
+		return fmt.Errorf("failed to backfill SANType: %w", err)
+	}
+	Logc(ctx).WithFields(LogFields{"volumeId": volumeId, "SANType": sanType}).Debug(
+		"Volume tracking file SANType backfilled.")
 	return nil
 }
 
