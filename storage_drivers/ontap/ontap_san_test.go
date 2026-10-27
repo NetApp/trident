@@ -4327,6 +4327,7 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 		mockAPI := newMockOntapAPIWithFlags(t, true, false, false)
 
 		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		stopTelemetryOnCleanup(t, driver)
 		driver.API = mockAPI
 		driver.Config.CommonStorageDriverConfig = nil
 		driver.ips = []string{"127.0.0.1"}
@@ -4405,6 +4406,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		mockAPI := newMockOntapAPIWithFlags(t, true, false, false)
 
 		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		stopTelemetryOnCleanup(t, driver)
 		driver.API = mockAPI
 		driver.ips = []string{"127.0.0.1"}
 
@@ -4491,6 +4493,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		mockAPI := newMockOntapAPIWithFlags(t, true, false, false)
 
 		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		stopTelemetryOnCleanup(t, driver)
 		driver.API = mockAPI
 		driver.Config.CommonStorageDriverConfig = nil
 		driver.ips = []string{"127.0.0.1"}
@@ -4595,6 +4598,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testin
 		"clientcertificate": "dummy-certificate",
 	}
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
+	stopTelemetryOnCleanup(t, sanStorageDriver)
 	sanStorageDriver.Config.CommonStorageDriverConfig = nil
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
@@ -4626,6 +4630,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(
 		"clientcertificate": "dummy-certificate",
 	}
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
+	stopTelemetryOnCleanup(t, sanStorageDriver)
 	sanStorageDriver.Config.CommonStorageDriverConfig = nil
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,

@@ -213,6 +213,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethods(t *testing.
 	}`
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	stopTelemetryOnCleanup(t, ontapNasDriver)
 	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
@@ -251,6 +252,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	stopTelemetryOnCleanup(t, ontapNasDriver)
 	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
@@ -289,6 +291,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithConfigAn
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	stopTelemetryOnCleanup(t, ontapNasDriver)
 	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,

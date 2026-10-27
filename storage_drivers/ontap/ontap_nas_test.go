@@ -323,6 +323,7 @@ func TestOntapNasStorageDriverInitialize_AuthenticationMethods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 				"CSI", false, nil)
+			stopTelemetryOnCleanup(t, ontapNasDriver)
 			ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 			result := ontapNasDriver.Initialize(ctx, "CSI", tt.configJSON, commonConfig, tt.secrets, BackendUUID)

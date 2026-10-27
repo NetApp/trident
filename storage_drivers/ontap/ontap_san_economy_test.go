@@ -5986,6 +5986,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	stopTelemetryOnCleanup(t, d)
 	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
@@ -6049,6 +6050,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	stopTelemetryOnCleanup(t, d)
 	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
@@ -6119,6 +6121,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	stopTelemetryOnCleanup(t, d)
 	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}

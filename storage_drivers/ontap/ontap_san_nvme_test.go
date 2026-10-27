@@ -83,7 +83,9 @@ func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockap
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
-	return newNVMeDriver(mockAPI, mockAWSAPI, new(FSX_ID)), mockAPI, mockAWSAPI
+	driver := newNVMeDriver(mockAPI, mockAWSAPI, new(FSX_ID))
+	stopTelemetryOnCleanup(t, driver)
+	return driver, mockAPI, mockAWSAPI
 }
 
 func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI) {
@@ -97,7 +99,9 @@ func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOnt
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
-	return newNVMeDriver(mockAPI, nil, nil), mockAPI
+	driver := newNVMeDriver(mockAPI, nil, nil)
+	stopTelemetryOnCleanup(t, driver)
+	return driver, mockAPI
 }
 
 func TestNVMeStorageDriverGetResizeDeltaBytes(t *testing.T) {
@@ -134,6 +138,7 @@ func TestNVMeBackendName_PinnedAcrossRefresh(t *testing.T) {
 
 func TestNVMeInitialize_ConfigUnmarshalError(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
+	stopTelemetryOnCleanup(t, d)
 	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
@@ -352,6 +357,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
+	stopTelemetryOnCleanup(t, d)
 	d.Config.CommonStorageDriverConfig = nil
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -391,6 +397,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
+	stopTelemetryOnCleanup(t, d)
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
@@ -437,6 +444,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mAPI.EXPECT().IsREST().AnyTimes().Return(false)
 	d := newNVMeDriver(mAPI, nil, nil)
+	stopTelemetryOnCleanup(t, d)
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",

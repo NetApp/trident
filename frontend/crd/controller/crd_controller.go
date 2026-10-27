@@ -5,6 +5,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned"
@@ -268,6 +269,20 @@ func NewTridentCrdController(orchestrator core.Orchestrator, masterURL, kubeConf
 	)
 }
 
+// registerTridentTypesOnce guards the registration of Trident's CRD types in client-go's
+// process-wide scheme. runtime.Scheme is not safe for concurrent mutation, and every controller
+// construction would otherwise write to the same maps.
+var registerTridentTypesOnce sync.Once
+
+// registerTridentTypes adds Trident's CRD types to the default Kubernetes Scheme, once per
+// process, so Events about Trident objects can be recorded. Once it returns, the scheme is no
+// longer modified.
+func registerTridentTypes() {
+	registerTridentTypesOnce.Do(func() {
+		utilruntime.Must(tridentscheme.AddToScheme(scheme.Scheme))
+	})
+}
+
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
 	orchestrator core.Orchestrator, tridentNamespace string, kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
@@ -314,7 +329,7 @@ func newTridentCrdControllerImpl(
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
-	utilruntime.Must(tridentscheme.AddToScheme(scheme.Scheme))
+	registerTridentTypes()
 	Logx(ctx).Trace("Creating event broadcaster.")
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClientset.CoreV1().Events("")})

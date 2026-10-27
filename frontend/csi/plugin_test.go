@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"net"
 	"os"
 	"sync"
 	"testing"
@@ -216,17 +217,18 @@ func TestPlugin_Activate_ControllerRole_SetsTopologyInUse(t *testing.T) {
 	mockControllerHelper := mock_controller_helpers.NewMockControllerHelper(ctrl)
 	mockControllerHelper.EXPECT().IsTopologyInUse(gomock.Any()).Return(true)
 
+	socketPath := tempSocketPath(t)
 	plugin := &Plugin{
 		role:             CSIController,
 		nodeName:         "test-node",
-		endpoint:         "unix://" + tempSocketPath(t),
+		endpoint:         "unix://" + socketPath,
 		controllerHelper: mockControllerHelper,
 	}
 	t.Cleanup(func() { _ = plugin.Deactivate() })
 
 	require.NoError(t, plugin.Activate())
 
-	assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
+	waitForListener(t, socketPath)
 	assert.Eventually(t, plugin.isTopologyInUse, 2*time.Second, 10*time.Millisecond)
 }
 
@@ -234,17 +236,18 @@ func TestPlugin_Activate_NodeRole_StartsGRPCWithoutBlockingOnNodeCore(t *testing
 	// Activate() no longer waits on node core Bootstrap at all - that is driven independently
 	// by whoever constructed the Core (main.go). A never-bootstrapped node core must not stop
 	// the gRPC socket from becoming available.
+	socketPath := tempSocketPath(t)
 	plugin := &Plugin{
 		role:             CSINode,
 		nodeName:         "test-node",
-		endpoint:         "unix://" + tempSocketPath(t),
+		endpoint:         "unix://" + socketPath,
 		nodeOrchestrator: newNotReadyNodeCore(),
 	}
 	t.Cleanup(func() { _ = plugin.Deactivate() })
 
 	require.NoError(t, plugin.Activate())
 
-	assert.Eventually(t, func() bool { return plugin.getGRPC() != nil }, 2*time.Second, 10*time.Millisecond)
+	waitForListener(t, socketPath)
 	assert.False(t, plugin.IsReady(), "plugin must stay gated while the node core is not ready")
 }
 
@@ -286,10 +289,7 @@ func TestPlugin_Activate_ReproducesCustomerIssue_TRID19339(t *testing.T) {
 
 	// PHASE 1: the gRPC socket must be available well within the registrar's ~30s deadline, even
 	// though registration is still in flight.
-	assert.Eventually(t, func() bool {
-		_, statErr := os.Stat(socketPath)
-		return statErr == nil
-	}, 2*time.Second, 10*time.Millisecond, "expected gRPC socket to be created before slow registration finishes")
+	waitForListener(t, socketPath)
 
 	// PHASE 2: a real gRPC client can connect and call Identity.Probe, the registrar's first call.
 	conn, dialErr := grpc.NewClient("unix://"+socketPath, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -330,6 +330,22 @@ func tempSocketPath(t *testing.T) string {
 	require.NoError(t, err)
 	t.Cleanup(func() { os.RemoveAll(dir) })
 	return dir + "/csi.sock"
+}
+
+// waitForListener blocks until a client can connect to the unix socket at socketPath. The plugin's
+// gRPC server binds its socket in a background goroutine, so the plugin being set or the socket
+// file existing does not mean the server is accepting connections yet. A test that returns before
+// the server has bound would have its socket directory removed underneath that goroutine.
+func waitForListener(t *testing.T, socketPath string) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		conn, err := net.DialTimeout("unix", socketPath, 100*time.Millisecond)
+		if err != nil {
+			return false
+		}
+		_ = conn.Close()
+		return true
+	}, 2*time.Second, 10*time.Millisecond, "expected the gRPC server to accept connections on %s", socketPath)
 }
 
 // TestPlugin_Deactivate_SafeWithoutActivate validates that Deactivate() can be called
