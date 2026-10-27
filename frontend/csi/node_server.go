@@ -226,11 +226,18 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 		}
 		publishInfo.SharedTarget = sharedTarget
 
-		publishInfo.SANType = req.PublishContext["SANType"]
+		// Publish contexts from controllers older than 23.07 carry no "SANType", and Kubernetes replays them from
+		// the VolumeAttachment after an upgrade. Infer it from the protocol identity keys rather than assuming one.
+		sanType := sanTypeFromPublishContext(publishContext)
+		if publishContext["SANType"] == "" && sanType != "" {
+			Logc(ctx).WithField("SANType", sanType).Debug(
+				"Publish context has no SANType; inferred it from the protocol identity fields.")
+		}
+		publishInfo.SANType = sanType
 		publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 		publishInfo.LUKSEncryption = strconv.FormatBool(convert.ToBool(req.PublishContext["LUKSEncryption"]))
 
-		switch publishContext["SANType"] {
+		switch sanType {
 		case sa.ISCSI:
 			publishInfo.StorageProtocol = models.ISCSI
 			var lunID int32
@@ -285,7 +292,7 @@ func (p *Plugin) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 			publishInfo.NVMeNamespaceUUID = req.PublishContext["nvmeNamespaceUUID"]
 			publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 		default:
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported SAN_TYPE %q", publishContext["SANType"]))
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported SAN_TYPE %q", sanType))
 		}
 
 	default:

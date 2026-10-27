@@ -568,6 +568,49 @@ func storageProtocolFromLegacyStageFields(publishInfo *VolumePublishInfo) Storag
 	return ""
 }
 
+// InferSANTypeFromIdentityKeys infers the SAN type from the three protocol identity strings
+// (iSCSI target IQN, NVMe subsystem NQN, FCP target WWNN). Exactly one must be non-empty;
+// if none or more than one is set the SAN type cannot be determined and "" is returned.
+// This is the shared inference kernel used by both GetSANType and sanTypeFromPublishContext.
+func InferSANTypeFromIdentityKeys(iscsiTargetIQN, nvmeSubsystemNQN, fcpTargetWWNN string) string {
+	iqnSet := iscsiTargetIQN != ""
+	nqnSet := nvmeSubsystemNQN != ""
+	fcpSet := fcpTargetWWNN != ""
+	switch {
+	case iqnSet && !nqnSet && !fcpSet:
+		return string(ISCSI)
+	case nqnSet && !iqnSet && !fcpSet:
+		return string(NVMe)
+	case fcpSet && !iqnSet && !nqnSet:
+		return string(FCP)
+	}
+	return ""
+}
+
+// GetSANType returns the persisted SAN type when set, otherwise infers it from the SAN identity fields (iSCSI target
+// IQN, NVMe subsystem NQN, FCP target WWNN) and finally from the storage protocol. It returns an empty string for
+// non-SAN volumes and when the SAN type can't be determined. It never assumes a default.
+func (v *VolumePublishInfo) GetSANType() string {
+	if v == nil {
+		return ""
+	}
+	if v.SANType != "" {
+		return strings.ToLower(v.SANType)
+	}
+
+	if inferred := InferSANTypeFromIdentityKeys(v.IscsiTargetIQN, v.NVMeSubsystemNQN, v.FCTargetWWNN); inferred != "" {
+		return inferred
+	}
+
+	// SANType was made unnecessary with the addition of StorageProtocol.
+	// In the case where the SANType could not be inferred, use the StorageProtocol.
+	switch v.StorageProtocol {
+	case ISCSI, NVMe, FCP:
+		return string(v.StorageProtocol)
+	}
+	return ""
+}
+
 type VolumeTrackingInfo struct {
 	VolumePublishInfo
 	PublishedPaths map[string]struct{} `json:"publishedTargetPaths"`

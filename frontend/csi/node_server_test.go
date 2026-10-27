@@ -248,6 +248,89 @@ func TestPlugin_NodeStageVolume_ProtocolParsingErrors(t *testing.T) {
 	}
 }
 
+// TestPlugin_NodeStageVolume_LegacyPublishContextWithoutSANType covers publish contexts replayed from a
+// VolumeAttachment created by a Trident controller older than 23.07, which carry no "SANType". The SAN type must be
+// inferred from the protocol identity keys, and never assumed when they are absent or ambiguous.
+func TestPlugin_NodeStageVolume_LegacyPublishContextWithoutSANType(t *testing.T) {
+	newReq := func(publishContext map[string]string) *csi.NodeStageVolumeRequest {
+		return &csi.NodeStageVolumeRequest{
+			VolumeId:          "vol-1",
+			StagingTargetPath: "/tmp/staging",
+			PublishContext:    publishContext,
+			VolumeCapability: &csi.VolumeCapability{
+				AccessType: &csi.VolumeCapability_Block{Block: &csi.VolumeCapability_BlockVolume{}},
+				AccessMode: &csi.VolumeCapability_AccessMode{
+					Mode: csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+				},
+			},
+		}
+	}
+
+	// Mirrors the 22.10 ControllerPublishVolume response seen in the TRID-20850 trace.
+	legacyISCSIContext := func() map[string]string {
+		return map[string]string{
+			"protocol":               string(tridentconfig.Block),
+			"LUKSEncryption":         "true",
+			"filesystemType":         "raw",
+			"iscsiIgroup":            "node-igroup",
+			"iscsiInterface":         "",
+			"iscsiLunNumber":         "3",
+			"iscsiLunSerial":         "",
+			"iscsiTargetIqn":         "iqn.1992-08.com.netapp:sn.test:vs.1",
+			"iscsiTargetPortalCount": "2",
+			"mountOptions":           "",
+			"p1":                     "10.0.0.1",
+			"p2":                     "10.0.0.2",
+			"sharedTarget":           "true",
+			"useCHAP":                "false",
+		}
+	}
+
+	t.Run("iSCSI is inferred from the target IQN and stage reaches node core", func(t *testing.T) {
+		plugin := &Plugin{nodeOrchestrator: newNotReadyNodeCore()}
+
+		_, err := plugin.NodeStageVolume(context.Background(), newReq(legacyISCSIContext()))
+		require.Error(t, err)
+		// Reaching node core (which isn't ready) proves the SAN type check passed.
+		assert.Equal(t, codes.Unavailable, status.Code(err))
+		assert.Contains(t, err.Error(), "failed to stage volume")
+		assert.NotContains(t, err.Error(), "unsupported SAN_TYPE")
+	})
+
+	t.Run("no SANType and no identity keys is rejected rather than assumed", func(t *testing.T) {
+		plugin := &Plugin{nodeOrchestrator: newNotReadyNodeCore()}
+		publishContext := legacyISCSIContext()
+		delete(publishContext, "iscsiTargetIqn")
+
+		_, err := plugin.NodeStageVolume(context.Background(), newReq(publishContext))
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+		assert.Contains(t, err.Error(), `unsupported SAN_TYPE ""`)
+	})
+
+	t.Run("ambiguous identity keys are rejected rather than guessed", func(t *testing.T) {
+		plugin := &Plugin{nodeOrchestrator: newNotReadyNodeCore()}
+		publishContext := legacyISCSIContext()
+		publishContext["nvmeSubsystemNqn"] = "nqn.test"
+
+		_, err := plugin.NodeStageVolume(context.Background(), newReq(publishContext))
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+		assert.Contains(t, err.Error(), `unsupported SAN_TYPE ""`)
+	})
+
+	t.Run("an explicit SANType is never overridden by inference", func(t *testing.T) {
+		plugin := &Plugin{nodeOrchestrator: newNotReadyNodeCore()}
+		publishContext := legacyISCSIContext()
+		publishContext["SANType"] = "bogus"
+
+		_, err := plugin.NodeStageVolume(context.Background(), newReq(publishContext))
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+		assert.Contains(t, err.Error(), `unsupported SAN_TYPE "bogus"`)
+	})
+}
+
 func TestPlugin_NodeStageVolume_DelegatesToNodeOrchestrator(t *testing.T) {
 	plugin := &Plugin{nodeOrchestrator: newNotReadyNodeCore()}
 

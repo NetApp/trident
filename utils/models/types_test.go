@@ -2506,3 +2506,79 @@ func TestNodeVolumeUpdate_JSONRoundTrip(t *testing.T) {
 		assert.True(t, decoded.IsEmpty())
 	})
 }
+
+func TestInferSANTypeFromIdentityKeys(t *testing.T) {
+	cases := []struct {
+		name     string
+		iqn      string
+		nqn      string
+		wwnn     string
+		expected string
+	}{
+		{"iSCSI from IQN only", "iqn.test", "", "", "iscsi"},
+		{"NVMe from NQN only", "", "nqn.test", "", "nvme"},
+		{"FCP from WWNN only", "", "", "wwnn.test", "fcp"},
+		{"conflicting IQN and NQN", "iqn.test", "nqn.test", "", ""},
+		{"conflicting IQN and WWNN", "iqn.test", "", "wwnn.test", ""},
+		{"all three set", "iqn.test", "nqn.test", "wwnn.test", ""},
+		{"no keys set", "", "", "", ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, InferSANTypeFromIdentityKeys(tc.iqn, tc.nqn, tc.wwnn))
+		})
+	}
+}
+
+func TestGetSANType(t *testing.T) {
+	t.Run("nil receiver", func(t *testing.T) {
+		var pi *VolumePublishInfo
+		assert.Equal(t, "", pi.GetSANType())
+	})
+
+	t.Run("persisted value wins over identity fields and is lowercased", func(t *testing.T) {
+		pi := &VolumePublishInfo{SANType: "FCP"}
+		pi.IscsiTargetIQN = "iqn.test"
+		assert.Equal(t, "fcp", pi.GetSANType())
+	})
+
+	cases := []struct {
+		name     string
+		build    func() *VolumePublishInfo
+		expected string
+	}{
+		{"iSCSI from target IQN", func() *VolumePublishInfo {
+			pi := &VolumePublishInfo{}
+			pi.IscsiTargetIQN = "iqn.test"
+			return pi
+		}, "iscsi"},
+		{"NVMe from subsystem NQN", func() *VolumePublishInfo {
+			pi := &VolumePublishInfo{}
+			pi.NVMeSubsystemNQN = "nqn.test"
+			return pi
+		}, "nvme"},
+		{"FCP from target WWNN", func() *VolumePublishInfo {
+			pi := &VolumePublishInfo{}
+			pi.FCTargetWWNN = "wwnn.test"
+			return pi
+		}, "fcp"},
+		{"conflicting identity fields are not guessed", func() *VolumePublishInfo {
+			pi := &VolumePublishInfo{}
+			pi.IscsiTargetIQN = "iqn.test"
+			pi.NVMeSubsystemNQN = "nqn.test"
+			return pi
+		}, ""},
+		{"falls back to SAN storageProtocol", func() *VolumePublishInfo {
+			return &VolumePublishInfo{StorageProtocol: NVMe}
+		}, "nvme"},
+		{"NFS storageProtocol is not a SAN type", func() *VolumePublishInfo {
+			return &VolumePublishInfo{StorageProtocol: NFS}
+		}, ""},
+		{"no signals", func() *VolumePublishInfo { return &VolumePublishInfo{} }, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.build().GetSANType())
+		})
+	}
+}
