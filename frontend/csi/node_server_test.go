@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"math/rand"
@@ -2188,8 +2189,150 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 
 	mockDevicePath := "/dev/mapper/mock-device"
 	mockDevice := &models.ScsiDeviceInfo{MultipathDevice: mockDevicePath}
+	lunSerialHex := hex.EncodeToString([]byte("yocwC+Ws3R1K"))
+	ownedUUID := "mpath-3600a0980" + lunSerialHex
+
+	// staleDMCase models the SCSI devices already being gone while the LUN still resolves to /dev/dm-9, whose
+	// minor may since have been reused. The final flush must only run if dm-9 still carries this LUN's UUID.
+	staleDMCase := func(sessions map[int]int, uuid string, uuidErr error, expectFlush bool) parameters {
+		publishInfo := NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build()
+		publishInfo.DevicePath = "/dev/dm-9"
+		params := parameters{
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: publishInfo,
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(sessions)
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), lunSerialHex).
+					Return("", errors.NotFoundError("not found"))
+				if len(sessions) > 0 {
+					mockDeviceClient.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "/dev/dm-9", "yocwC+Ws3R1K").
+						Return(fmt.Errorf("device still has 1 slave(s)"))
+				}
+				mockDeviceClient.EXPECT().GetMultipathDeviceUUID("/dev/dm-9").Return(uuid, uuidErr)
+				if expectFlush {
+					mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), "/dev/dm-9",
+						gomock.Any(), gomock.Any()).Return(nil)
+				}
+				return mockDeviceClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		}
+		if len(sessions) > 0 {
+			params.getISCSIClient = func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(nil, nil)
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			}
+			params.getMountClient = func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			}
+		}
+		return params
+	}
+
+	// removalCase models PrepareDeviceForRemoval running against the LUN's multipath device dm-9. It returns
+	// unmappedDevice when the flush still needs to happen; otherwise the device was already flushed.
+	removalCase := func(unmappedDevice string) parameters {
+		params := staleDMCase(map[int]int{6: 3}, ownedUUID, nil, false)
+		params.getISCSIClient = func() iscsi.ISCSI {
+			mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+			mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{MultipathDevice: "dm-9"}, nil)
+			mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), false, false).Return(unmappedDevice, nil)
+			mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+			mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+			return mockISCSIClient
+		}
+		params.getDeviceClient = func() devices.Devices {
+			mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+			mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), lunSerialHex).Return("dm-9", nil)
+			mockDeviceClient.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "/dev/dm-9", "yocwC+Ws3R1K").
+				Return(fmt.Errorf("device still has 1 slave(s)"))
+			if unmappedDevice != "" {
+				mockDeviceClient.EXPECT().GetMultipathDeviceUUID(unmappedDevice).Return(ownedUUID, nil)
+			}
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), unmappedDevice,
+				gomock.Any(), gomock.Any()).Return(nil)
+			return mockDeviceClient
+		}
+		return params
+	}
+
+	// luksStaleDMCase is staleDMCase for a LUKS volume. The LUKS device on dm-9 must only be looked up and closed if
+	// dm-9 still carries this LUN's UUID; otherwise it belongs to whichever volume reused the minor.
+	luksStaleDMCase := func(sessions map[int]int, uuid string, owned bool) parameters {
+		params := staleDMCase(sessions, uuid, nil, owned)
+		params.publishInfo.LUKSEncryption = "true"
+		params.getDeviceClient = func() devices.Devices {
+			mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+			mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), lunSerialHex).
+				Return("", errors.NotFoundError("not found"))
+			mockDeviceClient.EXPECT().GetMultipathDeviceUUID("/dev/dm-9").Return(uuid, nil).Times(2)
+			luksPath := ""
+			if owned {
+				luksPath = "/dev/mapper/luks-test"
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice("/dev/dm-9").Return(luksPath, nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), "/dev/dm-9",
+					gomock.Any(), gomock.Any()).Return(nil)
+			}
+			if len(sessions) == 0 {
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), luksPath).Return(nil)
+				return mockDeviceClient
+			}
+			if owned {
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), luksPath).Return(nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), luksPath).Return(nil)
+			}
+			mockDeviceClient.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "/dev/dm-9", "yocwC+Ws3R1K").
+				Return(fmt.Errorf("device still has 8 slave(s)"))
+			return mockDeviceClient
+		}
+		return params
+	}
+	otherVolumeUUID := "mpath-3600a0980" + hex.EncodeToString([]byte("81OcA?XLUkD6"))
 
 	tests := map[string]parameters{
+		"SAN: iSCSI unstage: LUKS device on dm minor reused by another volume is not closed": luksStaleDMCase(
+			map[int]int{6: 3}, otherVolumeUUID, false),
+		"SAN: iSCSI unstage: LUKS device on dm still owned by LUN is closed": luksStaleDMCase(
+			map[int]int{6: 3}, ownedUUID, true),
+		"SAN: iSCSI unstage: no sessions, LUKS device on reused dm minor is not closed": luksStaleDMCase(
+			map[int]int{}, otherVolumeUUID, false),
+		"SAN: iSCSI unstage: no sessions, LUKS device on dm still owned by LUN is closed": luksStaleDMCase(
+			map[int]int{}, ownedUUID, true),
+		"SAN: iSCSI unstage: successful first flush is not repeated":     removalCase(""),
+		"SAN: iSCSI unstage: deferred flush runs on the unmapped device": removalCase("/dev/dm-9"),
+		"SAN: iSCSI unstage: stale dm minor reused by another device is not flushed": staleDMCase(
+			map[int]int{6: 3}, "part1-"+ownedUUID, nil, false),
+		"SAN: iSCSI unstage: stale dm already removed is not flushed": staleDMCase(
+			map[int]int{6: 3}, "", errors.NotFoundError("multipath device 'dm-9' UUID not found"), false),
+		"SAN: iSCSI unstage: dm still owned by LUN is flushed": staleDMCase(
+			map[int]int{6: 3}, ownedUUID, nil, true),
+		"SAN: iSCSI unstage: no sessions, stale dm minor reused is not flushed": staleDMCase(
+			map[int]int{}, "LVM-abc123", nil, false),
 		"SAN: iSCSI unstage: happy path": {
 			assertError: assert.NoError,
 			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
@@ -2412,6 +2555,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-test").Return(nil)
 				mockDeviceClient.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "/dev/dm-0", "yocwC+Ws3R1K").Return(nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), "/dev/mapper/luks-test").Return(nil)
+				mockDeviceClient.EXPECT().GetMultipathDeviceUUID("/dev/dm-0").Return(ownedUUID, nil).Times(2)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
@@ -2817,6 +2961,43 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			err := plugin.nodeUnstageISCSIVolume(context.Background(), params.request, &params.publishInfo,
 				params.force)
 			params.assertError(t, err)
+		})
+	}
+}
+
+func TestMultipathDeviceBelongsToLUN(t *testing.T) {
+	const lunSerial = "yocwC+Ws3R1K"
+	ownedUUID := "mpath-3600a0980" + hex.EncodeToString([]byte(lunSerial))
+
+	tests := map[string]struct {
+		devicePath string
+		lunSerial  string
+		uuid       string
+		uuidErr    error
+		readsUUID  bool
+		expected   bool
+	}{
+		"no serial cannot be verified":         {devicePath: "/dev/dm-9", expected: true},
+		"mapper path cannot be verified":       {devicePath: "/dev/mapper/3600a0980", lunSerial: lunSerial, expected: true},
+		"empty path cannot be verified":        {devicePath: "", lunSerial: lunSerial, expected: true},
+		"device owned by LUN":                  {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuid: ownedUUID, readsUUID: true, expected: true},
+		"bare dm name owned by LUN":            {devicePath: "dm-9", lunSerial: lunSerial, uuid: ownedUUID, readsUUID: true, expected: true},
+		"device no longer exists":              {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuidErr: errors.NotFoundError("gone"), readsUUID: true, expected: false},
+		"minor reused by LVM":                  {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuid: "LVM-abc123", readsUUID: true, expected: false},
+		"minor reused by kpartx partition map": {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuid: "part1-" + ownedUUID, readsUUID: true, expected: false},
+		"minor reused by another LUN's map":    {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuid: "mpath-3600a0980deadbeef", readsUUID: true, expected: false},
+		"UUID read error is assumed to match":  {devicePath: "/dev/dm-9", lunSerial: lunSerial, uuidErr: fmt.Errorf("permission denied"), readsUUID: true, expected: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+			if tc.readsUUID {
+				mockDeviceClient.EXPECT().GetMultipathDeviceUUID(tc.devicePath).Return(tc.uuid, tc.uuidErr)
+			}
+			plugin := &Plugin{devices: mockDeviceClient}
+
+			assert.Equal(t, tc.expected, plugin.multipathDeviceBelongsToLUN(context.Background(), tc.devicePath, tc.lunSerial))
 		})
 	}
 }

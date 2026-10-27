@@ -4106,7 +4106,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			expectedMultipath: "",
 			expectedError:     false,
 		},
-		"Ghost device removal fails, logs warning and continues": {
+		"Ghost device removal fails, returns device for caller to remove": {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
@@ -4123,7 +4123,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			allPublishInfos:   []models.VolumePublishInfo{},
 			ignoreErrors:      false,
 			force:             false,
-			expectedMultipath: "",
+			expectedMultipath: "/dev/dm-0",
 			expectedError:     false,
 		},
 	}

@@ -2443,7 +2443,8 @@ func (client *Client) removeSCSIDevice(ctx context.Context, deviceInfo *models.S
 // PrepareDeviceForRemoval informs Linux that a device will be removed, the function
 // also verifies that device being removed is correct based on published device path,
 // device serial number (if present) or comparing all publications (allPublishInfos) for
-// LUN number uniqueness.
+// LUN number uniqueness. It returns the multipath device path if the caller still needs to
+// remove that device.
 func (client *Client) PrepareDeviceForRemoval(
 	ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
 	allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
@@ -2477,6 +2478,7 @@ func (client *Client) PrepareDeviceForRemoval(
 					"lunSerialNumber": publishInfo.IscsiLunSerial,
 					"multipathDevice": deviceInfo.MultipathDevice,
 				}).WithError(err).Warn("Could not remove ghost multipath device; continuing with device removal.")
+				return DevPrefix + deviceInfo.MultipathDevice, nil
 			}
 			return "", nil
 		}

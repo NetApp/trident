@@ -2199,7 +2199,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 				} else {
 					publishInfo.DevicePath = dmPath
 				}
-			} else {
+			} else if p.multipathDeviceBelongsToLUN(ctx, publishInfo.DevicePath, publishInfo.IscsiLunSerial) {
 				// If not using LUKS legacy device path, we need to find the LUKS mapper device.
 				luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
 				if err != nil {
@@ -2216,9 +2216,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 				Logc(ctx).WithError(err).Debug("Unable to remove LUKS device. Continuing with tracking file removal.")
 			}
 		}
-		if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, publishInfo.DevicePath,
-			removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
-			Logc(ctx).Warn("Unable to remove multipath device. Continuing with tracking file removal.")
+		if p.multipathDeviceBelongsToLUN(ctx, publishInfo.DevicePath, publishInfo.IscsiLunSerial) {
+			if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, publishInfo.DevicePath,
+				removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
+				Logc(ctx).Warn("Unable to remove multipath device. Continuing with tracking file removal.")
+			}
 		}
 		// Ensure the tracking file is removed.
 		volumeId, _, err := p.getVolumeIdAndStagingPath(req)
@@ -2264,13 +2266,18 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		// discovery finds a stale/wrong multipath node. publishInfo.DevicePath is authoritative
 		// because it was resolved from the LUN serial at the top of this function, and is the
 		// same identity that VerifyMultipathDevice will reconcile to inside PrepareDeviceForRemoval.
-		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
-		if err != nil {
-			if !errors.IsNotFoundError(err) {
-				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
-				return err
+		// If the serial lookup failed, the path is the tracking file value, whose dm minor may now belong to
+		// another volume; its LUKS device must not be closed.
+		if p.multipathDeviceBelongsToLUN(ctx, publishInfo.DevicePath, publishInfo.IscsiLunSerial) {
+			luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
+			if err != nil {
+				if !errors.IsNotFoundError(err) {
+					Logc(ctx).WithFields(fields).WithError(err).Error(
+						"Failed to get LUKS device path from multipath device.")
+					return err
+				}
+				Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
 			}
-			Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
 		}
 
 		// Ensure the LUKS device is closed if the luksMapperPath is set.
@@ -2293,18 +2300,26 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
+	// mpathDevicePath is the device checked for a ghost multipath device below.
 	// Default this value to the healed value from before.
 	// This must be tracked because if the SCSI devices are already gone, the deviceInfo above may be nil.
 	mpathDevicePath := publishInfo.DevicePath
+
+	// flushDevicePath is the device given to the final 'multipath -f' below; empty means no final flush.
+	// It defaults to the healed value for when PrepareDeviceForRemoval cannot flush the device itself.
+	flushDevicePath := mpathDevicePath
 	if deviceInfo != nil {
+		// unmappedMpathDevice is the multipath device PrepareDeviceForRemoval left for the caller to remove.
+		// It is empty when PrepareDeviceForRemoval already flushed the multipath device.
 		unmappedMpathDevice, err := p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
 			force)
 		if err != nil {
 			if errors.IsISCSISameLunNumberError(err) {
 				// There is a need to pass all the publish infos this time
-				mpathDevicePath, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+				unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
 					p.readAllTrackingFiles(ctx),
 					p.unsafeDetach, force)
+				mpathDevicePath = unmappedMpathDevice
 			}
 
 			if err != nil && !p.unsafeDetach {
@@ -2314,6 +2329,13 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 		if unmappedMpathDevice != "" {
 			mpathDevicePath = unmappedMpathDevice
+		}
+
+		// If PrepareDeviceForRemoval succeeded, only flush the device it returned: an empty value means it already
+		// flushed the map, and that must not be repeated because the dm minor can be reused by another device.
+		// If it failed (unsafe detach), keep the default since the first flush may not have run.
+		if err == nil && deviceInfo.MultipathDevice != "" {
+			flushDevicePath = unmappedMpathDevice
 		}
 	}
 
@@ -2396,7 +2418,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	// If the LUKS device still exists, it means the device was unable to be closed prior to removing the block
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
-	// It needs to be removed prior to removing the 'mpathDevicePath' device below.
+	// It needs to be removed prior to removing the 'flushDevicePath' device below.
 	if luksMapperPath != "" {
 		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
 		if err = p.devices.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
@@ -2409,9 +2431,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, mpathDevicePath,
-		removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
-		return err
+	if p.multipathDeviceBelongsToLUN(ctx, flushDevicePath, publishInfo.IscsiLunSerial) {
+		if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, flushDevicePath,
+			removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
+			return err
+		}
 	}
 
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
@@ -2420,6 +2444,35 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	return nil
+}
+
+// multipathDeviceBelongsToLUN reports whether devicePath still names the multipath map for the LUN with the
+// given serial. The kernel reuses dm minor numbers, so a /dev/dm-N path resolved earlier may now refer to an
+// unrelated device-mapper device; acting on it would fail or, worse, close another volume's LUKS device or
+// remove another volume's map.
+// Paths that are not /dev/dm-N, or LUNs without a serial, cannot be verified and are assumed to match.
+func (p *Plugin) multipathDeviceBelongsToLUN(ctx context.Context, devicePath, lunSerial string) bool {
+	if lunSerial == "" || !strings.HasPrefix(strings.TrimPrefix(devicePath, devices.DevPrefix), "dm-") {
+		return true
+	}
+	fields := LogFields{"devicePath": devicePath, "lunSerial": lunSerial}
+	deviceUUID, err := p.devices.GetMultipathDeviceUUID(devicePath)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithFields(fields).Debug("Multipath device no longer exists.")
+			return false
+		}
+		Logc(ctx).WithFields(fields).WithError(err).Warn("Could not read multipath device UUID.")
+		return true
+	}
+	expectedSerialHex := hex.EncodeToString([]byte(lunSerial))
+	if !strings.HasPrefix(deviceUUID, "mpath-") || !strings.Contains(deviceUUID, expectedSerialHex) {
+		fields["deviceUUID"] = deviceUUID
+		Logc(ctx).WithFields(fields).Warn(
+			"Device no longer belongs to this LUN; the multipath map was already removed.")
+		return false
+	}
+	return true
 }
 
 func (p *Plugin) nodeUnstageISCSIVolumeRetry(
