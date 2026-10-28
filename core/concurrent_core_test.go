@@ -23709,3 +23709,1087 @@ func TestBootstrapVolumeMovesConcurrentCore(t *testing.T) {
 		})
 	}
 }
+
+// makeTopology returns a region/zone topology map usable as either a supported or a preferred topology.
+func makeTopology(region, zone string) map[string]string {
+	return map[string]string{
+		"topology.kubernetes.io/region": region,
+		"topology.kubernetes.io/zone":   zone,
+	}
+}
+
+// addBackendToCacheWithKey registers a backend in the cache under an arbitrary unique key, which is normally the
+// backend name.  Registering under a different key simulates a backend that was renamed after the storage class
+// pool map was built.
+func addBackendToCacheWithKey(t *testing.T, backend storage.Backend, key string) {
+	t.Helper()
+	_, results, unlocker, err := db.Lock(context.Background(), db.Query(db.UpsertBackend(backend.BackendUUID(), "", key)))
+	require.NoError(t, err)
+	results[0].Backend.Upsert(backend)
+	unlocker()
+}
+
+// backendAttributes returns the attribute map that getMockBackendWithMap expects for an online ontap-nas backend.
+func backendAttributes(name, uuid string) map[string]string {
+	return map[string]string{
+		"name":       name,
+		"uuid":       uuid,
+		"protocol":   string(config.File),
+		"state":      string(storage.Online),
+		"driverName": "ontap-nas",
+	}
+}
+
+// shareTolerance bounds how far a backend's share of volumes may drift from its expected share in the distribution
+// tests.  It is over seven standard deviations for their batch sizes, so a fair shuffle cannot realistically trip it,
+// while the map-order skew it guards against misses it by more than twenty points.
+const shareTolerance = 0.10
+
+// TestAddVolumeBackendDistributionConcurrentCore is the regression guard for TRID-20351.  Backend selection used
+// to iterate a Go map, whose iteration order is not uniformly random; with three equivalent backends that skewed
+// placement to roughly 75/12.5/12.5.  Candidate pools are now gathered across all backends and shuffled explicitly,
+// so a batch of volumes must land on the equivalent backends in close to even shares.
+func TestAddVolumeBackendDistributionConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	backendNames := []string{"testBackend1", "testBackend2", "testBackend3"}
+	volumesPerBackend := make(map[string]int, len(backendNames))
+	backends := make([]storage.Backend, 0, len(backendNames))
+
+	for i, name := range backendNames {
+		backendUUID := fmt.Sprintf("backend-uuid%d", i+1)
+		mockBackend := getMockBackend(mockCtrl, name, backendUUID)
+		mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+			func(_ context.Context, volConfig *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+				_ bool,
+			) (*storage.Volume, error) {
+				volumesPerBackend[name]++
+				return &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volConfig.Name, InternalName: volConfig.Name},
+					BackendUUID: backendUUID,
+				}, nil
+			}).AnyTimes()
+		backends = append(backends, mockBackend)
+	}
+
+	addBackendsToCache(t, backends...)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	const volumeCount = 1200
+
+	for i := 0; i < volumeCount; i++ {
+		name := fmt.Sprintf("vol%d", i)
+		result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+			Name:         name,
+			InternalName: name,
+			Size:         "1G",
+			Protocol:     config.File,
+			StorageClass: "gold",
+			VolumeMode:   config.Filesystem,
+			AccessMode:   config.ReadWriteMany,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	}
+
+	placed := 0
+	for _, name := range backendNames {
+		placed += volumesPerBackend[name]
+	}
+	require.Equal(t, volumeCount, placed)
+
+	for _, name := range backendNames {
+		share := float64(volumesPerBackend[name]) / float64(volumeCount)
+		assert.InDelta(t, 1.0/float64(len(backendNames)), share, shareTolerance,
+			"backend %s received %.2f%% of volumes", name, share*100)
+	}
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeCrossBackendPreferredTopologyConcurrentCore verifies that preferred topologies are honored across
+// backend boundaries.  A pool matching the preferred topology must be tried before a non-matching pool on another
+// backend, which the previous backend-at-a-time selection could not guarantee.
+func TestAddVolumeCrossBackendPreferredTopologyConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	o := getConcurrentOrchestrator()
+
+	plainPool := storage.NewStoragePool(nil, "pool1a")
+	preferredPool := storage.NewStoragePool(nil, "pool2a")
+	preferredPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+
+	// Two pools that gatherCandidatePools must filter out: one on a backend serving the wrong protocol, and one
+	// outside every requisite topology.
+	wrongProtocolPool := storage.NewStoragePool(nil, "pool3a")
+	wrongProtocolPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+	wrongTopologyPool := storage.NewStoragePool(nil, "pool4a")
+	wrongTopologyPool.SetSupportedTopologies([]map[string]string{makeTopology("R9", "Z9")})
+
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{plainPool},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{preferredPool},
+		backendAttributes("testBackend2", "backend-uuid2"))
+
+	blockAttributes := backendAttributes("testBackend3", "backend-uuid3")
+	blockAttributes["protocol"] = string(config.Block)
+	mockBackend3 := getMockBackendWithMap(mockCtrl, []storage.Pool{wrongProtocolPool}, blockAttributes)
+
+	mockBackend4 := getMockBackendWithMap(mockCtrl, []storage.Pool{wrongTopologyPool},
+		backendAttributes("testBackend4", "backend-uuid4"))
+
+	addBackendsToCache(t, mockBackend1, mockBackend2, mockBackend3, mockBackend4)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	volumeConfig := &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		RequisiteTopologies: []map[string]string{makeTopology("R1", "Z1")},
+		PreferredTopologies: []map[string]string{makeTopology("R1", "Z1")},
+	}
+
+	matchingBackendPools := o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(testCtx, "gold")
+	require.Len(t, matchingBackendPools, 4)
+
+	// The preferred pool must sort first every time, regardless of the shuffle, and the ineligible pools must
+	// never appear as candidates.
+	for i := 0; i < 100; i++ {
+		pools, err := o.gatherCandidatePools(testCtx, getFakeStorageClass("gold"), config.File, volumeConfig,
+			matchingBackendPools)
+		require.NoError(t, err)
+
+		poolNames := make([]string, 0, len(pools))
+		for _, pool := range pools {
+			poolNames = append(poolNames, pool.Name())
+		}
+		assert.ElementsMatch(t, []string{"pool1a", "pool2a"}, poolNames)
+
+		require.NotEmpty(t, pools)
+		assert.Equal(t, "pool2a", pools[0].Name())
+		assert.Equal(t, "testBackend2", pools[0].Backend().Name())
+	}
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeSkipsUnlockableBackendConcurrentCore covers the case where a candidate pool's backend can no longer
+// be locked by name, which happens if the backend is removed or renamed after the candidate pools were gathered.
+// That pool must be skipped in favor of the remaining candidates rather than failing the create.
+func TestAddVolumeSkipsUnlockableBackendConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// The first backend's pool matches the preferred topology, so it is always the first candidate tried.
+	preferredPool := storage.NewStoragePool(nil, "pool1a")
+	preferredPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+	plainPool := storage.NewStoragePool(nil, "pool2a")
+
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{preferredPool},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{plainPool},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid2",
+		}, nil).Times(1)
+
+	// Register the first backend under a stale key so that locking it by its current name fails.
+	addBackendToCacheWithKey(t, mockBackend1, "renamedBackend1")
+	addBackendsToCache(t, mockBackend2)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: []map[string]string{makeTopology("R1", "Z1")},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid2", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumePoolWeightedDistributionConcurrentCore pins the selection contract: pools, not backends, are the
+// unit of selection, so a backend contributing more pools receives proportionally more volumes.  Placement is
+// only uniform across backends when they contribute equal numbers of pools.
+func TestAddVolumePoolWeightedDistributionConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	poolCounts := []int{1, 1, 8}
+	totalPools := 0
+	for _, count := range poolCounts {
+		totalPools += count
+	}
+
+	volumesPerBackend := make(map[string]int, len(poolCounts))
+	backends := make([]storage.Backend, 0, len(poolCounts))
+
+	for i, poolCount := range poolCounts {
+		name := fmt.Sprintf("testBackend%d", i+1)
+		backendUUID := fmt.Sprintf("backend-uuid%d", i+1)
+
+		pools := make([]storage.Pool, 0, poolCount)
+		for j := 0; j < poolCount; j++ {
+			pools = append(pools, storage.NewStoragePool(nil, fmt.Sprintf("pool%d-%d", i+1, j+1)))
+		}
+
+		mockBackend := getMockBackendWithMap(mockCtrl, pools, backendAttributes(name, backendUUID))
+		mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+			func(_ context.Context, volConfig *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+				_ bool,
+			) (*storage.Volume, error) {
+				volumesPerBackend[name]++
+				return &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volConfig.Name, InternalName: volConfig.Name},
+					BackendUUID: backendUUID,
+				}, nil
+			}).AnyTimes()
+
+		backends = append(backends, mockBackend)
+	}
+
+	addBackendsToCache(t, backends...)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	const volumeCount = 900
+
+	for i := 0; i < volumeCount; i++ {
+		name := fmt.Sprintf("vol%d", i)
+		result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+			Name:         name,
+			InternalName: name,
+			Size:         "1G",
+			Protocol:     config.File,
+			StorageClass: "gold",
+			VolumeMode:   config.Filesystem,
+			AccessMode:   config.ReadWriteMany,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	}
+
+	for i, poolCount := range poolCounts {
+		name := fmt.Sprintf("testBackend%d", i+1)
+		share := float64(volumesPerBackend[name]) / float64(volumeCount)
+		assert.InDelta(t, float64(poolCount)/float64(totalPools), share, shareTolerance,
+			"backend %s with %d pools received %.2f%% of volumes", name, poolCount, share*100)
+	}
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumePreferredTopologyPlacementConcurrentCore checks that addVolume consumes the candidate order rather
+// than merely producing it: with one pool in the preferred zone and one outside it, the volume must land on the
+// matching backend and the other backend must never be asked to create it.
+func TestAddVolumePreferredTopologyPlacementConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	plainPool := storage.NewStoragePool(nil, "pool1a")
+	preferredPool := storage.NewStoragePool(nil, "pool2a")
+	preferredPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{plainPool},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{preferredPool},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid2",
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: []map[string]string{makeTopology("R1", "Z1")},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid2", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeSkipsRemainingPoolsOnIneligibleBackendConcurrentCore covers the ineligible-backend bookkeeping.
+// Once a backend reports that it cannot satisfy the request at all, its other pools must not be tried again,
+// even though the candidate list is now a flat list of pools rather than a list per backend.
+func TestAddVolumeSkipsRemainingPoolsOnIneligibleBackendConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// All three pools of the ineligible backend sit in the preferred zone, so they are tried before the fallback
+	// backend's pool no matter how the shuffle orders them within that bucket.
+	ineligiblePools := make([]storage.Pool, 0, 3)
+	for i := 1; i <= 3; i++ {
+		pool := storage.NewStoragePool(nil, fmt.Sprintf("pool1%c", 'a'+i-1))
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+		ineligiblePools = append(ineligiblePools, pool)
+	}
+
+	ineligibleAttempts := 0
+	mockBackend1 := getMockBackendWithMap(mockCtrl, ineligiblePools,
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+		func(_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+			_ bool,
+		) (*storage.Volume, error) {
+			ineligibleAttempts++
+			return nil, drivers.NewBackendIneligibleError("vol1", []error{fmt.Errorf("no capacity")},
+				[]string{"pool1a", "pool1b", "pool1c"})
+		}).AnyTimes()
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{storage.NewStoragePool(nil, "pool2a")},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid2",
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: []map[string]string{makeTopology("R1", "Z1")},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, 1, ineligibleAttempts,
+		"the ineligible backend must be tried once, not once per pool")
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid2", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeSkipsPoolRemovedAfterGatherConcurrentCore covers the window between gathering candidate pools
+// without a backend lock and re-reading the chosen pool under that lock.  A pool that disappeared in between must
+// be skipped in favor of the next candidate.
+func TestAddVolumeSkipsPoolRemovedAfterGatherConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// One preferred topology per backend fixes the candidate order as backend1, backend2, backend3.
+	zones := []string{"Z1", "Z2", "Z3"}
+	preferredTopologies := make([]map[string]string, 0, len(zones))
+	for _, zone := range zones {
+		preferredTopologies = append(preferredTopologies, makeTopology("R1", zone))
+	}
+
+	pools := make([]storage.Pool, 0, len(zones))
+	for i, zone := range zones {
+		pool := storage.NewStoragePool(nil, fmt.Sprintf("pool%da", i+1))
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", zone)})
+		pools = append(pools, pool)
+	}
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[1]},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	backend2Pools := mockBackend2.StoragePools()
+
+	// The first backend fails, and while it does so the second backend loses the pool that was gathered as a
+	// candidate.  The create must fall through to the third backend.
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[0]},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+		func(_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+			_ bool,
+		) (*storage.Volume, error) {
+			backend2Pools.Delete("pool2a")
+			return nil, fmt.Errorf("create failed")
+		}).Times(1)
+
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	mockBackend3 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[2]},
+		backendAttributes("testBackend3", "backend-uuid3"))
+	mockBackend3.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend3.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid3",
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2, mockBackend3)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: preferredTopologies,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid3", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeSkipsReplacedBackendConcurrentCore covers a backend that was deleted and re-added under the same
+// name after the candidate pools were gathered.  The candidate was filtered against the old backend, so the new
+// one must not receive the volume even though the backend name and the pool name still resolve.
+func TestAddVolumeSkipsReplacedBackendConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// One preferred topology per backend fixes the candidate order as backend1, backend2, backend3.
+	zones := []string{"Z1", "Z2", "Z3"}
+	preferredTopologies := make([]map[string]string, 0, len(zones))
+	for _, zone := range zones {
+		preferredTopologies = append(preferredTopologies, makeTopology("R1", zone))
+	}
+
+	pools := make([]storage.Pool, 0, len(zones))
+	for i, zone := range zones {
+		pool := storage.NewStoragePool(nil, fmt.Sprintf("pool%da", i+1))
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", zone)})
+		pools = append(pools, pool)
+	}
+
+	// The second backend is the one that gets replaced.  Its pool is already a candidate by then, so the create
+	// will lock its name and find a different backend behind it.
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[1]},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	// The replacement carries the same name and the same pool name but a different UUID.
+	replacementPool := storage.NewStoragePool(nil, "pool2a")
+	replacementPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z2")})
+	replacementBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{replacementPool},
+		backendAttributes("testBackend2", "backend-uuid2-replacement"))
+	replacementBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	replacementBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Times(0)
+
+	// The first backend fails, and while it does so the second backend is swapped out from under the candidate
+	// list.  The create must fall through to the third backend.
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[0]},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+		func(_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+			_ bool,
+		) (*storage.Volume, error) {
+			removeBackendFromCache(t, "backend-uuid2")
+			addBackendsToCache(t, replacementBackend)
+			return nil, fmt.Errorf("create failed")
+		}).Times(1)
+
+	mockBackend3 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[2]},
+		backendAttributes("testBackend3", "backend-uuid3"))
+	mockBackend3.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend3.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid3",
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2, mockBackend3)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: preferredTopologies,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid3", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeSkipsPoolIneligibleAfterGatherConcurrentCore covers a pool whose supported topologies stop matching
+// the volume between the unlocked gather and the locked create.  Placing the volume there would bind it to a zone
+// Kubernetes cannot schedule, so the pool must be skipped.
+func TestAddVolumeSkipsPoolIneligibleAfterGatherConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// One topology per backend fixes the candidate order as backend1, backend2, backend3.
+	zones := []string{"Z1", "Z2", "Z3"}
+	topologies := make([]map[string]string, 0, len(zones))
+	for _, zone := range zones {
+		topologies = append(topologies, makeTopology("R1", zone))
+	}
+
+	pools := make([]storage.Pool, 0, len(zones))
+	for i, zone := range zones {
+		pool := storage.NewStoragePool(nil, fmt.Sprintf("pool%da", i+1))
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", zone)})
+		pools = append(pools, pool)
+	}
+
+	// The first backend fails, and while it does so the second backend's pool moves out of every requested
+	// zone.  The create must skip it rather than binding the volume to a zone Kubernetes cannot schedule.
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[0]},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+		func(_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+			_ bool,
+		) (*storage.Volume, error) {
+			pools[1].SetSupportedTopologies([]map[string]string{makeTopology("R9", "Z9")})
+			return nil, fmt.Errorf("create failed")
+		}).Times(1)
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[1]},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	mockBackend3 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[2]},
+		backendAttributes("testBackend3", "backend-uuid3"))
+	mockBackend3.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend3.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid3",
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2, mockBackend3)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		RequisiteTopologies: topologies,
+		PreferredTopologies: topologies,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid3", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeConcurrentWithBackendUpsertConcurrentCore guards the pool/backend reads that addVolume performs
+// without a backend lock.  Candidate pools are gathered from a backend list, which takes no per-backend locks and
+// hands back the live pool objects, while a backend upsert rewrites the backend of every pool it owns.  Run with
+// -race to see the regression this covers.
+func TestAddVolumeConcurrentWithBackendUpsertConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	backends := make([]storage.Backend, 0, 4)
+	for i := 1; i <= 4; i++ {
+		name := fmt.Sprintf("testBackend%d", i)
+		backendUUID := fmt.Sprintf("backend-uuid%d", i)
+
+		pools := []storage.Pool{
+			storage.NewStoragePool(nil, fmt.Sprintf("pool%da", i)),
+			storage.NewStoragePool(nil, fmt.Sprintf("pool%db", i)),
+		}
+
+		mockBackend := getMockBackendWithMap(mockCtrl, pools, backendAttributes(name, backendUUID))
+		mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+			func(_ context.Context, volConfig *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+				_ bool,
+			) (*storage.Volume, error) {
+				return &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: volConfig.Name, InternalName: volConfig.Name},
+					BackendUUID: backendUUID,
+				}, nil
+			}).AnyTimes()
+
+		backends = append(backends, mockBackend)
+	}
+
+	addBackendsToCache(t, backends...)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	// Re-upsert the backends in the background, which is what the backend state reconciler does.
+	stop := make(chan struct{})
+	var upserters sync.WaitGroup
+	for _, b := range backends {
+		upserters.Add(1)
+		go func(b storage.Backend) {
+			defer upserters.Done()
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+				}
+				_, results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(b.BackendUUID(), "", "")))
+				if err == nil {
+					results[0].Backend.Upsert(b)
+				}
+				unlocker()
+			}
+		}(b)
+	}
+
+	const creatorCount, volumesPerCreator = 6, 30
+
+	createErrors := make(chan error, creatorCount*volumesPerCreator)
+	var creators sync.WaitGroup
+	for c := 0; c < creatorCount; c++ {
+		creators.Add(1)
+		go func(c int) {
+			defer creators.Done()
+			for i := 0; i < volumesPerCreator; i++ {
+				name := fmt.Sprintf("vol-%d-%d", c, i)
+				if _, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+					Name:         name,
+					InternalName: name,
+					Size:         "1G",
+					Protocol:     config.File,
+					StorageClass: "gold",
+					VolumeMode:   config.Filesystem,
+					AccessMode:   config.ReadWriteMany,
+				}); err != nil {
+					createErrors <- err
+				}
+			}
+		}(c)
+	}
+
+	creators.Wait()
+	close(stop)
+	upserters.Wait()
+	close(createErrors)
+
+	for err := range createErrors {
+		assert.NoError(t, err)
+	}
+
+	persistenceCleanup(t, o)
+}
+
+// TestAddVolumeStopsOnCancelledContextConcurrentCore covers the request-level failure path.  db.Lock reports a
+// cancelled request context as a lock failure, which must not be mistaken for "this backend went away, try the
+// next pool"; otherwise every remaining candidate adds another meaningless clause to the returned error.
+func TestAddVolumeStopsOnCancelledContextConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// One preferred topology per backend fixes the candidate order as backend1, backend2, backend3.
+	zones := []string{"Z1", "Z2", "Z3"}
+	preferredTopologies := make([]map[string]string, 0, len(zones))
+	for _, zone := range zones {
+		preferredTopologies = append(preferredTopologies, makeTopology("R1", zone))
+	}
+
+	pools := make([]storage.Pool, 0, len(zones))
+	for i, zone := range zones {
+		pool := storage.NewStoragePool(nil, fmt.Sprintf("pool%da", i+1))
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", zone)})
+		pools = append(pools, pool)
+	}
+
+	ctx, cancel := context.WithCancel(testCtx)
+	defer cancel()
+
+	mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[0]},
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).DoAndReturn(
+		func(_ context.Context, _ *storage.VolumeConfig, _ storage.Pool, _ map[string]sa.Request,
+			_ bool,
+		) (*storage.Volume, error) {
+			cancel()
+			return nil, fmt.Errorf("create failed")
+		}).Times(1)
+
+	// Neither remaining candidate may be attempted once the request is dead.
+	remaining := make([]*mockstorage.MockBackend, 0, 2)
+	for i := 2; i <= 3; i++ {
+		mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{pools[i-1]},
+			backendAttributes(fmt.Sprintf("testBackend%d", i), fmt.Sprintf("backend-uuid%d", i)))
+		mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		remaining = append(remaining, mockBackend)
+	}
+
+	addBackendsToCache(t, mockBackend1, remaining[0], remaining[1])
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(ctx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		PreferredTopologies: preferredTopologies,
+	})
+
+	assert.Nil(t, result)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.NotContains(t, err.Error(), "testBackend3",
+		"the create must stop at the first cancellation rather than reporting one clause per candidate")
+
+	persistenceCleanup(t, o)
+}
+
+// TestGatherCandidatePoolsHonorsPreferredZoneAcrossSingleZoneBackendsConcurrentCore covers backends that each serve
+// a single zone while the requisite topologies span every zone.  Every pool passes the requisite filter, so only the
+// preferred topology order may decide which backend is tried first.
+func TestGatherCandidatePoolsHonorsPreferredZoneAcrossSingleZoneBackendsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name             string
+		preferred        []map[string]string
+		wantFirstBackend string
+	}{
+		{
+			name:             "prefer zone 1",
+			preferred:        []map[string]string{makeTopology("R1", "Z1"), makeTopology("R1", "Z2")},
+			wantFirstBackend: "testBackend1",
+		},
+		{
+			name:             "prefer zone 2",
+			preferred:        []map[string]string{makeTopology("R1", "Z2"), makeTopology("R1", "Z1")},
+			wantFirstBackend: "testBackend2",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+
+			zone1Pools := []storage.Pool{storage.NewStoragePool(nil, "data01"), storage.NewStoragePool(nil, "data02")}
+			zone2Pools := []storage.Pool{storage.NewStoragePool(nil, "data01"), storage.NewStoragePool(nil, "data02")}
+			for _, p := range zone1Pools {
+				p.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+			}
+			for _, p := range zone2Pools {
+				p.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z2")})
+			}
+
+			mockBackend1 := getMockBackendWithMap(mockCtrl, zone1Pools, backendAttributes("testBackend1", "backend-uuid1"))
+			mockBackend2 := getMockBackendWithMap(mockCtrl, zone2Pools, backendAttributes("testBackend2", "backend-uuid2"))
+
+			addBackendsToCache(t, mockBackend1, mockBackend2)
+			addStorageClassesToCache(t, getFakeStorageClass("gold"))
+			o.RebuildStorageClassPoolMap(testCtx)
+
+			volumeConfig := &storage.VolumeConfig{
+				Name:                "vol1",
+				InternalName:        "vol1",
+				Size:                "1G",
+				Protocol:            config.File,
+				StorageClass:        "gold",
+				VolumeMode:          config.Filesystem,
+				AccessMode:          config.ReadWriteMany,
+				RequisiteTopologies: []map[string]string{makeTopology("R1", "Z1"), makeTopology("R1", "Z2")},
+				PreferredTopologies: tc.preferred,
+			}
+
+			matchingBackendPools := o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(testCtx, "gold")
+			require.Len(t, matchingBackendPools, 2)
+
+			for i := 0; i < 100; i++ {
+				pools, err := o.gatherCandidatePools(testCtx, getFakeStorageClass("gold"), config.File,
+					volumeConfig, matchingBackendPools)
+				require.NoError(t, err)
+				require.Len(t, pools, 4)
+
+				for j, pool := range pools {
+					if j < 2 {
+						assert.Equal(t, tc.wantFirstBackend, pool.Backend().Name(),
+							"preferred zone pools must be tried before any other zone")
+					} else {
+						assert.NotEqual(t, tc.wantFirstBackend, pool.Backend().Name())
+					}
+				}
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+// TestAddVolumeTransactionUpdateFailureKeepsBackendEligibleConcurrentCore checks that a failed transaction update
+// does not rule out the rest of the backend's pools.  The failure comes from the persistent store, not the backend,
+// so the remaining preferred-zone pool on the same backend must still be tried before falling back to another zone.
+func TestAddVolumeTransactionUpdateFailureKeepsBackendEligibleConcurrentCore(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	preferredPools := []storage.Pool{storage.NewStoragePool(nil, "pool1a"), storage.NewStoragePool(nil, "pool1b")}
+	for _, pool := range preferredPools {
+		pool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z1")})
+	}
+	fallbackPool := storage.NewStoragePool(nil, "pool2a")
+	fallbackPool.SetSupportedTopologies([]map[string]string{makeTopology("R1", "Z2")})
+
+	mockBackend1 := getMockBackendWithMap(mockCtrl, preferredPools,
+		backendAttributes("testBackend1", "backend-uuid1"))
+	mockBackend1.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
+	mockBackend1.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+		&storage.Volume{
+			Config:      &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+			BackendUUID: "backend-uuid1",
+		}, nil).Times(1)
+
+	mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fallbackPool},
+		backendAttributes("testBackend2", "backend-uuid2"))
+	mockBackend2.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockBackend2.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	addBackendsToCache(t, mockBackend1, mockBackend2)
+	addStorageClassesToCache(t, getFakeStorageClass("gold"))
+	o.RebuildStorageClassPoolMap(testCtx)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(
+		fmt.Errorf("transient store error")).Times(1)
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	result, err := o.AddVolume(testCtx, &storage.VolumeConfig{
+		Name:                "vol1",
+		InternalName:        "vol1",
+		Size:                "1G",
+		Protocol:            config.File,
+		StorageClass:        "gold",
+		VolumeMode:          config.Filesystem,
+		AccessMode:          config.ReadWriteMany,
+		RequisiteTopologies: []map[string]string{makeTopology("R1", "Z1"), makeTopology("R1", "Z2")},
+		PreferredTopologies: []map[string]string{makeTopology("R1", "Z1"), makeTopology("R1", "Z2")},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	volume := getVolumeByNameFromCache(t, "vol1")
+	require.NotNil(t, volume)
+	assert.Equal(t, "backend-uuid1", volume.BackendUUID)
+
+	persistenceCleanup(t, o)
+}
