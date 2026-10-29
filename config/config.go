@@ -436,7 +436,7 @@ var (
 	DefaultAutosupportName = "trident-autosupport"
 
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
-	DefaultAutosupportImage = fmt.Sprintf("docker.io/netapp/%s:26.06", DefaultAutosupportName)
+	DefaultAutosupportImage = fmt.Sprintf("docker.io/netapp/%s:26.10", DefaultAutosupportName)
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
 	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.10.0"
