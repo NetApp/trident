@@ -38,15 +38,16 @@ const (
 )
 
 type helper struct {
-	orchestrator      core.Orchestrator
-	k8sClients        *clik8sclient.Clients
-	podsPath          string
-	kubeConfigPath    string
-	publishedPaths    map[string]map[string]struct{}
-	enableForceDetach bool
-	mount             mount.Mount
-	eventRecorder     record.EventRecorder
-	eventRecorderOnce sync.Once
+	orchestrator       core.Orchestrator
+	k8sClients         *clik8sclient.Clients
+	podsPath           string
+	kubeConfigPath     string
+	publishedPaths     map[string]map[string]struct{}
+	publishedPathsLock sync.Mutex // guards publishedPaths across concurrent volumeIDs
+	enableForceDetach  bool
+	mount              mount.Mount
+	eventRecorder      record.EventRecorder
+	eventRecorderOnce  sync.Once
 
 	// Extended helpers
 	nodehelpers.VolumePublishManager
@@ -213,7 +214,9 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 			return fmt.Errorf("could not discover published raw devices: %w", err)
 		}
 
+		h.publishedPathsLock.Lock()
 		h.publishedPaths = publishedPaths
+		h.publishedPathsLock.Unlock()
 	}
 
 	pvToDeviceMappings, err := h.mount.PVMountpointMappings(ctx)
@@ -235,12 +238,14 @@ func (h *helper) reconcileVolumePublishInfoFile(
 	ctx context.Context, file string, pvToDeviceMappings map[string]string,
 ) error {
 	volumeId := strings.ReplaceAll(file, ".json", "")
+	h.publishedPathsLock.Lock()
 	paths, ok := h.publishedPaths[volumeId]
 	if !ok {
 		paths = make(map[string]struct{})
 		h.publishedPaths[volumeId] = paths
 		Log().Warningf("Could not determine determine published paths for volume: %s", volumeId)
 	}
+	h.publishedPathsLock.Unlock()
 
 	shouldDelete, err := h.VolumePublishManager.UpgradeVolumeTrackingFile(ctx, volumeId, paths, pvToDeviceMappings)
 	if err != nil {
@@ -286,7 +291,9 @@ func (h *helper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd strin
 		return fmt.Errorf("failed to update the tracking file; %w", err)
 	}
 
+	h.publishedPathsLock.Lock()
 	h.publishedPaths[volumeID] = volTrackingInfo.PublishedPaths
+	h.publishedPathsLock.Unlock()
 	return nil
 }
 
@@ -308,7 +315,9 @@ func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove
 		return fmt.Errorf("failed to update the tracking file; %w", err)
 	}
 
+	h.publishedPathsLock.Lock()
 	h.publishedPaths[volumeID] = volTrackingInfo.PublishedPaths
+	h.publishedPathsLock.Unlock()
 	return nil
 }
 
