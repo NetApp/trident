@@ -368,12 +368,13 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		return false, nil
 	}
 
-	file = path.Join(volumeTrackingInfo.GlobalMount, volumePublishInfoFilename)
+	stagingTargetPath := volumeTrackingInfo.GlobalMount
+	file = path.Join(stagingTargetPath, volumePublishInfoFilename)
 	err = jsonRW.ReadJSONFile(ctx, publishInfo, file, "publish info")
 	if err != nil {
 		if !isFileValidJSON(err) {
 			// If the staged device info file is not valid, it will never be useful again, regardless of retries.
-			v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.GlobalMount, volumeId)
+			v.deleteStagedDeviceInfo(ctx, stagingTargetPath, volumeId)
 			return true, nil
 		}
 		return false, errors.TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
@@ -401,6 +402,8 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	}
 
 	volumeTrackingInfo.VolumePublishInfo = *publishInfo
+	// Legacy staged publish info never recorded the staging path; only the legacy tracking file did.
+	volumeTrackingInfo.GlobalMount = stagingTargetPath
 	volumeTrackingInfo.PublishedPaths = publishedPaths
 
 	// (arorar): I do not think this condition will ever be true since `rawDevicePath`
@@ -416,7 +419,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	}
 
 	// Remove the old file in the staging path now that its contents have been moved to the new tracking file.
-	_ = v.clearStagedDeviceInfo(ctx, volumeTrackingInfo.GlobalMount, volumeId)
+	_ = v.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId)
 
 	Logc(ctx).Debug("Volume tracking method upgraded.")
 
