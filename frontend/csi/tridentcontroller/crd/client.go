@@ -337,7 +337,7 @@ func (c *Client) StartNodeCleanupWatch(ctx context.Context, nodeName string) (<-
 	return events, stopFn, nil
 }
 
-// GetDesiredPublications lists TridentVolumePublication CRs labeled for the node.
+// GetDesiredPublications returns the TridentVolumePublication CRs for the node
 func (c *Client) GetDesiredPublications(
 	ctx context.Context, nodeName string,
 ) (map[string]*models.VolumePublicationExternal, error) {
@@ -345,14 +345,17 @@ func (c *Client) GetDesiredPublications(
 		return nil, err
 	}
 	publications, err := c.tridentClient.TridentV1().TridentVolumePublications(c.tridentNamespace).List(
-		ctx, metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", config.TridentNodeNameLabel, nodeName)},
+		ctx, metav1.ListOptions{},
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list volume publications: %w", err)
 	}
 
-	desiredPublicationState := make(map[string]*models.VolumePublicationExternal, len(publications.Items))
+	desiredPublicationState := make(map[string]*models.VolumePublicationExternal)
 	for _, pubCR := range publications.Items {
+		if pubCR.NodeID != nodeName {
+			continue
+		}
 		pub, pubErr := pubCR.Persistent()
 		if pubErr != nil {
 			return nil, pubErr
