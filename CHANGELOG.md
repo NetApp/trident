@@ -2,6 +2,8 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+**IMPORTANT:** **Do not upgrade to Trident 26.10.0 from 25.10 or any earlier version due to a critical bug.** At startup, Trident node pods may detach volumes that are still in use, and the affected pods may fail with `volume ... is not staged`. We are working on a fix and will share an update as soon as it is available.
+
 ## Changes since v26.06.0
 
 ### Trident
@@ -87,7 +89,7 @@
 - Added support for failing over to an earlier snapshot of a replicated application, allowing recovery from a point in time before data was damaged or compromised. To learn more, refer to [Fail over to an older snapshot using Trident Protect](https://review.docs.netapp.com/us-en/trident_tp-2610-rn/trident-protect/trident-protect-failover-older-snapshot.html).
 
 
-## v26.02.0
+## v26.06.0
 
 ### Trident
 
