@@ -2,9 +2,17 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-**IMPORTANT:** **Do not upgrade to Trident 26.10.0 from 25.10 or any earlier version due to a critical bug.** At startup, Trident node pods may detach volumes that are still in use, and the affected pods may fail with `volume ... is not staged`. We are working on a fix and will share an update as soon as it is available.
+**IMPORTANT:** Do not upgrade to Trident 26.10.0 from 25.10 or any earlier version. Upgrade directly to 26.10.1 instead. In 26.10.0, Trident node pods may detach in-use NAS (NFS, SMB) and SAN (iSCSI, FC, NVMe/TCP) volumes at startup, and the affected pods may fail with `volume ... is not staged`.
 
-## Changes since v26.06.0
+## Changes since v26.10.0
+
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed Trident node pods force-detaching in-use volumes at startup after upgrading from Trident 25.10 or earlier, which caused pods to fail with `volume ... is not staged`.
+
+## v26.10.0
 
 ### Trident
 
