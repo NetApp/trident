@@ -384,11 +384,17 @@ func getFakeBackendWithConfig(
 }
 
 func getMockBackend(mockCtrl *gomock.Controller, name, uuid string) *mockstorage.MockBackend {
+	return getMockBackendWithProtocol(mockCtrl, name, uuid, config.File)
+}
+
+func getMockBackendWithProtocol(
+	mockCtrl *gomock.Controller, name, uuid string, protocol config.Protocol,
+) *mockstorage.MockBackend {
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 
 	mockBackend.EXPECT().Name().Return(name).AnyTimes()
 	mockBackend.EXPECT().BackendUUID().Return(uuid).AnyTimes()
-	mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+	mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(protocol).AnyTimes()
 	mockBackend.EXPECT().GetDriverName().Return("ontap-nas").AnyTimes()
 	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 	mockBackend.EXPECT().Online().Return(true).AnyTimes()
@@ -7765,6 +7771,270 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			name:         "FilesystemReadWriteManyOnBlockSource",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				blockSource := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						Protocol:     config.Block,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, blockSource)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				AccessMode:                config.ReadWriteMany,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "incompatible with source protocol block")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+				assert.Nil(t, getVolumeByNameFromCache(t, "cloneVolume"))
+			},
+		},
+		{
+			name:         "FilesystemReadWriteManyOnBlockBackendWithoutSourceProtocol",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackendWithProtocol(mockCtrl, "testBackend", "backend-uuid", config.Block)
+				source := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, source)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				AccessMode:                config.ReadWriteMany,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "incompatible with source protocol block on backend testBackend")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+				assert.Nil(t, getVolumeByNameFromCache(t, "cloneVolume"))
+			},
+		},
+		{
+			name:         "FilesystemReadWriteManyOnFileBackend",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(cloneVolume, nil).Times(1)
+
+				fileSource := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fileSource)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				AccessMode:                config.ReadWriteMany,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+			},
+		},
+		{
+			name:         "FilesystemReadWriteOnceOnBlockSource",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(cloneVolume, nil).Times(1)
+
+				blockSource := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						Protocol:     config.Block,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, blockSource)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				AccessMode:                config.ReadWriteOnce,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+			},
+		},
+		{
+			name:         "FilesystemReadOnlyManyOnBlockSource",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(cloneVolume, nil).Times(1)
+
+				blockSource := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						Protocol:     config.Block,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, blockSource)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				AccessMode:                config.ReadOnlyMany,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+			},
+		},
+		{
+			name:         "BlockReadWriteManyOnBlockSource",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(cloneVolume, nil).Times(1)
+
+				blockSource := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.RawBlock,
+						Protocol:     config.Block,
+						AccessMode:   config.ReadWriteOnce,
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, blockSource)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.RawBlock,
+				AccessMode:                config.ReadWriteMany,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+			},
+		},
+		{
 			name:         "MissingCloneSourceSnapshot",
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
@@ -8451,6 +8721,195 @@ func TestConcurrentCloneVolume_OverlaysSecureSMBFromCloneVolumeConfig(t *testing
 	assert.NoError(t, err)
 
 	persistenceCleanup(t, o)
+}
+
+// TestConcurrentCloneVolume_CrossStorageClassAndAccessMode checks the StorageClass and AccessMode
+// overlay in the concurrent clone path, and the admission checks that run before it. A set class
+// or access mode replaces the source value. An unset access mode keeps the source mode. An empty
+// StorageClass still fails the cross-class check, except in Docker plugin mode. Docker Create
+// always sets StorageClass and leaves AccessMode empty, so that clone records the requested class
+// and keeps the source access mode. Protocol and volume mode stay on the source rules.
+func TestConcurrentCloneVolume_CrossStorageClassAndAccessMode(t *testing.T) {
+	prevDriverCtx := config.CurrentDriverContext
+	config.CurrentDriverContext = config.ContextCSI
+	t.Cleanup(func() { config.CurrentDriverContext = prevDriverCtx })
+
+	newSource := func() *storage.Volume {
+		return &storage.Volume{
+			Config: &storage.VolumeConfig{
+				InternalName: "sourceVolume",
+				Name:         "sourceVolume",
+				Size:         "1073741824",
+				VolumeMode:   config.Filesystem,
+				Protocol:     config.Block,
+				StorageClass: "sc-rwo",
+				AccessMode:   config.ReadWriteOnce,
+			},
+			BackendUUID: "backend-uuid",
+		}
+	}
+	newRequest := func(name string) *storage.VolumeConfig {
+		return &storage.VolumeConfig{
+			Name:                      name,
+			Size:                      "1073741824",
+			VolumeMode:                config.Filesystem,
+			Protocol:                  config.File,
+			CloneSourceVolume:         "sourceVolume",
+			CloneSourceVolumeInternal: "sourceVolume",
+		}
+	}
+
+	tests := []struct {
+		name         string
+		docker       bool
+		classes      []string
+		request      *storage.VolumeConfig
+		wantClass    string
+		wantAccess   config.AccessMode
+		wantErr      string
+		mismatchedSC bool
+	}{
+		{
+			name:    "requested class and access mode replace the source values",
+			classes: []string{"sc-rwo", "sc-rom"},
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneVolume")
+				cfg.StorageClass = "sc-rom"
+				cfg.AccessMode = config.ReadOnlyMany
+				return cfg
+			}(),
+			wantClass:  "sc-rom",
+			wantAccess: config.ReadOnlyMany,
+		},
+		{
+			name:    "same storage class still replaces access mode",
+			classes: []string{"sc-rwo"},
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneSameClass")
+				cfg.StorageClass = "sc-rwo"
+				cfg.AccessMode = config.ReadOnlyMany
+				return cfg
+			}(),
+			wantClass:  "sc-rwo",
+			wantAccess: config.ReadOnlyMany,
+		},
+		{
+			name:    "unset access mode keeps the source access mode",
+			classes: []string{"sc-rwo"},
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneUnsetMode")
+				cfg.StorageClass = "sc-rwo"
+				return cfg
+			}(),
+			wantClass:  "sc-rwo",
+			wantAccess: config.ReadWriteOnce,
+		},
+		{
+			name: "empty storage class is still rejected",
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneEmptyClass")
+				cfg.AccessMode = config.ReadWriteMany
+				return cfg
+			}(),
+			mismatchedSC: true,
+		},
+		{
+			name: "volume mode mismatch is still rejected",
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneBadMode")
+				cfg.StorageClass = "sc-rwo"
+				cfg.AccessMode = config.ReadWriteMany
+				cfg.VolumeMode = config.RawBlock
+				return cfg
+			}(),
+			wantErr: "volume-mode",
+		},
+		{
+			name:       "docker mode keeps the source class and access mode when the request omits them",
+			docker:     true,
+			request:    newRequest("cloneDockerUnset"),
+			wantClass:  "sc-rwo",
+			wantAccess: config.ReadWriteOnce,
+		},
+		{
+			name:   "docker mode records the requested storage class and keeps the source access mode",
+			docker: true,
+			request: func() *storage.VolumeConfig {
+				cfg := newRequest("cloneDockerClass")
+				cfg.StorageClass = "auto_sc_clone"
+				return cfg
+			}(),
+			wantClass:  "auto_sc_clone",
+			wantAccess: config.ReadWriteOnce,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.docker {
+				t.Setenv(config.DockerPluginModeEnvVariable, "1")
+			}
+
+			mockCtrl := gomock.NewController(t)
+			db.Initialize()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+			if tt.wantErr == "" && !tt.mismatchedSC {
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+					DoAndReturn(func(_ context.Context, _ *storage.VolumeConfig, cloneCfg *storage.VolumeConfig, _ storage.Pool, _ bool) (*storage.Volume, error) {
+						assert.Equal(t, tt.wantClass, cloneCfg.StorageClass)
+						assert.Equal(t, tt.wantAccess, cloneCfg.AccessMode)
+						assert.Equal(t, config.Block, cloneCfg.Protocol)
+						assert.Equal(t, config.Filesystem, cloneCfg.VolumeMode)
+						return &storage.Volume{Config: cloneCfg, BackendUUID: "backend-uuid"}, nil
+					}).Times(1)
+			}
+
+			addBackendsToCache(t, mockBackend)
+			addVolumesToCache(t, newSource())
+			if len(tt.classes) > 0 {
+				storageClasses := make([]*storageclass.StorageClass, 0, len(tt.classes))
+				for _, name := range tt.classes {
+					storageClasses = append(storageClasses, storageclass.New(&storageclass.Config{Name: name}))
+				}
+				addStorageClassesToCache(t, storageClasses...)
+				o.RebuildStorageClassPoolMap(testCtx)
+			}
+
+			mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			if tt.wantErr == "" && !tt.mismatchedSC {
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			}
+
+			result, err := o.CloneVolume(testCtx, tt.request)
+			if tt.mismatchedSC {
+				require.Error(t, err)
+				assert.True(t, errors.IsMismatchedStorageClassError(err))
+				assert.Nil(t, result)
+				assert.Nil(t, getVolumeByNameFromCache(t, tt.request.Name))
+			} else if tt.wantErr != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.wantErr)
+				assert.Nil(t, result)
+				assert.Nil(t, getVolumeByNameFromCache(t, tt.request.Name))
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				assert.Equal(t, tt.wantClass, result.Config.StorageClass)
+				assert.Equal(t, tt.wantAccess, result.Config.AccessMode)
+				assert.Equal(t, config.Block, result.Config.Protocol)
+				assert.Equal(t, config.Filesystem, result.Config.VolumeMode)
+			}
+			persistenceCleanup(t, o)
+		})
+	}
 }
 
 func TestDeleteVolumeConcurrentCore(t *testing.T) {

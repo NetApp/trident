@@ -273,6 +273,37 @@ func getProtocol(
 	return res.protocol, res.err
 }
 
+// validateCloneProtocol rejects a clone whose requested volume mode and access mode are illegal for the
+// protocol the clone will keep. A clone stays on the source backend, so that protocol is the source volume's
+// protocol, or the backend protocol when the source does not record one. An empty requested access mode keeps
+// the source access mode. When neither is set, the request is not changing access and is left alone.
+func validateCloneProtocol(
+	ctx context.Context, requested *storage.VolumeConfig, source *storage.Volume, backend storage.Backend,
+) error {
+	accessMode := requested.AccessMode
+	if accessMode == "" {
+		accessMode = source.Config.AccessMode
+	}
+	if accessMode == "" {
+		return nil
+	}
+
+	sourceProtocol := source.Config.Protocol
+	if sourceProtocol == config.ProtocolAny {
+		sourceProtocol = backend.GetProtocol(ctx)
+	}
+	if sourceProtocol == config.ProtocolAny {
+		return nil
+	}
+
+	if _, err := getProtocol(ctx, requested.VolumeMode, accessMode, sourceProtocol); err != nil {
+		return fmt.Errorf(
+			"requested volume mode (%s) and access mode (%s) are incompatible with source protocol %s on backend %s: %w",
+			requested.VolumeMode, accessMode, sourceProtocol, backend.Name(), err)
+	}
+	return nil
+}
+
 // isVolumeAutogrowIneligible returns true if the volume should be excluded
 // from autogrow monitoring based on its configuration.
 //

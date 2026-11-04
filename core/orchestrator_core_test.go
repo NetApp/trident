@@ -1453,6 +1453,316 @@ func TestCloneVolume_VolumeDataSource_LUKS(t *testing.T) {
 	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
 }
 
+// TestCloneVolume_CrossStorageClassAndAccessMode checks the StorageClass and AccessMode overlay in
+// cloneVolumeInitial. ConstructClone starts from the source volume, so a clone keeps the source
+// StorageClass and AccessMode unless the request sets them. The overlay must not change which
+// clones are admitted: protocol and volume mode stay on the source rules, an empty StorageClass
+// still fails the cross-class check, and a volume-mode mismatch is still rejected.
+func TestCloneVolume_CrossStorageClassAndAccessMode(t *testing.T) {
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	poolNames := []string{tu.SlowSnapshots}
+	pools := make(map[string]*fake.StoragePool, len(poolNames))
+	for _, poolName := range poolNames {
+		pools[poolName] = mockPools[poolName]
+	}
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("slow-block", "block", pools, nil)
+	require.NoError(t, err)
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = orchestrator.DeleteBackend(ctx(), "slow-block") })
+
+	// All three classes match the same backend, so cloning from sc-rwo to sc-rom is permitted.
+	// sc-rwx stays registered for the volume-mode rejection, which still requests ReadWriteMany.
+	for _, name := range []string{"sc-rwo", "sc-rom", "sc-rwx"} {
+		scName := name
+		_, err = orchestrator.AddStorageClass(ctx(), &storageclass.Config{Name: scName})
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteStorageClass(ctx(), scName) })
+	}
+
+	volConfig := tu.GenerateVolumeConfig("block", 1, "sc-rwo", config.Block)
+	volConfig.AccessMode = config.ReadWriteOnce
+	_, err = orchestrator.AddVolume(ctx(), volConfig)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), volConfig.Name) })
+
+	assertCloneMetadata := func(t *testing.T, cloneResult *storage.VolumeExternal, storageClass string, accessMode config.AccessMode) {
+		t.Helper()
+		require.NotNil(t, cloneResult)
+		require.NotNil(t, cloneResult.Config)
+		assert.Equal(t, storageClass, cloneResult.Config.StorageClass)
+		assert.Equal(t, accessMode, cloneResult.Config.AccessMode)
+		// The request may carry a different protocol. The clone stays on the source protocol and volume mode.
+		assert.Equal(t, config.Block, cloneResult.Config.Protocol)
+		assert.Equal(t, config.Filesystem, cloneResult.Config.VolumeMode)
+		assert.Equal(t, volConfig.Name, cloneResult.Config.CloneSourceVolume)
+
+		stored, err := orchestrator.GetVolume(ctx(), cloneResult.Config.Name)
+		require.NoError(t, err)
+		require.NotNil(t, stored)
+		assert.Equal(t, storageClass, stored.Config.StorageClass)
+		assert.Equal(t, accessMode, stored.Config.AccessMode)
+		assert.Equal(t, config.Block, stored.Config.Protocol)
+		assert.Equal(t, config.Filesystem, stored.Config.VolumeMode)
+	}
+
+	t.Run("requested class and access mode replace the source values", func(t *testing.T) {
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_clone",
+			StorageClass:      "sc-rom",
+			AccessMode:        config.ReadOnlyMany,
+			Protocol:          config.File,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "sc-rom", config.ReadOnlyMany)
+
+		source, err := orchestrator.GetVolume(ctx(), volConfig.Name)
+		require.NoError(t, err)
+		assert.Equal(t, "sc-rwo", source.Config.StorageClass)
+		assert.Equal(t, config.ReadWriteOnce, source.Config.AccessMode)
+	})
+
+	t.Run("same storage class still replaces access mode", func(t *testing.T) {
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_clone_same_class",
+			StorageClass:      volConfig.StorageClass,
+			AccessMode:        config.ReadOnlyMany,
+			Protocol:          config.File,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "sc-rwo", config.ReadOnlyMany)
+	})
+
+	t.Run("unset access mode keeps the source access mode", func(t *testing.T) {
+		// Same StorageClass, so the cross-class check does not apply. AccessMode is left unset
+		// and must remain the source volume's ReadWriteOnce.
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_clone_unset_mode",
+			StorageClass:      volConfig.StorageClass,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "sc-rwo", config.ReadWriteOnce)
+	})
+
+	t.Run("snapshot clone records the requested class and access mode", func(t *testing.T) {
+		prevDriverCtx := config.CurrentDriverContext
+		config.CurrentDriverContext = config.ContextCSI
+		t.Cleanup(func() { config.CurrentDriverContext = prevDriverCtx })
+
+		snapshotConfig := generateSnapshotConfig("clone-src-snap", volConfig.Name, volConfig.InternalName)
+		_, err := orchestrator.CreateSnapshot(ctx(), snapshotConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteSnapshot(ctx(), volConfig.Name, snapshotConfig.Name) })
+
+		cloneConfig := &storage.VolumeConfig{
+			Name:                volConfig.Name + "_snap_clone",
+			StorageClass:        "sc-rom",
+			AccessMode:          config.ReadOnlyMany,
+			Protocol:            config.File,
+			CloneSourceVolume:   volConfig.Name,
+			CloneSourceSnapshot: snapshotConfig.Name,
+			VolumeMode:          volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "sc-rom", config.ReadOnlyMany)
+		assert.Equal(t, snapshotConfig.Name, cloneResult.Config.CloneSourceSnapshot)
+	})
+
+	t.Run("empty storage class is still rejected", func(t *testing.T) {
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_empty_class",
+			AccessMode:        config.ReadWriteMany,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.Error(t, err)
+		assert.True(t, errors.IsMismatchedStorageClassError(err))
+		assert.Nil(t, cloneResult)
+		_, getErr := orchestrator.GetVolume(ctx(), cloneConfig.Name)
+		assert.Error(t, getErr)
+	})
+
+	t.Run("volume mode mismatch is still rejected", func(t *testing.T) {
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_bad_mode",
+			StorageClass:      "sc-rwx",
+			AccessMode:        config.ReadWriteMany,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        config.RawBlock,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "volume-mode")
+		assert.Nil(t, cloneResult)
+		_, getErr := orchestrator.GetVolume(ctx(), cloneConfig.Name)
+		assert.Error(t, getErr)
+	})
+
+	t.Run("docker mode keeps the source class and access mode when the request omits them", func(t *testing.T) {
+		// Docker plugin mode skips the cross-class check, so an omitted StorageClass is accepted
+		// and the empty-string guards leave the source class and access mode in place. The Docker
+		// frontend never sends this shape; it always sets StorageClass.
+		t.Setenv(config.DockerPluginModeEnvVariable, "1")
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_docker_unset",
+			Protocol:          config.File,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "sc-rwo", config.ReadWriteOnce)
+	})
+
+	t.Run("docker mode records the requested storage class and keeps the source access mode", func(t *testing.T) {
+		// Docker Create always sets StorageClass to an auto_sc_* name and leaves AccessMode empty.
+		t.Setenv(config.DockerPluginModeEnvVariable, "1")
+		cloneConfig := &storage.VolumeConfig{
+			Name:              volConfig.Name + "_docker_class",
+			StorageClass:      "auto_sc_clone",
+			Protocol:          config.File,
+			CloneSourceVolume: volConfig.Name,
+			VolumeMode:        volConfig.VolumeMode,
+		}
+		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name) })
+		assertCloneMetadata(t, cloneResult, "auto_sc_clone", config.ReadWriteOnce)
+	})
+}
+
+func TestCloneVolume_AccessModeProtocol(t *testing.T) {
+	tests := []struct {
+		name                string
+		backendProto        config.Protocol
+		sourceMode          config.VolumeMode
+		sourceAccess        config.AccessMode
+		cloneAccess         config.AccessMode
+		clearSourceProtocol bool
+		wantErrSubstr       string
+	}{
+		{
+			name:          "filesystem read write many on block backend",
+			backendProto:  config.Block,
+			sourceMode:    config.Filesystem,
+			sourceAccess:  config.ReadWriteOnce,
+			cloneAccess:   config.ReadWriteMany,
+			wantErrSubstr: "incompatible with source protocol block",
+		},
+		{
+			name:                "filesystem read write many on block backend without source protocol",
+			backendProto:        config.Block,
+			sourceMode:          config.Filesystem,
+			sourceAccess:        config.ReadWriteOnce,
+			cloneAccess:         config.ReadWriteMany,
+			clearSourceProtocol: true,
+			wantErrSubstr:       "incompatible with source protocol block on backend backend-block",
+		},
+		{
+			name:                "filesystem read write many on file backend without source protocol",
+			backendProto:        config.File,
+			sourceMode:          config.Filesystem,
+			sourceAccess:        config.ReadWriteOnce,
+			cloneAccess:         config.ReadWriteMany,
+			clearSourceProtocol: true,
+		},
+		{
+			name:         "filesystem read write once on block backend",
+			backendProto: config.Block,
+			sourceMode:   config.Filesystem,
+			sourceAccess: config.ReadWriteOnce,
+			cloneAccess:  config.ReadWriteOnce,
+		},
+		{
+			name:         "filesystem read only many on block backend",
+			backendProto: config.Block,
+			sourceMode:   config.Filesystem,
+			sourceAccess: config.ReadWriteOnce,
+			cloneAccess:  config.ReadOnlyMany,
+		},
+		{
+			name:         "raw block read write many on block backend",
+			backendProto: config.Block,
+			sourceMode:   config.RawBlock,
+			sourceAccess: config.ReadWriteOnce,
+			cloneAccess:  config.ReadWriteMany,
+		},
+		{
+			name:         "filesystem read write many on file backend",
+			backendProto: config.File,
+			sourceMode:   config.Filesystem,
+			sourceAccess: config.ReadWriteOnce,
+			cloneAccess:  config.ReadWriteMany,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orchestrator := getOrchestrator(t, false)
+			backendName := "backend-" + string(tt.backendProto)
+			cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(
+				backendName, tt.backendProto, tu.GenerateFakePools(1), nil)
+			require.NoError(t, err)
+			_, err = orchestrator.AddBackend(ctx(), cfg, "")
+			require.NoError(t, err)
+			defer orchestrator.DeleteBackend(ctx(), backendName)
+
+			storageClass := &storageclass.Config{Name: "sc"}
+			_, err = orchestrator.AddStorageClass(ctx(), storageClass)
+			require.NoError(t, err)
+			defer orchestrator.DeleteStorageClass(ctx(), storageClass.Name)
+
+			source := tu.GenerateVolumeConfig("source", 1, "sc", tt.backendProto)
+			source.VolumeMode = tt.sourceMode
+			source.AccessMode = tt.sourceAccess
+			_, err = orchestrator.AddVolume(ctx(), source)
+			require.NoError(t, err)
+			defer orchestrator.DeleteVolume(ctx(), source.Name)
+			if tt.clearSourceProtocol {
+				orchestrator.volumes[source.Name].Config.Protocol = ""
+			}
+
+			clone, err := orchestrator.CloneVolume(ctx(), &storage.VolumeConfig{
+				Name:              "clone",
+				StorageClass:      "sc",
+				AccessMode:        tt.cloneAccess,
+				CloneSourceVolume: source.Name,
+				VolumeMode:        tt.sourceMode,
+			})
+			if tt.wantErrSubstr != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.wantErrSubstr)
+				assert.Nil(t, clone)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, clone)
+			defer orchestrator.DeleteVolume(ctx(), clone.Config.Name)
+			if !tt.clearSourceProtocol {
+				assert.Equal(t, tt.backendProto, clone.Config.Protocol)
+			}
+		})
+	}
+}
+
 func TestCloneVolume_WithImportNotManaged(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	defer cleanup(t, orchestrator)

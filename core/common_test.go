@@ -11,6 +11,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
 
 	"github.com/netapp/trident/config"
@@ -81,6 +82,58 @@ func TestGetProtocol(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, tc.expected, protocolLocal, "expected both the protocols to be equal!")
 	}
+}
+
+func TestValidateCloneProtocol(t *testing.T) {
+	backend := getMockBackend(gomock.NewController(t), "testBackend", "backend-uuid")
+	source := func(mode config.VolumeMode, access config.AccessMode, protocol config.Protocol) *storage.Volume {
+		return &storage.Volume{
+			Config: &storage.VolumeConfig{
+				VolumeMode: mode,
+				AccessMode: access,
+				Protocol:   protocol,
+			},
+		}
+	}
+	request := func(mode config.VolumeMode, access config.AccessMode) *storage.VolumeConfig {
+		return &storage.VolumeConfig{VolumeMode: mode, AccessMode: access}
+	}
+
+	err := validateCloneProtocol(context.Background(),
+		request(config.Filesystem, config.ReadWriteMany),
+		source(config.Filesystem, config.ReadWriteOnce, config.Block), backend)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "incompatible with source protocol block")
+
+	assert.NoError(t, validateCloneProtocol(context.Background(),
+		request(config.Filesystem, config.ReadWriteMany),
+		source(config.Filesystem, config.ReadWriteOnce, config.File), backend))
+	assert.NoError(t, validateCloneProtocol(context.Background(),
+		request(config.Filesystem, config.ReadOnlyMany),
+		source(config.Filesystem, config.ReadWriteOnce, config.Block), backend))
+	assert.NoError(t, validateCloneProtocol(context.Background(),
+		request(config.RawBlock, config.ReadWriteMany),
+		source(config.RawBlock, config.ReadWriteOnce, config.Block), backend))
+	assert.NoError(t, validateCloneProtocol(context.Background(),
+		request(config.Filesystem, ""),
+		source(config.Filesystem, "", config.Block), backend))
+
+	err = validateCloneProtocol(context.Background(),
+		request(config.Filesystem, ""),
+		source(config.Filesystem, config.ReadWriteMany, config.Block), backend)
+	require.Error(t, err)
+
+	blockBackend := getMockBackendWithProtocol(gomock.NewController(t), "blockBackend", "block-uuid", config.Block)
+
+	err = validateCloneProtocol(context.Background(),
+		request(config.Filesystem, config.ReadWriteMany),
+		source(config.Filesystem, config.ReadWriteOnce, config.ProtocolAny), blockBackend)
+	require.Error(t, err, "an unset source protocol should fall back to the backend protocol")
+	assert.ErrorContains(t, err, "incompatible with source protocol block on backend blockBackend")
+
+	assert.NoError(t, validateCloneProtocol(context.Background(),
+		request(config.Filesystem, config.ReadWriteMany),
+		source(config.Filesystem, config.ReadWriteOnce, config.ProtocolAny), backend))
 }
 
 func TestGenerateVolumePublication(t *testing.T) {
