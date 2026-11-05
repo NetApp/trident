@@ -1152,6 +1152,164 @@ func TestUpgradeVolumeTrackingFile_LegacyStagedSANTypeInfersStorageProtocol(t *t
 	assert.NoError(t, err)
 }
 
+func TestUpgradeVolumeTrackingFile_LegacyPreservesStagingPath(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
+
+	osFs := afero.NewMemMapFs()
+	trackPath := "/bar"
+	stagePath := "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/abc/globalmount"
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
+
+	volName := "pvc-legacy"
+	trackingInfoFile := path.Join(trackPath, volName+".json")
+	stagedDeviceInfo := path.Join(stagePath, volumePublishInfoFilename)
+	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+volName+".json")
+
+	// A legacy tracking file records only the staging path.
+	trackInfo := models.VolumeTrackingInfo{}
+	trackInfo.GlobalMount = stagePath
+
+	// Legacy staged publish info has no staging path of its own.
+	stagedPublishInfo := models.VolumePublishInfo{}
+	stagedPublishInfo.NfsServerIP = "1.1.1.1"
+	stagedPublishInfo.FilesystemType = "nfs"
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfo).
+		Return(nil)
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
+		SetArg(1, stagedPublishInfo).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		DoAndReturn(func(_ context.Context, ti *models.VolumeTrackingInfo, _ string, _ string) error {
+			assert.Equal(t, stagePath, ti.GlobalMount, "upgraded tracking file must keep the staging path")
+			assert.Equal(t, "1.1.1.1", ti.NfsServerIP)
+			return nil
+		})
+	_, err := osFs.Create(tmpTrackingInfoFile)
+	assert.NoError(t, err)
+	_, err = osFs.Create(stagedDeviceInfo)
+	assert.NoError(t, err)
+
+	needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), volName, nil, nil)
+	assert.False(t, needsDelete)
+	assert.NoError(t, err)
+
+	exists, err := afero.Exists(osFs, stagedDeviceInfo)
+	assert.NoError(t, err)
+	assert.False(t, exists, "legacy staged publish info must be removed from the staging path")
+}
+
+func TestUpgradeVolumeTrackingFile_LegacyISCSITrackingFileFrom2210(t *testing.T) {
+	osFs := afero.NewMemMapFs()
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = filesystem.NewJSONReaderWriter(osFs)
+
+	ctx := context.Background()
+	trackPath := "/var/lib/trident/tracking"
+	volName := "pvc-2210-iscsi"
+	stagePath := "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+		"0a1b2c3d4e5f/globalmount"
+	targetPath := "/var/lib/kubelet/pods/1234/volumes/kubernetes.io~csi/" + volName + "/mount"
+	trackingInfoFile := path.Join(trackPath, volName+".json")
+	stagedDeviceInfo := path.Join(stagePath, volumePublishInfoFilename)
+
+	// 22.10 tracking file: models.VolumeTrackingPublishInfo, which only records the staging path.
+	legacyTrackingFile := `{"stagingTargetPath":"` + stagePath + `"}`
+
+	// 22.10 staged publish info as written by NodeStageVolume for ontap-san (iSCSI); it has no staging path,
+	// storageProtocol, or SANType.
+	legacyStagedPublishInfo := `{
+		"hostIQN": ["iqn.1994-05.com.redhat:node1"],
+		"backendUUID": "6c3d1b0e-1f8a-4b52-9d2e-0b5c5c1a2f10",
+		"fstype": "ext4",
+		"sharedTarget": true,
+		"devicePath": "/dev/dm-0",
+		"tridentUUID": "2a3b4c5d-6e7f-4a8b-9c0d-1e2f3a4b5c6d",
+		"LUKSEncryption": "false",
+		"iscsiTargetPortal": "10.0.0.1:3260",
+		"iscsiPortals": ["10.0.0.2:3260"],
+		"iscsiTargetIqn": "iqn.1992-08.com.netapp:sn.0123456789abcdef:vs.42",
+		"iscsiLunNumber": 3,
+		"iscsiInterface": "default",
+		"iscsiIgroup": "node1-6c3d1b0e",
+		"iscsiLunSerial": "80CgK+QcVkEc",
+		"useCHAP": false
+	}`
+
+	assert.NoError(t, osFs.MkdirAll(trackPath, 0o755))
+	assert.NoError(t, osFs.MkdirAll(stagePath, 0o750))
+	assert.NoError(t, afero.WriteFile(osFs, trackingInfoFile, []byte(legacyTrackingFile), 0o600))
+	assert.NoError(t, afero.WriteFile(osFs, stagedDeviceInfo, []byte(legacyStagedPublishInfo), 0o600))
+
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.NewDetailed(nil, osFs, nil), osFs)
+	publishedPaths := map[string]struct{}{targetPath: {}}
+
+	needsDelete, err := v.UpgradeVolumeTrackingFile(ctx, volName, publishedPaths, nil)
+	assert.NoError(t, err)
+	assert.False(t, needsDelete, "a successfully upgraded tracking file must be kept")
+
+	// The legacy staged publish info must be removed so kubelet can remove the staging directory.
+	exists, err := afero.Exists(osFs, stagedDeviceInfo)
+	assert.NoError(t, err)
+	assert.False(t, exists, "legacy staged publish info must be removed from the staging path")
+
+	exists, err = afero.Exists(osFs, path.Join(trackPath, "tmp-"+volName+".json"))
+	assert.NoError(t, err)
+	assert.False(t, exists, "temporary tracking file must be renamed into place")
+
+	raw, err := afero.ReadFile(osFs, trackingInfoFile)
+	assert.NoError(t, err)
+	assert.Contains(t, string(raw), `"stagingTargetPath":"`+stagePath+`"`,
+		"the on-disk staging path key must stay compatible with older releases")
+
+	upgraded, err := v.ReadTrackingInfo(ctx, volName)
+	assert.NoError(t, err)
+	assert.NotNil(t, upgraded)
+
+	assert.Equal(t, stagePath, upgraded.GlobalMount)
+	assert.Equal(t, publishedPaths, upgraded.PublishedPaths)
+	assert.Equal(t, models.ISCSI, upgraded.StorageProtocol)
+	assert.Equal(t, string(models.ISCSI), upgraded.SANType)
+	assert.Equal(t, "ext4", upgraded.FilesystemType)
+	assert.Equal(t, "/dev/dm-0", upgraded.DevicePath)
+	assert.Empty(t, upgraded.RawDevicePath)
+	assert.True(t, upgraded.SharedTarget)
+	assert.Equal(t, "false", upgraded.LUKSEncryption)
+	assert.False(t, upgraded.UseLUKS())
+	assert.Equal(t, []string{"iqn.1994-05.com.redhat:node1"}, upgraded.HostIQN)
+	assert.Equal(t, "6c3d1b0e-1f8a-4b52-9d2e-0b5c5c1a2f10", upgraded.BackendUUID)
+	assert.Equal(t, "2a3b4c5d-6e7f-4a8b-9c0d-1e2f3a4b5c6d", upgraded.TridentUUID)
+	assert.Equal(t, "10.0.0.1:3260", upgraded.IscsiTargetPortal)
+	assert.Equal(t, []string{"10.0.0.2:3260"}, upgraded.IscsiPortals)
+	assert.Equal(t, "iqn.1992-08.com.netapp:sn.0123456789abcdef:vs.42", upgraded.IscsiTargetIQN)
+	assert.Equal(t, int32(3), upgraded.IscsiLunNumber)
+	assert.Equal(t, "default", upgraded.IscsiInterface)
+	assert.Equal(t, "node1-6c3d1b0e", upgraded.IscsiIgroup)
+	assert.Equal(t, "80CgK+QcVkEc", upgraded.IscsiLunSerial)
+	assert.False(t, upgraded.UseCHAP)
+
+	// A node restart re-runs reconciliation; the upgraded file must not be migrated again or deleted.
+	needsDelete, err = v.UpgradeVolumeTrackingFile(ctx, volName, publishedPaths, nil)
+	assert.NoError(t, err)
+	assert.False(t, needsDelete)
+
+	needsDelete, err = v.ValidateTrackingFile(ctx, volName)
+	assert.NoError(t, err)
+	assert.False(t, needsDelete, "tracking file must be kept while the staging path exists")
+
+	reread, err := v.ReadTrackingInfo(ctx, volName)
+	assert.NoError(t, err)
+	assert.Equal(t, upgraded, reread, "a second reconcile must not change the upgraded tracking file")
+}
+
 func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
