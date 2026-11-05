@@ -1331,6 +1331,36 @@ func TestNVMeCreate_LongLabelError(t *testing.T) {
 	assert.ErrorContains(t, err, "exceeds the character limit")
 }
 
+func TestNVMeCreate_PhysicalPoolFailureTriesOnlyThatAggregate(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	aggr1 := storage.NewStoragePool(nil, "aggr1")
+	aggr1.InternalAttributes()[FileSystemType] = filesystem.Ext4
+	aggr2 := storage.NewStoragePool(nil, "aggr2")
+	aggr2.InternalAttributes()[FileSystemType] = filesystem.Ext4
+	d.physicalPools = map[string]storage.Pool{"aggr1": aggr1, "aggr2": aggr2}
+	d.virtualPools = map[string]storage.Pool{}
+	volConfig := &storage.VolumeConfig{InternalName: "vol1", Size: "200000000"}
+
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			assert.Equal(t, []string{"aggr1"}, volume.Aggregates)
+			return "", errors.New("volume create failed")
+		},
+	)
+
+	err := d.Create(ctx, volConfig, aggr1, map[string]sa.Request{})
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.False(t, errors.As(err, &backendIneligible))
+	assert.ErrorContains(t, err, "backend cannot satisfy create request")
+	assert.ErrorContains(t, err, "aggr1")
+	assert.NotContains(t, err.Error(), "aggr2")
+}
+
 func TestNVMeCreate_VolumeCreateAPIError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)

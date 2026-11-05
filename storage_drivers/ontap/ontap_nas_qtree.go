@@ -553,8 +553,7 @@ func (d *NASQtreeStorageDriver) Create(
 		return nil
 	}
 
-	// All physical pools that were eligible ultimately failed, so don't try this backend again
-	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
+	return finishAggregateCreate(storagePool, d.physicalPools, name, createErrors, physicalPoolNames)
 }
 
 // CreateClone creates a volume clone

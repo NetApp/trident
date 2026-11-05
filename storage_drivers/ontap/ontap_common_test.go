@@ -6831,6 +6831,39 @@ func TestGetPoolsForCreate_PhysicalPools(t *testing.T) {
 	assert.Equal(t, "dummyPool1", pools[0].Name(), "Expected physical pool to be returned")
 }
 
+func TestFinishAggregateCreate_PhysicalPoolDoesNotMarkBackendIneligible(t *testing.T) {
+	pool := storage.NewStoragePool(nil, "aggr1")
+	physicalPools := map[string]storage.Pool{
+		"aggr1": pool,
+		"aggr2": storage.NewStoragePool(nil, "aggr2"),
+	}
+	createErr := errors.New("Maximum number of volumes reached on node")
+
+	err := finishAggregateCreate(pool, physicalPools, "vol1", []error{createErr}, []string{"aggr1"})
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.False(t, errors.As(err, &backendIneligible))
+	assert.ErrorContains(t, err, "backend cannot satisfy create request for volume vol1")
+	assert.ErrorContains(t, err, "Maximum number of volumes reached on node")
+}
+
+func TestFinishAggregateCreate_VirtualPoolMarksBackendIneligible(t *testing.T) {
+	virtualPool := storage.NewStoragePool(nil, "vpool")
+	physicalPools := map[string]storage.Pool{
+		"aggr1": storage.NewStoragePool(nil, "aggr1"),
+		"aggr2": storage.NewStoragePool(nil, "aggr2"),
+	}
+
+	err := finishAggregateCreate(virtualPool, physicalPools, "vol1",
+		[]error{errors.New("aggregate is out of space")}, []string{"aggr1", "aggr2"})
+
+	assert.True(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.True(t, errors.As(err, &backendIneligible))
+}
+
 func TestGetPoolsForCreate_VirtualPools(t *testing.T) {
 	ctx := context.Background()
 

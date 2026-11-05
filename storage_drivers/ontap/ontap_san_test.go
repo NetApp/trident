@@ -1531,6 +1531,44 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 	}
 }
 
+func TestOntapSanVolumeCreate_PhysicalPoolFailureTriesOnlyThatAggregate(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	poolAttrs := map[string]string{
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+	}
+	aggr1 := storage.NewStoragePool(nil, "aggr1")
+	aggr1.SetInternalAttributes(poolAttrs)
+	aggr2 := storage.NewStoragePool(nil, "aggr2")
+	aggr2.SetInternalAttributes(poolAttrs)
+	driver.physicalPools = map[string]storage.Pool{"aggr1": aggr1, "aggr2": aggr2}
+	driver.virtualPools = map[string]storage.Pool{}
+
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			assert.Equal(t, []string{"aggr1"}, volume.Aggregates)
+			return "", errors.New("volume creation failed")
+		},
+	)
+
+	err := driver.Create(ctx, &volConfig, aggr1, map[string]sa.Request{})
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.False(t, errors.As(err, &backendIneligible))
+	assert.ErrorContains(t, err, "backend cannot satisfy create request")
+	assert.ErrorContains(t, err, "aggr1")
+	assert.NotContains(t, err.Error(), "aggr2")
+}
+
 func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, d := newMockOntapSANDriver(t)

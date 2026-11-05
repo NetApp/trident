@@ -4851,6 +4851,89 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 	}
 }
 
+func TestOntapNasStorageDriverVolumeCreate_PhysicalPoolFailureTriesOnlyThatAggregate(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		InternalName: "vol1",
+	}
+	backend := storage.NewTestStorageBackend()
+	poolAttrs := map[string]string{
+		SnapshotDir: "true",
+		Encryption:  "false",
+	}
+	aggr1 := storage.NewStoragePool(backend, "aggr1")
+	aggr1.SetInternalAttributes(poolAttrs)
+	aggr2 := storage.NewStoragePool(backend, "aggr2")
+	aggr2.SetInternalAttributes(poolAttrs)
+	driver.managedPool = getManagedPool(backend)
+	driver.physicalPools = map[string]storage.Pool{"aggr1": aggr1, "aggr2": aggr2}
+	driver.virtualPools = map[string]storage.Pool{}
+
+	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			assert.Equal(t, []string{"aggr1"}, volume.Aggregates)
+			return "", errors.New(`Job completed with Error: Maximum number of volumes reached on node "dc2h10502"`)
+		},
+	)
+
+	err := driver.Create(ctx, volConfig, aggr1, map[string]sa.Request{})
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.False(t, errors.As(err, &backendIneligible))
+	assert.ErrorContains(t, err, "backend cannot satisfy create request")
+	assert.ErrorContains(t, err, "aggr1")
+	assert.NotContains(t, err.Error(), "aggr2")
+}
+
+func TestOntapNasStorageDriverVolumeCreate_VirtualPoolFailureTriesEveryAggregate(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		InternalName: "vol1",
+	}
+	backend := storage.NewTestStorageBackend()
+	poolAttrs := map[string]string{
+		SnapshotDir: "true",
+		Encryption:  "false",
+	}
+	aggr1 := storage.NewStoragePool(backend, "aggr1")
+	aggr1.SetInternalAttributes(poolAttrs)
+	aggr2 := storage.NewStoragePool(backend, "aggr2")
+	aggr2.SetInternalAttributes(poolAttrs)
+	virtualPool := storage.NewStoragePool(backend, "vpool")
+	virtualPool.SetInternalAttributes(map[string]string{
+		SnapshotDir:       "true",
+		Encryption:        "false",
+		Aggregates:        AllAggregates,
+		BalancedPlacement: "false",
+	})
+	driver.managedPool = getManagedPool(backend)
+	driver.physicalPools = map[string]storage.Pool{"aggr1": aggr1, "aggr2": aggr2}
+	driver.virtualPools = map[string]storage.Pool{"vpool": virtualPool}
+
+	tried := make([]string, 0, 2)
+	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume api.Volume) (string, error) {
+			tried = append(tried, volume.Aggregates[0])
+			return "", errors.New("aggregate is out of space")
+		},
+	).Times(2)
+
+	err := driver.Create(ctx, volConfig, virtualPool, map[string]sa.Request{})
+
+	assert.True(t, drivers.IsBackendIneligibleError(err))
+	assert.ElementsMatch(t, []string{"aggr1", "aggr2"}, tried)
+}
+
 func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	volConfig := &storage.VolumeConfig{

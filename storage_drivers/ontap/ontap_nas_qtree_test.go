@@ -5206,6 +5206,43 @@ func TestSetVolumePatternWithNoInternalIDAndNoPrefix(t *testing.T) {
 	assert.Equal(t, name, "fakeQtree")
 }
 
+func TestNASQtreeStorageDriverVolumeCreate_PhysicalPoolFailureTriesOnlyThatAggregate(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	poolAttrs := map[string]string{
+		SnapshotDir:   "true",
+		Encryption:    "false",
+		TieringPolicy: "none",
+	}
+	aggr1 := storage.NewStoragePool(nil, "aggr1")
+	aggr1.SetInternalAttributes(poolAttrs)
+	aggr2 := storage.NewStoragePool(nil, "aggr2")
+	aggr2.SetInternalAttributes(poolAttrs)
+	driver.physicalPools = map[string]storage.Pool{"aggr1": aggr1, "aggr2": aggr2}
+	driver.virtualPools = map[string]storage.Pool{}
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		InternalName: "qtree1",
+	}
+
+	mockAPI.EXPECT().QtreeExists(ctx, "qtree1", gomock.Any()).Return(false, "", nil)
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, volume *api.Volume) (api.Volumes, error) {
+			assert.Equal(t, []string{"aggr1"}, volume.Aggregates)
+			return nil, errors.New("failed to list volumes")
+		},
+	)
+
+	err := driver.Create(ctx, volConfig, aggr1, map[string]sa.Request{})
+
+	assert.Error(t, err)
+	assert.False(t, drivers.IsBackendIneligibleError(err))
+	var backendIneligible *drivers.BackendIneligibleError
+	assert.False(t, errors.As(err, &backendIneligible))
+	assert.ErrorContains(t, err, "backend cannot satisfy create request")
+	assert.ErrorContains(t, err, "aggr1")
+	assert.NotContains(t, err.Error(), "aggr2")
+}
+
 func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	qtreeName := "qtree1"

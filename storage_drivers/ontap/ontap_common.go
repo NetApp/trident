@@ -4624,6 +4624,24 @@ func getPoolsForCreate(
 	return candidatePools, nil
 }
 
+// finishAggregateCreate returns the error after every pool passed to Create has failed.
+// A physical pool is one aggregate, so return a normal error and let the core try this
+// backend's other aggregate pools.
+func finishAggregateCreate(
+	storagePool storage.Pool, physicalPools map[string]storage.Pool, volumeName string,
+	createErrors []error, physicalPoolNames []string,
+) error {
+	if _, isPhysicalPool := physicalPools[storagePool.Name()]; isPhysicalPool {
+		if len(createErrors) == 0 {
+			return fmt.Errorf("backend cannot satisfy create request for volume %s: no aggregates available on pool %s",
+				volumeName, storagePool.Name())
+		}
+		return fmt.Errorf("backend cannot satisfy create request for volume %s: %w",
+			volumeName, errors.Join(createErrors...))
+	}
+	return drivers.NewBackendIneligibleError(volumeName, createErrors, physicalPoolNames)
+}
+
 func getInternalVolumeNameCommon(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig, volConfig *storage.VolumeConfig,
 	pool storage.Pool,
