@@ -874,7 +874,10 @@ func getSVMStateWithDataLIFs(
 		upDataLIFs, err = client.NetFcpInterfaceGetDataLIFs(ctx, protocol)
 	} else {
 		// Check dataLIF for iSCSI and NVMe protocols
-		upDataLIFs, err = client.NetInterfaceGetDataLIFs(ctx, protocol)
+		var dataLIFs api.DataLIFs
+		if dataLIFs, err = client.NetInterfaceGetDataLIFs(ctx, protocol); err == nil {
+			upDataLIFs = dataLIFs.Up().Addresses()
+		}
 	}
 
 	if err != nil || len(upDataLIFs) == 0 {
@@ -2036,16 +2039,17 @@ func ValidateNASDriver(
 		protocol = "nfs"
 	}
 
-	dataLIFs, err = api.NetInterfaceGetDataLIFs(ctx, protocol)
+	allDataLIFs, err := api.NetInterfaceGetDataLIFs(ctx, protocol)
 	if err != nil {
 		return err
 	}
 
+	// NAS-backends must only consider LIFs that are up.
+	dataLIFs = allDataLIFs.Up().Addresses()
 	if len(dataLIFs) == 0 {
 		return fmt.Errorf("no NAS data LIFs found on SVM %s", api.SVMName())
-	} else {
-		Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
+	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 
 	// If they didn't set a LIF to use in the config, we'll set it to the first NFS/SMB LIF we happen to find
 	if config.DataLIF == "" {

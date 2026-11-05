@@ -249,3 +249,21 @@ func TestStructValidation(t *testing.T) {
 		t.Run(tt.name, tt.testFunc)
 	}
 }
+
+func TestDataLIFs(t *testing.T) {
+	dataLIFs := DataLIFs{
+		{Address: "1.1.1.1", State: DataLIFStateUp},
+		{Address: "2.2.2.2", State: DataLIFStateDown},
+		{Address: "3.3.3.3", State: DataLIFStateUp},
+	}
+
+	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3"}, dataLIFs.Addresses())
+	assert.Equal(t, []string{"1.1.1.1", "3.3.3.3"}, dataLIFs.Up().Addresses())
+	assert.Equal(t, []string{"2.2.2.2"}, dataLIFs.Down().Addresses())
+
+	allDown := DataLIFs{{Address: "2.2.2.2", State: DataLIFStateDown}}
+	assert.Empty(t, allDown.Up())
+	assert.Empty(t, allDown.Up().Addresses())
+
+	assert.NotNil(t, DataLIFs(nil).Addresses())
+}

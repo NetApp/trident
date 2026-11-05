@@ -311,7 +311,7 @@ func TestInitializeASANVMe(t *testing.T) {
 			name: "CommonStorageDriverConfig not nil",
 			setupMocks: func() {
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
 				mockAPI.EXPECT().Terminate().AnyTimes()
 			},
@@ -331,7 +331,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				driver.initialized = false
 				driver.Config.CommonStorageDriverConfig = nil
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
 			},
 			expectedError: false,
@@ -391,7 +391,7 @@ func TestInitializeASANVMe(t *testing.T) {
 			setupMocks: func() {
 				driver.initialized = false
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, fmt.Errorf("some-error")).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), fmt.Errorf("some-error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -404,7 +404,7 @@ func TestInitializeASANVMe(t *testing.T) {
 			setupMocks: func() {
 				driver.initialized = false
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(), nil).Times(1)
 				mockAPI.EXPECT().SVMName().Return(driver.Config.SVM).Times(1)
 			},
 			expectedError: true,
@@ -419,7 +419,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				driver.Config.SnapshotDir = "not-boolean"
 				driver.initialized = false
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -434,7 +434,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				driver.Config.DriverContext = "docker"
 				driver.initialized = false
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -449,7 +449,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				driver.initialized = false
 				driver.Config.StoragePrefix = new("#test_")
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -493,7 +493,7 @@ func TestInitializeASANVMe_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testin
 	driver.Config.MaxNamespacesPerSuperSubsystem = "100"
 	commonConfig := driver.GetCommonConfig(ctx)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 	mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
 
 	err := driver.Initialize(ctx, driverContextCSI, "", commonConfig, nil, uuid.NewString())
@@ -529,7 +529,7 @@ func TestInitializeASANVMe_PersistedBackendName(t *testing.T) {
 			commonConfig := driver.GetCommonConfig(ctx)
 			mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.NVMeProtocol).Return(true).Times(1)
 			mockAPI.EXPECT().NetInterfaceGetDataLIFs(gomock.Any(), sa.NVMeTransport).
-				Return([]string{"127.0.0.1"}, nil).Times(1)
+				Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).AnyTimes()
 
 			err := initializeWithTelemetryCleanup(t, driver, storage.WithPersistedBackendName(ctx, persistedName),
@@ -3288,7 +3288,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
-			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(tt.observed, nil).Times(1)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(tt.observed...), nil).Times(1)
 			mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 			mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 

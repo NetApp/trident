@@ -1534,10 +1534,10 @@ func (mr *MockOntapAPIMockRecorder) NetFcpInterfaceGetDataLIFs(ctx, protocol any
 }
 
 // NetInterfaceGetDataLIFs mocks base method.
-func (m *MockOntapAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (m *MockOntapAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (api.DataLIFs, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NetInterfaceGetDataLIFs", ctx, protocol)
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].(api.DataLIFs)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

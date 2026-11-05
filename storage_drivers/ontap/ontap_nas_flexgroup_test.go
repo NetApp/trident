@@ -346,7 +346,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas-flexgroup", "1", false, "heartbeat", hostname,
 		string(message), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -395,7 +395,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	err := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
@@ -448,7 +448,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePoo
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	err := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
@@ -503,7 +503,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	err := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
@@ -563,7 +563,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 			mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 				SVMAggregateAttributes, nil,
 			)
-			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{"dataLIF"}, nil)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs("dataLIF"), nil)
 			mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas-flexgroup", "1", false, "heartbeat", hostname,
 				string(message), 1, "trident", 5).AnyTimes()
 			mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
@@ -901,7 +901,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 
 				result := initializeWithTelemetryCleanup(t, driver, ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
@@ -935,7 +935,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).AnyTimes().Return(true)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -970,7 +970,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t
 
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).AnyTimes().Return(true)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,

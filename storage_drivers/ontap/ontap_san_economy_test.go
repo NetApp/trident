@@ -4898,7 +4898,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6001,7 +6001,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6065,7 +6065,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
 		gomock.Any(), 1, "trident", 5).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6134,7 +6134,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
 		gomock.Any(), 1, "trident", 5).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6209,7 +6209,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
 		gomock.Any(), 1, "trident", 5).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6350,7 +6350,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 			mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 				map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6412,7 +6412,7 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 			d.Config.CommonStorageDriverConfig = nil
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 			mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 				map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -6455,7 +6455,7 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("10.0.207.7"), nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, errors.New("error getting svm aggregate names"))
 
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)

@@ -1300,7 +1300,7 @@ func NewZAPIClientFromOntapConfig(
 	return apiZAPI, nil
 }
 
-func (d OntapAPIZAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (d OntapAPIZAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error) {
 	return d.api.NetInterfaceGetDataLIFs(ctx, protocol)
 }
 

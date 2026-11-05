@@ -188,7 +188,7 @@ func TestNVMeInitialize_NoDataLifs(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{}, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(), nil)
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
@@ -204,7 +204,7 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New("failed to get aggrs"))
@@ -224,7 +224,7 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -244,7 +244,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -291,7 +291,7 @@ func TestNVMeInitialize_PersistedBackendName(t *testing.T) {
 			}
 			configJSON := `{"SANType": "nvme", "storage": [{}]}`
 			mAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).Return(true)
-			mAPI.EXPECT().NetInterfaceGetDataLIFs(gomock.Any(), sa.NVMeTransport).Return(mockIPs, nil)
+			mAPI.EXPECT().NetInterfaceGetDataLIFs(gomock.Any(), sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 			mAPI.EXPECT().IsSVMDRCapable(gomock.Any()).Return(true, nil)
 			mAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).Return([]string{"data"}, nil)
 			mAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(nil, nil)
@@ -320,7 +320,7 @@ func TestNVMeInitialize_ValidMaxNamespacesPerSuperSubsystemIsStored(t *testing.T
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -373,7 +373,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 		}
 	}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -417,7 +417,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	    ]
 	}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -467,7 +467,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	    ]
 	}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(upDataLIFs(mockIPs...), nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -3848,7 +3848,7 @@ func TestGetBackendState_DataLIFRefresh(t *testing.T) {
 			mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("running", nil).Times(1)
 			mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data", "pool1"}, nil).Times(1)
-			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(tt.observed, nil).Times(1)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(tt.observed...), nil).Times(1)
 			mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 			mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
@@ -3873,8 +3873,8 @@ func TestGetBackendState_DataLIFsReportedUntilConfirmed(t *testing.T) {
 	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data", "pool1"}, nil).Times(4)
 	gomock.InOrder(
-		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"1.1.1.1"}, nil).Times(3),
-		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"1.2.3.4"}, nil).Times(1),
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("1.1.1.1"), nil).Times(3),
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("1.2.3.4"), nil).Times(1),
 	)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(4)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(4)

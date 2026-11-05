@@ -135,16 +135,19 @@ func (d *ASAStorageDriver) Initialize(
 			Logc(ctx).WithField("dataLIFs", d.wwpns).Debug("Found FC LIFs.")
 		}
 	} else {
-		d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType)
+		dataLIFs, err := d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType)
 		if err != nil {
 			return err
 		}
-
-		if len(d.ips) == 0 {
+		if len(dataLIFs.Up()) == 0 {
 			return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
-		} else {
-			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 		}
+
+		if driverContext == tridentconfig.ContextDocker {
+			dataLIFs = dataLIFs.Up()
+		}
+		d.ips = dataLIFs.Addresses()
+		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 	d.managedPool, _, d.virtualPools, err = initializeManagedStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())

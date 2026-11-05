@@ -179,15 +179,26 @@ func (d *SANStorageDriver) Initialize(
 			Logc(ctx).WithField("dataLIFs", d.wwpns).Debug("Found FC LIFs.")
 		}
 	} else {
-		if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType); err != nil {
+		dataLIFs, err := d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType)
+		if err != nil {
 			return err
 		}
 
-		if len(d.ips) == 0 {
+		switch {
+		case len(dataLIFs.Up()) == 0:
 			return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
-		} else {
-			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
+		case len(dataLIFs.Down()) != 0:
+			Logc(ctx).WithField("unhealthyLIFs", dataLIFs.Down().Addresses()).
+				Warnf("Some data LIFs are in an unhealthy state on this SVM %s. "+
+					"Volume attachments may succeed but in a temporarily degraded state until LIF health is remediated. "+
+					"Please work with the storage administrator to remediate the unhealthy LIFs.", d.API.SVMName())
 		}
+
+		if driverContext == tridentconfig.ContextDocker {
+			dataLIFs = dataLIFs.Up()
+		}
+		d.ips = dataLIFs.Addresses()
+		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 
 	d.managedPool, d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,

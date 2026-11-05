@@ -693,7 +693,7 @@ func (d OntapAPIREST) SupportsFeature(ctx context.Context, feature Feature) bool
 	return d.api.SupportsFeature(ctx, feature)
 }
 
-func (d OntapAPIREST) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (d OntapAPIREST) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error) {
 	return d.api.NetInterfaceGetDataLIFs(ctx, protocol)
 }
 

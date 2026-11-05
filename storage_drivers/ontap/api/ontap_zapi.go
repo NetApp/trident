@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -3057,27 +3057,35 @@ func (c Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 	return response, err
 }
 
-func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error) {
 	lifResponse, err := c.NetInterfaceGet()
 	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
 		return nil, fmt.Errorf("error checking network interfaces: %v", err)
 	}
 
-	dataLIFs := make([]string, 0)
+	dataLIFs := make(DataLIFs, 0)
 	if lifResponse.Result.AttributesListPtr != nil {
 		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
+			// Do not filter by LIF state here.
+			// Instead, report the LIFs and let the caller decide.
+			dataLIFState := DataLIFStateDown
 			if attrs.OperationalStatus() == LifOperationalStatusUp {
-				for _, proto := range attrs.DataProtocols().DataProtocolPtr {
-					if proto == protocol {
-						dataLIFs = append(dataLIFs, attrs.Address())
-					}
+				dataLIFState = DataLIFStateUp
+			}
+
+			for _, proto := range attrs.DataProtocols().DataProtocolPtr {
+				// Do filter by protocol.
+				if proto == protocol {
+					dataLIFs = append(dataLIFs, DataLIF{
+						Address: attrs.Address(),
+						State:   dataLIFState,
+					})
 				}
 			}
 		}
 	}
-
 	if len(dataLIFs) < 1 {
-		return []string{}, fmt.Errorf("no data LIFs meet the provided criteria (protocol: %s)", protocol)
+		return DataLIFs{}, fmt.Errorf("no data LIFs meet the provided criteria (protocol: %s)", protocol)
 	}
 
 	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Data LIFs")

@@ -350,7 +350,7 @@ func TestInitializeASA(t *testing.T) {
 		{
 			name: "CommonStorageDriverConfig not nil",
 			setupMocks: func() {
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(api.IscsiInitiatorAuth{AuthType: "none"}, nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
 			},
@@ -368,7 +368,7 @@ func TestInitializeASA(t *testing.T) {
 			setupMocks: func() {
 				driver.initialized = false
 				driver.Config.CommonStorageDriverConfig = nil
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(api.IscsiInitiatorAuth{AuthType: "none"}, nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
 			},
@@ -415,7 +415,7 @@ func TestInitializeASA(t *testing.T) {
 			name: "driver.API.NetInterfaceGetDataLIFs returns an error",
 			setupMocks: func() {
 				driver.initialized = false
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, errors.New("some-error")).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), errors.New("some-error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -427,7 +427,7 @@ func TestInitializeASA(t *testing.T) {
 			name: "d.ips are empty",
 			setupMocks: func() {
 				driver.initialized = false
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs(), nil).Times(1)
 				mockAPI.EXPECT().SVMName().Return(driver.Config.SVM).Times(1)
 			},
 			expectedError: true,
@@ -441,7 +441,7 @@ func TestInitializeASA(t *testing.T) {
 			setupMocks: func() {
 				driver.Config.SnapshotDir = "not-boolean"
 				driver.initialized = false
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -455,7 +455,7 @@ func TestInitializeASA(t *testing.T) {
 			setupMocks: func() {
 				driver.Config.DriverContext = "docker"
 				driver.initialized = false
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -469,7 +469,7 @@ func TestInitializeASA(t *testing.T) {
 			setupMocks: func() {
 				driver.initialized = false
 				driver.Config.StoragePrefix = new("#test_")
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
 			},
 			expectedError: true,
@@ -3050,7 +3050,7 @@ func TestGetBackendStateASA(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"1.2.3.4"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return(upDataLIFs("1.2.3.4"), nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
@@ -3111,7 +3111,7 @@ func TestGetBackendStateASA(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return(upDataLIFs("127.0.0.1"), nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
