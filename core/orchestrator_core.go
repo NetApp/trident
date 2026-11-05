@@ -2754,6 +2754,16 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 			sourceVolume.BackendUUID, volumeConfig.CloneSourceVolume)
 	}
 
+	if err = validateCloneProtocol(ctx, volumeConfig, sourceVolume, backend); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":       volumeConfig.Name,
+			"sourceVolume": volumeConfig.CloneSourceVolume,
+			"backend":      backend.Name(),
+			"error":        err,
+		}).Error("Clone request is incompatible with the source volume protocol.")
+		return nil, err
+	}
+
 	pool = storage.NewStoragePool(backend, "")
 
 	// Clone the source config, as most of its attributes will apply to the clone
@@ -2798,6 +2808,13 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		cloneConfig.SMBShareACL = volumeConfig.SMBShareACL
 	}
 	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
+	// Record the requested StorageClass and AccessMode; an empty value keeps the source's.
+	if volumeConfig.StorageClass != "" {
+		cloneConfig.StorageClass = volumeConfig.StorageClass
+	}
+	if volumeConfig.AccessMode != "" {
+		cloneConfig.AccessMode = volumeConfig.AccessMode
+	}
 	cloneConfig.Namespace = volumeConfig.Namespace
 	cloneConfig.RequestName = volumeConfig.RequestName
 
