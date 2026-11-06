@@ -73,9 +73,19 @@ type Core struct {
 	hostName         string
 	unsafeDetach     bool
 
-	// hostInfo caches host system discovery (OS/platform info) gathered once, the first time
-	// registration builds the node identity to send to the controller.
-	hostInfo *models.HostSystem
+	// registeredNode is the identity the controller last accepted. register compares the host against
+	// it, so the node registers again only when its identity changes.
+	//
+	// registeredNode, hostOS, cancelNodeInfoRefresh, and nodeInfoRefreshDone are written only on the
+	// register path. Bootstrap's registration finishes before Activate starts the single refresh
+	// goroutine, and stopNodeInfoRefresh waits for that goroutine to exit before it returns.
+	registeredNode        *models.Node
+	cancelNodeInfoRefresh context.CancelFunc
+	nodeInfoRefreshDone   chan struct{}
+
+	// hostOS caches the host OS after the first successful lookup, since it does not change while the
+	// node runs and iSCSI discovery depends on it.
+	hostOS *models.SystemOS
 
 	// logSettings, if set, receives the controller's log level/workflows/layers after a
 	// successful registration so the node can align its local logging with the controller's.
@@ -289,7 +299,7 @@ func (c *Core) Bootstrap(ctx context.Context) error {
 	if c.controller == nil {
 		bootstrapErr = errors.Join(bootstrapErr, errors.New("controller is not configured"))
 	} else {
-		if registerErr := c.register(ctx, 0); registerErr != nil {
+		if registerErr := c.register(ctx, 0, true); registerErr != nil {
 			bootstrapErr = errors.Join(bootstrapErr, registerErr)
 		}
 		if activateErr := c.Activate(); activateErr != nil {
@@ -324,12 +334,14 @@ func (c *Core) Activate() error {
 	c.populatePublishedSessions(ctx)
 	c.startSelfHealing(ctx)
 	c.startPublicationReconciliation(ctx)
+	c.startNodeInfoRefresh()
 
 	return nil
 }
 
 func (c *Core) Deactivate() error {
 	ctx := context.Background()
+	c.stopNodeInfoRefresh()
 	c.stopPublicationReconciliation(ctx)
 	c.stopSelfHealing(ctx)
 

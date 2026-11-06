@@ -26,7 +26,7 @@ func getFCPInitiatorPortName(ctx context.Context) (map[string]string, error) {
 
 	rportDirs, err := os.ReadDir(sysPath)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
+		Logc(ctx).WithField("error", err).Debugf("Could not read %s", sysPath)
 		return initiatorPortNameMap, err
 	}
 

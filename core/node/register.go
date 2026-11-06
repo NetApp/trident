@@ -6,7 +6,10 @@ package node
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"runtime"
+	"slices"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -31,6 +34,13 @@ var (
 	ipDiscoveryAttempts      = defaultIPDiscoveryAttempts()
 	ipDiscoveryRetryInterval = 2 * time.Second
 )
+
+// nodeInfoRefreshInterval is a var so tests can shrink it.
+var nodeInfoRefreshInterval = 5 * time.Minute
+
+// nodeInfoRefreshEnabled is false off Linux: on Windows only SMB discovery is supported, so a refresh
+// would log the same "unsupported" errors every interval. It is a var so tests can enable it.
+var nodeInfoRefreshEnabled = runtime.GOOS == "linux"
 
 // defaultIPDiscoveryAttempts returns 1 (no retries) where IP discovery is not implemented and always
 // fails, such as Windows.
@@ -73,54 +83,75 @@ func NewController(client tridentcontroller.Client, chap ChapClient) Controller 
 	return &controllerFromClients{Client: client, chap: chap}
 }
 
-// buildNodeInfo discovers this host's identity (protocol initiators, IP addresses, active
-// services) and packages it into the models.Node the controller expects at registration. Host
-// system info is cached after the first successful lookup since it does not change at runtime.
-func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
-	if c.hostInfo == nil {
-		host, err := c.osutils.GetHostSystemInfo(ctx)
-		if err != nil {
-			c.hostInfo = &models.HostSystem{}
-			Logc(ctx).WithError(err).Warn("Unable to get host system information.")
+// logDiscoveryIssue reports a discovery problem. warn is set for the startup registration, so the
+// condition is visible at the default log level. The refresh passes false and logs at Debug:
+// discovery repeats on a fixed interval, and a host where the probe keeps failing would otherwise
+// emit the same warning for as long as the node runs.
+func logDiscoveryIssue(ctx context.Context, err error, message string, warn bool) {
+	entry := Logc(ctx)
+	if err != nil {
+		entry = entry.WithError(err)
+	}
+	if warn {
+		entry.Warn(message)
+		return
+	}
+	entry.Debug(message)
+}
+
+// buildNodeInfo discovers this host's identity (OS, protocol initiators, IP addresses, active
+// services) and packages it into the models.Node the controller expects at registration.
+// warnDiscovery logs a discovery problem at Warn; the refresh passes false. It also returns the
+// services whose probe returned an error, so their state is unknown. SMB discovery is unsupported
+// off Windows, which does not count as an error.
+func (c *Core) buildNodeInfo(ctx context.Context, warnDiscovery bool) (*models.Node, []string) {
+	if c.hostOS == nil {
+		if host, err := c.osutils.GetHostSystemInfo(ctx); err != nil {
+			logDiscoveryIssue(ctx, err, "Unable to get host system information.", warnDiscovery)
 		} else {
-			c.hostInfo = host
+			c.hostOS = &host.OS
 			Logc(ctx).WithFields(LogFields{
 				"distro":  host.OS.Distro,
 				"version": host.OS.Version,
 			}).Debug("Discovered host info.")
 		}
 	}
+	hostInfo := models.HostSystem{}
+	if c.hostOS != nil {
+		hostInfo.OS = *c.hostOS
+	}
 
 	iscsiWWN := ""
 	iscsiWWNs, err := legacyiscsi.GetInitiatorIqns(ctx)
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Problem getting iSCSI initiator name.")
+		logDiscoveryIssue(ctx, err, "Problem getting iSCSI initiator name.", warnDiscovery)
 	} else if len(iscsiWWNs) == 0 {
-		Logc(ctx).Warn("Could not find iSCSI initiator name.")
+		logDiscoveryIssue(ctx, nil, "Could not find iSCSI initiator name.", warnDiscovery)
 	} else {
 		iscsiWWN = iscsiWWNs[0]
-		Logc(ctx).WithField("IQN", iscsiWWN).Info("Discovered iSCSI initiator name.")
+		Logc(ctx).WithField("IQN", iscsiWWN).Debug("Discovered iSCSI initiator name.")
 	}
 
-	ips, err := c.discoverIPAddresses(ctx)
+	ips, err := c.discoverIPAddresses(ctx, warnDiscovery)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Error("Could not get IP addresses.")
+		logDiscoveryIssue(ctx, err, "Could not get IP addresses.", warnDiscovery)
 	} else if len(ips) == 0 {
-		Logc(ctx).Warn("Could not find any usable IP addresses.")
+		logDiscoveryIssue(ctx, nil, "Could not find any usable IP addresses.", warnDiscovery)
 	} else {
-		Logc(ctx).WithField("IP Addresses", ips).Info("Discovered IP addresses.")
+		Logc(ctx).WithField("IP Addresses", ips).Debug("Discovered IP addresses.")
 	}
 
 	var hostWWPNMap map[string][]string
 	if hostWWPNMap, err = fcp.GetFCPInitiatorTargetMap(ctx); err != nil {
-		Logc(ctx).WithError(err).Warn("Problem getting FCP host node port name association.")
+		logDiscoveryIssue(ctx, err, "Problem getting FCP host node port name association.", warnDiscovery)
 	}
 
 	// Discover active protocol services on the host.
-	var services []string
+	var services, unknownServices []string
 	nfsActive, err := c.osutils.NFSActiveOnHost(ctx)
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Error discovering NFS service on host.")
+		unknownServices = append(unknownServices, "NFS")
+		logDiscoveryIssue(ctx, err, "Error discovering NFS service on host.", warnDiscovery)
 	}
 	if nfsActive {
 		services = append(services, "NFS")
@@ -133,16 +164,20 @@ func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
 			// every registration attempt, so it doesn't warrant a warning.
 			Logc(ctx).WithError(err).Debug("SMB service discovery is not supported on this platform.")
 		} else {
-			Logc(ctx).WithError(err).Warn("Error discovering SMB service on host.")
+			unknownServices = append(unknownServices, "SMB")
+			logDiscoveryIssue(ctx, err, "Error discovering SMB service on host.", warnDiscovery)
 		}
 	}
 	if smbActive {
 		services = append(services, "SMB")
 	}
 
-	iscsiActive, err := c.iscsi.ISCSIActiveOnHost(ctx, *c.hostInfo)
+	iscsiActive, err := c.iscsi.ISCSIActiveOnHost(ctx, hostInfo)
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Error discovering iSCSI service on host.")
+		unknownServices = append(unknownServices, "iSCSI")
+		logDiscoveryIssue(ctx, err, "Error discovering iSCSI service on host.", warnDiscovery)
+	} else if !iscsiActive {
+		logDiscoveryIssue(ctx, nil, "iSCSI is not active on this host.", warnDiscovery)
 	}
 	if iscsiActive {
 		services = append(services, "iSCSI")
@@ -151,21 +186,22 @@ func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
 	var nvmeNQN string
 	isNVMeActive, err := c.nvme.NVMeActiveOnHost(ctx)
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Error discovering NVMe service on host.")
+		unknownServices = append(unknownServices, "nvme")
+		logDiscoveryIssue(ctx, err, "Error discovering NVMe service on host.", warnDiscovery)
+	} else if !isNVMeActive {
+		logDiscoveryIssue(ctx, nil, "NVMe is not active on this host.", warnDiscovery)
 	}
 	if isNVMeActive {
 		services = append(services, "nvme")
 		nvmeNQN, err = c.nvme.GetHostNqn(ctx)
 		if err != nil {
-			Logc(ctx).WithError(err).Warn("Problem getting Host NQN.")
+			logDiscoveryIssue(ctx, err, "Problem getting Host NQN.", warnDiscovery)
 		} else {
 			Logc(ctx).WithField("NQN", nvmeNQN).Debug("Discovered NQN.")
 		}
-	} else {
-		Logc(ctx).Info("NVMe is not active on this host.")
 	}
 
-	c.hostInfo.Services = services
+	hostInfo.Services = services
 
 	return &models.Node{
 		Name:        c.hostName,
@@ -174,26 +210,23 @@ func (c *Core) buildNodeInfo(ctx context.Context) *models.Node {
 		HostWWPNMap: hostWWPNMap,
 		IPs:         ips,
 		NodePrep:    nil,
-		HostInfo:    c.hostInfo,
+		HostInfo:    &hostInfo,
 		Deleted:     false,
 		// If the node is already known to the Trident controller's persistence layer, that
 		// state will be used instead. Otherwise, node state defaults to clean.
 		PublicationState: models.NodeClean,
-	}
+	}, unknownServices
 }
 
 // discoverIPAddresses retries IP discovery a bounded number of times while it fails or finds no
 // usable addresses, which can happen while the host network is still being configured at boot.
-// The node's export policy rules are built from these addresses, and they are only discovered at
-// registration. After the last attempt, the result is returned as-is so registration never blocks
+// The node's export policy rules are built from these addresses, and the periodic node info refresh
+// rediscovers them. After the last attempt, the result is returned as-is so registration never blocks
 // on a host that genuinely has no usable addresses.
-func (c *Core) discoverIPAddresses(ctx context.Context) ([]string, error) {
+func (c *Core) discoverIPAddresses(ctx context.Context, warnDiscovery bool) ([]string, error) {
 	ips, err := c.osutils.GetIPAddresses(ctx)
 	for attempt := 1; attempt < ipDiscoveryAttempts && (err != nil || len(ips) == 0); attempt++ {
-		Logc(ctx).WithFields(LogFields{
-			"attempt": attempt,
-			"error":   err,
-		}).Warn("No usable IP addresses discovered, will retry.")
+		logDiscoveryIssue(ctx, err, fmt.Sprintf("No usable IP addresses discovered, will retry (attempt %d).", attempt), warnDiscovery)
 
 		select {
 		case <-ctx.Done():
@@ -205,15 +238,21 @@ func (c *Core) discoverIPAddresses(ctx context.Context) ([]string, error) {
 	return ips, err
 }
 
-// register builds this node's identity and registers it with the Trident controller, retrying
-// with exponential backoff until success (or until timeout elapses; zero retries forever). On
-// success it applies the controller's log settings, if a LogSetter was configured.
-func (c *Core) register(ctx context.Context, timeout time.Duration) error {
+// register registers this node with the Trident controller, retrying with exponential backoff until
+// success (or until timeout elapses; zero retries forever). It does nothing when the host identity
+// is unchanged since the last success. On success it records that identity and applies the
+// controller's log settings, if a LogSetter was configured. warnDiscovery is true for the startup
+// registration and false for the periodic refresh.
+func (c *Core) register(ctx context.Context, timeout time.Duration, warnDiscovery bool) error {
 	if c.controller == nil {
 		return errors.New("controller is not configured")
 	}
 
-	nodeInfo := c.buildNodeInfo(ctx)
+	nodeInfo, unknownServices := c.buildNodeInfo(ctx, warnDiscovery)
+	keepRegisteredIdentity(nodeInfo, c.registeredNode, unknownServices)
+	if reflect.DeepEqual(c.registeredNode, nodeInfo) {
+		return nil
+	}
 
 	var regInfo *tridentcontroller.RegistrationInfo
 	registerNode := func() error {
@@ -248,8 +287,15 @@ func (c *Core) register(ctx context.Context, timeout time.Duration) error {
 		return err
 	}
 
+	c.registeredNode = nodeInfo
 	c.applyRegistrationInfo(ctx, regInfo)
-	Logc(ctx).WithField("node", c.hostName).Info("Updated Trident controller with node registration.")
+	Logc(ctx).WithFields(LogFields{
+		"node":     c.hostName,
+		"IQN":      nodeInfo.IQN,
+		"NQN":      nodeInfo.NQN,
+		"IPs":      nodeInfo.IPs,
+		"services": nodeInfo.HostInfo.Services,
+	}).Info("Updated Trident controller with node registration.")
 
 	return nil
 }
@@ -278,4 +324,109 @@ func (c *Core) applyRegistrationInfo(ctx context.Context, info *tridentcontrolle
 			Logc(ctx).WithError(err).Error("Unable to set logging layers from controller node registration.")
 		}
 	}
+}
+
+// startNodeInfoRefresh rediscovers this host every nodeInfoRefreshInterval for as long as the node
+// is active. It is kept separate from self-healing, which users can disable.
+func (c *Core) startNodeInfoRefresh() {
+	if !nodeInfoRefreshEnabled || c.cancelNodeInfoRefresh != nil {
+		return
+	}
+
+	ctx, cancel := context.WithCancel(
+		GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeUpdate, LogLayerCore))
+	done := make(chan struct{})
+	ticker := time.NewTicker(nodeInfoRefreshInterval)
+	c.cancelNodeInfoRefresh = cancel
+	c.nodeInfoRefreshDone = done
+
+	go func() {
+		defer close(done)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				_ = c.register(ctx, nodeInfoRefreshInterval, false)
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
+// stopNodeInfoRefresh stops the node info refresh, if it is running, and waits for it to exit.
+func (c *Core) stopNodeInfoRefresh() {
+	if c.cancelNodeInfoRefresh == nil {
+		return
+	}
+	c.cancelNodeInfoRefresh()
+	<-c.nodeInfoRefreshDone
+	c.cancelNodeInfoRefresh = nil
+}
+
+// keepRegisteredIdentity keeps the last registered value of anything discovery returned empty.
+// Discovery reports a failed probe the same way as a missing value, so the refresh must not clear
+// identity the controller already has. IPs and FC initiators are only added to, because interrupted
+// probes return partial lists: the controller removes missing node IPs from export policies, and
+// PublishLUN adds only registered initiators to the igroup. A removed IP address or HBA stays
+// registered until the node pod restarts. A registered service is dropped only when its probe
+// succeeded; unknownServices lists the services whose probe returned an error.
+func keepRegisteredIdentity(discovered, registered *models.Node, unknownServices []string) {
+	if registered == nil {
+		return
+	}
+	discovered.HostInfo.Services = keepServices(
+		registered.HostInfo.Services, discovered.HostInfo.Services, unknownServices)
+	discovered.IPs = appendMissing(registered.IPs, discovered.IPs)
+	if discovered.IQN == "" {
+		discovered.IQN = registered.IQN
+	}
+	if discovered.NQN == "" {
+		discovered.NQN = registered.NQN
+	}
+	discovered.HostWWPNMap = mergeHostWWPNMap(registered.HostWWPNMap, discovered.HostWWPNMap)
+}
+
+// keepServices returns the registered services that discovery still reports or could not probe,
+// followed by newly discovered ones, so an unchanged host yields exactly the registered list.
+func keepServices(registered, discovered, unknown []string) []string {
+	var kept []string
+	for _, service := range registered {
+		if slices.Contains(discovered, service) || slices.Contains(unknown, service) {
+			kept = append(kept, service)
+		}
+	}
+	return appendMissing(kept, discovered)
+}
+
+// mergeHostWWPNMap adds the discovered initiators and their targets to the registered map, so an
+// unchanged host yields the registered map.
+func mergeHostWWPNMap(registered, discovered map[string][]string) map[string][]string {
+	if len(discovered) == 0 {
+		return registered
+	}
+	if len(registered) == 0 {
+		return discovered
+	}
+	merged := make(map[string][]string, len(registered)+len(discovered))
+	for initiator, targets := range registered {
+		merged[initiator] = slices.Clone(targets)
+	}
+	for initiator, targets := range discovered {
+		merged[initiator] = appendMissing(merged[initiator], targets)
+	}
+	return merged
+}
+
+// appendMissing returns registered followed by the discovered values it lacks, so an unchanged host
+// yields exactly the registered values.
+func appendMissing(registered, discovered []string) []string {
+	merged := slices.Clone(registered)
+	for _, value := range discovered {
+		if !slices.Contains(merged, value) {
+			merged = append(merged, value)
+		}
+	}
+	return merged
 }

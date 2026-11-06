@@ -151,6 +151,7 @@ func newUnbootstrappedTestCore(t *testing.T, extraOpts ...Option) (*Core, *testM
 	opts = append(opts, extraOpts...)
 
 	core := NewCore(opts...)
+	t.Cleanup(core.stopNodeInfoRefresh)
 	return core, mocks
 }
 

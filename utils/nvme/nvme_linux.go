@@ -57,7 +57,7 @@ func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	_, err := nh.command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version")
 	if err != nil {
-		Logc(ctx).WithError(err).Warn("Could not read NVMe CLI version; perhaps NVMe CLI is not installed?")
+		Logc(ctx).WithError(err).Debug("Could not read NVMe CLI version; perhaps NVMe CLI is not installed?")
 		return false, fmt.Errorf("failed to get hostnqn: %v", err)
 	}
 
