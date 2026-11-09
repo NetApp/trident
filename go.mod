@@ -1,6 +1,6 @@
 module github.com/netapp/trident
 
-go 1.26.0
+go 1.27.0
 
 require (
 	cloud.google.com/go/compute v1.72.0
@@ -24,6 +24,7 @@ require (
 	github.com/elastic/go-sysinfo v1.15.5
 	github.com/evanphx/json-patch/v5 v5.9.11
 	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344 // 1/18/2022
+	github.com/go-logr/logr v1.4.4
 	github.com/go-openapi/errors v0.22.9
 	github.com/go-openapi/runtime v0.33.3
 	github.com/go-openapi/strfmt v0.27.3
@@ -73,14 +74,10 @@ require (
 	k8s.io/mount-utils v0.37.1 // github.com/kubernetes/mount-utils
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // github.com/kubernetes/utils
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.23.2 // github.com/kubernetes-sigs/cloud-provider-azure
-	sigs.k8s.io/yaml v1.6.0
-)
-
-require (
-	github.com/go-logr/logr v1.4.4
 	sigs.k8s.io/container-object-storage-interface/client v0.0.0-20260817202106-e761fd730bf4
 	sigs.k8s.io/container-object-storage-interface/proto v0.0.0-20260817202106-e761fd730bf4
 	sigs.k8s.io/controller-runtime v0.25.2
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (

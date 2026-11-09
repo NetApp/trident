@@ -14,7 +14,7 @@ REGISTRY ?= $(DEFAULT_REGISTRY)
 BUILDX_OUTPUT ?= load
 
 # GO_IMAGE golang image used in default GO_SHELL
-GO_IMAGE ?= golang:1.26
+GO_IMAGE ?= golang:1.27
 
 # GO_CMD go command used for go build
 GO_CMD ?= go
@@ -32,7 +32,7 @@ HELM_IMAGE ?= alpine/helm:3.16.1
 HELM_CHART_VERSION ?=
 
 # GOLANGCI-LINT_VERSION golangci-lint version for install-lint
-GOLANGCI-LINT_VERSION ?= v2.12.2
+GOLANGCI-LINT_VERSION ?= v2.15.0
 
 # MOCKGEN_VERSION mockgen version for mocks target
 MOCKGEN_VERSION ?= v0.6.0

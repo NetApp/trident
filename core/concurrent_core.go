@@ -9502,7 +9502,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteObjectStore(ctx context.Context, s
 }
 
 func shuffleStores(stores []object.Store) {
-	rand.Shuffle(len(stores), func(i, j int) {
+	rand.Shuffle(len(stores), func(i, j int) { //nolint:gosec // non-cryptographic store ordering
 		stores[i], stores[j] = stores[j], stores[i]
 	})
 }

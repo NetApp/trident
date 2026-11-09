@@ -230,7 +230,7 @@ func EncryptStringWithAES(plainText string, key []byte) (string, error) {
 	if _, err := io.ReadFull(cryptoRand.Reader, iv); err != nil {
 		return "", err
 	}
-	cfb := cipher.NewCFBEncrypter(block, iv)
+	cfb := cipher.NewCFBEncrypter(block, iv) //nolint:gosec // iv is randomized above via crypto/rand, not hardcoded
 
 	// Encrypt
 	cfb.XORKeyStream(encryptedBytes[aes.BlockSize:], paddedBytes)

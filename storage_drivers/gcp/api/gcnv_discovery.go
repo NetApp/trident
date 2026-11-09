@@ -518,7 +518,7 @@ func SortCPoolsByPreferredTopologies(
 ) []*CapacityPool {
 	orderedCPools := make([]*CapacityPool, 0)
 
-	rand.Shuffle(len(cPools), func(i, j int) {
+	rand.Shuffle(len(cPools), func(i, j int) { //nolint:gosec // non-cryptographic pool ordering
 		cPools[i], cPools[j] = cPools[j], cPools[i]
 	})
 

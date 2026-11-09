@@ -911,7 +911,7 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// Shuffle the pools
-	rand.Shuffle(len(cPools), func(i, j int) { cPools[i], cPools[j] = cPools[j], cPools[i] })
+	rand.Shuffle(len(cPools), func(i, j int) { cPools[i], cPools[j] = cPools[j], cPools[i] }) //nolint:gosec // non-cryptographic pool ordering
 
 	return cPools
 }

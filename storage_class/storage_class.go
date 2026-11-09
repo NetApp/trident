@@ -575,7 +575,7 @@ func SortPoolsByPreferredTopologies(
 		copy(remainingPools, newRemainingPools)
 
 		// shuffle bucket
-		rand.Shuffle(len(poolBucket), func(i, j int) {
+		rand.Shuffle(len(poolBucket), func(i, j int) { //nolint:gosec // non-cryptographic pool ordering
 			poolBucket[i], poolBucket[j] = poolBucket[j], poolBucket[i]
 		})
 
@@ -584,7 +584,7 @@ func SortPoolsByPreferredTopologies(
 	}
 
 	// shuffle and add leftover pools the did not match any preference
-	rand.Shuffle(len(remainingPools), func(i, j int) {
+	rand.Shuffle(len(remainingPools), func(i, j int) { //nolint:gosec // non-cryptographic pool ordering
 		remainingPools[i], remainingPools[j] = remainingPools[j], remainingPools[i]
 	})
 	return append(orderedPools, remainingPools...)

@@ -1,6 +1,6 @@
 name: checks
 env:
-  GO_VERSION: '1.26'
+  GO_VERSION: '1.27'
 on:
   pull_request:
     branches:

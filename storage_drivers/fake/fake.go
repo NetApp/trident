@@ -706,7 +706,7 @@ func (d *StorageDriver) getPoolsForCreate(
 	}
 
 	// Shuffle physical pools
-	rand.Shuffle(len(candidatePools), func(i, j int) {
+	rand.Shuffle(len(candidatePools), func(i, j int) { //nolint:gosec // non-cryptographic pool ordering
 		candidatePools[i], candidatePools[j] = candidatePools[j], candidatePools[i]
 	})
 
