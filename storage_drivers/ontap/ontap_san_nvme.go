@@ -217,9 +217,11 @@ func (d *NVMeStorageDriver) Initialize(
 		return fmt.Errorf("error initializing %s driver: ONTAP doesn't support NVMe", d.Name())
 	}
 
-	if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport); err != nil {
+	dataLIFs, err := d.API.NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport)
+	if err != nil {
 		return err
 	}
+	d.ips = dataLIFs.Up().Addresses()
 
 	if len(d.ips) == 0 {
 		return fmt.Errorf("no NVMe data LIFs found on SVM %s", d.API.SVMName())

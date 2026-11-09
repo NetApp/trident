@@ -335,7 +335,7 @@ type ZapiClientInterface interface {
 	// NetInterfaceGet returns the list of network interfaces with associated metadata
 	// equivalent to filer::> net interface list, but only those LIFs that are operational
 	NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error)
-	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
+	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error)
 	NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	// SystemGetVersion returns the system version
 	// equivalent to filer::> version

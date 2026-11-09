@@ -552,7 +552,7 @@ func TestInitialize_WithNoDataLIFs(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).AnyTimes().Return(map[string]string{}, nil)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return(upDataLIFs(), nil)
 
 	// Provide a configJSON
 	configJSON := `
@@ -608,7 +608,7 @@ func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).AnyTimes().Return(map[string]string{}, nil)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{"10.0.0.1"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return(upDataLIFs("10.0.0.1"), nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
@@ -666,7 +666,7 @@ func TestValidate_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
 	// Provide expect for mockAPI
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("10.0.0.0"), nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
@@ -702,7 +702,7 @@ func TestValidate_WithInvalidStoragePrefix(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.LUKSEncryption = "false"
 
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("10.0.0.0"), nil)
 
 	// Set invalid value for storage prefix
 	driver.Config.StoragePrefix = invalidStoragePrefix
@@ -718,7 +718,7 @@ func TestValidate_WithInvalidStoragePool(t *testing.T) {
 	// Create a mock driver and mockAPI
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("10.0.0.0"), nil)
 
 	// Set invalid value for one of the attribute of storage pool
 	physicalPools := map[string]storage.Pool{}
@@ -744,7 +744,7 @@ func TestValidate_WithNoAutoExportPolicy(t *testing.T) {
 	driver.flexvolExportPolicy = "mock-export-policy"
 
 	// Provide expect for mockAPI
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs("10.0.0.0"), nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
@@ -767,7 +767,7 @@ func TestValidate_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	driver.Config.AutoExportPolicy = false
 	driver.flexvolExportPolicy = "mock-export-policy"
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{"10.0.0.0"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return(upDataLIFs("10.0.0.0"), nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, driver.flexvolExportPolicy).AnyTimes().Return(mockError)
 	result2 := driver.validate(ctx)
 	assert.Error(t, result2, "Expected error when api fails to create export policy, got nil")

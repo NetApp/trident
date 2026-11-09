@@ -2145,7 +2145,8 @@ func TestOntapREST_NetworkInterfaceGetDataLIFs(t *testing.T) {
 			dataLifs, err := rs.NetInterfaceGetDataLIFs(ctx, test.protocol)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get data lifs")
-				assert.Equal(t, "1.1.1.1", dataLifs[0], "data lifs does not match")
+				assert.Equal(t, "1.1.1.1", dataLifs[0].Address, "data lifs does not match")
+				assert.Equal(t, DataLIFStateUp, dataLifs[0].State, "data lif state does not match")
 			} else {
 				assert.Error(t, err, "get the data lifs")
 			}
@@ -9703,6 +9704,35 @@ func TestOntapREST_VolumeCreate_UnixGroupID_DPVolumeSkipped(t *testing.T) {
 	if capturedNas != nil {
 		assert.Nil(t, capturedNas.Gid, "group ID must not be set on a DP volume")
 	}
+}
+
+func mockNetworkIpInterfaceMixedStates(w http.ResponseWriter, r *http.Request) {
+	response := &models.IPInterfaceResponse{
+		IPInterfaceResponseInlineRecords: []*models.IPInterface{
+			{IP: &models.IPInfo{Address: new(models.IPAddress("1.1.1.1"))}, State: new(models.IPInterfaceStateUp)},
+			{IP: &models.IPInfo{Address: new(models.IPAddress("2.2.2.2"))}, State: new(models.IPInterfaceStateDown)},
+			{IP: &models.IPInfo{Address: new(models.IPAddress("3.3.3.3"))}},
+			{State: new(models.IPInterfaceStateUp)},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func TestOntapREST_NetworkInterfaceGetDataLIFs_ReportsAllStates(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockNetworkIpInterfaceMixedStates))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	dataLifs, err := rs.NetInterfaceGetDataLIFs(ctx, "iscsi")
+
+	assert.NoError(t, err)
+	assert.Equal(t, DataLIFs{
+		{Address: "1.1.1.1", State: DataLIFStateUp},
+		{Address: "2.2.2.2", State: DataLIFStateDown},
+		{Address: "3.3.3.3", State: DataLIFStateDown},
+	}, dataLifs)
 }
 
 // A job that was accepted must not be reported as failed because the last status read errored as the time ran out.

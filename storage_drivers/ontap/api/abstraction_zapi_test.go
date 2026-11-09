@@ -1711,7 +1711,10 @@ func TestOntapAPIZAPI_NetInterfaceGetDataLIFs_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	protocol := "nfs"
-	expectedLIFs := []string{"192.168.1.10", "192.168.1.11"}
+	expectedLIFs := api.DataLIFs{
+		{Address: "192.168.1.10", State: api.DataLIFStateUp},
+		{Address: "192.168.1.11", State: api.DataLIFStateDown},
+	}
 	mock.EXPECT().NetInterfaceGetDataLIFs(ctx, protocol).Return(expectedLIFs, nil).Times(1)
 
 	lifs, err := oapi.NetInterfaceGetDataLIFs(ctx, protocol)

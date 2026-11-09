@@ -347,16 +347,20 @@ func (d *SANEconomyStorageDriver) Initialize(
 
 	d.helper = NewLUNHelper(d.Config, driverContext)
 
-	d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
+	dataLIFs, err := d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
 	if err != nil {
 		return err
 	}
 
-	if len(d.ips) == 0 {
+	if len(dataLIFs.Up()) == 0 {
 		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
-	} else {
-		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
+
+	if driverContext == tridentconfig.ContextDocker {
+		dataLIFs = dataLIFs.Up()
+	}
+	d.ips = dataLIFs.Addresses()
+	Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 
 	// Remap driverContext for artifact naming so the names remain stable over time
 	var artifactPrefix string

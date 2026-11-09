@@ -8860,7 +8860,7 @@ func TestValidateNASDriver(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs(), nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
 
@@ -8871,7 +8871,7 @@ func TestValidateNASDriver(t *testing.T) {
 	dataLIF := make([]string, 0)
 	dataLIF = append(dataLIF, "5.5.5.5")
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(dataLIF, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs(dataLIF...), nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
 
@@ -8883,7 +8883,7 @@ func TestValidateNASDriver(t *testing.T) {
 	dataLIF = make([]string, 0)
 	dataLIF = append(dataLIF, "5.5.5.5")
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(dataLIF, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs(dataLIF...), nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
 
@@ -8896,7 +8896,7 @@ func TestValidateNASDriver(t *testing.T) {
 	dataLIF = append(dataLIF, "5.5.5.5")
 	config.AutoExportCIDRs = []string{"192.168.0.0***24"}
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(dataLIF, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs(dataLIF...), nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
 
@@ -8909,7 +8909,7 @@ func TestValidateNASDriver(t *testing.T) {
 	dataLIF = append(dataLIF, "4444:5555:6666:7777")
 	config.AutoExportCIDRs = []string{"192.168.0.0/24"}
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(dataLIF, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return(upDataLIFs(dataLIF...), nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
 
@@ -12152,7 +12152,7 @@ func TestGetSVMState(t *testing.T) {
 	// Test 3
 	// a: client.GetSVMAggregateNames returns error
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPoolsNil, errors.New("API call returned error")).Times(1)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
@@ -12181,7 +12181,7 @@ func TestGetSVMState(t *testing.T) {
 
 	// d: client.GetSVMAggregateNames returns non-empty list, config.Aggregate is present, also no change in pool
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"aggr1"}, nil).Times(1)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
@@ -12193,7 +12193,7 @@ func TestGetSVMState(t *testing.T) {
 
 	// e: client.GetSVMAggregateNames returns non-empty list, config.Aggregate is "", also no change in pool
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"aggr1"}, nil).Times(1)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
@@ -12207,7 +12207,7 @@ func TestGetSVMState(t *testing.T) {
 
 	// Test 4
 	// a: error getting data LIFs
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, errors.New("API call returned error")).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), errors.New("API call returned error")).Times(1)
 
 	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
@@ -12225,7 +12225,7 @@ func TestGetSVMState(t *testing.T) {
 	assert.Equal(t, StateReasonDataLIFsDown, state, "Reason should be equal to StateReasonDataLIFsDown")
 
 	// c: all well
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
@@ -12235,7 +12235,7 @@ func TestGetSVMState(t *testing.T) {
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
 	assert.Equal(t, "", state, "Reason should be empty")
 
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).AnyTimes()
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).AnyTimes()
 
 	// d: error getting FC data LIFs
 	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs,
@@ -12267,7 +12267,7 @@ func TestGetSVMState(t *testing.T) {
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
 	assert.Equal(t, "", state, "Reason should be empty")
 
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).AnyTimes()
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil).AnyTimes()
 
 	// Test 5
 	// a: current ONTAP version > cached ONTAP version
@@ -12305,7 +12305,7 @@ func TestGetSVMState(t *testing.T) {
 	mockONTAPZAPI, _ := api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
 	mockZapiClient.EXPECT().GetSVMState(gomock.Any()).Return(models.SvmStateRunning, nil)
 	mockZapiClient.EXPECT().SVMGetAggregateNames().Return(derivedPools, nil)
-	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil)
+	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.241", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.251", nil)
 
@@ -12315,7 +12315,7 @@ func TestGetSVMState(t *testing.T) {
 	// f: current ONTAP version < cached ONTAP version
 	mockZapiClient.EXPECT().GetSVMState(gomock.Any()).Return(models.SvmStateRunning, nil)
 	mockZapiClient.EXPECT().SVMGetAggregateNames().Return(derivedPools, nil)
-	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil)
+	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.241", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.251", nil)
 
@@ -12325,7 +12325,7 @@ func TestGetSVMState(t *testing.T) {
 	// g: current ONTAP version = cached ONTAP version
 	mockZapiClient.EXPECT().GetSVMState(gomock.Any()).Return(models.SvmStateRunning, nil)
 	mockZapiClient.EXPECT().SVMGetAggregateNames().Return(derivedPools, nil)
-	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil)
+	mockZapiClient.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(upDataLIFs(dataLIFs...), nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.251", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.251", nil)
 
@@ -15296,6 +15296,14 @@ func TestSVMChanged(t *testing.T) {
 			assert.Equal(t, test.expected, svmChanged(test.svmNew, test.svmOrig, apiNew, apiOrig))
 		})
 	}
+}
+
+func upDataLIFs(addresses ...string) api.DataLIFs {
+	dataLIFs := make(api.DataLIFs, 0, len(addresses))
+	for _, address := range addresses {
+		dataLIFs = append(dataLIFs, api.DataLIF{Address: address, State: api.DataLIFStateUp})
+	}
+	return dataLIFs
 }
 
 func TestReconcileExistingFlexvol(t *testing.T) {

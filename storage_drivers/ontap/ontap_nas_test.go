@@ -405,7 +405,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -573,7 +573,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *te
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -638,7 +638,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
@@ -707,7 +707,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs("dataLIF"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -866,7 +866,7 @@ func TestOntapNasStorageDriverValidate(t *testing.T) {
 	dataLIF := make([]string, 0)
 	dataLIF = append(dataLIF, "10.0.201.1")
 
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(dataLIF, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs(dataLIF...), nil)
 
 	result := driver.validate(ctx)
 
@@ -899,7 +899,7 @@ func TestOntapNasStorageDriverValidate_ErrorScenarios(t *testing.T) {
 			},
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				dataLIF := []string{"10.0.201.1"}
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(dataLIF, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs(dataLIF...), nil)
 			},
 			expectedError: true,
 		},
@@ -911,7 +911,7 @@ func TestOntapNasStorageDriverValidate_ErrorScenarios(t *testing.T) {
 			},
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				dataLIF := []string{"10.0.201.1"}
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(dataLIF, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs(dataLIF...), nil)
 			},
 			expectedError: true,
 		},
@@ -927,7 +927,7 @@ func TestOntapNasStorageDriverValidate_ErrorScenarios(t *testing.T) {
 			},
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				dataLIF := []string{"10.0.201.1"}
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(dataLIF, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(upDataLIFs(dataLIF...), nil)
 			},
 			expectedError: true,
 		},

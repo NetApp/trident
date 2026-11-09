@@ -270,3 +270,50 @@ type NVMeSubsystemMap struct {
 type NvmeSubsystemHost struct {
 	NQN string
 }
+
+type DataLIFState string
+
+const (
+	DataLIFStateUp   DataLIFState = "up"
+	DataLIFStateDown DataLIFState = "down"
+)
+
+type DataLIF struct {
+	Address string
+	State   DataLIFState
+}
+
+type DataLIFs []DataLIF
+
+// Up returns only the DataLIF elements that are
+// in the DataLIFStateUp state.
+func (d DataLIFs) Up() DataLIFs {
+	up := make(DataLIFs, 0, len(d))
+	for _, l := range d {
+		if l.State == DataLIFStateUp {
+			up = append(up, l)
+		}
+	}
+	return up
+}
+
+func (d DataLIFs) Down() DataLIFs {
+	down := make(DataLIFs, 0, len(d))
+	for _, l := range d {
+		if l.State == DataLIFStateDown {
+			down = append(down, l)
+		}
+	}
+	return down
+}
+
+// Addresses returns a slice of addresses in DataLIFs.
+// Callers should check if a filter should first be used
+// before calling and consuming the result.
+func (d DataLIFs) Addresses() []string {
+	addresses := make([]string, 0, len(d))
+	for _, l := range d {
+		addresses = append(addresses, l.Address)
+	}
+	return addresses
+}

@@ -159,7 +159,7 @@ type OntapAPI interface {
 	QuotaGetEntry(ctx context.Context, volumeName, qtreeName, quotaType string) (*QuotaEntry, error)
 
 	GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error)
-	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
+	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error)
 	NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 

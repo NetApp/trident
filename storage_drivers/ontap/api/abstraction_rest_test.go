@@ -1799,11 +1799,14 @@ func TestNetInterfaceGetDataLIFs(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Get the data Lifs
-	rsi.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1", "1.2.3.4"}, nil)
+	expected := api.DataLIFs{
+		{Address: "1.1.1.1", State: api.DataLIFStateUp},
+		{Address: "1.2.3.4", State: api.DataLIFStateDown},
+	}
+	rsi.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(expected, nil)
 	datalifs, err := oapi.NetInterfaceGetDataLIFs(ctx, "iscsi")
 	assert.NoError(t, err, "error returned while getting a data Lifs")
-	assert.Equal(t, 2, len(datalifs))
-	assert.Equal(t, "1.1.1.1", datalifs[0])
+	assert.Equal(t, expected, datalifs)
 }
 
 func TestGetSVMAggregateNames(t *testing.T) {

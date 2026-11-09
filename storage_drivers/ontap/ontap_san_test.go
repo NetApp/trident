@@ -4749,7 +4749,7 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 		)
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
-		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -4831,7 +4831,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		)
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
-		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -4921,7 +4921,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		)
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
-		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -5054,7 +5054,7 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	)
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 		string(message), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
@@ -5062,6 +5062,91 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 	assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+}
+
+func TestOntapSanStorageDriverInitialize_DataLIFStates(t *testing.T) {
+	mixedDataLIFs := api.DataLIFs{
+		{Address: "1.1.1.1", State: api.DataLIFStateUp},
+		{Address: "2.2.2.2", State: api.DataLIFStateDown},
+	}
+	allDownDataLIFs := api.DataLIFs{
+		{Address: "1.1.1.1", State: api.DataLIFStateDown},
+		{Address: "2.2.2.2", State: api.DataLIFStateDown},
+	}
+
+	tests := []struct {
+		name          string
+		driverContext tridentconfig.DriverContext
+		dataLIFs      api.DataLIFs
+		expectedIPs   []string
+		expectedError string
+	}{
+		{"CSIRetainsDownDataLIFs", tridentconfig.ContextCSI, mixedDataLIFs, []string{"1.1.1.1", "2.2.2.2"}, ""},
+		{"CSIFailsWhenAllDataLIFsDown", tridentconfig.ContextCSI, allDownDataLIFs, nil, "no iSCSI data LIFs found on SVM"},
+		{"DockerFailsWhenAllDataLIFsDown", tridentconfig.ContextDocker, allDownDataLIFs, nil, "no iSCSI data LIFs found on SVM"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAPI, driver := newMockOntapSANDriver(t)
+			driver.Config.CommonStorageDriverConfig = nil
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsREST().AnyTimes().Return(true)
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+			mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
+			mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).AnyTimes().Return(false)
+
+			configJSON := `
+			{
+				"version":           1,
+				"storageDriverName": "ontap-san",
+				"managementLIF":     "127.0.0.1:0",
+				"svm":               "SVM1",
+				"aggregate":         "data",
+				"username":          "dummyuser",
+				"password":          "dummypassword"
+			}`
+			secrets := map[string]string{
+				"clientcertificate": "dummy-certificate",
+			}
+			driver.telemetry = &Telemetry{
+				Plugin: driver.Name(),
+				SVM:    "SVM1",
+				Driver: driver,
+				done:   make(chan struct{}),
+			}
+			driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+			driver.telemetry.TridentBackendUUID = BackendUUID
+			message, _ := json.Marshal(driver.GetTelemetry())
+
+			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+			mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+			mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+				map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+			)
+			mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").AnyTimes().Return(nil)
+			mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).AnyTimes().Return(api.IscsiInitiatorAuth{
+				SVMName:   "SVM1",
+				Initiator: "iqn",
+				AuthType:  "none",
+			}, nil)
+			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(test.dataLIFs, nil)
+			mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
+				string(message), 1, "trident", 5).AnyTimes()
+			mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return("SVM1-uuid")
+
+			err := driver.Initialize(ctx, test.driverContext, configJSON, getCommonConfig(), secrets, BackendUUID)
+
+			if test.expectedError != "" {
+				assert.ErrorContains(t, err, test.expectedError)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, test.expectedIPs, driver.ips)
+		})
+	}
 }
 
 // TestOntapSanStorageDriverInitialize_WithGCNVConfig_TakesGCNVPath verifies that when API is nil and
@@ -5321,7 +5406,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 		{
 			name: "AggregatesNotFound",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New("aggregates not found"))
 			},
 			wantErr:       assert.NoError,
@@ -5330,7 +5415,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 		{
 			name: "AggregatesListEmpty",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil)
 			},
 			wantErr:       assert.NoError,
@@ -5339,7 +5424,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 		{
 			name: "AggregatesIpListEmpty",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{}, nil)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs(), nil)
 			},
 			wantErr:       assert.NoError,
 			assertMessage: "Get the ips of ONTAP SAN storage pool aggregates",
@@ -5575,7 +5660,7 @@ func TestOntapSANStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(upDataLIFs("1.1.1.1"), nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, gomock.Any()).Return(nil,
 		errors.New("failed to validate replication policy"))
 	mockAPI.EXPECT().IgroupDestroy(ctx, "igroup1").Return(errors.New("igroup not found"))

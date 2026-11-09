@@ -226,7 +226,7 @@ type RestClientInterface interface {
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
 	// NetworkIPInterfacesList lists all IP interfaces
 	NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error)
-	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
+	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error)
 	NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	// JobGet returns the job by ID
 	JobGet(ctx context.Context, jobUUID string, fields []string) (*cluster.JobGetOK, error)

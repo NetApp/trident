@@ -4237,7 +4237,7 @@ func (c *RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.N
 	return result, nil
 }
 
-func (c *RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (c *RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) (DataLIFs, error) {
 	if protocol == "" {
 		return nil, fmt.Errorf("missing protocol specification")
 	}
@@ -4259,13 +4259,26 @@ func (c *RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol strin
 		return nil, fmt.Errorf("unexpected error checking network interfaces")
 	}
 
-	dataLIFs := make([]string, 0)
+	dataLIFs := make(DataLIFs, 0)
 	for _, record := range lifResponse.Payload.IPInterfaceResponseInlineRecords {
-		if record.IP != nil && record.State != nil && *record.State == models.IPInterfaceStateUp {
-			if record.IP.Address != nil {
-				dataLIFs = append(dataLIFs, string(*record.IP.Address))
-			}
+		if record.IP == nil || record.IP.Address == nil {
+			continue
 		}
+		address := string(*record.IP.Address)
+
+		// Do not filter by LIF state here.
+		// Instead, report the LIFs and let the caller decide.
+		dataLIFState := DataLIFStateDown
+		if record.State != nil && *record.State == models.IPInterfaceStateUp {
+			dataLIFState = DataLIFStateUp
+		}
+		dataLIFs = append(dataLIFs, DataLIF{
+			Address: address,
+			State:   dataLIFState,
+		})
+	}
+	if len(dataLIFs) < 1 {
+		return nil, fmt.Errorf("no data LIFs meet the provided criteria (protocol: %s)", protocol)
 	}
 
 	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Data LIFs")
