@@ -9,10 +9,16 @@ import (
 
 	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	k8sfake "k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/config"
@@ -21,6 +27,295 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
+
+func TestValidateNamespaceSharing(t *testing.T) {
+	tests := []struct {
+		name        string
+		annotations map[string]string
+		labels      map[string]string
+		errorText   string
+		gets        int
+	}{
+		{
+			name:        "legacy exact namespace",
+			annotations: map[string]string{AnnVolumeShareToNS: "other,target"},
+		},
+		{
+			name:        "legacy wildcard",
+			annotations: map[string]string{AnnVolumeShareToNS: "*"},
+		},
+		{
+			name:        "legacy denied",
+			annotations: map[string]string{AnnVolumeShareToNS: "other"},
+			errorText:   "not shared",
+		},
+		{
+			name:      "no sharing policy",
+			errorText: "not shared",
+		},
+		{
+			name:        "selector alone",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team=blue"},
+			labels:      map[string]string{"team": "blue"},
+			gets:        1,
+		},
+		{
+			name:        "selector mismatch",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team=blue"},
+			labels:      map[string]string{"team": "red"},
+			errorText:   "does not match",
+			gets:        1,
+		},
+		{
+			name:        "missing label",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team=blue"},
+			errorText:   "does not match",
+			gets:        1,
+		},
+		{
+			name:        "empty selector",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: ""},
+			errorText:   "nonempty",
+		},
+		{
+			name:        "whitespace selector",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: " \t\n"},
+			errorText:   "nonempty",
+		},
+		{
+			name:        "invalid selector",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team in ("},
+			errorText:   "invalid",
+		},
+		{
+			name:        "comma only selector",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: ","},
+			errorText:   "invalid",
+		},
+		{
+			name:        "set and existence expressions",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team in (blue,green),approved,!blocked"},
+			labels:      map[string]string{"team": "green", "approved": ""},
+			gets:        1,
+		},
+		{
+			name:        "negative expression follows Kubernetes semantics",
+			annotations: map[string]string{AnnVolumeShareToNSSelector: "team notin (red)"},
+			gets:        1,
+		},
+		{
+			name: "both annotations rejected even when both would allow",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "target",
+				AnnVolumeShareToNSSelector: "team=blue",
+			},
+			labels:    map[string]string{"team": "blue"},
+			errorText: "mutually exclusive",
+		},
+		{
+			name: "both annotations rejected with wildcard",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "*",
+				AnnVolumeShareToNSSelector: "team=blue",
+			},
+			labels:    map[string]string{"team": "blue"},
+			errorText: "mutually exclusive",
+		},
+		{
+			name: "both annotations rejected when namespace list would deny",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "other",
+				AnnVolumeShareToNSSelector: "team=blue",
+			},
+			labels:    map[string]string{"team": "blue"},
+			errorText: "mutually exclusive",
+		},
+		{
+			name: "both annotations rejected with empty namespace list",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "",
+				AnnVolumeShareToNSSelector: "team=blue",
+			},
+			labels:    map[string]string{"team": "blue"},
+			errorText: "mutually exclusive",
+		},
+		{
+			name: "both annotations rejected with empty selector",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "*",
+				AnnVolumeShareToNSSelector: "",
+			},
+			errorText: "mutually exclusive",
+		},
+		{
+			name: "both annotations rejected with invalid selector",
+			annotations: map[string]string{
+				AnnVolumeShareToNS:         "*",
+				AnnVolumeShareToNSSelector: "team in (",
+			},
+			errorText: "mutually exclusive",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := k8sfake.NewSimpleClientset(&v1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{Name: "target", Labels: tt.labels},
+			})
+			h := &helper{kubeClient: client}
+			source := &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{Name: "source", Namespace: "source-ns", Annotations: tt.annotations},
+			}
+			err := h.validateNamespaceSharing(context.Background(), "target", source)
+			if tt.errorText == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.errorText)
+			}
+			assert.Len(t, client.Actions(), tt.gets, "legacy, conflicting, and invalid policies must not require namespace API access")
+		})
+	}
+}
+
+func TestValidateNamespaceSharing_NamespaceErrors(t *testing.T) {
+	for _, apiErr := range []error{
+		apierrors.NewNotFound(schema.GroupResource{Resource: "namespaces"}, "target"),
+		apierrors.NewForbidden(schema.GroupResource{Resource: "namespaces"}, "target", fmt.Errorf("denied")),
+		apierrors.NewTimeoutError("namespace lookup timed out", 1),
+	} {
+		t.Run(apiErr.Error(), func(t *testing.T) {
+			client := k8sfake.NewSimpleClientset()
+			client.PrependReactor("get", "namespaces", func(k8stesting.Action) (bool, runtime.Object, error) {
+				return true, nil, apiErr
+			})
+			h := &helper{kubeClient: client}
+			source := &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "source",
+					Namespace:   "source-ns",
+					Annotations: map[string]string{AnnVolumeShareToNSSelector: "team=blue"},
+				},
+			}
+			err := h.validateNamespaceSharing(context.Background(), "target", source)
+			require.ErrorContains(t, err, "could not get namespace target")
+			assert.ErrorIs(t, err, apiErr)
+		})
+	}
+}
+
+func TestValidateNamespaceSharing_ConflictMessage(t *testing.T) {
+	client := k8sfake.NewSimpleClientset()
+	h := &helper{kubeClient: client}
+	source := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "source",
+			Namespace: "source-ns",
+			Annotations: map[string]string{
+				AnnVolumeShareToNS:         "target",
+				AnnVolumeShareToNSSelector: "team=blue",
+			},
+		},
+	}
+	err := h.validateNamespaceSharing(context.Background(), "target", source)
+	require.Error(t, err)
+	// The message is recorded as a PVC event, so it must identify the source PVC, the target namespace,
+	// both annotations, and the required action.
+	for _, text := range []string{
+		"source-ns/source", "namespace target", AnnVolumeShareToNS + " and " + AnnVolumeShareToNSSelector,
+		"mutually exclusive", "set only one of them on the source PVC",
+	} {
+		assert.Contains(t, err.Error(), text)
+	}
+	assert.Empty(t, client.Actions())
+}
+
+func TestValidateSubordinateVolumeConfig_NamespaceSelector(t *testing.T) {
+	ctx := context.Background()
+	client := k8sfake.NewSimpleClientset(&v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: "target", Labels: map[string]string{"team": "blue"}},
+	})
+	h := &helper{
+		kubeClient:  client,
+		pvcIndexer:  cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{}),
+		pvIndexer:   cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{}),
+		vrefIndexer: cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{vrefIndex: TridentVolumeReferenceKeyFunc}),
+	}
+	source := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "source",
+			Namespace:   "source-ns",
+			Annotations: map[string]string{AnnVolumeShareToNSSelector: "team=blue"},
+		},
+		Spec:   v1.PersistentVolumeClaimSpec{StorageClassName: new("shared"), VolumeName: "source-pv"},
+		Status: v1.PersistentVolumeClaimStatus{Phase: v1.ClaimBound},
+	}
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "source-pv"},
+		Spec:       v1.PersistentVolumeSpec{ClaimRef: &v1.ObjectReference{Name: "source", Namespace: "source-ns"}},
+		Status:     v1.PersistentVolumeStatus{Phase: v1.VolumeBound},
+	}
+	vref := &netappv1.TridentVolumeReference{
+		ObjectMeta: metav1.ObjectMeta{Name: "reference", Namespace: "target"},
+		Spec:       netappv1.TridentVolumeReferenceSpec{PVCName: "source", PVCNamespace: "source-ns"},
+	}
+	require.NoError(t, h.pvcIndexer.Add(source))
+	require.NoError(t, h.pvIndexer.Add(pv))
+	require.NoError(t, h.vrefIndexer.Add(vref))
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "subordinate",
+			Namespace:   "target",
+			Annotations: map[string]string{AnnVolumeShareFromPVC: "source-ns/source"},
+		},
+		Spec: v1.PersistentVolumeClaimSpec{StorageClassName: new("shared")},
+	}
+	config := &storage.VolumeConfig{}
+	require.NoError(t, h.validateSubordinateVolumeConfig(ctx, pvc, config))
+	assert.Equal(t, "source-pv", config.ShareSourceVolume)
+
+	// A matching selector does not bypass the existing source validation requirements.
+	wrongClass := pvc.DeepCopy()
+	wrongClass.Spec.StorageClassName = new("other")
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, wrongClass, &storage.VolumeConfig{}), "same storage class")
+	source.Status.Phase = v1.ClaimPending
+	require.NoError(t, h.pvcIndexer.Update(source))
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, pvc, &storage.VolumeConfig{}), "source PVC is not bound")
+	source.Status.Phase = v1.ClaimBound
+	require.NoError(t, h.pvcIndexer.Update(source))
+	pv.Spec.ClaimRef.Name = "unexpected"
+	require.NoError(t, h.pvIndexer.Update(pv))
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, pvc, &storage.VolumeConfig{}), "expected PVC")
+	pv.Spec.ClaimRef.Name = "source"
+	require.NoError(t, h.pvIndexer.Update(pv))
+	require.NoError(t, h.vrefIndexer.Delete(vref))
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, pvc, &storage.VolumeConfig{}), "volume reference")
+	require.NoError(t, h.vrefIndexer.Add(vref))
+
+	// Adding shareToNamespace alongside the selector makes the source policy ambiguous and blocks provisioning.
+	source.Annotations[AnnVolumeShareToNS] = "target"
+	require.NoError(t, h.pvcIndexer.Update(source))
+	conflictConfig := &storage.VolumeConfig{}
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, pvc, conflictConfig), "mutually exclusive")
+	assert.Empty(t, conflictConfig.ShareSourceVolume)
+	delete(source.Annotations, AnnVolumeShareToNS)
+	require.NoError(t, h.pvcIndexer.Update(source))
+	require.NoError(t, h.validateSubordinateVolumeConfig(ctx, pvc, &storage.VolumeConfig{}))
+
+	// Removing the label prevents subsequent provisioning even while the TVR and source caches remain unchanged.
+	namespace, err := client.CoreV1().Namespaces().Get(ctx, "target", metav1.GetOptions{})
+	require.NoError(t, err)
+	namespace.Labels = nil
+	_, err = client.CoreV1().Namespaces().Update(ctx, namespace, metav1.UpdateOptions{})
+	require.NoError(t, err)
+	nextConfig := &storage.VolumeConfig{}
+	require.ErrorContains(t, h.validateSubordinateVolumeConfig(ctx, pvc, nextConfig), "does not match")
+	assert.Empty(t, nextConfig.ShareSourceVolume)
+	assert.Equal(t, "source-pv", config.ShareSourceVolume, "existing provisioned volume configuration is unaffected")
+
+	namespace.Labels = map[string]string{"team": "blue"}
+	_, err = client.CoreV1().Namespaces().Update(ctx, namespace, metav1.UpdateOptions{})
+	require.NoError(t, err)
+	require.NoError(t, h.validateSubordinateVolumeConfig(ctx, pvc, &storage.VolumeConfig{}))
+}
 
 func TestGetCaseFoldedAnnotation(t *testing.T) {
 	ann := map[string]string{
