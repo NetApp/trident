@@ -2475,14 +2475,14 @@ func TestVolumeDisableSnapshotDirectoryAccess(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Volume disable snapshot directory access positive test case
-	rsi.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false).Return(nil)
-	err := oapi.VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false)
+	rsi.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol1", "fake-uuid", false).Return(nil)
+	err := oapi.VolumeModifySnapshotDirectoryAccess(ctx, "vol1", "fake-uuid", false)
 	assert.NoError(t, err, "error returned disabling a snapshot directory access")
 
 	// case 2: Volume disable snapshot directory access negative test case
-	rsi.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false).
+	rsi.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol1", "fake-uuid", false).
 		Return(errors.New("error disabling snapshot directory access"))
-	err = oapi.VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false)
+	err = oapi.VolumeModifySnapshotDirectoryAccess(ctx, "vol1", "fake-uuid", false)
 	assert.Error(t, err, " no error returned disabling a snapshot directory access")
 }
 
@@ -2537,14 +2537,14 @@ func TestVolumeSetComment(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Volume set comment positive test
-	rsi.EXPECT().VolumeSetComment(ctx, "trident-pvc-1234", "flexvol comment").Return(nil)
-	err := oapi.VolumeSetComment(ctx, "trident-pvc-1234", "vol1", "flexvol comment")
+	rsi.EXPECT().VolumeSetComment(ctx, "trident-pvc-1234", "fake-uuid", "flexvol comment").Return(nil)
+	err := oapi.VolumeSetComment(ctx, "trident-pvc-1234", "vol1", "fake-uuid", "flexvol comment")
 	assert.NoError(t, err, "error returned while modifying a comment on volume")
 
 	// case 2: Volume set comment negative test
-	rsi.EXPECT().VolumeSetComment(ctx, "trident-pvc-1234", "flexvol comment").Return(
+	rsi.EXPECT().VolumeSetComment(ctx, "trident-pvc-1234", "fake-uuid", "flexvol comment").Return(
 		errors.New("failed to update comment on volume"))
-	err = oapi.VolumeSetComment(ctx, "trident-pvc-1234", "vol1", "flexvol comment")
+	err = oapi.VolumeSetComment(ctx, "trident-pvc-1234", "vol1", "fake-uuid", "flexvol comment")
 	assert.Error(t, err, "no error returned while modifying a comment on volume")
 }
 
@@ -2641,14 +2641,14 @@ func TestVolumeModifyUnixPermissions(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Volume modify unix permission positive test
-	rsi.EXPECT().VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "--rwxrwxrwx").Return(nil)
-	err := oapi.VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "--rwxrwxrwx")
+	rsi.EXPECT().VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "fake-uuid", "--rwxrwxrwx").Return(nil)
+	err := oapi.VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "fake-uuid", "--rwxrwxrwx")
 	assert.NoError(t, err, "error returned while modifying a unix permission")
 
 	// case 2: Volume modify unix permission negative test
-	rsi.EXPECT().VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "--rwxrwxrwx").Return(
+	rsi.EXPECT().VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "fake-uuid", "--rwxrwxrwx").Return(
 		errors.New("failed to modify unix permission on flexgroup volume"))
-	err = oapi.VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "--rwxrwxrwx")
+	err = oapi.VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "fake-uuid", "--rwxrwxrwx")
 	assert.Error(t, err, "no error returned while modifying a unix permission")
 }
 
@@ -2764,14 +2764,14 @@ func TestVolumeModifyExportPolicy(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Export rule modify positive test
-	rsi.EXPECT().VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy").Return(nil)
-	err := oapi.VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy")
+	rsi.EXPECT().VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-uuid", "fake-policy").Return(nil)
+	err := oapi.VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-uuid", "fake-policy")
 	assert.NoError(t, err, "error returned while modifying a export policy")
 
 	// case 2: Export rule modify negative test
-	rsi.EXPECT().VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy").Return(
+	rsi.EXPECT().VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-uuid", "fake-policy").Return(
 		errors.New("failed to modify export policy"))
-	err = oapi.VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy")
+	err = oapi.VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-uuid", "fake-policy")
 	assert.Error(t, err, "no error returned while modifying a export policy")
 }
 

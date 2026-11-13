@@ -1265,8 +1265,12 @@ func (c *RestClient) modifyVolumeExportPolicyByNameAndStyle(
 		return fmt.Errorf("could not find volume uuid with name %v", volumeName)
 	}
 
-	uuid := *volume.UUID
+	return c.modifyVolumeExportPolicyByUUID(ctx, *volume.UUID, exportPolicyName)
+}
 
+// modifyVolumeExportPolicyByUUID sets the export policy of the volume with the specified UUID. Addressing the
+// volume directly avoids the name index, which ONTAP may not have updated yet after a volume rename.
+func (c *RestClient) modifyVolumeExportPolicyByUUID(ctx context.Context, uuid, exportPolicyName string) error {
 	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1305,8 +1309,12 @@ func (c *RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 		return fmt.Errorf("could not find volume uuid with name %v", volumeName)
 	}
 
-	uuid := *volume.UUID
+	return c.modifyVolumeUnixPermissionsByUUID(ctx, *volume.UUID, unixPermissions)
+}
 
+// modifyVolumeUnixPermissionsByUUID sets the unix permissions of the volume with the specified UUID. Addressing
+// the volume directly avoids the name index, which ONTAP may not have updated yet after a volume rename.
+func (c *RestClient) modifyVolumeUnixPermissionsByUUID(ctx context.Context, uuid, unixPermissions string) error {
 	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1358,8 +1366,12 @@ func (c *RestClient) setVolumeCommentByNameAndStyle(
 		return fmt.Errorf("could not find volume uuid with name %v", volumeName)
 	}
 
-	uuid := *volume.UUID
+	return c.setVolumeCommentByUUID(ctx, *volume.UUID, newVolumeComment)
+}
 
+// setVolumeCommentByUUID sets the comment of the volume with the specified UUID. Addressing the volume
+// directly avoids the name index, which ONTAP may not have updated yet after a volume rename.
+func (c *RestClient) setVolumeCommentByUUID(ctx context.Context, uuid, newVolumeComment string) error {
 	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2174,8 +2186,11 @@ func (c *RestClient) VolumeRename(
 
 func (c *RestClient) VolumeModifyExportPolicy(
 	ctx context.Context,
-	volumeName, exportPolicyName string,
+	volumeName, volumeUUID, exportPolicyName string,
 ) error {
+	if volumeUUID != "" {
+		return c.modifyVolumeExportPolicyByUUID(ctx, volumeUUID, exportPolicyName)
+	}
 	return c.modifyVolumeExportPolicyByNameAndStyle(ctx, volumeName, exportPolicyName, models.VolumeStyleFlexvol)
 }
 
@@ -2196,13 +2211,21 @@ func (c *RestClient) VolumeSetSize(ctx context.Context, volumeName, newSize stri
 	return c.setVolumeSizeByNameAndStyle(ctx, volumeName, newSize, models.VolumeStyleFlexvol)
 }
 
-func (c *RestClient) VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
+func (c *RestClient) VolumeModifyUnixPermissions(
+	ctx context.Context, volumeName, volumeUUID, unixPermissions string,
+) error {
+	if volumeUUID != "" {
+		return c.modifyVolumeUnixPermissionsByUUID(ctx, volumeUUID, unixPermissions)
+	}
 	return c.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexvol)
 }
 
 // VolumeSetComment sets a flexvol's comment to the supplied value
 // equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
-func (c *RestClient) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
+func (c *RestClient) VolumeSetComment(ctx context.Context, volumeName, volumeUUID, newVolumeComment string) error {
+	if volumeUUID != "" {
+		return c.setVolumeCommentByUUID(ctx, volumeUUID, newVolumeComment)
+	}
 	return c.setVolumeCommentByNameAndStyle(ctx, volumeName, newVolumeComment, models.VolumeStyleFlexvol)
 }
 
@@ -2774,25 +2797,30 @@ func (c *RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName,
 }
 
 // VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
-func (c *RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
-	fields := []string{""}
-	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
-	if err != nil {
-		return err
+// The volume's UUID is used when supplied, which avoids the name index that ONTAP may not have updated yet
+// after a volume rename.
+func (c *RestClient) VolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, volumeName, volumeUUID string, enable bool,
+) error {
+	if volumeUUID == "" {
+		fields := []string{""}
+		volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return fmt.Errorf("could not find volume with name %v", volumeName)
+		}
+		if volume.UUID == nil {
+			return fmt.Errorf("could not find volume uuid with name %v", volumeName)
+		}
+		volumeUUID = *volume.UUID
 	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-	if volume.UUID == nil {
-		return fmt.Errorf("could not find volume uuid with name %v", volumeName)
-	}
-
-	uuid := *volume.UUID
 
 	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.UUID = uuid
+	params.UUID = volumeUUID
 
 	volumeInfo := &models.Volume{}
 	volumeInfo.SnapshotDirectoryAccessEnabled = new(enable)

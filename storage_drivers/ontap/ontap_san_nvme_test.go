@@ -3007,7 +3007,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().VolumeWaitForStates(
 					ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait,
 				).Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, "cloneVol1", "cloneVol1", gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, "cloneVol1", "cloneVol1", "", gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "cloneVol1").Return(nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, "cloneVol1").Return(&api.Volume{
 					Name: "cloneVol1",
@@ -3053,7 +3053,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 			},
 			cloneVolConfig: storage.VolumeConfig{
@@ -3074,7 +3074,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 			},
 			cloneVolConfig: storage.VolumeConfig{
@@ -3103,7 +3103,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any())
 			},
@@ -3127,7 +3127,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("unable to get volume Info"))
 			},
@@ -3147,7 +3147,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, nil)
 			},
@@ -3167,7 +3167,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
@@ -3188,7 +3188,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 			},
 			cloneVolConfig: storage.VolumeConfig{
@@ -3207,7 +3207,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
@@ -3232,7 +3232,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
@@ -3257,7 +3257,7 @@ func TestCreateClone(t *testing.T) {
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
 				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
@@ -3552,7 +3552,7 @@ func TestNVMeImport_AutosizeApplyFailure(t *testing.T) {
 		GrowThresholdPercent: threshold,
 		MaximumSizeBytes:     1200,
 	}).Return(errors.New("autosize modify failed"))
-	mAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := d.Import(ctx, volConfig, originalName)
 
@@ -3650,7 +3650,7 @@ func TestImport_NameTemplate(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
 	originalName := "fakeOriginalName"
-	vol := &api.Volume{Aggregates: []string{"data"}}
+	vol := &api.Volume{Aggregates: []string{"data"}, UUID: "import-uuid"}
 	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100", UUID: "fakeUUID"}
 	ns.State = "online"
 
@@ -3667,7 +3667,7 @@ func TestImport_NameTemplate(t *testing.T) {
 	expectNVMeNamespaceGetByNameWildcard(mAPI, ctx, originalName).Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
-	mAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalName, "import-uuid", gomock.Any()).Return(nil)
 
 	err := d.Import(ctx, volConfig, originalName)
 

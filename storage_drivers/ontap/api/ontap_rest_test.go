@@ -5172,7 +5172,7 @@ func TestOntapREST_VolumeDisableSnapshotDirectoryAccess(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeModifySnapshotDirectoryAccess(ctx, "fakeVolume", false)
+			err := rs.VolumeModifySnapshotDirectoryAccess(ctx, "fakeVolume", "", false)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the volume info")
 			} else {
@@ -5918,7 +5918,7 @@ func TestOntapREST_VolumeModifyExportPolicy(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeModifyExportPolicy(ctx, "fakeVolume", "fake-policy")
+			err := rs.VolumeModifyExportPolicy(ctx, "fakeVolume", "", "fake-policy")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not update export policy on volume")
 			} else {
@@ -6024,7 +6024,7 @@ func TestOntapREST_VolumeModifyUnixPermissions(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeModifyUnixPermissions(ctx, "fakeVolume", "---rwxr-xrwx")
+			err := rs.VolumeModifyUnixPermissions(ctx, "fakeVolume", "", "---rwxr-xrwx")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not modify unix permission on volume")
 			} else {
@@ -6050,7 +6050,7 @@ func TestOntapREST_VolumeSetComment(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeSetComment(ctx, "fakeVolume", "newVolumeComment")
+			err := rs.VolumeSetComment(ctx, "fakeVolume", "", "newVolumeComment")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not modify comment on volume")
 			} else {
@@ -6059,6 +6059,104 @@ func TestOntapREST_VolumeSetComment(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+// TestOntapREST_VolumeModifyByUUIDSkipsNameLookup checks that UUID-addressed modifies never look the volume
+// up by name, so a lagging name index cannot target the wrong volume.
+func TestOntapREST_VolumeModifyByUUIDSkipsNameLookup(t *testing.T) {
+	const volumeUUID = "11111111-1111-1111-1111-111111111111"
+
+	tests := []struct {
+		name       string
+		modify     func(rs *RestClient) error
+		assertBody func(t *testing.T, body models.Volume)
+	}{
+		{
+			name: "export policy",
+			modify: func(rs *RestClient) error {
+				return rs.VolumeModifyExportPolicy(ctx, "fakeVolume", volumeUUID, "empty-policy")
+			},
+			assertBody: func(t *testing.T, body models.Volume) {
+				require.NotNil(t, body.Nas)
+				require.NotNil(t, body.Nas.ExportPolicy)
+				require.NotNil(t, body.Nas.ExportPolicy.Name)
+				assert.Equal(t, "empty-policy", *body.Nas.ExportPolicy.Name)
+			},
+		},
+		{
+			name: "unix permissions",
+			modify: func(rs *RestClient) error {
+				return rs.VolumeModifyUnixPermissions(ctx, "fakeVolume", volumeUUID, "755")
+			},
+			assertBody: func(t *testing.T, body models.Volume) {
+				require.NotNil(t, body.Nas)
+				require.NotNil(t, body.Nas.UnixPermissions)
+				assert.Equal(t, int64(755), *body.Nas.UnixPermissions)
+			},
+		},
+		{
+			name: "comment",
+			modify: func(rs *RestClient) error {
+				return rs.VolumeSetComment(ctx, "fakeVolume", volumeUUID, "clone-comment")
+			},
+			assertBody: func(t *testing.T, body models.Volume) {
+				require.NotNil(t, body.Comment)
+				assert.Equal(t, "clone-comment", *body.Comment)
+			},
+		},
+		{
+			name: "snapshot directory access",
+			modify: func(rs *RestClient) error {
+				return rs.VolumeModifySnapshotDirectoryAccess(ctx, "fakeVolume", volumeUUID, false)
+			},
+			assertBody: func(t *testing.T, body models.Volume) {
+				require.NotNil(t, body.SnapshotDirectoryAccessEnabled)
+				assert.False(t, *body.SnapshotDirectoryAccessEnabled)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var body models.Volume
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				case r.Method == http.MethodPatch && r.URL.Path == "/api/storage/volumes/"+volumeUUID:
+					assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+					mockRequestAccepted(w, r)
+				case r.Method == http.MethodGet && r.URL.Path == "/api/cluster/jobs/1234":
+					mockJobResponse(w, r)
+				default:
+					t.Errorf("uuid modify must not look the volume up by name: %s %s", r.Method, r.URL.RequestURI())
+					mockResourceNotFound(w, r)
+				}
+			}))
+			defer server.Close()
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			require.NotNil(t, rs)
+
+			assert.NoError(t, test.modify(rs))
+			test.assertBody(t, body)
+		})
+	}
+
+	t.Run("stale uuid returns the REST error", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPatch || r.URL.Path != "/api/storage/volumes/"+volumeUUID {
+				t.Errorf("unexpected request %s %s", r.Method, r.URL.RequestURI())
+			}
+			mockResourceNotFound(w, r)
+		}))
+		defer server.Close()
+
+		rs := newRestClient(server.Listener.Addr().String(), server.Client())
+		require.NotNil(t, rs)
+
+		err := rs.VolumeModifyExportPolicy(ctx, "fakeVolume", volumeUUID, "empty-policy")
+		require.Error(t, err)
+		assert.NotContains(t, err.Error(), "could not find volume uuid with name")
+	})
 }
 
 func TestOntapREST_VolumeSetQosPolicyGroupName(t *testing.T) {

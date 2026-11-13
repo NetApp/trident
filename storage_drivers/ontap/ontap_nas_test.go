@@ -993,10 +993,10 @@ func TestOntapNasStorageDriverVolumeClone_NASTypes(t *testing.T) {
 				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 				maxFlexvolCloneWait).Return("online", nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").
 				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "default").Return(nil)
 
 			if tt.nasType == sa.SMB {
 				driver.Config.NASType = sa.SMB
@@ -1046,10 +1046,10 @@ func TestOntapNasStorageDriverVolumeClone_SecureSMBEnabled(t *testing.T) {
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").
 		Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "").Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
@@ -1216,10 +1216,10 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplateStoragePoolUnset(t *testin
 		gomock.Any(), false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").
 		Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "default").Return(nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1261,11 +1261,11 @@ func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_On(t *testing.T) {
 		gomock.Any(), false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").
 		Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, "trident-empty").Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "trident-empty").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "trident-empty").Return(nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1307,10 +1307,10 @@ func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_Off(t *testing.T) {
 		gomock.Any(), false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").
 		Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "default").Return(nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1436,10 +1436,10 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 				maxFlexvolCloneWait).Return("online", nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, test.expectedLabel).
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", test.expectedLabel).
 				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "default").Return(nil)
 
 			result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1624,12 +1624,12 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName,
 		"/"+volConfig.InternalName).Return(errors.New("cannot create volume"))
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "default").Return(nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1669,9 +1669,9 @@ func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlCreateFail(t *te
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "").Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
@@ -1717,9 +1717,9 @@ func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlDeleteFail(t *te
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "", "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "", "").Return(nil)
 
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
@@ -4961,11 +4961,11 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("vol1-uuid", nil)
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
-		"vol1", false).Return(errors.New("failed to disable snapshot directory access"))
+		"vol1", "vol1-uuid", false).Return(errors.New("failed to disable snapshot directory access"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -5338,6 +5338,7 @@ func TestOntapNasStorageDriverVolumeImport_NASTypes(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "flexvol",
 		Size:    "1",
@@ -5355,7 +5356,7 @@ func TestOntapNasStorageDriverVolumeImport_NASTypes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 
 			if tt.nasType == sa.SMB {
 				driver.Config.NASType = sa.SMB
@@ -5469,6 +5470,7 @@ func TestOntapNasStorageDriverVolumeImport_ModifyComment(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
 		Size:    "1",
@@ -5476,7 +5478,7 @@ func TestOntapNasStorageDriverVolumeImport_ModifyComment(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "").Return(errors.New("error modifying comment"))
+	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "vol1-uuid", "").Return(errors.New("error modifying comment"))
 
 	result := driver.Import(ctx, volConfig, "vol1")
 
@@ -5495,6 +5497,7 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 		UnixPermissions:  "",
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "flexvol",
 		Size:    "1",
@@ -5519,7 +5522,7 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
 			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2",
-				"vol1", "").Return(errors.New("error modifying unix permissions"))
+				"vol1", "vol1-uuid", "").Return(errors.New("error modifying unix permissions"))
 
 			result := driver.Import(ctx, volConfig, "vol1")
 			assert.Error(t, result)
@@ -5540,15 +5543,16 @@ func TestOntapNasStorageDriverVolumeImport_ModifySnapshotAccess(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", true).Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "vol1-uuid", "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", "vol1-uuid", true).Return(nil)
 
 	result := driver.Import(ctx, volConfig, "vol1")
 
@@ -5568,15 +5572,16 @@ func TestOntapNasStorageDriverVolumeImport_FailedModifySnapshotAccess(t *testing
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
 	}
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", true).Return(mockError)
+	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "vol1-uuid", "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", "vol1-uuid", true).Return(mockError)
 
 	result := driver.Import(ctx, volConfig, "vol1")
 
@@ -5596,6 +5601,7 @@ func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
 	}
 	driver.Config.NASType = sa.SMB
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/flexvol",
@@ -5603,7 +5609,7 @@ func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
 	}
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(errors.New("error creating SMB share"))
 
@@ -5652,6 +5658,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBEnabled(t *testing.T) {
 		SecureSMBEnabled: true,
 	}
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/vol1",
@@ -5660,7 +5667,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBEnabled(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
@@ -5692,6 +5699,7 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplateInvalidLabel(t *testing.T
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
 		Size:    "1",
@@ -5731,9 +5739,9 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplateInvalidLabel(t *testing.T
 
 			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", test.expectedLabel).
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", "vol1-uuid", test.expectedLabel).
 				Return(nil)
-			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 
 			result := driver.Import(ctx, volConfig, "vol1")
 
@@ -5774,6 +5782,7 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplate(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:    "vol1-uuid",
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
 		Size:    "1",
@@ -5781,9 +5790,9 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplate(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", "{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}").
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", "vol1-uuid", "{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}").
 		Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 
 	result := driver.Import(ctx, volConfig, "vol1")
 
@@ -5804,6 +5813,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlCreateFail(t *t
 		SecureSMBEnabled: true,
 	}
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/vol1",
@@ -5812,7 +5822,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlCreateFail(t *t
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
@@ -5836,6 +5846,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlDeleteFail(t *t
 		SecureSMBEnabled: true,
 	}
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/vol1",
@@ -5844,7 +5855,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlDeleteFail(t *t
 
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName,
@@ -5924,6 +5935,7 @@ func TestOntapNasStorageDriverVolumeImport_EmptyPolicy(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		Size:         "1",
@@ -5955,12 +5967,12 @@ func TestOntapNasStorageDriverVolumeImport_EmptyPolicy(t *testing.T) {
 			if !test.importNotManaged {
 				mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
 				mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2",
-					"vol1", DefaultUnixPermissions).Return(nil)
+					"vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 			}
 
 			if test.emptyPolicyShouldBeSet {
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, "vol2", "test_empty").
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, "vol2", "vol1-uuid", "test_empty").
 					Return(nil)
 			}
 
@@ -5988,6 +6000,7 @@ func TestOntapNasStorageDriverVolumeImport_NoRename(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 	flexVol := &api.Volume{
+		UUID:         "vol1-uuid",
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		Size:         "1",
@@ -6010,7 +6023,7 @@ func TestOntapNasStorageDriverVolumeImport_NoRename(t *testing.T) {
 			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
 			// With --no-rename, VolumeRename should NOT be called
 			// Only other import operations should happen
-			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol1", "vol1", DefaultUnixPermissions).Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol1", "vol1", "vol1-uuid", DefaultUnixPermissions).Return(nil)
 
 			if tt.nasType == sa.SMB {
 				// SMB requires additional mock expectations
@@ -6081,14 +6094,14 @@ func TestPublishFlexVolShare_WithEmptyPolicy_Success(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, flexVolName).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", flexVolName).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -6118,14 +6131,14 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 
 	// CASE 1: Backend policy does not have the required node IP address
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", backendPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -6136,11 +6149,11 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 
 	// CASE 2: Backend policy already have the required node IP address
 	mockAPI, driver = newMockOntapNASDriverWithSVM(t, "SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return node ip rules when asked for them
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", backendPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -6171,11 +6184,11 @@ func TestPublishFlexVolShare_ReadOnlyCloneUsesSourceVolume(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 	volConfig.ExportPolicy = getEmptyExportPolicyName(*driver.Config.StoragePrefix)
-	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, backendPolicy).Return(true, nil)
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(ctx, backendPolicy).Return(map[int]string{1: sourceNodeIP}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), backendPolicy, cloneNodeIP, gomock.Any()).After(ruleListCall).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, backendPolicy).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, "flexvol-uuid", backendPolicy).Return(nil)
 
 	err := driver.Publish(ctx, volConfig, &publishInfo)
 
@@ -6199,9 +6212,9 @@ func TestUnpublish_ReadOnlyCloneUsesSourceVolume(t *testing.T) {
 		ReadOnlyClone:             true,
 	}
 
-	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, sourceVolumeName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, "test_empty")
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, sourceVolumeName, "flexvol-uuid", "test_empty")
 
 	err := driver.Unpublish(ctx, volConfig, &models.VolumePublishInfo{HostName: "node1", BackendUUID: "1234"})
 	assert.NoError(t, err)
@@ -6246,7 +6259,7 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 	// CASE 1: Error in checking if export policy exists
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	driver.Config.AutoExportPolicy = true
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, mockError)
 
 	result1 := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
@@ -6256,14 +6269,14 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNASDriverWithSVM(t, "SVM1")
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: "test_empty"}, nil)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 	// Return an empty set of rules when asked for them
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, flexVolName).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", flexVolName).AnyTimes().Return(mockError)
 
 	result2 := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
 	assert.Error(t, result2, "Expected error when api failed to check export policy exists, got nil")
@@ -6308,12 +6321,12 @@ func TestPublishFlexVolShare_WithDefaultPolicy_Success(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: defaultPolicy}, nil).Times(1)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: defaultPolicy}, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(0)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Times(0)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	// This handles the case where the customer originally created a backend with autoExportPolicy set to false and
 	// mounted a volume and then later changed autoExportPolicy to true
@@ -6342,11 +6355,11 @@ func TestPublishFlexVolShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *test
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil).Times(1)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, backendPolicy).Return(true, nil).Times(1)
 	// Return node ip rules when asked for them
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", backendPolicy).Return(nil).Times(1)
 
 	// This handles the case where the customer originally created and mounted a volume in trident version <=23.01
 	// and then later upgraded to 24.10. This would have the volConfig.ExportPolicy = "".
@@ -6418,14 +6431,14 @@ func TestPublishFlexVolShare_StaleCachedPolicyUsesONTAPPolicy(t *testing.T) {
 			driver.Config.AutoExportPolicy = true
 			driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 
-			mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: tc.ontapPolicy}, nil)
+			mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: tc.ontapPolicy}, nil)
 			if tc.wantPolicy != "" {
 				mockAPI.EXPECT().ExportPolicyExists(ctx, tc.wantPolicy).Return(true, nil)
 				ruleList := mockAPI.EXPECT().ExportRuleList(ctx, tc.wantPolicy).
 					Return(map[int]string{1: otherNodeIP}, nil)
 				mockAPI.EXPECT().ExportRuleCreate(ctx, tc.wantPolicy, nodeIP, gomock.Any()).
 					After(ruleList).Return(nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, tc.wantPolicy).Return(nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", tc.wantPolicy).Return(nil)
 			}
 
 			err := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
@@ -6500,7 +6513,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// delete the previous export policy after their rules have been deleted.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
@@ -6508,7 +6521,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName)
 			},
@@ -6522,16 +6535,16 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// is no longer in use by any pods on any node.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: ""},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, flexVolName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "flexvol-uuid", "test_empty")
 			},
 			wantErr: assert.NoError,
 		},
 		"emptyPolicyDoesNotExist": {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
@@ -6539,7 +6552,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil) // Now exists after pre-creation
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName)
 			},
@@ -6552,7 +6565,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// After unpublish from node1, trident_pvc_123 is expected to only have the IP addresses from node2.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
@@ -6580,7 +6593,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 		"exportRuleListError": {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, errors.New("some api error"))
@@ -6590,7 +6603,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 		"exportRuleDestroyError": {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
@@ -6606,9 +6619,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// After unpublish, the volume is expected to be set to the empty export policy.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "default"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: "default"}, nil).Times(1)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: "default"}, nil).Times(1)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil).Times(1)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Times(1)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty").Times(1)
 			},
 			wantErr: assert.NoError,
 		},
@@ -6617,7 +6630,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// and return the error (fail fast approach).
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(false, errors.New("API error checking policy"))
 			},
@@ -6628,11 +6641,11 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// unpublish should succeed by switching volume to empty policy (idempotent).
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(false, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 			},
 			wantErr: assert.NoError,
 		},
@@ -6641,14 +6654,14 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// existence before deleting (idempotent).
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil) // No rules after cleanup
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks existence
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(nil)
 			},
@@ -6660,7 +6673,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "test_empty"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				// ONTAP returns that volume is already using empty policy
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: "test_empty"}, nil)
 				// No further API calls expected - early return
 			},
 			wantErr: assert.NoError,
@@ -6671,14 +6684,14 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "stale_policy"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				// ONTAP returns actual policy (volume name) different from cached "stale_policy"
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(nil)
 			},
@@ -6690,10 +6703,10 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident-1234"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				// ONTAP returns backend policy (different from volume name)
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 				// Just switch to empty policy, don't delete the shared backend policy
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 			},
 			wantErr: assert.NoError,
 		},
@@ -6701,14 +6714,14 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// When VolumeModifyExportPolicy fails during setVolToEmptyPolicy, the error should be returned.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Return(errors.New("ONTAP API error"))
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty").Return(errors.New("ONTAP API error"))
 			},
 			wantErr: assert.Error,
 		},
@@ -6717,14 +6730,14 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// Note: Volume is already switched to empty policy at this point (safe state).
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Return(nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty").Return(nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(errors.New("ONTAP API error"))
 			},
@@ -6734,7 +6747,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// When ExportPolicyCreate fails for the empty policy (before lock), the error should be returned.
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: volName}, nil)
 				// ensureExportPolicyExists fails before acquiring the volume policy lock
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(errors.New("ONTAP API error"))
 			},
@@ -6913,9 +6926,9 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// is no longer in use by any pods on any node.
 			args: args{autoExportPolicy: true, nodeNum: 0},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 			},
 			wantErr: assert.NoError,
 		},
@@ -6925,10 +6938,10 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// is no longer in use by any pods on any node.
 			args: args{autoExportPolicy: true, nodeNum: 0},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(false, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty")
-				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "flexvol-uuid", "test_empty")
 			},
 			wantErr: assert.NoError,
 		},
@@ -6937,7 +6950,7 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// After unpublish, the volume is expected to continue to use the backend based export policy.
 			args: args{autoExportPolicy: true, nodeNum: 2},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{UUID: "flexvol-uuid", ExportPolicy: backendPolicy}, nil)
 			},
 			wantErr: assert.NoError,
 		},

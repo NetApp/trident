@@ -68,7 +68,8 @@ type RestClientInterface interface {
 	VolumeMount(ctx context.Context, volumeName, junctionPath string) error
 	// VolumeRename changes the name of a flexvol
 	VolumeRename(ctx context.Context, volumeName, newVolumeName string) error
-	VolumeModifyExportPolicy(ctx context.Context, volumeName, exportPolicyName string) error
+	// VolumeModifyExportPolicy sets a flexvol's export policy, using its UUID when supplied
+	VolumeModifyExportPolicy(ctx context.Context, volumeName, volumeUUID, exportPolicyName string) error
 	// VolumeSize retrieves the size of the specified flexvol
 	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	// VolumeUsedSize retrieves the used bytes of the specified volume
@@ -77,10 +78,11 @@ type RestClientInterface interface {
 	VolumeSetSize(ctx context.Context, volumeName, newSize string) error
 	// VolumeSetAutosizePolicy applies autosize settings to a FlexVol, using its UUID when supplied.
 	VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy) error
-	VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error
-	// VolumeSetComment sets a flexvol's comment to the supplied value
+	// VolumeModifyUnixPermissions sets a flexvol's unix permissions, using its UUID when supplied
+	VolumeModifyUnixPermissions(ctx context.Context, volumeName, volumeUUID, unixPermissions string) error
+	// VolumeSetComment sets a flexvol's comment to the supplied value, using its UUID when supplied
 	// equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
-	VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) error
+	VolumeSetComment(ctx context.Context, volumeName, volumeUUID, newVolumeComment string) error
 	// VolumeSetQosPolicyGroupName sets the QoS Policy Group for volume clones since
 	// we can't set adaptive policy groups directly during volume clone creation.
 	VolumeSetQosPolicyGroupName(ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup) error
@@ -132,8 +134,9 @@ type RestClientInterface interface {
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error
 	// SnapshotRestoreFlexgroup restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error
-	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
-	VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
+	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory, using the volume's UUID
+	// when supplied
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName, volumeUUID string, enable bool) error
 	// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 	VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error)
 	// VolumeCloneCreate creates a clone

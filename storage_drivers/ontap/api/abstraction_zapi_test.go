@@ -3556,7 +3556,7 @@ func TestOntapAPIZAPI_VolumeModifySnapshotDirectoryAccess(t *testing.T) {
 			mock.EXPECT().VolumeModifySnapshotDirectoryAccess(tt.volumeName, tt.enable).
 				Return(tt.mockResponse, tt.mockError).Times(1)
 
-			err := oapi.VolumeModifySnapshotDirectoryAccess(ctx, tt.volumeName, tt.enable)
+			err := oapi.VolumeModifySnapshotDirectoryAccess(ctx, tt.volumeName, "", tt.enable)
 
 			if tt.expectError {
 				assert.Error(t, err, "expected error when volume snapshot directory access modification should fail")
@@ -3696,7 +3696,7 @@ func TestOntapAPIZAPI_VolumeSetComment(t *testing.T) {
 			mock.EXPECT().VolumeSetComment(ctx, tt.volumeNameInternal, tt.comment).
 				Return(tt.mockResponse, tt.mockError).Times(1)
 
-			err := oapi.VolumeSetComment(ctx, tt.volumeNameInternal, tt.volumeNameExternal, tt.comment)
+			err := oapi.VolumeSetComment(ctx, tt.volumeNameInternal, tt.volumeNameExternal, "", tt.comment)
 
 			if tt.expectError {
 				assert.Error(t, err, "expected error when volume comment setting should fail")
@@ -3767,7 +3767,7 @@ func TestOntapAPIZAPI_VolumeModifyUnixPermissions(t *testing.T) {
 			mock.EXPECT().VolumeModifyUnixPermissions(tt.volumeNameInternal, tt.unixPermissions).
 				Return(tt.mockResponse, tt.mockError).Times(1)
 
-			err := oapi.VolumeModifyUnixPermissions(ctx, tt.volumeNameInternal, tt.volumeNameExternal, tt.unixPermissions)
+			err := oapi.VolumeModifyUnixPermissions(ctx, tt.volumeNameInternal, tt.volumeNameExternal, "", tt.unixPermissions)
 
 			if tt.expectError {
 				assert.Error(t, err, "expected error when volume Unix permissions modification should fail")
@@ -4314,7 +4314,7 @@ func TestOntapAPIZAPI_VolumeModifyExportPolicy(t *testing.T) {
 			mock.EXPECT().VolumeModifyExportPolicy(tt.volumeName, tt.policyName).
 				Return(tt.mockResponse, tt.mockError).Times(1)
 
-			err := oapi.VolumeModifyExportPolicy(ctx, tt.volumeName, tt.policyName)
+			err := oapi.VolumeModifyExportPolicy(ctx, tt.volumeName, "", tt.policyName)
 
 			if tt.expectError {
 				assert.Error(t, err, "expected error when volume export policy modification should fail")

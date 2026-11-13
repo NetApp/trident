@@ -6649,7 +6649,7 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 //
 //	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("", nil)
 //	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
-//		gomock.Any(), false).Return(errors.New("failed to disable snapshot directory access"))
+//		gomock.Any(), gomock.Any(), false).Return(errors.New("failed to disable snapshot directory access"))
 //	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(errors.New("failed to destroy volume"))
 //
 //	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)

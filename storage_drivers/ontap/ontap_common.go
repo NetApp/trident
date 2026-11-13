@@ -5443,7 +5443,8 @@ func cloneFlexvol(
 		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
 	}
 
-	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
+	// Set by name: the clone has no UUID yet, and VolumeWaitForStates has already resolved its name.
+	if err = client.VolumeSetComment(ctx, name, name, "", labels); err != nil {
 		return err
 	}
 

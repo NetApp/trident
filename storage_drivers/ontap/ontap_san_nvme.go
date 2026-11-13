@@ -929,7 +929,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 				return labelErr
 			}
 
-			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, labels)
+			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, flexvol.UUID, labels)
 			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)

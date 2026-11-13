@@ -2424,45 +2424,45 @@ func (mr *MockOntapAPIMockRecorder) VolumeModify(ctx, volume any) *gomock.Call {
 }
 
 // VolumeModifyExportPolicy mocks base method.
-func (m *MockOntapAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
+func (m *MockOntapAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, volumeUUID, policyName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifyExportPolicy", ctx, volumeName, policyName)
+	ret := m.ctrl.Call(m, "VolumeModifyExportPolicy", ctx, volumeName, volumeUUID, policyName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeModifyExportPolicy indicates an expected call of VolumeModifyExportPolicy.
-func (mr *MockOntapAPIMockRecorder) VolumeModifyExportPolicy(ctx, volumeName, policyName any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeModifyExportPolicy(ctx, volumeName, volumeUUID, policyName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifyExportPolicy), ctx, volumeName, policyName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifyExportPolicy), ctx, volumeName, volumeUUID, policyName)
 }
 
 // VolumeModifySnapshotDirectoryAccess mocks base method.
-func (m *MockOntapAPI) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
+func (m *MockOntapAPI) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name, volumeUUID string, enable bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", ctx, name, enable)
+	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", ctx, name, volumeUUID, enable)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeModifySnapshotDirectoryAccess indicates an expected call of VolumeModifySnapshotDirectoryAccess.
-func (mr *MockOntapAPIMockRecorder) VolumeModifySnapshotDirectoryAccess(ctx, name, enable any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeModifySnapshotDirectoryAccess(ctx, name, volumeUUID, enable any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifySnapshotDirectoryAccess), ctx, name, enable)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifySnapshotDirectoryAccess), ctx, name, volumeUUID, enable)
 }
 
 // VolumeModifyUnixPermissions mocks base method.
-func (m *MockOntapAPI) VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) error {
+func (m *MockOntapAPI) VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifyUnixPermissions", ctx, volumeNameInternal, volumeNameExternal, unixPermissions)
+	ret := m.ctrl.Call(m, "VolumeModifyUnixPermissions", ctx, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeModifyUnixPermissions indicates an expected call of VolumeModifyUnixPermissions.
-func (mr *MockOntapAPIMockRecorder) VolumeModifyUnixPermissions(ctx, volumeNameInternal, volumeNameExternal, unixPermissions any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeModifyUnixPermissions(ctx, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyUnixPermissions", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifyUnixPermissions), ctx, volumeNameInternal, volumeNameExternal, unixPermissions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyUnixPermissions", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifyUnixPermissions), ctx, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions)
 }
 
 // VolumeMount mocks base method.
@@ -2538,31 +2538,31 @@ func (mr *MockOntapAPIMockRecorder) VolumeRename(ctx, originalName, newName any)
 }
 
 // VolumeSetAutosizePolicy mocks base method.
-func (m *MockOntapAPI) VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosize api.VolumeAutosizePolicy) error {
+func (m *MockOntapAPI) VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosizePolicy api.VolumeAutosizePolicy) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", ctx, volumeName, volumeUUID, autosize)
+	ret := m.ctrl.Call(m, "VolumeSetAutosizePolicy", ctx, volumeName, volumeUUID, autosizePolicy)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeSetAutosizePolicy indicates an expected call of VolumeSetAutosizePolicy.
-func (mr *MockOntapAPIMockRecorder) VolumeSetAutosizePolicy(ctx, volumeName, volumeUUID, autosize any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeSetAutosizePolicy(ctx, volumeName, volumeUUID, autosizePolicy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSetAutosizePolicy), ctx, volumeName, volumeUUID, autosize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetAutosizePolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSetAutosizePolicy), ctx, volumeName, volumeUUID, autosizePolicy)
 }
 
 // VolumeSetComment mocks base method.
-func (m *MockOntapAPI) VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error {
+func (m *MockOntapAPI) VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, comment string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetComment", ctx, volumeNameInternal, volumeNameExternal, comment)
+	ret := m.ctrl.Call(m, "VolumeSetComment", ctx, volumeNameInternal, volumeNameExternal, volumeUUID, comment)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeSetComment indicates an expected call of VolumeSetComment.
-func (mr *MockOntapAPIMockRecorder) VolumeSetComment(ctx, volumeNameInternal, volumeNameExternal, comment any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeSetComment(ctx, volumeNameInternal, volumeNameExternal, volumeUUID, comment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetComment", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSetComment), ctx, volumeNameInternal, volumeNameExternal, comment)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetComment", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSetComment), ctx, volumeNameInternal, volumeNameExternal, volumeUUID, comment)
 }
 
 // VolumeSetQosPolicyGroupName mocks base method.

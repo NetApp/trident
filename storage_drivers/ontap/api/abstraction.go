@@ -232,19 +232,21 @@ type OntapAPI interface {
 	VolumeMove(
 		ctx context.Context, volumeName, destinationAggregateName string, dryRun bool,
 	) (string, error)
-	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
+	// The volume modify calls below accept an optional volumeUUID. When provided, REST addresses the volume
+	// by UUID rather than name, which avoids ONTAP's lagging name index right after a volume rename.
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name, volumeUUID string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
 	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)
 	VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (VolumeNameList, error)
-	VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error
+	VolumeModifyExportPolicy(ctx context.Context, volumeName, volumeUUID, policyName string) error
 	VolumeModifyUnixPermissions(
-		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+		ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions string,
 	) error
 	VolumeMount(ctx context.Context, name, junctionPath string) error
 	VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error)
 	VolumeRename(ctx context.Context, originalName, newName string) error
-	VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
+	VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, comment string) error
 	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error
 	VolumeSetAutosizePolicy(ctx context.Context, volumeName, volumeUUID string, autosizePolicy VolumeAutosizePolicy) error
 	VolumeSetSize(ctx context.Context, name, newSize string) error

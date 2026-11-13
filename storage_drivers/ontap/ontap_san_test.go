@@ -1707,7 +1707,7 @@ func TestOntapSanVolumeClone(t *testing.T) {
 		gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"}, []string{"error"},
 		maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), "", gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.InternalName).Return(&api.Volume{
 		Name: volConfig.InternalName,
 		Size: "1000",
@@ -1754,7 +1754,7 @@ func TestOntapSanVolumeClone_WithoutAutosizeClearsInheritedRecord(t *testing.T) 
 		Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"}, []string{"error"},
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), "", gomock.Any()).Return(nil)
 
 	err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
 
@@ -1854,7 +1854,7 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 					gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, getVolumeConfig().InternalName, []string{"online"}, []string{"error"},
 					maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.NoError,
@@ -1876,7 +1876,7 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(),
 					gomock.Any()).Return(errors.New("update QOS policy on LUN failed"))
 			},
@@ -2065,7 +2065,7 @@ func TestOntapSanVolumeClone_NameTemplate(t *testing.T) {
 				gomock.Any(), gomock.Any()).Return(nil)
 			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"},
 				maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), "", gomock.Any()).Return(nil)
 
 			err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
 
@@ -2192,6 +2192,7 @@ func TestOntapSanVolumeImport(t *testing.T) {
 		MaximumSizeBytes:     1200,
 	}).Return(nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+		"import-uuid",
 		"{\"provisioning\":{\"cloud\":\"san\",\"label\":\"dev-test-cluster-1\"}}").Return(nil)
 	mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/trident-pvc-1234/lun0").Return(nil, nil)
 
@@ -2297,7 +2298,7 @@ func TestOntapSanVolumeImport_AutosizeApplyFailure(t *testing.T) {
 		GrowThresholdPercent: threshold,
 		MaximumSizeBytes:     1200,
 	}).Return(errors.New("autosize modify failed"))
-	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := driver.Import(ctx, &volConfig, originalVolumeName)
 
@@ -2468,6 +2469,7 @@ func TestOntapSanVolumeImport_VolumeUpdateFail(t *testing.T) {
 	volConfig.ImportNotManaged = false
 
 	volume := api.Volume{
+		UUID:    "import-uuid",
 		Comment: "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
 	}
 	lun := api.Lun{
@@ -2490,6 +2492,7 @@ func TestOntapSanVolumeImport_VolumeUpdateFail(t *testing.T) {
 					"/vol/"+originalVolumeName+"/lun0").Return(nil)
 				mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+					"import-uuid",
 					"").Return(errors.New("volume comment update failed"))
 			},
 			wantErr:       assert.Error,
@@ -2503,6 +2506,7 @@ func TestOntapSanVolumeImport_VolumeUpdateFail(t *testing.T) {
 					"/vol/"+originalVolumeName+"/lun0").Return(nil)
 				mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+					"import-uuid",
 					"").Return(nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/trident-pvc-1234/lun0").Return(
 					nil, errors.New("LUN igroup mapping failed"))
@@ -2588,6 +2592,7 @@ func TestOntapSanVolumeImport_NameTemplateLabel(t *testing.T) {
 	volConfig.ImportNotManaged = false
 
 	volume := api.Volume{
+		UUID:       "import-uuid",
 		AccessType: "rw",
 		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
 	}
@@ -2637,6 +2642,7 @@ func TestOntapSanVolumeImport_NameTemplateLabel(t *testing.T) {
 				"/vol/"+originalVolumeName+"/lun0").Return(nil)
 			mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
 			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+				"import-uuid",
 				test.expectedLabel).Return(nil)
 			mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/trident-pvc-1234/lun0").Return(
 				nil, nil)
@@ -2735,6 +2741,7 @@ func TestOntapSanVolumeImport_NoRename(t *testing.T) {
 	volConfig.InternalName = originalVolumeName // With --no-rename, InternalName should be the original name
 
 	volume := api.Volume{
+		UUID:       "import-uuid",
 		AccessType: "rw",
 		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
 	}
@@ -2749,6 +2756,7 @@ func TestOntapSanVolumeImport_NoRename(t *testing.T) {
 	// With --no-rename, VolumeRename and LunRename should NOT be called
 	// Only label updates should happen
 	mockAPI.EXPECT().VolumeSetComment(ctx, originalVolumeName, originalVolumeName,
+		"import-uuid",
 		"{\"provisioning\":{\"cloud\":\"san\",\"label\":\"dev-test-cluster-1\"}}").Return(nil)
 	mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/"+originalVolumeName+"/lun0").Return(nil, nil)
 

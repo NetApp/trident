@@ -1523,7 +1523,7 @@ func TestPublishQtreeShare_WithDefaultPolicy_Success(t *testing.T) {
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Times(0)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	// This handles the case where the customer originally created a backend with autoExportPolicy set to false and
 	// mounted a volume and then later changed autoExportPolicy to true
@@ -1560,7 +1560,7 @@ func TestPublishQtreeShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *testin
 	// Return node ip rules when asked for them
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil).Times(2)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, backendPolicy).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "", backendPolicy).AnyTimes().Return(nil).Times(1)
 
 	// This handles the case where the customer originally created and mounted a volume in trident version <=23.01
 	// and then later upgraded to 24.10. This would have the volConfig.ExportPolicy = "".
@@ -1604,7 +1604,7 @@ func TestPublishQtreeShare_WithEmptyPolicy_Success(t *testing.T) {
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall2).Return(nil)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, qtreeName).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, flexVolPolicy).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "", flexVolPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -1645,7 +1645,7 @@ func TestPublishQtreeShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall2).Return(nil)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, backendPolicy).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "", backendPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -1661,7 +1661,7 @@ func TestPublishQtreeShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, backendPolicy).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "", backendPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
 	driver.Config.AutoExportPolicy = true
@@ -1871,7 +1871,7 @@ func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
 	mockAPI.EXPECT().QtreeCount(ctx, gomock.Any()).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaOff(ctx, gomock.Any()).AnyTimes().Return(nil)
 	gomock.InOrder(
@@ -2005,11 +2005,35 @@ func TestCreateFlexvolForQtree_Success_NasTypeSMB(t *testing.T) {
 	assert.NotNil(t, resultFlexvol, "Expected non-nil volume name, got nil")
 }
 
+func TestCreateFlexvolForQtree_UsesCreatedVolumeUUIDToModifySnapshotDirectory(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.NASType = sa.NFS
+
+	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return("flexvol-uuid", nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), "flexvol-uuid", false).Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	gomock.InOrder(
+		mockAPI.EXPECT().QuotaStatus(ctx, gomock.Any()).Return("off", nil),
+		mockAPI.EXPECT().QuotaStatus(ctx, gomock.Any()).Return("on", nil),
+	)
+
+	resultFlexvol, result := driver.createFlexvolForQtree(
+		ctx, "aggr1", "none", "snap-policy-1",
+		"", false, new(false), "10", "export-policy-1",
+	)
+
+	assert.NoError(t, result)
+	assert.NotEmpty(t, resultFlexvol)
+}
+
 func TestCreateFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 	// Create mock driver and API
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
@@ -2037,7 +2061,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 2: Error in disabling snapshot directory
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol2, result2 := driver.createFlexvolForQtree(
@@ -2050,7 +2074,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 3: Error in destroying volume after error in disabling snapshot directory
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol3, result3 := driver.createFlexvolForQtree(
@@ -2063,7 +2087,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 4: Error in mounting volume
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
@@ -2077,7 +2101,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 5: Error in destroying volume after error in mounting volume
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
@@ -2091,7 +2115,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 6: Error in adding quota entry
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
@@ -2107,7 +2131,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	// CASE 7: Error in destorying volume after error in adding quota entry
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
@@ -2141,7 +2165,7 @@ func addExpectForCreateFlexvolForQtree(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), gomock.Any()).AnyTimes().Return(false)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return("", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -6540,7 +6564,7 @@ func TestNASQtreeStorageDriver_UpdateVolume_Success(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil)
 
 	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(true, "trident_qtree_pool_trident_XHPULXSCYE", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", gomock.Any(), false).Return(nil)
 
 	result, resultErr := driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
 
@@ -6627,7 +6651,7 @@ func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
 	// CASE 5: Error while modifying snapshot directory
 	mockVol1.Config.InternalID = internalID1
 	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(true, "trident_qtree_pool_trident_XHPULXSCYE", nil)
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", gomock.Any(), false).Return(fakeErr)
 
 	result, resultErr = driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
 
@@ -6664,7 +6688,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Success(t *testing.T) {
 	}
 
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", gomock.Any(), false).Return(nil)
 
 	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "false", true, "trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
 
@@ -6724,7 +6748,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 
 	// CASE: Error while modifying snapshot directory
 	mockVol1.Config.InternalID = internalID1
-	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", gomock.Any(), false).Return(fakeErr)
 
 	result, resultErr = driver.updateSnapshotDirectory(
 		ctx, mockVol1.Config, "false", true,

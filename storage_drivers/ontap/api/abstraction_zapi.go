@@ -1448,7 +1448,7 @@ func (d OntapAPIZAPI) FlexgroupSetQosPolicyGroupName(ctx context.Context, name s
 }
 
 func (d OntapAPIZAPI) FlexgroupModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
-	return d.VolumeModifyExportPolicy(ctx, volumeName, policyName)
+	return d.VolumeModifyExportPolicy(ctx, volumeName, "", policyName)
 }
 
 func (d OntapAPIZAPI) FlexgroupSetComment(
@@ -1745,7 +1745,9 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIZAPI) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
+func (d OntapAPIZAPI) VolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, name, _ string, enable bool,
+) error {
 	snapDirResponse, err := d.api.VolumeModifySnapshotDirectoryAccess(name, enable)
 	if err = azgo.GetError(ctx, snapDirResponse, err); err != nil {
 		return fmt.Errorf("error modifying snapshot directory access: %v", err)
@@ -1783,7 +1785,7 @@ func (d OntapAPIZAPI) VolumeRename(ctx context.Context, originalName, newName st
 }
 
 func (d OntapAPIZAPI) VolumeSetComment(
-	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
+	ctx context.Context, volumeNameInternal, volumeNameExternal, _, comment string,
 ) error {
 	modifyCommentResponse, err := d.api.VolumeSetComment(ctx, volumeNameInternal, comment)
 	if err = azgo.GetError(ctx, modifyCommentResponse, err); err != nil {
@@ -1874,7 +1876,7 @@ func (d OntapAPIZAPI) VolumeSetAutosizePolicy(
 }
 
 func (d OntapAPIZAPI) VolumeModifyUnixPermissions(
-	ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+	ctx context.Context, volumeNameInternal, volumeNameExternal, _, unixPermissions string,
 ) error {
 	modifyUnixPermResponse, err := d.api.VolumeModifyUnixPermissions(volumeNameInternal, unixPermissions)
 	if err = azgo.GetError(ctx, modifyUnixPermResponse, err); err != nil {
@@ -1979,7 +1981,7 @@ func (d OntapAPIZAPI) ExportRuleDestroy(ctx context.Context, policyName string, 
 	return nil
 }
 
-func (d OntapAPIZAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
+func (d OntapAPIZAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, _, policyName string) error {
 	volumeModifyResponse, err := d.api.VolumeModifyExportPolicy(volumeName, policyName)
 	if err = azgo.GetError(ctx, volumeModifyResponse, err); err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)

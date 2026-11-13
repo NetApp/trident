@@ -1186,8 +1186,10 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIREST) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
-	if err := d.api.VolumeModifySnapshotDirectoryAccess(ctx, name, enable); err != nil {
+func (d OntapAPIREST) VolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, name, volumeUUID string, enable bool,
+) error {
+	if err := d.api.VolumeModifySnapshotDirectoryAccess(ctx, name, volumeUUID, enable); err != nil {
 		return fmt.Errorf("error modifying snapshot directory access; %v", err)
 	}
 
@@ -1218,9 +1220,9 @@ func (d OntapAPIREST) VolumeRename(ctx context.Context, originalName, newName st
 }
 
 func (d OntapAPIREST) VolumeSetComment(
-	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
+	ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, comment string,
 ) error {
-	if err := d.api.VolumeSetComment(ctx, volumeNameInternal, comment); err != nil {
+	if err := d.api.VolumeSetComment(ctx, volumeNameInternal, volumeUUID, comment); err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed; %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
@@ -1277,9 +1279,9 @@ func (d OntapAPIREST) VolumeSetAutosizePolicy(
 }
 
 func (d OntapAPIREST) VolumeModifyUnixPermissions(
-	ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+	ctx context.Context, volumeNameInternal, volumeNameExternal, volumeUUID, unixPermissions string,
 ) error {
-	err := d.api.VolumeModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
+	err := d.api.VolumeModifyUnixPermissions(ctx, volumeNameInternal, volumeUUID, unixPermissions)
 	if err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf(
 			"Could not import volume, modifying unix permissions failed; %v", err)
@@ -1451,8 +1453,8 @@ func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, 
 	return nil
 }
 
-func (d OntapAPIREST) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
-	err := d.api.VolumeModifyExportPolicy(ctx, volumeName, policyName)
+func (d OntapAPIREST) VolumeModifyExportPolicy(ctx context.Context, volumeName, volumeUUID, policyName string) error {
+	err := d.api.VolumeModifyExportPolicy(ctx, volumeName, volumeUUID, policyName)
 	if err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		Logc(ctx).Error(err)

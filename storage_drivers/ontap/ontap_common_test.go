@@ -9793,7 +9793,7 @@ func TestCloneFlexvol(t *testing.T) {
 		).Return(nil)
 		mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 			maxFlexvolCloneWait).Return("online", nil)
-		mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+		mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(nil)
 		mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, internalName, qosPolicyGroup).Return(nil)
 		mockAPI.EXPECT().VolumeInfo(gomock.Any(), internalName).Return(
 			&api.Volume{Name: internalName, Size: "1000", UUID: "clone-uuid"}, nil)
@@ -9812,7 +9812,7 @@ func TestCloneFlexvol(t *testing.T) {
 				).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(nil)
 				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, internalName, qosPolicyGroup).Return(nil)
 				mockAPI.EXPECT().VolumeInfo(gomock.Any(), internalName).Return(
 					&api.Volume{Name: internalName, Size: "1000", UUID: "clone-uuid"}, nil)
@@ -10000,7 +10000,7 @@ func TestCloneFlexvol(t *testing.T) {
 				mockAPI.EXPECT().VolumeCloneCreate(
 					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
 				).Return(nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(errors.New("error creating clone"))
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(errors.New("error creating clone"))
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
@@ -10018,7 +10018,7 @@ func TestCloneFlexvol(t *testing.T) {
 				).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(nil)
 				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(errors.New("error mounting volume"))
 				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), "dummy", true, true).Return(nil)
 			},
@@ -10035,7 +10035,7 @@ func TestCloneFlexvol(t *testing.T) {
 				).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(nil)
 				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(nil)
 				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(
 					ctx, internalName, qosPolicyGroup,
@@ -10055,7 +10055,7 @@ func TestCloneFlexvol(t *testing.T) {
 				).Return(nil)
 				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
 					maxFlexvolCloneWait).Return("online", nil)
-				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, "", label).Return(nil)
 				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(nil)
 				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, internalName, qosPolicyGroup).Return(nil)
 				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, internalName).Return(errors.New("error splitting clone"))
@@ -10119,7 +10119,7 @@ func TestCloneFlexvol_MountFailureCleansUpAfterCallerCancel(t *testing.T) {
 	mockAPI.EXPECT().VolumeCloneCreate(callerCtx, internalName, source, snapshot, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(callerCtx, internalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(callerCtx, internalName, internalName, "fakeLabel").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(callerCtx, internalName, internalName, "", "fakeLabel").Return(nil)
 	mockAPI.EXPECT().VolumeMount(callerCtx, internalName, "/"+internalName).Return(context.Canceled)
 	mockAPI.EXPECT().VolumeDestroy(gomock.Any(), internalName, true, true).
 		DoAndReturn(func(cleanupCtx context.Context, _ string, _, _ bool) error {

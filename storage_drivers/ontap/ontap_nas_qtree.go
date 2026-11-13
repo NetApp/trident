@@ -1065,7 +1065,8 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	// Ensure the parent flex-vol has the correct export policy and rules applied.
 	// Use ensureNodeAccessForPolicyAndApply to hold the lock for both rule creation and policy assignment.
 	applyFlexvolPolicy := func() error {
-		if err := d.API.VolumeModifyExportPolicy(ctx, flexvol, backendPolicyName); err != nil {
+		// Name path: QtreeExists just resolved the parent flexvol by name, and its UUID is not stored on the qtree.
+		if err := d.API.VolumeModifyExportPolicy(ctx, flexvol, "", backendPolicyName); err != nil {
 			err = fmt.Errorf("error modifying flexvol export policy; %v", err)
 			Logc(ctx).WithFields(LogFields{
 				"FlexVol":      flexvol,
@@ -1719,8 +1720,9 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	}).Debug("Creating Flexvol for qtrees.")
 
 	// Create the Flexvol. The qtree driver packs many qtrees into a shared flexvol whose lifecycle is
-	// not one-to-one with a volConfig, so the reported UUID is not recorded here.
-	_, err = createFlexvol(ctx, d.API, api.Volume{
+	// not one-to-one with a volConfig, so the reported UUID is not recorded here. It is used for the
+	// snapshot-directory modify below, which runs before the new name is in ONTAP's name index.
+	volumeUUID, err := createFlexvol(ctx, d.API, api.Volume{
 		Aggregates:      []string{aggregate},
 		Encrypt:         enableEncryption,
 		ExportPolicy:    exportPolicy,
@@ -1742,7 +1744,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 
 	// Disable '.snapshot' as needed
 	if !enableSnapshotDir {
-		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
+		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, volumeUUID, false)
 		if err != nil {
 			d.cleanupFailedFlexvolCreate(ctx, flexvol)
 			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
@@ -3259,7 +3261,7 @@ func (d *NASQtreeStorageDriver) updateSnapshotDirectory(
 	}
 
 	// Modify snapshotDirectory access for the pool i.e parent flexvol
-	err = d.API.VolumeModifySnapshotDirectoryAccess(ctx, poolName, snapDirRequested)
+	err = d.API.VolumeModifySnapshotDirectoryAccess(ctx, poolName, "", snapDirRequested)
 	if err != nil {
 		Logc(ctx).WithError(err).Error(genericErrMsg)
 		return nil, err

@@ -466,7 +466,7 @@ func (d *NASStorageDriver) Create(
 		volConfig.BackendVolumeID = volumeUUID
 
 		if !enableSnapshotDir {
-			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, volumeUUID, false); err != nil {
 				createErrors = append(createErrors,
 					fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 						storagePool.Name(), name, err))
@@ -636,8 +636,11 @@ func (d *NASStorageDriver) CreateClone(
 		}
 	}
 
-	// Set export policy on the new cloned volume
-	err = d.API.VolumeModifyExportPolicy(ctx, cloneVolConfig.InternalName, exportPolicy)
+	// Set export policy on the clone. BackendVolumeID is the clone's own UUID, or empty to address it by name;
+	// cloneFlexvol clears the source's UUID, so the source is never modified.
+	err = d.API.VolumeModifyExportPolicy(
+		ctx, cloneVolConfig.InternalName, cloneVolConfig.BackendVolumeID, exportPolicy,
+	)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", cloneVolConfig.InternalName)
 		return err
@@ -803,7 +806,7 @@ func (d *NASStorageDriver) Import(
 	// If autoExportPolicy is turned on and trident is managing the volume, set volume to empty export policy so that
 	// subsequent volume publish will set the correct per-volume export policy.
 	if d.Config.AutoExportPolicy && !volConfig.ImportNotManaged {
-		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName, flexvol.UUID); err != nil {
 			return err
 		}
 
@@ -822,7 +825,9 @@ func (d *NASStorageDriver) Import(
 			if labelErr != nil {
 				return labelErr
 			}
-			if err := d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, labels); err != nil {
+			if err := d.API.VolumeSetComment(
+				ctx, volConfig.InternalName, originalName, flexvol.UUID, labels,
+			); err != nil {
 				return err
 			}
 		}
@@ -848,7 +853,7 @@ func (d *NASStorageDriver) Import(
 		}
 
 		if err := d.API.VolumeModifyUnixPermissions(
-			ctx, volConfig.InternalName, originalName, unixPerms,
+			ctx, volConfig.InternalName, originalName, flexvol.UUID, unixPerms,
 		); err != nil {
 			return err
 		}
@@ -860,7 +865,9 @@ func (d *NASStorageDriver) Import(
 			return fmt.Errorf("could not import volume %s, invalid snapshotDirectory annotation; %s",
 				originalName, volConfig.SnapshotDir)
 		} else {
-			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, volConfig.InternalName, enable); err != nil {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(
+				ctx, volConfig.InternalName, flexvol.UUID, enable,
+			); err != nil {
 				return err
 			}
 		}
@@ -1034,13 +1041,15 @@ func (d *NASStorageDriver) Unpublish(
 
 	// Handle volume-level export policy (named after the volume)
 	if actualExportPolicy == volExportPolicyName {
-		return d.unpublishVolumePolicy(ctx, volConfig, publishInfo, volExportPolicyName, emptyPolicyName)
+		return d.unpublishVolumePolicy(
+			ctx, volConfig, publishInfo, volExportPolicyName, emptyPolicyName, volume.UUID,
+		)
 	}
 
 	// Volume is using a backend-based policy or migrating to using autoExportPolicies
 	if len(publishInfo.Nodes) == 0 {
 		Logc(ctx).Debug("No remaining nodes, switching to empty policy.")
-		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol, volume.UUID); err != nil {
 			return err
 		}
 		volConfig.ExportPolicy = emptyPolicyName
@@ -1053,7 +1062,7 @@ func (d *NASStorageDriver) Unpublish(
 // It holds the export policy mutex for the entire operation to prevent race conditions.
 func (d *NASStorageDriver) unpublishVolumePolicy(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
-	policyName, emptyPolicyName string,
+	policyName, emptyPolicyName, volumeUUID string,
 ) error {
 	fields := LogFields{
 		"Method":     "unpublishVolumePolicy",
@@ -1093,7 +1102,7 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 		Logc(ctx).WithField("policy", policyName).Debug(
 			"Export policy already deleted, switching volume to empty policy.")
 		// Policy already gone - just update the volume to use empty policy
-		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol, volumeUUID); err != nil {
 			return err
 		}
 		volConfig.ExportPolicy = emptyPolicyName
@@ -1116,7 +1125,7 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 	// If no rules remain, clean up the policy
 	if len(allExportRules) == 0 {
 		// First, switch volume to empty policy
-		if err = d.setVolToEmptyPolicy(ctx, flexvol); err != nil {
+		if err = d.setVolToEmptyPolicy(ctx, flexvol, volumeUUID); err != nil {
 			return err
 		}
 
@@ -1139,7 +1148,7 @@ func (d *NASStorageDriver) unpublishVolumePolicy(
 }
 
 // setVolToEmptyPolicy  set export policy to the empty policy.
-func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName string) error {
+func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName, volUUID string) error {
 	fields := LogFields{"flexvol": volName}
 	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
@@ -1159,7 +1168,7 @@ func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName stri
 		}
 	}
 
-	err = d.API.VolumeModifyExportPolicy(ctx, volName, emptyExportPolicy)
+	err = d.API.VolumeModifyExportPolicy(ctx, volName, volUUID, emptyExportPolicy)
 	if err != nil {
 		Logc(ctx).WithFields(fields).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
 		return err
@@ -1240,7 +1249,7 @@ func (d *NASStorageDriver) publishFlexVolShare(
 	// This prevents a race condition where a concurrent unpublish could delete the policy between
 	// ensureNodeAccessForPolicy releasing the lock and VolumeModifyExportPolicy being called.
 	applyPolicy := func() error {
-		if err := d.API.VolumeModifyExportPolicy(ctx, flexvol, flexVolPolicyName); err != nil {
+		if err := d.API.VolumeModifyExportPolicy(ctx, flexvol, volume.UUID, flexVolPolicyName); err != nil {
 			err = fmt.Errorf("error modifying flexvol export policy; %v", err)
 			Logc(ctx).WithFields(LogFields{
 				"FlexVol":      flexvol,
