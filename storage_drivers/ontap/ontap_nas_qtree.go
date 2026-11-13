@@ -2703,7 +2703,17 @@ func (t *HousekeepingTask) Start(ctx context.Context) {
 	ctx = context.WithoutCancel(ctx)
 	go func() {
 		defer t.Driver.housekeepingWaitGroup.Done()
-		time.Sleep(t.InitialDelay)
+
+		initialDelay := time.NewTimer(t.InitialDelay)
+		defer initialDelay.Stop()
+
+		select {
+		case <-initialDelay.C:
+		case <-t.Done:
+			// Stop() ran before the first pass was due and already ran the tasks one last time.
+			return
+		}
+
 		t.run(ctx, time.Now())
 		for {
 			select {

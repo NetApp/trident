@@ -1966,6 +1966,7 @@ func TestUnpublishASANVMe(t *testing.T) {
 	// case 1: NVMeRemoveHostFromSubsystem - error checking if host present
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
 	volConfig.AccessInfo.NVMeSubsystemUUID = "fakeSubsystemUUID"
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 
 	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
@@ -2967,11 +2968,11 @@ func TestCreatePrepareASANVMe(t *testing.T) {
 		InternalName: "fakeInternalName",
 	}
 	volConfig.ImportNotManaged = false
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
 	driver.CreatePrepare(ctx, volConfig, pool)
-	tridentconfig.CurrentDriverContext = ""
 
 	assert.Equal(t, "test_fakeVolName", volConfig.InternalName, "Incorrect volume internal name.")
 	assert.True(t, volConfig.AccessInfo.PublishEnforcement, "Publish enforcement not enabled.")

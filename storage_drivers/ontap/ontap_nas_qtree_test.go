@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -100,7 +101,24 @@ func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeS
 
 	driver := newNASQtreeStorageDriver(mockAPI)
 	stopTelemetryOnCleanup(t, driver)
+	stopHousekeepingOnCleanup(t, driver)
 	return mockAPI, driver
+}
+
+// stopHousekeepingOnCleanup stops the housekeeping tasks Initialize() starts and waits for their goroutines to exit
+// when t finishes, so a quota resize pass can't fire into an already-finished test's mock controller. Register after
+// gomock.NewController(t) so the controller is still live while Stop() runs the tasks one last time.
+func stopHousekeepingOnCleanup(t *testing.T, driver *NASQtreeStorageDriver) {
+	t.Helper()
+
+	t.Cleanup(func() {
+		for _, task := range driver.housekeepingTasks {
+			task.Stop(ctx)
+		}
+		if driver.housekeepingWaitGroup != nil {
+			driver.housekeepingWaitGroup.Wait()
+		}
+	})
 }
 
 func newMockQtree(name, volume string) *api.Qtree {
@@ -3071,7 +3089,8 @@ func TestInitialize_QtreeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_WithPassthroughStore(t *testing.T) {
-	defer ScopedTridentConfigUsingPassthroughStore(true)()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
+	tridentconfig.UsingPassthroughStore = true
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.StoragePrefix = validStoragePrefix
 	volName := "vol"
@@ -3087,6 +3106,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 	ctx := context.Background()
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.StoragePrefix = validStoragePrefix
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
 	name := "pvc_123456789"
@@ -3203,13 +3223,14 @@ func TestCreatePrepare_Success(t *testing.T) {
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
 	// CASE 1: With UsingPassthroughStore, expectedInternalName should be StoragePrefix + VolumeName
-	defer ScopedTridentConfigUsingPassthroughStore(true)()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
+	tridentconfig.UsingPassthroughStore = true
 	expectedInternalName1 := "tridenttestVol"
 	driver.CreatePrepare(ctx, volConfig, pool)
 	assert.Equal(t, expectedInternalName1, volConfig.InternalName, "Incorrect volume InternalName set by CreatePrepare")
 
 	// CASE 2: Without UsingPassthroughStore, expectedInternalName should be StoragePrefix-VolumeName with - replaced by _
-	defer ScopedTridentConfigUsingPassthroughStore(false)()
+	tridentconfig.UsingPassthroughStore = false
 	expectedInternalName2 := "trident_testVol"
 	driver.CreatePrepare(ctx, volConfig, pool)
 	assert.Equal(t, expectedInternalName2, volConfig.InternalName, "Incorrect volume InternalName set by CreatePrepare")
@@ -3285,14 +3306,6 @@ func TestCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
 
 	driver.CreatePrepare(ctx, &volume, nil)
 	assert.Equal(t, "testNamespace_12345", volume.InternalName, "Incorrect volume InternalName set by CreatePrepare")
-}
-
-func ScopedTridentConfigUsingPassthroughStore(newValue bool) func() {
-	oldValue := tridentconfig.UsingPassthroughStore
-	tridentconfig.UsingPassthroughStore = newValue
-	return func() {
-		tridentconfig.UsingPassthroughStore = oldValue
-	}
 }
 
 // TestCreateFollowup_Success_WithNASTypeNone validates CreateFollowup after qtree exists: InternalID is filled,
@@ -3896,8 +3909,47 @@ func TestHousekeepingTask_Start(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	task := newMockHousekeepingTask(driver)
 	task.Start(ctx)
-	defer close(task.Done)
+	t.Cleanup(func() {
+		task.Stop(ctx)
+		driver.housekeepingWaitGroup.Wait()
+	})
 	assert.False(t, task.stopped)
+}
+
+// TestHousekeepingTask_Stop_DuringInitialDelay verifies that Stop() during the initial delay ends the task goroutine
+// right away instead of leaving it asleep until the delay expires and then running one more pass. Terminate() waits
+// on housekeepingWaitGroup, so a goroutine that ignored Done would hold up driver shutdown for the whole delay.
+func TestHousekeepingTask_Stop_DuringInitialDelay(t *testing.T) {
+	// No mock driver here: its cleanup waits on housekeepingWaitGroup, which would hang this test for the whole
+	// delay instead of failing it if the goroutine ignored Done.
+	driver := newNASQtreeStorageDriver(nil)
+	driver.housekeepingWaitGroup = &sync.WaitGroup{}
+
+	var runs atomic.Int32
+	task := &HousekeepingTask{
+		Name:         "mockTask",
+		Ticker:       time.NewTicker(time.Hour),
+		InitialDelay: time.Hour, // never elapses during the test
+		Done:         make(chan struct{}),
+		Tasks:        []func(context.Context){func(context.Context) { runs.Add(1) }},
+		Driver:       driver,
+	}
+
+	task.Start(ctx)
+	task.Stop(ctx)
+
+	exited := make(chan struct{})
+	go func() {
+		driver.housekeepingWaitGroup.Wait()
+		close(exited)
+	}()
+
+	select {
+	case <-exited:
+	case <-time.After(10 * time.Second):
+		t.Fatal("housekeeping goroutine did not exit after Stop during its initial delay")
+	}
+	assert.Equal(t, int32(1), runs.Load(), "only Stop's final pass should have run the task")
 }
 
 func TestHousekeepingTask_Stop(t *testing.T) {
@@ -3958,6 +4010,7 @@ func TestHousekeepingTask_Start_SurvivesCallerContextCancellation(t *testing.T) 
 	}
 
 	close(task.Done)
+	driver.housekeepingWaitGroup.Wait()
 }
 
 func TestNewPruneTask_WithDefaultValues(t *testing.T) {

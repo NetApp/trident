@@ -4345,6 +4345,7 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 		})
 	}
 
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
@@ -5896,6 +5897,7 @@ func TestOntapSanVolumeCreatePrepare_EnablePublishEnforcement(t *testing.T) {
 
 	driver.Config.CommonStorageDriverConfig = commonConfig
 
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 
 	driver.CreatePrepare(ctx, &volConfig, pool)

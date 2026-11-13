@@ -1392,6 +1392,16 @@ func initializeWithTelemetryCleanup(
 	return err
 }
 
+// restoreOnCleanup restores a package-level setting such as tridentconfig.CurrentDriverContext to its current value
+// when t finishes, so a test that changes it can't leak the change into whichever test runs next. Call it before the
+// test's first write to the global.
+func restoreOnCleanup[T any](t *testing.T, global *T) {
+	t.Helper()
+
+	previous := *global
+	t.Cleanup(func() { *global = previous })
+}
+
 func newMockOntapAPIWithFlags(t *testing.T, rest, disaggregated, sanOptimized bool) *mock_ontap.MockOntapAPI {
 	mockCtrl := gomock.NewController(t)
 	mockOntapAPI := mock_ontap.NewMockOntapAPI(mockCtrl)
@@ -7873,6 +7883,7 @@ func TestValidateBidirectionalChapCredentials_DifferntCHAPUsers(t *testing.T) {
 
 func TestGetInternalVolumeNameCommon(t *testing.T) {
 	ctx := context.Background()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
 	name := "pvc_123456789"
@@ -12482,6 +12493,7 @@ func TestValidateStoragePools_Tempatizedlabels_physicalPool(t *testing.T) {
 
 func TestGetVolumeNameFromTemplate(t *testing.T) {
 	ctx := context.Background()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	tridentconfig.UsingPassthroughStore = false
 
 	name := "pvc_123456789"
@@ -12505,6 +12517,7 @@ func TestGetVolumeNameFromTemplate(t *testing.T) {
 
 func TestGetVolumeNameFromTemplate_invalidNameTemplate(t *testing.T) {
 	ctx := context.Background()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	tridentconfig.UsingPassthroughStore = false
 
 	name := "pvc-123456"
@@ -12543,6 +12556,7 @@ func TestGetVolumeNameFromTemplate_invalidNameTemplate(t *testing.T) {
 
 func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 	ctx := context.Background()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	tridentconfig.UsingPassthroughStore = false
 
 	name := "pvc_123456789"
@@ -12576,6 +12590,7 @@ func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 
 func TestGetVolumeNameFromTemplate_NameStartWithDigit(t *testing.T) {
 	ctx := context.Background()
+	restoreOnCleanup(t, &tridentconfig.UsingPassthroughStore)
 	tridentconfig.UsingPassthroughStore = false
 
 	name := "pvc_123456789"

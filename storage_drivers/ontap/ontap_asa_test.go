@@ -1502,6 +1502,8 @@ func TestDestroyASA(t *testing.T) {
 }
 
 func TestPublishASA(t *testing.T) {
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
+
 	var (
 		volConfig   storage.VolumeConfig
 		publishInfo models.VolumePublishInfo
@@ -2850,11 +2852,11 @@ func TestCreatePrepareASA(t *testing.T) {
 		InternalName: "fakeInternalName",
 	}
 	volConfig.ImportNotManaged = false
+	restoreOnCleanup(t, &tridentconfig.CurrentDriverContext)
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
 	driver.CreatePrepare(ctx, volConfig, pool)
-	tridentconfig.CurrentDriverContext = ""
 
 	assert.Equal(t, "test_fakeVolName", volConfig.InternalName, "Incorrect volume internal name.")
 	assert.True(t, volConfig.AccessInfo.PublishEnforcement, "Publish enforcement not enabled.")
