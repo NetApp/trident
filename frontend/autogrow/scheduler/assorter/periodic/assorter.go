@@ -236,10 +236,14 @@ func (a *Assorter) AddVolume(ctx context.Context, volumeName string) error {
 	a.volumesMu.Lock()
 	defer a.volumesMu.Unlock()
 
-	// Check if volume already exists
+	// Idempotent re-enrollment:
+	// SC annotation / TVP sync can call AddVolume again for a volume that is already
+	// tracked. Returning an error here used to surface as a non-retriable
+	// "already exists in assorter" failure and abort the sync. Same volume again is
+	// a no-op — desired state is already satisfied.
 	if _, exists := a.volumes[volumeName]; exists {
-		Logc(ctx).WithField("volumeName", volumeName).Debug("Volume already exists in assorter")
-		return fmt.Errorf("volume %q already exists in assorter", volumeName)
+		Logc(ctx).WithField("volumeName", volumeName).Debug("Volume already exists in assorter; treating as no-op")
+		return nil
 	}
 
 	// Add volume to the list

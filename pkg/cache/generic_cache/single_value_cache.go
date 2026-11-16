@@ -30,9 +30,14 @@ func NewSingleValueCache[K comparable, V comparable]() *SingleValueCache[K, V] {
 }
 
 // Set stores a single value for a key.
-// Returns error if the same key-value pair already exists.
+// If the same key-value pair already exists, Set is a no-op and returns nil (idempotent).
 // If the key exists with a different value, it replaces the old value.
 // Key must not be zero value. Value can be any valid V type (including zero).
+//
+// Idempotency note: Autogrow effective-policy cache uses
+// Set during TVP/SC reconcile. Re-applying the same key+policy previously returned
+// AlreadyExistsError and was treated as a hard non-retriable failure. Returning nil
+// for an identical re-Set matches Assorter.AddVolume and lets sync complete safely.
 func (c *SingleValueCache[K, V]) Set(key K, value V) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -43,9 +48,9 @@ func (c *SingleValueCache[K, V]) Set(key K, value V) error {
 		return errors.ZeroValueError("key must not be zero value")
 	}
 
-	// Check if key already exists with the same value - return error
+	// Same key + same value: already correct; do not error (see comment on Set).
 	if oldValue, exists := c.mapping[key]; exists && oldValue == value {
-		return errors.AlreadyExistsError("key %v with value %v already exists in cache", key, value)
+		return nil
 	}
 
 	// If key already exists with a different value, remove old reverse index entry

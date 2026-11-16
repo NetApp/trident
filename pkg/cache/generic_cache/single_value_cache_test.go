@@ -90,17 +90,16 @@ func TestSingleValueCache_Set_Idempotent(t *testing.T) {
 	values := cache.Get("key1")
 	assert.Equal(t, []string{"value1"}, values)
 
-	// Add same key-value pair again - should return error
+	// Re-Set of the same key+value must be a no-op (nil), not AlreadyExistsError
+	// (matches autogrow effective-policy cache re-enrollment).
 	err = cache.Set("key1", "value1")
-	assert.Error(t, err)
-	assert.True(t, errors.IsAlreadyExistsError(err), "Should return AlreadyExistsError")
+	assert.NoError(t, err, "Same key+value Set should be idempotent")
 	values = cache.Get("key1")
 	assert.Equal(t, []string{"value1"}, values, "Cache should remain unchanged")
 
-	// Add third time - still returns error
+	// Third identical Set still no-op
 	err = cache.Set("key1", "value1")
-	assert.Error(t, err)
-	assert.True(t, errors.IsAlreadyExistsError(err), "Should return AlreadyExistsError")
+	assert.NoError(t, err, "Same key+value Set should remain idempotent")
 	values = cache.Get("key1")
 	assert.Equal(t, []string{"value1"}, values, "Cache should remain unchanged")
 

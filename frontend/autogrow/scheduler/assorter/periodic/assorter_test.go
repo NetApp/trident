@@ -624,7 +624,9 @@ func TestAddVolume(t *testing.T) {
 			},
 		},
 		{
-			name: "Error_VolumeAlreadyExists_ReturnsError",
+			// Re-AddVolume of an already-tracked name must succeed (nil), not error —
+			// mirrors production SC/TVP re-enrollment.
+			name: "Idempotent_VolumeAlreadyExists_ReturnsNil",
 			setup: func() (*Assorter, string) {
 				volumeName := "pvc-789.node-3"
 				a := &Assorter{
@@ -638,9 +640,9 @@ func TestAddVolume(t *testing.T) {
 				return a, volumeName
 			},
 			verify: func(t *testing.T, a *Assorter, volumeName string, err error) {
-				require.Error(t, err, "AddVolume should fail when volume already exists")
-				assert.Contains(t, err.Error(), "already exists", "error should mention duplicate")
+				require.NoError(t, err, "AddVolume should be idempotent when volume already exists")
 				assert.Equal(t, 1, len(a.volumes), "volume count should remain unchanged")
+				assert.Contains(t, a.volumes, volumeName, "volume should still be present")
 			},
 		},
 		{
