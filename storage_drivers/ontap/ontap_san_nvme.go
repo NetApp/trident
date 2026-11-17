@@ -671,7 +671,7 @@ func (d *NVMeStorageDriver) Create(
 
 			newNamespace, err := api.WaitForNVMeNamespaceToExist(ctx, d.API, nsPath, true)
 			if err != nil {
-				return fmt.Errorf("error retrieving namespace %s after creation: %v", nsPath, err)
+				return fmt.Errorf("error retrieving namespace %s after creation: %w", nsPath, err)
 			}
 			if newNamespace == nil {
 				return fmt.Errorf("newly created namespace %s not found", nsPath)

@@ -1608,12 +1608,17 @@ func TestNVMeCreate_NamespaceGetByNameAllRetriesReturnNil(t *testing.T) {
 	mAPI.EXPECT().VolumeCreate(testCtx, gomock.Any()).Return("", nil)
 	mAPI.EXPECT().NVMeNamespaceCreate(testCtx, gomock.Any()).Return(nil)
 	// Backoff retries empty results until budget is exhausted (see api/ontap_wait.go).
-	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(nil, nil).AnyTimes()
+	mAPI.EXPECT().NVMeNamespaceGetByName(testCtx, nsPath).Return(nil, nil).MinTimes(2)
 
 	err := d.Create(testCtx, volConfig, pool1, volAttrs)
 
 	assert.Error(t, err, "Create should fail when namespace is nil after all retries.")
-	assert.ErrorContains(t, err, "not found")
+	assert.ErrorContains(t, err, "error retrieving namespace")
+	// With a tight ctx deadline, backoff may stop on context expiry before NotFound retry
+	// budget is exhausted. Either outcome proves nil results were retried.
+	if !errors.IsNotFoundError(err) {
+		assert.ErrorIs(t, err, context.DeadlineExceeded)
+	}
 }
 
 func TestNVMeCreate_NamespaceGetByNameFailsImmediatelyOnNonNotFound(t *testing.T) {

@@ -301,6 +301,20 @@ func (s *seqNVMeNamespaceGetter) NVMeNamespaceGetByName(
 	return r.ns, r.err
 }
 
+type emptyNVMeNamespaceGetter struct {
+	i int
+}
+
+func (g *emptyNVMeNamespaceGetter) NVMeNamespaceGetByName(
+	ctx context.Context, name string,
+) (*NVMeNamespace, error) {
+	g.i++
+	if g.i > 1 {
+		<-ctx.Done()
+	}
+	return nil, nil
+}
+
 type seqNVMeNamespaceSizeGetter struct {
 	responses []struct {
 		size int
@@ -352,6 +366,18 @@ func TestWaitForNVMeNamespaceToExist_RetriesEmptyResultWhenEnabled(t *testing.T)
 	assert.NoError(t, err)
 	assert.NotNil(t, ns)
 	assert.Equal(t, 2, g.i)
+}
+
+func TestWaitForNVMeNamespaceToExist_ContextTimeoutOnPersistentEmptyResult(t *testing.T) {
+	alwaysEmpty := &emptyNVMeNamespaceGetter{}
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	ns, err := WaitForNVMeNamespaceToExist(ctx, alwaysEmpty, "/vol/flex/namespace0", true)
+	assert.Error(t, err)
+	assert.ErrorContains(t, err, "interrupted")
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
+	assert.Nil(t, ns)
+	assert.GreaterOrEqual(t, alwaysEmpty.i, 2)
 }
 
 func TestWaitForNVMeNamespaceToExist_NonNotFoundFailsImmediately(t *testing.T) {
