@@ -370,13 +370,6 @@ func (d *NASStorageDriver) Create(
 		return err
 	}
 
-	// The Unix group ID (owner GID) is owned by the application and supplied via the PVC annotation.
-	// Validate it up front so a malformed value fails fast with a clear error before any ONTAP call.
-	unixGroupID := volConfig.UnixGroupID
-	if _, _, err = api.ParseUnixGroupID(unixGroupID); err != nil {
-		return err
-	}
-
 	// Update config to reflect values used to create volume
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.SpaceReserve = spaceReserve
@@ -398,7 +391,6 @@ func (d *NASStorageDriver) Create(
 		"snapshotPolicy":    snapshotPolicy,
 		"snapshotReserve":   snapshotReserveInt,
 		"unixPermissions":   unixPermissions,
-		"unixGroupID":       unixGroupID,
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
@@ -447,7 +439,6 @@ func (d *NASStorageDriver) Create(
 			SnapshotReserve: snapshotReserveInt,
 			TieringPolicy:   tieringPolicy,
 			UnixPermissions: unixPermissions,
-			UnixGroupID:     unixGroupID,
 			DPVolume:        volConfig.IsMirrorDestination,
 		}
 

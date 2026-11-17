@@ -1654,7 +1654,7 @@ func (c *RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, vol
 // createVolumeByStyle creates a volume and returns its UUID, which is empty if ONTAP did not report one.
 func (c *RestClient) createVolumeByStyle(
 	ctx context.Context, name string, sizeInBytes int64, aggrs []string,
-	spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string,
+	spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
 	autosizePolicy *VolumeAutosizePolicy,
 ) (string, error) {
@@ -1738,19 +1738,6 @@ func (c *RestClient) createVolumeByStyle(
 		volumeNas.ExportPolicy = &models.VolumeInlineNasInlineExportPolicy{Name: &exportPolicy}
 		volumeInfo.Nas = volumeNas
 	}
-	// Set the volume group ID (owner GID) when the application requested one. A DP volume mirrors its
-	// source, so ownership is inherited and the GID must not be set here.
-	if !dpVolume {
-		gid, gidSet, gidErr := ParseUnixGroupID(unixGroupID)
-		if gidErr != nil {
-			return "", gidErr
-		}
-		if gidSet {
-			gid64 := int64(gid)
-			volumeNas.Gid = &gid64
-			volumeInfo.Nas = volumeNas
-		}
-	}
 
 	params.SetInfo(volumeInfo)
 
@@ -1798,7 +1785,7 @@ func (c *RestClient) waitForVolumeVisible(ctx context.Context, name, style strin
 }
 
 func (c *RestClient) createApplicationContainerByStyleWithUUID(
-	ctx context.Context, name string, sizeInBytes int64, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
+	ctx context.Context, name string, sizeInBytes int64, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, dpVolume bool, style string,
 ) (string, error) {
@@ -1862,19 +1849,6 @@ func (c *RestClient) createApplicationContainerByStyleWithUUID(
 		}
 		nas.UnixPermissions = &volumePermissions
 		haveNAS = true
-	}
-	// Set the volume group ID (owner GID) when the application requested one. A DP volume mirrors its
-	// source, so ownership is inherited and the GID must not be set here.
-	if !dpVolume {
-		gid, gidSet, gidErr := ParseUnixGroupID(unixGroupID)
-		if gidErr != nil {
-			return "", gidErr
-		}
-		if gidSet {
-			gid64 := int64(gid)
-			nas.Gid = &gid64
-			haveNAS = true
-		}
 	}
 
 	if haveNAS {
@@ -1940,12 +1914,12 @@ func (c *RestClient) createApplicationContainerByStyleWithUUID(
 }
 
 func (c *RestClient) createApplicationContainerByStyle(
-	ctx context.Context, name string, sizeInBytes int64, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
+	ctx context.Context, name string, sizeInBytes int64, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, dpVolume bool, style string,
 ) error {
 	_, err := c.createApplicationContainerByStyleWithUUID(ctx, name, sizeInBytes, spaceReserve, snapshotPolicy,
-		unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
 		snapshotReserve, dpVolume, style)
 	return err
 }
@@ -2116,7 +2090,7 @@ func (c *RestClient) VolumeListByAttrs(
 // -encrypt false
 func (c *RestClient) VolumeCreate(
 	ctx context.Context,
-	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string,
+	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
 	autosizePolicy *VolumeAutosizePolicy,
 ) (string, error) {
@@ -2130,12 +2104,12 @@ func (c *RestClient) VolumeCreate(
 	}
 
 	return c.createVolumeByStyle(ctx, name, sizeInBytes, []string{aggregateName}, spaceReserve, snapshotPolicy,
-		unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
 		snapshotReserve, models.VolumeStyleFlexvol, dpVolume, autosizePolicy)
 }
 
 func (c *RestClient) VolumeCreateBalanced(
-	ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions, unixGroupID,
+	ctx context.Context, name, size, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, dpVolume bool,
 ) (string, error) {
@@ -2149,7 +2123,7 @@ func (c *RestClient) VolumeCreateBalanced(
 	}
 
 	return c.createApplicationContainerByStyleWithUUID(ctx, name, sizeInBytes, spaceReserve, snapshotPolicy,
-		unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
 		snapshotReserve, dpVolume, models.VolumeStyleFlexvol)
 }
 
@@ -5431,22 +5405,22 @@ func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeInlineAggregat
 // -security-style unix -encrypt false
 func (c *RestClient) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
-	unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
-	encrypt *bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+	snapshotReserve int,
 ) error {
 	_, err := c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
-		unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
+		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
 		models.VolumeStyleFlexgroup, false, nil)
 	return err
 }
 
 func (c *RestClient) FlexGroupCreateBalanced(
 	ctx context.Context, name string, size int, spaceReserve, snapshotPolicy, unixPermissions,
-	unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
-	encrypt *bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+	snapshotReserve int,
 ) error {
 	return c.createApplicationContainerByStyle(ctx, name, int64(size), spaceReserve, snapshotPolicy,
-		unixPermissions, unixGroupID, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
 		snapshotReserve, false /*dpVolume*/, models.VolumeStyleFlexgroup)
 }
 

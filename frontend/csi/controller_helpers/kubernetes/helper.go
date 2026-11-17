@@ -925,7 +925,6 @@ func getVolumeConfig(
 		SnapshotDir:               snapshotDirAnn,
 		ExportPolicy:              getAnnotation(annotations, AnnExportPolicy),
 		UnixPermissions:           getAnnotation(annotations, AnnUnixPermissions),
-		UnixGroupID:               getAnnotation(annotations, AnnUnixGroupID),
 		StorageClass:              storageClass.Name,
 		BlockSize:                 getAnnotation(annotations, AnnBlockSize),
 		FileSystem:                getAnnotation(annotations, AnnFileSystem),
