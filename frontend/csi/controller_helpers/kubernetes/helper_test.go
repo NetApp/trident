@@ -352,16 +352,17 @@ func TestProcessPVCAnnotations(t *testing.T) {
 
 func TestGetVolumeConfig(t *testing.T) {
 	tests := []struct {
-		name               string
-		pvc                *v1.PersistentVolumeClaim
-		volumeName         string
-		size               resource.Quantity
-		annotations        map[string]string
-		storageClass       *k8sstoragev1.StorageClass
-		expectedName       string
-		expectedSize       string
-		expectedAccessMode config.AccessMode
-		expectedVolumeMode config.VolumeMode
+		name                string
+		pvc                 *v1.PersistentVolumeClaim
+		volumeName          string
+		size                resource.Quantity
+		annotations         map[string]string
+		storageClass        *k8sstoragev1.StorageClass
+		expectedName        string
+		expectedSize        string
+		expectedAccessMode  config.AccessMode
+		expectedVolumeMode  config.VolumeMode
+		expectedUnixGroupID string
 	}{
 		{
 			name: "Basic volume configuration",
@@ -410,6 +411,30 @@ func TestGetVolumeConfig(t *testing.T) {
 			expectedAccessMode: config.ReadWriteOnce,
 			expectedVolumeMode: config.VolumeMode(v1.PersistentVolumeBlock),
 		},
+		{
+			name: "Volume with unixGroupID annotation",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gid-pvc",
+					Namespace: "default",
+					UID:       "gid-uid",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					AccessModes: []v1.PersistentVolumeAccessMode{
+						v1.ReadWriteOnce,
+					},
+				},
+			},
+			volumeName:          "gid-volume",
+			size:                resource.MustParse("10Gi"),
+			annotations:         map[string]string{AnnUnixGroupID: "1234"},
+			storageClass:        &k8sstoragev1.StorageClass{},
+			expectedName:        "gid-volume",
+			expectedSize:        "10737418240",
+			expectedAccessMode:  config.ReadWriteOnce,
+			expectedVolumeMode:  config.VolumeMode(v1.PersistentVolumeFilesystem),
+			expectedUnixGroupID: "1234",
+		},
 	}
 
 	for _, tt := range tests {
@@ -430,6 +455,7 @@ func TestGetVolumeConfig(t *testing.T) {
 			assert.Equal(t, tt.expectedSize, result.Size)
 			assert.Equal(t, tt.expectedAccessMode, result.AccessMode)
 			assert.Equal(t, tt.expectedVolumeMode, result.VolumeMode)
+			assert.Equal(t, tt.expectedUnixGroupID, result.UnixGroupID)
 		})
 	}
 }
