@@ -268,11 +268,8 @@ func VolumeCreatingError(message string, a ...any) error {
 }
 
 func IsVolumeCreatingError(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*volumeCreatingError)
-	return ok
+	var target *volumeCreatingError
+	return errors.As(err, &target)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -293,11 +290,14 @@ func VolumeDeletingError(message string, a ...any) error {
 }
 
 func IsVolumeDeletingError(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*volumeDeletingError)
-	return ok
+	var target *volumeDeletingError
+	return errors.As(err, &target)
+}
+
+// IsVolumeCreateInProgressError reports whether err means a volume create is still running on its backend and
+// pool, so the create must be retried there instead of failing over.
+func IsVolumeCreateInProgressError(err error) bool {
+	return IsVolumeCreatingError(err) || IsVolumeDeletingError(err)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

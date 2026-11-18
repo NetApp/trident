@@ -362,7 +362,7 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, new(FSX_ID), mockAPI)
@@ -382,7 +382,7 @@ func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyS
 	mockAPI.EXPECT().SupportsFeature(gomock.Any(), api.BalancedPlacement).AnyTimes().Return(false)
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+	mockAPI.EXPECT().EmsAutosupportLog(gomock.Any(), gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI)

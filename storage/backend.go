@@ -496,6 +496,8 @@ func (b *StorageBackend) CreatePrepare(ctx context.Context, volConfig *VolumeCon
 	}
 }
 
+// AddVolume creates a volume on the backend. When retry is true the call resumes an earlier create, so an
+// existing volume is kept (not destroyed) if its follow-up fails, and the failure is reported as VolumeCreatingError.
 func (b *StorageBackend) AddVolume(
 	ctx context.Context, volConfig *VolumeConfig, storagePool Pool, volAttributes map[string]sa.Request, retry bool,
 ) (*Volume, error) {
@@ -555,8 +557,15 @@ func (b *StorageBackend) AddVolume(
 			"retry":        retry,
 		}).Errorf("CreateFollowup failed; %v", err)
 
+		// A resumed create that finds the volume already there did not just create it, and it may still be
+		// usable. Keep it and report the create as in progress so the retry stays on this backend and pool.
+		if volumeExists && retry {
+			return nil, errors.VolumeCreatingError(
+				"follow-up for existing volume %s failed; retrying on this backend: %v", volConfig.InternalName, err)
+		}
+
 		// If follow-up fails and we just created the volume, clean up by deleting it
-		if !volumeExists || retry {
+		if !volumeExists {
 
 			Logc(ctx).WithFields(LogFields{
 				"backend": b.name,
@@ -607,6 +616,8 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 	}
 }
 
+// CloneVolume creates a clone on the backend. When retry is true the call resumes an earlier clone, so an
+// existing clone is kept (not destroyed) if its follow-up fails, and the failure is reported as VolumeCreatingError.
 func (b *StorageBackend) CloneVolume(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
@@ -694,8 +705,15 @@ func (b *StorageBackend) CloneVolume(
 
 	if err := b.driver.CreateFollowup(ctx, cloneVolConfig); err != nil {
 
+		// A resumed clone that finds the volume already there did not just create it; keep it and report the
+		// create as in progress so the transaction stays pinned to this backend for the next retry.
+		if volumeExists && retry {
+			return nil, errors.VolumeCreatingError(
+				"follow-up for existing clone %s failed; retrying on this backend: %v", cloneVolConfig.InternalName, err)
+		}
+
 		// If follow-up fails and we just created the volume, clean up by deleting it
-		if !volumeExists || retry {
+		if !volumeExists {
 			errDestroy := b.driver.Destroy(ctx, cloneVolConfig)
 			if errDestroy != nil {
 				Logc(ctx).WithFields(LogFields{

@@ -438,7 +438,7 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		// Map that to codes.Aborted here since kubelet/CSI sidecars treat it differently
 		// (e.g. immediate retry) than an opaque Unknown.
 		code = codes.Aborted
-	case errors.IsVolumeCreatingError(err), errors.IsVolumeDeletingError(err):
+	case errors.IsVolumeCreateInProgressError(err):
 		code = codes.DeadlineExceeded
 	case errors.IsInvalidInputError(err):
 		code = codes.InvalidArgument

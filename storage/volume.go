@@ -103,9 +103,10 @@ type VolumeConfig struct {
 }
 
 type VolumeCreatingConfig struct {
-	StartTime   time.Time `json:"startTime"`   // Time this create operation began
-	BackendUUID string    `json:"backendUUID"` // UUID of the storage backend
-	Pool        string    `json:"pool"`        // Name of the pool on which this volume was first provisioned
+	StartTime              time.Time       `json:"startTime"`                        // Time this create operation began
+	BackendUUID            string          `json:"backendUUID"`                      // UUID of the storage backend
+	Pool                   string          `json:"pool"`                             // Name of the pool on which this volume was first provisioned
+	StorageClassAttributes json.RawMessage `json:"storageClassAttributes,omitempty"` // Attributes used for the original create
 	VolumeConfig
 }
 

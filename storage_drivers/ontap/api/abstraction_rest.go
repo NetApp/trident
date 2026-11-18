@@ -201,7 +201,10 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (string, 
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume,
 		volume.AutosizePolicy)
 	if creationErr != nil {
-		return "", fmt.Errorf("error creating volume: %v", creationErr)
+		if busyErr := createBusyError("volume "+volume.Name, creationErr); busyErr != nil {
+			return "", busyErr
+		}
+		return "", fmt.Errorf("error creating volume: %w", creationErr)
 	}
 
 	return volumeUUID, nil
@@ -227,7 +230,10 @@ func (d OntapAPIREST) VolumeCreateBalanced(ctx context.Context, volume Volume) (
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
-		return "", fmt.Errorf("error creating volume: %v", creationErr)
+		if busyErr := createBusyError("volume "+volume.Name, creationErr); busyErr != nil {
+			return "", busyErr
+		}
+		return "", fmt.Errorf("error creating volume: %w", creationErr)
 	}
 
 	return volumeUUID, nil
@@ -242,7 +248,7 @@ func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, ski
 		deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
 		return classifyVolumeDeleteError(name, deletionErr)
 	}
-	return d.retryVolumeDestroy(ctx, name, destroyVolume)
+	return retryVolumeDestroy(ctx, name, destroyVolume)
 }
 
 // VolumeDestroyByUUID deletes the volume identified by volumeUUID. Addressing the volume by UUID
@@ -273,7 +279,7 @@ func (d OntapAPIREST) VolumeDestroyByUUID(
 		}
 		return classifyVolumeDeleteError(volumeName, deletionErr)
 	}
-	return d.retryVolumeDestroy(ctx, volumeName, destroyVolume)
+	return retryVolumeDestroy(ctx, volumeName, destroyVolume)
 }
 
 // classifyVolumeDeleteError wraps a raw delete error so that a busy volume is retried while any
@@ -294,17 +300,17 @@ func classifyVolumeDeleteError(name string, deletionErr error) error {
 
 // retryVolumeDestroy runs a delete operation with the shared busy-volume backoff, unwrapping the
 // permanent error (which may be a NotFoundError the caller treats as success) when the loop stops.
-func (d OntapAPIREST) retryVolumeDestroy(ctx context.Context, name string, destroyVolume func() error) error {
+func retryVolumeDestroy(ctx context.Context, name string, destroyVolume func() error) error {
 	destroyNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Volume busy, waiting.")
+		Logc(ctx).WithFields(LogFields{
+			"volume":    name,
+			"increment": duration,
+		}).Debug("Volume busy, waiting.")
 	}
-	bo := backoff.NewExponentialBackOff()
-	bo.InitialInterval = 2 * time.Second
-	bo.MaxInterval = 10 * time.Second
-	bo.Multiplier = 2
-	bo.RandomizationFactor = 0.1
-	bo.MaxElapsedTime = 60 * time.Second
-	if err := backoff.RetryNotify(destroyVolume, bo, destroyNotify); err != nil {
+	bo := newOntapBackOffWithBudget(ctx, waitForVolumeDeleteMaxElapsed)
+	bo.InitialInterval = waitForVolumeDestroyInitialInterval
+	bo.MaxInterval = waitForVolumeDestroyMaxInterval
+	if err := backoff.RetryNotify(destroyVolume, backoff.WithContext(bo, ctx), destroyNotify); err != nil {
 		var perm *backoff.PermanentError
 		if errors.As(err, &perm) {
 			return perm.Err
@@ -344,6 +350,8 @@ func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, err
 		"snapshot_policy", "snapshot_directory_access_enabled",
 		"space.snapshot.used", "space.snapshot.reserve_percent",
 		"nas.export_policy.name", "autosize.mode",
+		"nas.security_style", "nas.unix_permissions", "nas.gid",
+		"encryption.enabled", "tiering.policy", "qos.policy.name",
 	}
 	volumeGetResponse, err := d.api.VolumeGetByName(ctx, name, fields)
 	if err != nil {
@@ -413,14 +421,18 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 	var responseAccessType string
 	var responseAggregates []string
 	var responseComment string
+	var responseEncrypt *bool
 	var responseExportPolicy string
 	var responseJunctionPath string
+	var responseQos QosPolicyGroup
+	var responseSecurityStyle string
 	var responseSize string
 	var responseSnapdirAccessEnabled *bool
 	var responseSnapshotPolicy string
 	var responseSnapshotReserveInt int
 	var responseSnapshotSpaceUsed int
 	var responseSpaceReserve string
+	var responseTieringPolicy string
 	var responseUnixPermissions string
 
 	if volumeGetResponse == nil {
@@ -434,11 +446,10 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		responseAccessType = *volumeGetResponse.Type
 	}
 
-	if len(volumeGetResponse.VolumeInlineAggregates) > 0 {
-		if volumeGetResponse.VolumeInlineAggregates[0].Name != nil {
-			responseAggregates = []string{
-				*volumeGetResponse.VolumeInlineAggregates[0].Name,
-			}
+	// A FlexVol reports a single aggregate; a FlexGroup reports every aggregate holding one of its members.
+	for _, aggregate := range volumeGetResponse.VolumeInlineAggregates {
+		if aggregate != nil && aggregate.Name != nil {
+			responseAggregates = append(responseAggregates, *aggregate.Name)
 		}
 	}
 
@@ -460,6 +471,25 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		if volumeGetResponse.Nas.UnixPermissions != nil {
 			responseUnixPermissions = strconv.FormatInt(*volumeGetResponse.Nas.UnixPermissions, 8)
 		}
+
+		if volumeGetResponse.Nas.SecurityStyle != nil {
+			responseSecurityStyle = *volumeGetResponse.Nas.SecurityStyle
+		}
+	}
+
+	if volumeGetResponse.Encryption != nil && volumeGetResponse.Encryption.Enabled != nil {
+		responseEncrypt = convert.ToPtr(*volumeGetResponse.Encryption.Enabled)
+	}
+
+	if volumeGetResponse.Tiering != nil && volumeGetResponse.Tiering.Policy != nil {
+		responseTieringPolicy = *volumeGetResponse.Tiering.Policy
+	}
+
+	// REST stores fixed and adaptive QoS policy groups in the same field, so a read cannot tell the two kinds
+	// apart; only the name is reported here.
+	if volumeGetResponse.Qos != nil && volumeGetResponse.Qos.Policy != nil &&
+		volumeGetResponse.Qos.Policy.Name != nil {
+		responseQos = QosPolicyGroup{Name: *volumeGetResponse.Qos.Policy.Name}
 	}
 
 	if volumeGetResponse.Size != nil {
@@ -499,14 +529,18 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		Aggregates:        responseAggregates,
 		AutosizeMode:      responseAutosizeMode,
 		Comment:           responseComment,
+		Encrypt:           responseEncrypt,
 		ExportPolicy:      responseExportPolicy,
 		JunctionPath:      responseJunctionPath,
+		Qos:               responseQos,
+		SecurityStyle:     responseSecurityStyle,
 		Size:              responseSize,
 		SnapshotDir:       responseSnapdirAccessEnabled,
 		SnapshotPolicy:    responseSnapshotPolicy,
 		SnapshotReserve:   responseSnapshotReserveInt,
 		SnapshotSpaceUsed: responseSnapshotSpaceUsed,
 		SpaceReserve:      responseSpaceReserve,
+		TieringPolicy:     responseTieringPolicy,
 		UnixPermissions:   responseUnixPermissions,
 		DPVolume:          responseAccessType == "dp",
 	}
@@ -517,6 +551,10 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 
 	if volumeGetResponse.UUID != nil {
 		volumeInfo.UUID = *volumeGetResponse.UUID
+	}
+
+	if volumeGetResponse.State != nil {
+		volumeInfo.State = *volumeGetResponse.State
 	}
 
 	return volumeInfo, nil
@@ -747,7 +785,10 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
-		return fmt.Errorf("error creating volume: %v", creationErr)
+		if busyErr := createBusyError("FlexGroup "+volume.Name, creationErr); busyErr != nil {
+			return busyErr
+		}
+		return fmt.Errorf("error creating FlexGroup %s: %w", volume.Name, creationErr)
 	}
 
 	return nil
@@ -778,9 +819,22 @@ func (d OntapAPIREST) FlexgroupCreateBalanced(ctx context.Context, volume Volume
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.UnixGroupID, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
-		return fmt.Errorf("error creating volume: %v", creationErr)
+		if busyErr := createBusyError("FlexGroup "+volume.Name, creationErr); busyErr != nil {
+			return busyErr
+		}
+		return fmt.Errorf("error creating FlexGroup %s: %w", volume.Name, creationErr)
 	}
 
+	return nil
+}
+
+// createBusyError types a REST "volume busy" response to a create as a create already in progress, so the
+// driver keeps the create on this pool rather than failing over while ONTAP is still working on the volume.
+// It returns nil for any other error.
+func createBusyError(object string, creationErr error) error {
+	if IsVolumeBusyRESTError(creationErr) {
+		return VolumeCreateJobExistsError(fmt.Sprintf("volume is busy creating %s: %v", object, creationErr))
+	}
 	return nil
 }
 
@@ -807,6 +861,8 @@ func (d OntapAPIREST) FlexgroupInfo(ctx context.Context, volumeName string) (*Vo
 	fields := []string{
 		"type", "size", "comment", "aggregates", "nas", "guarantee", "snapshot_policy",
 		"snapshot_directory_access_enabled", "space.snapshot.used", "space.snapshot.reserve_percent",
+		"nas.export_policy.name", "nas.security_style", "nas.unix_permissions", "nas.gid",
+		"encryption.enabled", "tiering.policy", "qos.policy.name", "state",
 	}
 	volumeGetResponse, err := d.api.FlexGroupGetByName(ctx, volumeName, fields)
 	if err != nil {
@@ -2530,7 +2586,13 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 	creationErr := d.api.LunCreate(ctx, lun.Name, sizeBytes, lun.OsType, lun.Qos, lun.SpaceReserved,
 		lun.SpaceAllocated)
 	if creationErr != nil {
-		return fmt.Errorf("error creating LUN %v: %v", lun.Name, creationErr)
+		if busyErr := createBusyError("LUN "+lun.Name, creationErr); busyErr != nil {
+			return busyErr
+		}
+		if IsCreateTargetExistsRESTError(creationErr) {
+			return errors.WrapWithAlreadyExistsError(creationErr, "LUN %s already exists or is being created", lun.Name)
+		}
+		return fmt.Errorf("error creating LUN %s: %w", lun.Name, creationErr)
 	}
 
 	return nil
@@ -3437,7 +3499,14 @@ func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace)
 
 	creationErr := d.api.NVMeNamespaceCreate(ctx, ns)
 	if creationErr != nil {
-		return fmt.Errorf("failed to create NVMe namespace %s: %v", ns.Name, creationErr)
+		if busyErr := createBusyError("NVMe namespace "+ns.Name, creationErr); busyErr != nil {
+			return busyErr
+		}
+		if IsCreateTargetExistsRESTError(creationErr) {
+			return errors.WrapWithAlreadyExistsError(creationErr,
+				"NVMe namespace %s already exists or is being created", ns.Name)
+		}
+		return fmt.Errorf("failed to create NVMe namespace %s: %w", ns.Name, creationErr)
 	}
 
 	return nil
