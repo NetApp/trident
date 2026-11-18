@@ -4316,6 +4316,65 @@ func mockGetSVMError(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("")
 }
 
+// mockSVMOnlyKnownByName returns an SVM collection handler that matches only the given SVM name,
+// as the partner cluster does after a MetroCluster switchover renames the SVM.
+func mockSVMOnlyKnownByName(knownName string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		svmResponse := models.SvmResponse{
+			SvmResponseInlineRecords: []*models.Svm{},
+			NumRecords:               new(int64(0)),
+		}
+		if r.URL.Query().Get("name") == knownName {
+			svmResponse.SvmResponseInlineRecords = []*models.Svm{{UUID: new("1234"), Name: new(knownName)}}
+			svmResponse.NumRecords = new(int64(1))
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(svmResponse)
+	}
+}
+
+func TestOntapRest_EnsureSVMWithRest_MetroClusterAlternateName(t *testing.T) {
+	tests := []struct {
+		name            string
+		configuredSVM   string
+		knownSVM        string
+		expectedSVM     string
+		isErrorExpected bool
+	}{
+		{"SwitchoverRenamesSVM", "svm0", "svm0-mc", "svm0-mc", false},
+		{"SwitchbackRestoresSVMName", "svm0-mc", "svm0", "svm0", false},
+		{"NeitherNameExists", "svm0", "other", "svm0", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			storageDriverConfig := drivers.OntapStorageDriverConfig{SVM: test.configuredSVM}
+			server := httptest.NewServer(http.HandlerFunc(mockSVMOnlyKnownByName(test.knownSVM)))
+			defer server.Close()
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := EnsureSVMWithRest(ctx, &storageDriverConfig, rs)
+			assert.Equal(t, test.expectedSVM, storageDriverConfig.SVM)
+			if test.isErrorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedSVM, rs.SVMName())
+				assert.Equal(t, "1234", rs.SVMUUID())
+			}
+		})
+	}
+}
+
+func TestOntapREST_SvmGetByName_NotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockSVMOnlyKnownByName("other")))
+	defer server.Close()
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+
+	_, err := rs.SvmGetByName(ctx, "svm0")
+	assert.True(t, errors.IsNotFoundError(err), "expected not found error, got %v", err)
+}
+
 func TestOntapRest_EnsureSVMWithRest(t *testing.T) {
 	tests := []struct {
 		name            string

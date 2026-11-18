@@ -4,7 +4,20 @@ package api
 
 import "strings"
 
-const policyDRVariantSuffix = "-DR"
+const (
+	policyDRVariantSuffix = "-DR"
+	svmMCCVariantSuffix   = "-mc"
+)
+
+// mccAlternateSVMName returns the MetroCluster counterpart of an SVM name. After a switchover
+// the SVM keeps its UUID but is served by the partner cluster as "<name>-mc", and switchback
+// reverses that, so a name saved before either event no longer matches.
+func mccAlternateSVMName(svm string) string {
+	if strings.HasSuffix(svm, svmMCCVariantSuffix) {
+		return strings.TrimSuffix(svm, svmMCCVariantSuffix)
+	}
+	return svm + svmMCCVariantSuffix
+}
 
 // expandPolicyForVolumeListQuery returns a policy filter that matches both the configured
 // value and its MetroCluster / SVM-DR counterpart. ONTAP may rename policies on the DR site

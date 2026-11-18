@@ -314,8 +314,24 @@ func EnsureSVMWithRest(
 	if ontapConfig.SVM != "" {
 		// Attempt to use the specified SVM
 		vserver, err := restClient.SvmGetByName(ctx, ontapConfig.SVM)
+		if errors.IsNotFoundError(err) {
+			// The SVM may have changed sides in a MetroCluster, so retry with the MCC alternate name.
+			alternateSVM := mccAlternateSVMName(ontapConfig.SVM)
+			Logc(ctx).WithFields(LogFields{
+				"SVM":          ontapConfig.SVM,
+				"alternateSVM": alternateSVM,
+			}).Debug("SVM not found, retrying with MetroCluster alternate name.")
+			vserver, err = restClient.SvmGetByName(ctx, alternateSVM)
+		}
 		if err != nil {
 			return fmt.Errorf("unable to get details for SVM %v; %v", ontapConfig.SVM, err)
+		}
+		if vserver == nil {
+			return fmt.Errorf("unable to get details for SVM %v; no SVM returned", ontapConfig.SVM)
+		}
+		if vserver.Name != nil {
+			ontapConfig.SVM = *vserver.Name
+			restClient.SetSVMName(*vserver.Name)
 		}
 		if vserver.UUID != nil {
 			restClient.SetSVMUUID(*vserver.UUID)
@@ -4820,6 +4836,9 @@ func (c *RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.
 
 	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.SvmResponseInlineRecords != nil {
 		return result.Payload.SvmResponseInlineRecords[0], nil
+	}
+	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 0 {
+		return nil, errors.NotFoundError("SVM %s not found", svmName)
 	}
 	return nil, fmt.Errorf("unexpected result")
 }

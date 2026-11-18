@@ -52,3 +52,21 @@ func TestExpandPolicyForVolumeListQuery(t *testing.T) {
 		})
 	}
 }
+
+func TestMccAlternateSVMName(t *testing.T) {
+	tests := []struct {
+		name string
+		svm  string
+		want string
+	}{
+		{name: "source name gets mc suffix", svm: "vs1", want: "vs1-mc"},
+		{name: "mc suffix is removed", svm: "vs1-mc", want: "vs1"},
+		{name: "mc only in middle is not treated as suffix", svm: "vs-mc-1", want: "vs-mc-1-mc"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, mccAlternateSVMName(tt.svm))
+		})
+	}
+}

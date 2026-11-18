@@ -812,6 +812,14 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	).AnyTimes()
 	err = api.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
 	assert.Nil(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  SVM set && lookup returns no SVM and no error
+	ontapConfig.SVM = "mySVM"
+	mockRestClient = newMockRestClient(t)
+	mockRestClient.EXPECT().SvmGetByName(ctx, "mySVM").Return(nil, nil)
+	err = api.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
+	assert.ErrorContains(t, err, "unable to get details for SVM mySVM; no SVM returned")
 }
 
 func TestSanitizeDataLIF(t *testing.T) {
