@@ -130,6 +130,24 @@ tridentImage: ""
 # tridentImageTag allows overriding the tag of the image for Trident.
 tridentImageTag: ""
 
+# csiSidecarProvisionerImage allows the complete override of the CSI provisioner sidecar image.
+csiSidecarProvisionerImage: ""
+
+# csiSidecarAttacherImage allows the complete override of the CSI attacher sidecar image.
+csiSidecarAttacherImage: ""
+
+# csiSidecarResizerImage allows the complete override of the CSI resizer sidecar image.
+csiSidecarResizerImage: ""
+
+# csiSidecarSnapshotterImage allows the complete override of the CSI snapshotter sidecar image.
+csiSidecarSnapshotterImage: ""
+
+# csiSidecarNodeDriverRegistrarImage allows the complete override of the CSI node-driver-registrar sidecar image.
+csiSidecarNodeDriverRegistrarImage: ""
+
+# csiSidecarLivenessProbeImage allows the complete override of the CSI liveness probe sidecar image.
+csiSidecarLivenessProbeImage: ""
+
 # (Deprecated) tridentEnableNodePrep attempts to automatically install required packages on nodes.
 tridentEnableNodePrep: false
 
