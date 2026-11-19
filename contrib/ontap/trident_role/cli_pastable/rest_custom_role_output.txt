@@ -17,6 +17,11 @@ security login rest-role create -role "trident" -api "/api/protocols/nfs/export-
 security login rest-role create -role "trident" -api "/api/protocols/nvme/subsystem-maps" -access all
 security login rest-role create -role "trident" -api "/api/protocols/nvme/subsystems" -access all
 security login rest-role create -role "trident" -api "/api/protocols/nvme/subsystems/hosts" -access all
+security login rest-role create -role "trident" -api "/api/protocols/s3/services" -access readonly
+security login rest-role create -role "trident" -api "/api/protocols/s3/services/buckets" -access all
+security login rest-role create -role "trident" -api "/api/protocols/s3/services/groups" -access all
+security login rest-role create -role "trident" -api "/api/protocols/s3/services/policies" -access all
+security login rest-role create -role "trident" -api "/api/protocols/s3/services/users" -access all
 security login rest-role create -role "trident" -api "/api/protocols/san/fcp/services" -access readonly
 security login rest-role create -role "trident" -api "/api/protocols/san/igroups" -access all
 security login rest-role create -role "trident" -api "/api/protocols/san/igroups/initiators" -access all

@@ -43,6 +43,7 @@ security login role create -role "trident" -cmddirname "volume file clone create
 security login role create -role "trident" -cmddirname "volume modify" -access all
 security login role create -role "trident" -cmddirname "volume mount" -access all
 security login role create -role "trident" -cmddirname "volume offline" -access all
+security login role create -role "trident" -cmddirname "volume online" -access all
 security login role create -role "trident" -cmddirname "volume qtree" -access readonly
 security login role create -role "trident" -cmddirname "volume qtree create" -access all
 security login role create -role "trident" -cmddirname "volume qtree delete" -access all

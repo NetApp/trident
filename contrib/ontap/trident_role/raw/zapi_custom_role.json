@@ -54,6 +54,7 @@
 	{"command": "volume modify", "access_level": "all", "zapi": "volume-modify-iter-async"},
 	{"command": "volume mount", "access_level": "all", "zapi": "volume-mount"},
 	{"command": "volume offline", "access_level": "all", "zapi": "volume-offline"},
+	{"command": "volume online", "access_level": "all", "zapi": "volume-online"},
 	{"command": "volume qtree", "access_level": "readonly", "zapi": "qtree-list-iter"},
 	{"command": "volume qtree create", "access_level": "all", "zapi": "qtree-create"},
 	{"command": "volume qtree delete", "access_level": "all", "zapi": "qtree-delete-async"},
