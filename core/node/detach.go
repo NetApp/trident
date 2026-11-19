@@ -29,29 +29,18 @@ import (
 const (
 	fcpNodeUnstageMaxDuration   = 15 * time.Second
 	iSCSINodeUnstageMaxDuration = 15 * time.Second
-	nvmeMaxFlushWaitDuration    = 6 * time.Minute
 
 	// removeMultipathDeviceMappingRetries/Delay bound how long we retry tearing down
 	// a multipath device mapping before giving up.
 	removeMultipathDeviceMappingRetries    = 4
 	removeMultipathDeviceMappingRetryDelay = 500 * time.Millisecond
-
-	// nvmeFlushRetryMapLock is the LockID for the self-healing global lock guarding
-	// NVMeNamespacesFlushRetry.
-	nvmeFlushRetryMapLock = "nvmeFlushRetryMapLock"
 )
 
 var (
 	fcpUtils   = utils.FcpUtils
 	iscsiUtils = iscsi.IscsiUtils
 
-	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
-	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
-	NVMeNamespacesFlushRetry = make(map[string]time.Time)
-
-	duringIscsiLogout         = fiji.Register("duringIscsiLogout", "node_core")
-	afterNvmeLuksDeviceClosed = fiji.Register("afterNvmeLuksDeviceClosed", "node_core")
-	afterNvmeDisconnect       = fiji.Register("afterNvmeDisconnect", "node_core")
+	duringIscsiLogout = fiji.Register("duringIscsiLogout", "node_core")
 
 	// afterLuksCloseBeforeDeviceRemoval fires in iSCSI detach after the lease-protected LUKS close succeeded
 	// (Lease released) but before the SCSI/multipath devices are removed. The dm-crypt mapping is gone while the
@@ -145,7 +134,14 @@ func (c *Core) detach(ctx context.Context, volumeID string, force bool) error {
 	case ISCSI:
 		return c.detachISCSIVolumeRetry(ctx, volumeID, trackingInfo, force, locker)
 	case NVMe:
-		return c.detachNVMeVolume(ctx, volumeID, publishInfo, force)
+		// NVMe stage never mounts at the staging path; the driver only removes a leftover temporary expand mount.
+		spec := &models.VolumeDetachSpec{Force: force, IgnoreFlushErrors: c.unsafeDetach,
+			InternalID: publishInfo.InternalID}
+		// A failed detach keeps the tracking info, so kubelet retries NodeUnstageVolume.
+		if err = c.nvmeDriver.Detach(ctx, volumeID, trackingInfo.AttachState(), spec); err != nil {
+			return err
+		}
+		return c.nodeHelper.DeleteTrackingInfo(ctx, volumeID)
 	default:
 		return errors.PreconditionError("unknown storage protocol")
 	}
@@ -746,155 +742,6 @@ func (c *Core) multipathDeviceBelongsToLUN(ctx context.Context, devicePath, lunS
 		return false
 	}
 	return true
-}
-
-func (c *Core) detachNVMeVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo, force bool,
-) error {
-	Logc(ctx).Debug(">>>> detachNVMeVolume")
-	defer Logc(ctx).Debug("<<<< detachNVMeVolume")
-
-	release, err := c.acquireLimiter(ctx, detachNVMeVolumeKey)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	// Acquire self-healing read lock to allow parallel operations
-	nvmeNodeOperationWaitingCount.Add(1)
-	nvmeSelfHealingLock.RLock()
-	defer nvmeSelfHealingLock.RUnlock()
-	nvmeNodeOperationWaitingCount.Add(-1)
-
-	nvmeSubsys := c.nvme.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
-	// Get the device using 'nvme-cli' commands. Flush the device IOs.
-	// Proceed further with detach flow, if device is not found.
-	nvmeDev, err := nvmeSubsys.GetNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
-	if err != nil && !errors.IsNotFoundError(err) {
-		return fmt.Errorf("failed to get NVMe device; %v", err)
-	}
-
-	devicePath := publishInfo.DevicePath
-	if nvmeDev != nil {
-		devicePath = nvmeDev.GetPath()
-	}
-
-	var luksMapperPath string
-	if convert.ToBool(publishInfo.LUKSEncryption) && devicePath != "" {
-		fields := LogFields{
-			"namespace":     publishInfo.NVMeNamespaceUUID,
-			"devicePath":    devicePath,
-			"publishedPath": publishInfo.DevicePath,
-		}
-
-		luksMapperPath, err = c.dev.GetLUKSDevicePathForDevicePath(ctx, devicePath)
-		if err != nil {
-			if !errors.IsNotFoundError(err) {
-				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from device path.")
-				return err
-			}
-			Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to get LUKS device path from device path. " +
-				"Device may already be removed.")
-		}
-
-		if luksMapperPath != "" {
-			fields["luksMapperPath"] = luksMapperPath
-			if err = c.dev.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath); err != nil {
-				if !errors.IsMaxWaitExceededError(err) {
-					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
-					return err
-				}
-				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
-			}
-			if err = afterNvmeLuksDeviceClosed.Inject(); err != nil {
-				return err
-			}
-		}
-	}
-
-	// Attempt to flush the NVMe device.
-	if !nvmeDev.IsNil() {
-		if err = nvmeDev.FlushDevice(ctx, c.unsafeDetach, force); err != nil {
-			locks.Lock(ctx, "detachNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
-			if NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID].IsZero() {
-				NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID] = time.Now()
-				locks.Unlock(ctx, "detachNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
-				return fmt.Errorf("failed to flush NVMe device; %v", err)
-			}
-
-			elapsed := time.Since(NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID])
-			locks.Unlock(ctx, "detachNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
-
-			if elapsed <= nvmeMaxFlushWaitDuration {
-				Logc(ctx).WithFields(LogFields{
-					"devicePath": devicePath,
-					"namespace":  publishInfo.NVMeNamespaceUUID,
-					"elapsed":    elapsed,
-				}).WithError(err).Debug("Could not flush NVMe device.")
-				return fmt.Errorf("failed to flush NVMe device; %v", err)
-			}
-
-			Logc(ctx).WithFields(LogFields{
-				"namespace": publishInfo.NVMeNamespaceUUID,
-				"elapsed":   elapsed,
-				"maxWait":   nvmeMaxFlushWaitDuration,
-			}).Warn("Could not flush device within expected time period.")
-		}
-
-		locks.Lock(ctx, "detachNVMeVolume.FlushRetryDelete", nvmeFlushRetryMapLock)
-		delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
-		locks.Unlock(ctx, "detachNVMeVolume.FlushRetryDelete", nvmeFlushRetryMapLock)
-	}
-
-	lockContext := "detachNVMeVolume.RemovePublishedNVMeSession"
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-		return errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	c.nvme.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
-		publishInfo.NVMeNamespaceUUID)
-	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-
-	// Disconnect the subsystem if needed (handled under lock to prevent race conditions).
-	if err = c.disconnectNVMeSubsystemIfNeeded(ctx, nvmeSubsys, publishInfo); err != nil {
-		if errors.IsMaxWaitExceededError(err) {
-			// Disconnect safety could not be checked in time. Return without disconnecting rather than risk
-			// tearing down a subsystem a concurrent attach is using. The published-session state is already
-			// released above; the temporary-mount unmount, LUKS close and tracking-info deletion are skipped
-			// and run when kubelet retries NodeUnstageVolume.
-			return err
-		}
-		Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check.")
-		// Any other disconnect failure is logged and cleanup continues.
-	}
-
-	if err = afterNvmeDisconnect.Inject(); err != nil {
-		return err
-	}
-
-	stagingTargetPath := publishInfo.GlobalMount
-
-	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err = c.mount.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
-		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
-			"Failed to remove directory in staging target path; %v", err)
-		return fmt.Errorf("failed to remove temporary directory in staging target path %s; %w", stagingTargetPath, err)
-	}
-
-	if luksMapperPath != "" {
-		if err = c.dev.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"devicePath": luksMapperPath,
-			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
-		}
-		devices.LuksCloseDurations.RemoveDurationTracking(luksMapperPath)
-	}
-
-	if err = c.nodeHelper.DeleteTrackingInfo(ctx, volume); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *Core) trackingFilePath(volume string) string {

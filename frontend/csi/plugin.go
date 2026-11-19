@@ -28,7 +28,6 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/mount"
-	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -50,7 +49,6 @@ type StorageProtocolClients struct {
 	Mount   mount.Mount
 	FS      filesystem.Filesystem
 	FCP     fcp.FCP
-	NVMe    nvme.NVMeInterface
 	Devices devices.Devices
 	Command execCmd.Command
 	OsUtils osutils.Utils

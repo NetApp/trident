@@ -14,7 +14,6 @@ import (
 	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 func TestAttachISCSIVolume_LUKSFormatErrorPropagates(t *testing.T) {
@@ -59,69 +58,27 @@ func TestAttachISCSIVolume_InitialPassphraseUpdateErrorSkipsFormat(t *testing.T)
 	assert.Contains(t, err.Error(), "controller unavailable")
 }
 
-func TestAttachNVMeVolume_RecordsInitialPassphraseBeforeFormat(t *testing.T) {
+// The initial passphrase name, the format and the passphrase check run inside the driver (the luks service
+// records the name before the format; see its tests). The core's part is to hand the driver the LUKS
+// intent and the secrets, under the volume ID the passphrase name is recorded against.
+func TestAttachNVMeVolume_PassesLUKSSecretsToDriver(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
 	publishInfo.LUKSEncryption = "true"
+	publishInfo.InternalID = "internal-id"
 	secrets := map[string]string{
 		"luks-passphrase":      "secret",
 		"luks-passphrase-name": "name-a",
 	}
 
-	gomock.InOrder(
-		mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo),
-		mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil),
-		mocks.Command.EXPECT().ExecuteWithTimeoutAndInput(
-			gomock.Any(), "cryptsetup", gomock.Any(), true, "", "isLuks", publishInfo.DevicePath,
-		).Return([]byte{}, mock_exec.NewMockExitError(1, "not luks")),
-		mocks.Devices.EXPECT().IsDeviceUnformatted(gomock.Any(), publishInfo.DevicePath).Return(true, nil),
-		mocks.Controller.MockClient.EXPECT().UpdateVolume(
-			gomock.Any(), "test-volume", &models.NodeVolumeUpdate{LUKSPassphraseNames: &[]string{"name-a"}},
-		).Return(nil),
-		mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-			gomock.Any(), publishInfo.InternalID, publishInfo, secrets,
-		).Return(true, true, nil),
-		mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(nil),
-		mocks.Command.EXPECT().ExecuteWithTimeoutAndInput(
-			gomock.Any(), "cryptsetup", gomock.Any(), true, "secret", "open", publishInfo.DevicePath,
-			gomock.Any(), "--type", "luks2", "--test-passphrase",
-		).Return([]byte{}, nil),
-	)
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, secrets)
-	assert.NoError(t, err)
-}
-
-// A failure after the volume is mounted must not disconnect the subsystem under the mount. The
-// namespace stays published so NodeUnstageVolume can tear it down.
-func TestAttachNVMeVolume_PostMountErrorKeepsSessionAndSkipsDisconnect(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.LUKSEncryption = "true"
-
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-			sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, spec *models.VolumeAttachSpec) (*models.VolumeAttachState, error) {
+			assert.True(t, spec.Encryption.IsLUKS())
+			assert.Equal(t, secrets, spec.Secrets)
+			assert.Equal(t, "internal-id", spec.InternalID, "the mapper is named from the internal ID")
+			return &models.VolumeAttachState{}, nil
 		})
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).Return(nil)
-	mocks.Command.EXPECT().ExecuteWithTimeoutAndInput(
-		gomock.Any(), "cryptsetup", gomock.Any(), true, "", "isLuks", publishInfo.DevicePath,
-	).Return([]byte{}, nil)
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), publishInfo.InternalID, publishInfo, gomock.Nil(),
-	).Return(true, true, nil)
-	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-		gomock.Any(), publishInfo.InternalID, "", publishInfo, true, true,
-	).Return(nil)
-	// RemovePublishedNVMeSession and NewNVMeSubsystem are intentionally not expected.
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "could not set LUKS volume passphrase")
-	assert.Equal(t, 1, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
+	_, err := attachNVMe(core, mocks, publishInfo, secrets)
+	assert.NoError(t, err)
 }

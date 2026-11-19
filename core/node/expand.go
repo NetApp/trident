@@ -87,7 +87,15 @@ func (c *Core) Expand(ctx context.Context, volume string, req ExpandRequest) err
 	case FCP:
 		return c.expandFCPVolume(ctx, volume, publishInfo, requiredBytes, mountPath, secrets)
 	case NVMe:
-		return c.expandNVMeVolume(ctx, volume, publishInfo, requiredBytes, mountPath, secrets)
+		fsType, err := filesystem.VerifyFilesystemSupport(publishInfo.FilesystemType)
+		if err != nil {
+			return err
+		}
+		state := trackingInfo.AttachState()
+		state.Filesystem = fsType
+		// A negative request is clamped to zero, which skips the driver's wait for the new size, rather than refused.
+		sizeBytes, _ := convert.Int64ToUint64(max(requiredBytes, 0))
+		return c.nvmeDriver.Expand(ctx, volume, state, &models.VolumeExpandSpec{SizeBytes: sizeBytes, Secrets: secrets})
 	default:
 		return errors.PreconditionError("unknown storage protocol")
 	}
@@ -187,36 +195,6 @@ func (c *Core) expandFCPVolume(
 	)
 }
 
-func (c *Core) expandNVMeVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo,
-	requiredBytes int64, filesystemPath string, secrets map[string]string,
-) error {
-	Logc(ctx).Debug(">>>> expandNVMeVolume")
-	defer Logc(ctx).Debug("<<<< expandNVMeVolume")
-
-	release, err := c.acquireLimiter(ctx, expandVolumeKey)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	// We don't need to rescan mount devices for the NVMe protocol backend. Automatic namespace
-	// rescanning happens every time the NVMe controller is reset, or if the controller posts an
-	// asynchronous event indicating namespace attributes have changed.
-	Logc(ctx).WithField("volumeId", volume).Info("NVMe volume expansion check is not required.")
-
-	preExpandDeviceSizeBytes, preExpandFilesystemSize, err := c.capturePreExpandSizeBaseline(
-		ctx, publishInfo, filesystemPath,
-	)
-	if err != nil {
-		return err
-	}
-
-	return c.expandFilesystemAndLUKS(
-		ctx, volume, publishInfo, requiredBytes, secrets, preExpandDeviceSizeBytes, preExpandFilesystemSize,
-	)
-}
-
 // capturePreExpandSizeBaseline reads the device and filesystem sizes before any protocol-specific
 // rescan/resize runs. filesystemPath must be a mounted path for the volume, such as the
 // NodeExpandVolume request's VolumePath. The staging directory is not necessarily a mount point;
@@ -261,7 +239,7 @@ func (c *Core) capturePreExpandSizeBaseline(
 	return preExpandDeviceSizeBytes, preExpandFilesystemSize, nil
 }
 
-// expandFilesystemAndLUKS performs the shared tail of the FCP/NVMe stopgap expand paths: resize
+// expandFilesystemAndLUKS performs the shared tail of the iSCSI/FCP expand paths: resize
 // the LUKS mapping (if encrypted) and then grow the filesystem to match the new device size.
 // preExpandDeviceSizeBytes/preExpandFilesystemSize must have been captured by the caller via
 // capturePreExpandSizeBaseline before any rescan, so the growth check below has an accurate

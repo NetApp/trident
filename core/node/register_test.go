@@ -14,6 +14,7 @@ import (
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	mockNode "github.com/netapp/trident/mocks/mock_core/mock_node"
 	mockTridentController "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_tridentcontroller"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -100,7 +101,7 @@ func TestBuildNodeInfo_UsesRediscoveredIPAddresses(t *testing.T) {
 	mocks.OsUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil).AnyTimes()
 	mocks.OsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(true, nil).AnyTimes()
 	mocks.ISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+	mocks.NVMeHost.preChecks = func(context.Context) error { return storage.ErrTransportNotLoaded }
 	gomock.InOrder(
 		mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return(nil, errors.New("interrupted")),
 		mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"10.58.43.100"}, nil),
@@ -185,11 +186,9 @@ func TestRefreshNodeInfo(t *testing.T) {
 	t.Run("a failed probe keeps the registered service", func(t *testing.T) {
 		core, mocks := newTestCore(t)
 		var nvmeErr error
-		// Declared before expectHost because gomock uses the first matching expectation.
-		mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).DoAndReturn(
-			func(context.Context) (bool, error) { return nvmeErr == nil, nvmeErr }).AnyTimes()
 		host := fakeHost{ips1, nqn1}
 		expectHost(mocks, &host)
+		mocks.NVMeHost.preChecks = func(context.Context) error { return nvmeErr }
 		core.registeredNode, _ = core.buildNodeInfo(context.Background(), false)
 		nvmeErr = errors.New("nvme probe failed")
 
@@ -202,9 +201,9 @@ func TestRefreshNodeInfo(t *testing.T) {
 	t.Run("a probe that keeps failing does not block other services", func(t *testing.T) {
 		core, mocks := newTestCore(t)
 		iscsiActive := false
-		// The NVMe probe fails on every scan, as on a host without the nvme CLI. Declared before
-		// expectNodeInfoDiscovery because gomock uses the first matching expectation.
-		mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, errors.New("nvme not found")).AnyTimes()
+		// The NVMe probe fails on every scan, as on a host without the nvme CLI. Set before
+		// expectNodeInfoDiscovery, which keeps a probe already set.
+		mocks.NVMeHost.preChecks = func(context.Context) error { return errors.New("nvme not found") }
 		mocks.ISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(context.Context, models.HostSystem) (bool, error) { return iscsiActive, nil }).AnyTimes()
 		expectNodeInfoDiscovery(mocks)
@@ -286,7 +285,7 @@ func TestBuildNodeInfoReusesHostOS(t *testing.T) {
 	mocks.ISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), models.HostSystem{OS: ubuntu}).Return(true, nil).Times(2)
 	mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"192.0.2.10"}, nil).AnyTimes()
 	mocks.OsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
-	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+	mocks.NVMeHost.preChecks = func(context.Context) error { return storage.ErrTransportNotLoaded }
 
 	node, _ := core.buildNodeInfo(ctx, false)
 	assert.Empty(t, node.HostInfo.OS)
@@ -301,7 +300,7 @@ func TestBuildNodeInfoReportsUnknownServices(t *testing.T) {
 	core, mocks := newTestCore(t)
 	// Declared before expectNodeInfoDiscovery because gomock uses the first matching expectation.
 	mocks.OsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(false, errors.New("systemctl failed")).AnyTimes()
-	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, errors.New("nvme not found")).AnyTimes()
+	mocks.NVMeHost.preChecks = func(context.Context) error { return errors.New("nvme not found") }
 	expectNodeInfoDiscovery(mocks)
 
 	node, unknownServices := core.buildNodeInfo(context.Background(), false)
@@ -365,9 +364,12 @@ func expectHost(mocks *testMocks, host *fakeHost) {
 	// Declared before expectNodeInfoDiscovery because gomock uses the first matching expectation.
 	mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).DoAndReturn(
 		func(context.Context) ([]string, error) { return host.ips, nil }).AnyTimes()
-	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).DoAndReturn(
-		func(context.Context) (bool, error) { return host.nqn != "", nil }).AnyTimes()
-	mocks.NVMe.EXPECT().GetHostNqn(gomock.Any()).DoAndReturn(
-		func(context.Context) (string, error) { return host.nqn, nil }).AnyTimes()
+	mocks.NVMeHost.preChecks = func(context.Context) error {
+		if host.nqn == "" {
+			return storage.ErrTransportNotLoaded
+		}
+		return nil
+	}
+	mocks.NVMeHost.hostNQN = func(context.Context) (string, error) { return host.nqn, nil }
 	expectNodeInfoDiscovery(mocks)
 }

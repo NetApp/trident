@@ -60,10 +60,9 @@ func (c *Core) Prune(
 			"Error reading tracking file for volume; stale sessions may persist. Continuing with prune attachment workflow.")
 	}
 
-	// iSCSI replaces VolumeAccessInfo with the request. NVMe keeps the tracked publish info;
-	// pruneNVMeAttachment copies only the requested target IPs.
+	// iSCSI replaces VolumeAccessInfo with the request. NVMe keeps the tracked publish info
+	// and copies only the requested target IPs.
 	storageProtocol := blockAttachmentProtocol(trackingInfo, req.VolumeAccessInfo)
-
 	publishInfo := &models.VolumePublishInfo{}
 	if trackingInfo != nil {
 		publishInfo = &trackingInfo.VolumePublishInfo
@@ -76,7 +75,32 @@ func (c *Core) Prune(
 	case tridentconfig.Block:
 		switch storageProtocol {
 		case NVMe:
-			return c.pruneNVMeAttachment(ctx, volumeID, req, publishInfo)
+			// Only the target IPs are taken from the request; the tracked NVMe identity is retained. A subsystem
+			// the kernel does not have is an empty prune, and the desired targets are still recorded.
+			if trackingInfo == nil || trackingInfo.GetStorageProtocol() != NVMe {
+				if isNVMeTargetIPsOnly(req.VolumeAccessInfo) {
+					Logc(ctx).WithField("volume", volumeID).Debug(
+						"Volume has no NVMe attachment on this node; nothing to prune.")
+					return &models.PruneAttachmentResponse{VolumeName: volumeID, Protocol: req.Protocol}, nil
+				}
+				return nil, errors.TerminalReconciliationError("NVMe tracking info not found")
+			}
+			if err := c.nvmeDriver.Prune(ctx, trackingInfo.AttachState(), &models.PruneAttachmentRequest{
+				VolumeAccessInfo: req.VolumeAccessInfo,
+				VolumeName:       volumeID,
+				Protocol:         req.Protocol,
+			}); err != nil {
+				return nil, err
+			}
+			publishInfo.NVMeTargetIPs = slices.Clone(req.NVMeTargetIPs)
+			if err := c.nodeHelper.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
+				return nil, err
+			}
+			return &models.PruneAttachmentResponse{
+				VolumeAccessInfo: req.VolumeAccessInfo,
+				VolumeName:       volumeID,
+				Protocol:         req.Protocol,
+			}, nil
 		default:
 			return c.pruneISCSIAttachment(ctx, volumeID, req, publishInfo)
 		}
@@ -86,77 +110,6 @@ func (c *Core) Prune(
 		msg := fmt.Sprintf("operation not supported with %s protocol", req.Protocol)
 		return nil, errors.TerminalReconciliationError(msg)
 	}
-}
-
-// pruneNVMeAttachment removes obsolete host paths while retaining at least one path, then records
-// the desired target set in tracking and the in-memory self-healing session map. publishInfo is
-// the tracked publish info. A nil or non-NVMe value means this node has no NVMe attachment. Only the
-// target IPs are taken from the request; the tracked NVMe identity and other publish fields are retained.
-// A subsystem the kernel does not have is an empty prune: nothing is disconnected, and the desired
-// targets are still recorded so a later graft can connect them.
-func (c *Core) pruneNVMeAttachment(
-	ctx context.Context, volumeID string, req PruneRequest, publishInfo *models.VolumePublishInfo,
-) (*models.PruneAttachmentResponse, error) {
-	if publishInfo == nil || publishInfo.GetStorageProtocol() != NVMe {
-		if isNVMeTargetIPsOnly(req.VolumeAccessInfo) {
-			Logc(ctx).WithField("volume", volumeID).Debug(
-				"Volume has no NVMe attachment on this node; nothing to prune.")
-			return &models.PruneAttachmentResponse{VolumeName: volumeID, Protocol: req.Protocol}, nil
-		}
-		return nil, errors.TerminalReconciliationError("NVMe tracking info not found")
-	}
-
-	release, err := c.acquireLimiter(ctx, pruneNVMeAttachmentKey)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	if err := validateNVMeIdentity(req.VolumeAccessInfo, publishInfo); err != nil {
-		return nil, err
-	}
-	publishInfo.NVMeTargetIPs = slices.Clone(req.NVMeTargetIPs)
-
-	nvmeNodeOperationWaitingCount.Add(1)
-	nvmeSelfHealingLock.RLock()
-	defer nvmeSelfHealingLock.RUnlock()
-	nvmeNodeOperationWaitingCount.Add(-1)
-
-	lockContext := "pruneNVMeAttachment.UpdateSession"
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-		return nil, errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	defer locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-
-	subsystem, err := c.nvme.GetNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
-	switch {
-	case errors.IsNotFoundError(err):
-		Logc(ctx).WithField("volume", volumeID).Debug(
-			"NVMe subsystem has no host paths; recording the desired targets without pruning.")
-	case err != nil:
-		return nil, err
-	default:
-		subsystem.PrunePaths(ctx, publishInfo.NVMeTargetIPs)
-	}
-
-	if err := c.nodeHelper.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
-		return nil, err
-	}
-
-	// AddPublishedNVMeSession merges target IPs, so remove the previous desired set first.
-	if session := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]; session != nil {
-		publishedNVMeSessions.RemoveTargetIPsFromSession(
-			publishInfo.NVMeSubsystemNQN, slices.Clone(session.NVMeTargetIPs),
-		)
-	}
-	c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
-
-	return &models.PruneAttachmentResponse{
-		VolumeAccessInfo: req.VolumeAccessInfo,
-		VolumeName:       volumeID,
-		Protocol:         req.Protocol,
-	}, nil
 }
 
 // pruneISCSIAttachment tears down the iSCSI sessions/paths described in publishInfo that are no

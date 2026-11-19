@@ -297,6 +297,22 @@ type IscsiAccessInfo struct {
 	IscsiChapInfo
 }
 
+// AllISCSIPortals returns a set of all specified iSCSI portals in the IscsiAccessInfo.
+func (i *IscsiAccessInfo) AllISCSIPortals() []string {
+	visited := make(map[string]struct{}, len(i.IscsiPortals)+1)
+	portals := make([]string, 0, len(i.IscsiPortals)+1)
+	for _, portal := range append([]string{i.IscsiTargetPortal}, i.IscsiPortals...) {
+		if portal == "" {
+			continue
+		}
+		if _, ok := visited[portal]; !ok {
+			portals = append(portals, portal)
+			visited[portal] = struct{}{}
+		}
+	}
+	return portals
+}
+
 // ScsiDeviceInfo contains information about SCSI devices
 type ScsiDeviceInfo struct {
 	ScsiDeviceAddress
@@ -413,6 +429,218 @@ type NVMeAccessInfo struct {
 	NVMeSubsystemNQN  string   `json:"nvmeSubsystemNqn,omitempty"`
 	NVMeSubsystemUUID string   `json:"nvmeSubsystemUUID,omitempty"`
 	NVMeNamespaceUUID string   `json:"nvmeNamespaceUUID,omitempty"`
+}
+
+// BlockDeviceType classifies a layer in a block device stack as persisted in the
+// volume tracking file. These values are part of the tracking file schema — they
+// are serialized to disk at attach time and read back at detach time (potentially
+// after a reboot or Trident upgrade) to determine the correct cleanup strategy
+// for each device layer. Do not change existing values without a migration path.
+type BlockDeviceType string
+
+const (
+	// BlockDeviceDisk indicates base block device (SCSI sd*, NVMe nvme*n*). ID is the device WWID.
+	BlockDeviceDisk BlockDeviceType = "disk"
+	// BlockDeviceMpath indicates a device-mapper multipath layer. ID is the dm UUID.
+	BlockDeviceMpath BlockDeviceType = "mpath"
+	// BlockDeviceCrypt indicates a device-mapper encryption layer. ID is the dm UUID.
+	BlockDeviceCrypt BlockDeviceType = "crypt"
+)
+
+// BlockDeviceInfo captures persistent, reboot-safe identity for a single layer
+// in a SAN volume's block device stack.
+//
+// Each entry represents one of:
+//   - A physical device identity (WWID) — the LUN or NVMe namespace
+//   - A device-mapper layer (multipath, LUKS) — stacked on top of the physical device
+//
+// The Type field indicates what kind of device this represents and determines
+// how Trident discovers and cleans up the device at detach time.
+//
+// The ID is the primary stable identifier. For WWID entries, this is the sysfs
+// wwid value (e.g., "naa.600a0980..." for SCSI, "uuid.ffce3179-..." for NVMe).
+// For device-mapper entries, this is the dm UUID from /sys/block/dm-#/dm/uuid.
+//
+// The Name is the device-mapper name from /sys/block/dm-#/dm/name. It is empty
+// for WWID entries. It provides a fallback cleanup path via /dev/mapper/<name>
+// when the sysfs dm node is already gone.
+type BlockDeviceInfo struct {
+	// ID is a persistent, stable identifier for a block device.
+	// This is a general ID that can be a WWID, a dm UUID, or more.
+	// This value should always be globally unique and persistent between host reboot.
+	// For dm devices (LUKS, Mpath), this is almost always a dm node UUID.
+	// For SCSI devices, this is a WWID.
+	// For NVMe devices, this is a WWID.
+	// Required.
+	ID string `json:"id"`
+	// Type helps Trident know what kind of ID is stored.
+	// This provides semantic meaning to observers.
+	// Required.
+	Type BlockDeviceType `json:"type"`
+	// Name is a unique device name.
+	// This may be particularly useful in a situation where the underlying dm node
+	// of a mapper device is already gone (making ID useless), but the mapper device
+	// is present under /dev/mapper/.
+	// Optional, but recommended.
+	Name string `json:"name,omitempty"`
+	// Base is a reference to the device that sits under a single device in the stack.
+	// This is particularly useful for observability and nested device stacks that need
+	// to be managed in an ordered fashion.
+	// Optional, but recommended.
+	Base string `json:"base,omitempty"`
+}
+
+// NewBlockDeviceInfo creates a BlockDeviceInfo with the given type, persistent identifier, and optional name.
+func NewBlockDeviceInfo(id, name string, deviceType BlockDeviceType) BlockDeviceInfo {
+	return BlockDeviceInfo{Type: deviceType, ID: id, Name: name}
+}
+
+func (b BlockDeviceInfo) String() string {
+	return fmt.Sprintf("{type: %s, id: %s, name: %s}", b.Type, b.ID, b.Name)
+}
+
+// IsValid checks if the stored device info has both Type and ID set.
+func (b BlockDeviceInfo) IsValid() bool {
+	return b.Type != "" && b.ID != ""
+}
+
+// BlockDeviceStack is a special type for interacting with the device stack
+// Trident tracks for volume attachments.
+//
+// This is a named slice type because:
+//   - The persisted form is a bare JSON array.
+//   - All current operations are read-only or append-only.
+//   - Operations own their stack single-threadedly.
+//
+// If any of those stop being true: e.g., if the tracking file grows
+// metadata siblings to the device list, or if concurrent readers and
+// writers both need access to a shared stack.
+type BlockDeviceStack []BlockDeviceInfo
+
+// Find returns the first BlockDeviceInfo matching the given type, searching
+// from the top of the stack (last element) to the bottom (first element).
+// The second return value indicates whether a match was found.
+func (s BlockDeviceStack) Find(t BlockDeviceType) (BlockDeviceInfo, bool) {
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i].Type == t {
+			return s[i], true
+		}
+	}
+	return BlockDeviceInfo{}, false
+}
+
+// BlockAttachInfo is a SAN protocol-agnostic representation of the block volume attachment state.
+// All SAN protocols (iSCSI, FCP, NVMe) produce block devices on the host, so this is the common base.
+type BlockAttachInfo struct {
+	// Devices holds persistent identity for every layer in the block device
+	// stack, ordered bottom (physical device) to top (outermost mapper).
+	// The first entry is typically a WWID identifying the LUN or NVMe namespace.
+	// Subsequent entries are device-mapper layers (multipath, LUKS) stacked on top.
+	Devices BlockDeviceStack `json:"devices,omitempty"`
+}
+
+type FilesystemType = string
+
+const (
+	FilesystemRaw   FilesystemType = "raw"
+	FilesystemExt3  FilesystemType = "ext3"
+	FilesystemExt4  FilesystemType = "ext4"
+	FilesystemXFS   FilesystemType = "xfs"
+	FilesystemEmpty FilesystemType = "<unknown>"
+)
+
+type EncryptionType string
+
+const (
+	EncryptionNone EncryptionType = ""
+	EncryptionLUKS EncryptionType = "luks"
+)
+
+func (e EncryptionType) String() string { return string(e) }
+func (e EncryptionType) IsLUKS() bool   { return e == EncryptionLUKS }
+
+// VolumeAttachInfo is what's actually been established for a volume attachment.
+//
+// This value should be persisted after an attachment and read from subsequent driver calls.
+type VolumeAttachInfo struct {
+	BlockAttachInfo
+}
+
+// VolumeAttachState is a runtime currency for communicating the recorded state of the
+// attachment to attachment drivers. This structure carries facts about the attachment.
+//
+// It should be constructed at Attach() time, consumed by callers for persistence, and
+// reconstructed for every subsequent call by consuming the VolumeAttachInfo and the
+// VolumeAccessInfo.
+//
+// It should not be persisted.
+type VolumeAttachState struct {
+	VolumeAccessInfo                // VolumeAccessInfo contains transport identity. e.g. "how and what should I access?"
+	BlockAttachInfo                 // BlockAttachInfo contains facts about the block attachment. e.g. "what's really there?"
+	Filesystem       FilesystemType // Filesystem type set at attach, never changes.
+	Encryption       EncryptionType // Encryption type set at attach, never changes.
+	GlobalMount      string         // Staging target path set once at attach time.
+	// DevicePath offers a bridge for legacy block protocols to access the top-most device in the stack (mapper if LUKS).
+	// However, this path is not a stable identity: kernel names can change across reboots.
+	// As a result, this field will be deprecated and no longer supported once all block protocols
+	// can support BlockAttachInfo. Do not rely on this unless necessary.
+	DevicePath string
+}
+
+// VolumeAttachSpec is a runtime currency from the CSI frontends to attach a volume.
+//
+// It should not be persisted.
+type VolumeAttachSpec struct {
+	VolumeAccessInfo                   // VolumeAccessInfo is required for attaching a volume.
+	InternalID       string            // InternalID is the volume internal ID. This is useful for things like LUKS.
+	MountPoint       string            // MountPoint is the desired global mount point.
+	Filesystem       FilesystemType    // Filesystem is the filesystem type to use for the volume. e.g. "ext4", "xfs", "raw", etc.
+	VolumeMode       string            // VolumeMode ("Filesystem" or "Block") resolves an empty Filesystem.
+	Encryption       EncryptionType    // Encryption is the encryption type to use for the volume. e.g. "luks", "none", etc.
+	Secrets          map[string]string // Secrets are the secrets to use for the volume. e.g. "password", "key", etc.
+}
+
+// VolumeDetachSpec is a runtime currency from frontends to detach an attached volume.
+//
+// It should not be persisted.
+type VolumeDetachSpec struct {
+	Force bool
+	// IgnoreFlushErrors logs flush failures instead of returning them (unsafe detach).
+	IgnoreFlushErrors bool
+	// InternalID is the volume internal ID. It names the LUKS mapper of an encrypted volume whose namespace is
+	// already gone, for a state with no device stack.
+	InternalID string
+}
+
+// VolumeMountSpec is a runtime currency from frontends to mount an attached volume.
+// to a specific MountPoint with the supplied MountOptions.
+//
+// It should not be persisted.
+type VolumeMountSpec struct {
+	MountPoint   string // MountPoint - Publish target path (pod mount).
+	MountOptions string // MountOptions - Specified mount options for this specific publish.
+	// InternalID and Secrets are used to verify or rotate the LUKS passphrase of an encrypted volume.
+	InternalID string
+	Secrets    map[string]string
+}
+
+// VolumeUnmountSpec is a runtime currency from frontends to unmount a volume
+// from a specified MountPoint.
+//
+// It should not be persisted.
+type VolumeUnmountSpec struct {
+	MountPoint string
+}
+
+// VolumeExpandSpec is a runtime currency from frontends to expand an attached volume.
+//
+// It should not be persisted.
+type VolumeExpandSpec struct {
+	SizeBytes uint64            // SizeBytes is the target size of the attached volume.
+	Secrets   map[string]string // Secrets contain things like LUKS passphrases; never persist.
+	// RemoveBrokenPaths evicts unhealthy paths during expansion instead of failing.
+	// Set it only when iSCSI self-healing runs, because self-healing is what recovers the evicted paths.
+	RemoveBrokenPaths bool
 }
 
 // DFInfo data structure for wrapping the parsed output from the 'df' command
@@ -611,9 +839,45 @@ func (v *VolumePublishInfo) GetSANType() string {
 	return ""
 }
 
+const VolumeTrackingVersion = "2"
+
 type VolumeTrackingInfo struct {
 	VolumePublishInfo
+	VolumeAttachInfo
+	Version        string              `json:"version"`
 	PublishedPaths map[string]struct{} `json:"publishedTargetPaths"`
+}
+
+// AttachState rebuilds the attachment state recorded in the tracking info. Devices is empty for a tracking file
+// written before the device stack was recorded.
+func (t *VolumeTrackingInfo) AttachState() *VolumeAttachState {
+	state := &VolumeAttachState{
+		VolumeAccessInfo: t.VolumeAccessInfo,
+		BlockAttachInfo:  t.BlockAttachInfo,
+		Filesystem:       t.FilesystemType,
+		GlobalMount:      t.GlobalMount,
+		DevicePath:       t.DevicePath,
+	}
+	if t.UseLUKS() {
+		state.Encryption = EncryptionLUKS
+	}
+	return state
+}
+
+// RecordAttachState records what an attachment driver established; a partial state is recorded as far as it got.
+// DevicePath is the disk layer's path, never a mapper, as it was tracked before the device stack, so that an
+// older Trident can still find the device and derive its mapper.
+func (t *VolumeTrackingInfo) RecordAttachState(state *VolumeAttachState) {
+	if state == nil {
+		return
+	}
+	t.BlockAttachInfo = state.BlockAttachInfo
+	if disk, ok := state.Devices.Find(BlockDeviceDisk); ok && disk.Name != "" {
+		t.DevicePath = "/dev/" + disk.Name
+	}
+	if state.Filesystem != "" {
+		t.FilesystemType = state.Filesystem
+	}
 }
 
 type VolumePublication struct {
@@ -1387,7 +1651,7 @@ func (p *ISCSISessions) VolumeIDForPortalAndLUN(portal string, lunID int32) (str
 
 	volumeID, err := iSCSISessionData.LUNs.VolumeID(lunID)
 	if err != nil {
-		// Published sessions should always have a Volume ID.
+		// Published sessions should always have a Volume GUID.
 		return "", fmt.Errorf("no volume ID for lun ID: %v; %w", lunID, err)
 	}
 

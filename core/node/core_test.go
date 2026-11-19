@@ -15,6 +15,7 @@ import (
 	mockNode "github.com/netapp/trident/mocks/mock_core/mock_node"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockTridentController "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_tridentcontroller"
+	"github.com/netapp/trident/mocks/mock_pkg/mock_host/mock_storage"
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_fcp"
@@ -22,7 +23,7 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
-	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -30,8 +31,8 @@ import (
 
 // This package's tests must not use t.Parallel(): Attach/Detach/Graft/Prune/self-healing all
 // read and write package-level globals (publishedISCSISessions, currentISCSISessions,
-// iSCSISelfHealingLock, nvmeSelfHealingLock, NVMeNamespacesFlushRetry). NewCore resets the
-// session maps, but the locks and flush-retry map are shared across every Core instance in the
+// iSCSISelfHealingLock). NewCore resets the
+// session maps, but the locks are shared across every Core instance in the
 // process, so concurrently-running tests that exercise them would race/interfere with each other.
 
 // fakeController implements node.Controller by embedding a mockgen tridentcontroller.Client mock
@@ -62,12 +63,20 @@ func (f lockerFunc) WithLock(ctx context.Context, fn func(context.Context) error
 	return f(ctx, fn)
 }
 
+// fakeNVMeHost answers the NVMe driver's PreChecks and HostID calls that node registration makes, so tests set
+// them once before the Core is built. Unset functions fail the test, as an unexpected call on a strict mock.
+type fakeNVMeHost struct {
+	preChecks func(context.Context) error
+	hostNQN   func(context.Context) (string, error)
+}
+
 // testMocks bundles every mock the Core depends on so individual tests can set expectations on
 // exactly the ones they need and ignore the rest.
 type testMocks struct {
 	ISCSI      *mock_iscsi.MockISCSI
 	FCP        *mock_fcp.MockFCP
-	NVMe       *mock_nvme.MockNVMeInterface
+	NVMeDriver *mock_storage.MockProtocol
+	NVMeHost   *fakeNVMeHost
 	Devices    *mock_devices.MockDevices
 	Filesystem *mock_filesystem.MockFilesystem
 	Mount      *mock_mount.MockMount
@@ -85,7 +94,8 @@ func newTestMocks(t *testing.T) *testMocks {
 	mocks := &testMocks{
 		ISCSI:      mock_iscsi.NewMockISCSI(ctrl),
 		FCP:        mock_fcp.NewMockFCP(ctrl),
-		NVMe:       mock_nvme.NewMockNVMeInterface(ctrl),
+		NVMeDriver: mock_storage.NewMockProtocol(ctrl),
+		NVMeHost:   &fakeNVMeHost{},
 		Devices:    mock_devices.NewMockDevices(ctrl),
 		Filesystem: mock_filesystem.NewMockFilesystem(ctrl),
 		Mount:      mock_mount.NewMockMount(ctrl),
@@ -103,6 +113,12 @@ func newTestMocks(t *testing.T) *testMocks {
 		LockFor(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(distlock.NewNoopLock(), nil).
 		AnyTimes()
+	mocks.NVMeDriver.EXPECT().PreChecks(gomock.Any()).DoAndReturn(func(ctx context.Context) error {
+		return mocks.NVMeHost.preChecks(ctx)
+	}).AnyTimes()
+	mocks.NVMeDriver.EXPECT().HostID(gomock.Any()).DoAndReturn(func(ctx context.Context) (string, error) {
+		return mocks.NVMeHost.hostNQN(ctx)
+	}).AnyTimes()
 	return mocks
 }
 
@@ -115,7 +131,9 @@ func expectNodeInfoDiscovery(mocks *testMocks) {
 	mocks.OsUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"192.0.2.10"}, nil).AnyTimes()
 	mocks.OsUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
 	mocks.ISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-	mocks.NVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+	if mocks.NVMeHost.preChecks == nil {
+		mocks.NVMeHost.preChecks = func(context.Context) error { return storage.ErrTransportNotLoaded }
+	}
 }
 
 // newTestCore builds a Core wired to a fresh set of mocks, applying any additional options after
@@ -138,7 +156,7 @@ func newUnbootstrappedTestCore(t *testing.T, extraOpts ...Option) (*Core, *testM
 	opts := []Option{
 		WithLegacyISCSI(mocks.ISCSI),
 		WithFCP(mocks.FCP),
-		WithNVMe(mocks.NVMe),
+		WithNVMeDriver(mocks.NVMeDriver),
 		WithDevices(mocks.Devices),
 		WithFilesystem(mocks.Filesystem),
 		WithMount(mocks.Mount),
@@ -221,7 +239,6 @@ func TestNewCore_OptionsApply(t *testing.T) {
 	core := NewCore(
 		WithLegacyISCSI(mocks.ISCSI),
 		WithFCP(mocks.FCP),
-		WithNVMe(mocks.NVMe),
 		WithDevices(mocks.Devices),
 		WithFilesystem(mocks.Filesystem),
 		WithMount(mocks.Mount),
@@ -240,7 +257,6 @@ func TestNewCore_OptionsApply(t *testing.T) {
 
 	assert.Equal(t, mocks.ISCSI, core.iscsi)
 	assert.Equal(t, mocks.FCP, core.fcp)
-	assert.Equal(t, mocks.NVMe, core.nvme)
 	assert.Equal(t, mocks.Devices, core.dev)
 	assert.Equal(t, mocks.Filesystem, core.fs)
 	assert.Equal(t, mocks.Mount, core.mount)
@@ -311,6 +327,7 @@ func expectCleanBootstrap(mocks *testMocks) {
 	mocks.NodeHelper.EXPECT().
 		ListVolumeTrackingInfo(gomock.Any()).
 		Return(map[string]*models.VolumeTrackingInfo{}, nil)
+	mocks.NVMeDriver.EXPECT().Start(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 }
 
 // expectSuccessfulRegistration sets up the mock expectations for a Bootstrap call whose register
@@ -411,7 +428,8 @@ func TestActivate_NilVolumeLocksIsInitialized(t *testing.T) {
 }
 
 func TestDeactivate_NoSelfHealingOrReconciliationConfigured(t *testing.T) {
-	core, _ := newTestCore(t)
+	core, mocks := newTestCore(t)
+	mocks.NVMeDriver.EXPECT().Stop().AnyTimes()
 	// Self-healing tickers/reconciliation loop were never started (disabled by default), so
 	// Deactivate must be a safe no-op rather than panicking on nil tickers/channels.
 	assert.NoError(t, core.Deactivate())

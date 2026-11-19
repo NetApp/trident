@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 // This file's tests must not use t.Parallel(); see core_test.go for why.
@@ -31,17 +31,6 @@ func resetISCSISessionGlobals(t *testing.T) {
 	})
 }
 
-// resetNVMeSessionGlobals is the NVMe equivalent of resetISCSISessionGlobals.
-func resetNVMeSessionGlobals(t *testing.T) {
-	t.Helper()
-	publishedNVMeSessions = nvme.NVMeSessions{}
-	currentNVMeSessions = nvme.NVMeSessions{}
-	t.Cleanup(func() {
-		publishedNVMeSessions = nvme.NVMeSessions{}
-		currentNVMeSessions = nvme.NVMeSessions{}
-	})
-}
-
 // seedPublishedISCSISessionForPortal resets publishedISCSISessions to a fresh map containing a
 // single portal/LUN/volume mapping, for tests that exercise selfHealingRectifySession.
 func seedPublishedISCSISessionForPortal(t *testing.T, portal, iqn string, lun int32, volID string) {
@@ -54,7 +43,6 @@ func seedPublishedISCSISessionForPortal(t *testing.T, portal, iqn string, lun in
 func TestPopulatePublishedSessions_NoTrackingFiles(t *testing.T) {
 	core, _ := newTestCore(t)
 	resetISCSISessionGlobals(t)
-	resetNVMeSessionGlobals(t)
 
 	// GetAllVolumeIDs reads tridentDeviceInfoPath ("/var/lib/trident/tracking") from disk. That
 	// directory does not exist in this sandbox, so no volume IDs are discovered and no
@@ -86,25 +74,30 @@ func TestStartStopISCSISelfHealingThread_Enabled(t *testing.T) {
 	assert.NotPanics(t, func() { core.stopISCSISelfHealingThread(context.Background()) })
 }
 
-func TestStartStopNVMeSelfHealingThread_Disabled(t *testing.T) {
-	core, _ := newTestCore(t, WithNVMeSelfHealingInterval(0))
+func TestStartSelfHealing_StartsNVMeDriver(t *testing.T) {
+	core, mocks := newTestCore(t, WithNVMeSelfHealingInterval(10*time.Second))
 
-	core.startNVMeSelfHealingThread(context.Background())
-	assert.Nil(t, core.nvmeSelfHealingTicker)
-	assert.Nil(t, core.nvmeSelfHealingChannel)
+	mocks.NVMeDriver.EXPECT().Start(
+		gomock.Any(), &storage.HealConfig{Interval: 10 * time.Second, Delay: 5 * time.Second},
+	).Return(nil)
 
-	assert.NotPanics(t, func() { core.stopNVMeSelfHealingThread(context.Background()) })
+	core.startSelfHealing(context.Background())
 }
 
-func TestStartStopNVMeSelfHealingThread_Enabled(t *testing.T) {
-	core, _ := newTestCore(t, WithNVMeSelfHealingInterval(1*time.Second))
-	resetNVMeSessionGlobals(t)
+func TestStartSelfHealing_NVMeDriverStartErrorIsNonFatal(t *testing.T) {
+	core, mocks := newTestCore(t)
 
-	core.startNVMeSelfHealingThread(context.Background())
-	require.NotNil(t, core.nvmeSelfHealingTicker)
-	require.NotNil(t, core.nvmeSelfHealingChannel)
+	mocks.NVMeDriver.EXPECT().Start(gomock.Any(), gomock.Any()).Return(errors.New("start boom"))
 
-	assert.NotPanics(t, func() { core.stopNVMeSelfHealingThread(context.Background()) })
+	assert.NotPanics(t, func() { core.startSelfHealing(context.Background()) })
+}
+
+func TestStopSelfHealing_StopsNVMeDriver(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.NVMeDriver.EXPECT().Stop()
+
+	assert.NotPanics(t, func() { core.stopSelfHealing(context.Background()) })
 }
 
 func TestPerformISCSISelfHealing_EmptyPublishedSessions(t *testing.T) {
@@ -345,32 +338,6 @@ func TestUpdateCHAPInfoForSessions_GetChapFailure_AccumulatesButContinues(t *tes
 	portalInfo, ierr := published.PortalInfo(portalGood)
 	require.NoError(t, ierr)
 	assert.Equal(t, "updated", portalInfo.Credentials.IscsiUsername)
-}
-
-func TestPerformNVMeSelfHealing_EmptyPublishedSessions(t *testing.T) {
-	core, _ := newTestCore(t)
-	resetNVMeSessionGlobals(t)
-
-	core.performNVMeSelfHealing(context.Background())
-}
-
-func TestPerformNVMeSelfHealing_NonEmpty_CallsExpectedSequence(t *testing.T) {
-	core, mocks := newTestCore(t)
-	resetNVMeSessionGlobals(t)
-	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: "nqn.test"}, []string{"192.0.2.30"})
-
-	mocks.NVMe.EXPECT().PopulateCurrentNVMeSessions(gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().InspectNVMeSessions(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return([]nvme.NVMeSubsystem{})
-
-	core.performNVMeSelfHealing(context.Background())
-}
-
-func TestFixNVMeSessions_NoSubsystems(t *testing.T) {
-	core, _ := newTestCore(t)
-	assert.NotPanics(t, func() {
-		core.fixNVMeSessions(context.Background(), time.Now().Add(time.Second), nil)
-	})
 }
 
 func TestPublicationReconciliation_Disabled_NoOp(t *testing.T) {

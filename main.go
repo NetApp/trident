@@ -49,7 +49,6 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/mount"
-	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -340,7 +339,6 @@ func newStorageProtocolClients() (csi.StorageProtocolClients, error) {
 		Mount:   mountClient,
 		FS:      filesystem.New(mountClient),
 		FCP:     fcpClient,
-		NVMe:    nvme.NewNVMeHandler(),
 		Devices: devices.New(),
 		Command: execCmd.NewCommand(),
 		OsUtils: osutils.New(),
@@ -620,7 +618,6 @@ func main() {
 				nodecore.WithNVMeSelfHealingInterval(*nvmeSelfHealingInterval),
 				nodecore.WithLegacyISCSI(hostProtocolClients.ISCSI),
 				nodecore.WithFCP(hostProtocolClients.FCP),
-				nodecore.WithNVMe(hostProtocolClients.NVMe),
 				nodecore.WithMount(hostProtocolClients.Mount),
 				nodecore.WithFilesystem(hostProtocolClients.FS),
 				nodecore.WithDevices(hostProtocolClients.Devices),

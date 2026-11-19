@@ -1452,6 +1452,51 @@ func IsConflictError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// busyDeviceError
+// ///////////////////////////////////////////////////////////////////////////
+
+type busyDeviceError struct {
+	inner   error
+	message string
+}
+
+func (e *busyDeviceError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *busyDeviceError) Unwrap() error { return e.inner }
+
+// BusyDeviceError represents a block device on the host
+// that cannot be removed due to being in use by another process, or
+// being a slave to another device.
+func BusyDeviceError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &busyDeviceError{message: message}
+	}
+	return &busyDeviceError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
+}
+
+func WrapWithBusyDeviceError(err error, message string, a ...any) error {
+	return &busyDeviceError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsBusyDeviceError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *busyDeviceError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // mustRetryError
 // ///////////////////////////////////////////////////////////////////////////
 
@@ -1997,4 +2042,41 @@ func IsSnapshotBusyError(err error) bool {
 	}
 	var errPtr *snapshotBusyError
 	return errors.As(err, &errPtr)
+}
+
+type PartialFormatError struct {
+	dev string
+	err error
+}
+
+func (e *PartialFormatError) Error() string {
+	return fmt.Sprintf("partial format on device %s: %v", e.dev, e.err)
+}
+
+func (e *PartialFormatError) Unwrap() error {
+	return e.err
+}
+
+// Dev returns the device path that may have been partially written.
+// The caller should pass this to device.ClearFormatting to wipe any
+// partial header before retrying.
+func (e *PartialFormatError) Dev() string {
+	return e.dev
+}
+
+func NewPartialFormatError(dev string, err error) *PartialFormatError {
+	return &PartialFormatError{
+		dev: dev,
+		err: err,
+	}
+}
+
+func IsPartialFormatError(err error) bool {
+	var target *PartialFormatError
+	return errors.As(err, &target)
+}
+
+func AsPartialFormatError(err error) (*PartialFormatError, bool) {
+	var target *PartialFormatError
+	return target, errors.As(err, &target)
 }

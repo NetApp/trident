@@ -36,6 +36,7 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	hostnvme "github.com/netapp/trident/pkg/host/storage/block/nvme"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/factory"
@@ -53,7 +54,6 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 type ConcurrentTridentOrchestrator struct {
@@ -3430,26 +3430,10 @@ func (o *ConcurrentTridentOrchestrator) AttachVolume(
 		var err error
 		switch publishInfo.SANType {
 		case sa.NVMe:
-			nvmeHandler := nvme.NewNVMeHandler()
-			err = nvmeHandler.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
-			if err != nil {
-				return err
-			}
-
-			// Cryptsetup format if necessary and map to host
-			var luksFormatted bool
-			var safeToFsFormat bool
-			luksFormatted, safeToFsFormat, err = nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
-				ctx, volumeName, publishInfo, map[string]string{},
-			)
-			if err != nil {
-				return err
-			}
-
-			// Format and mount if necessary
-			if err = nvmeHandler.EnsureVolumeFormattedAndMounted(
-				ctx, volumeName, mountpoint, publishInfo, luksFormatted, safeToFsFormat,
-			); err != nil {
+			// Docker supplies no secrets, and names the LUKS mapper after the volume.
+			driver := hostnvme.New(hostnvme.WithDriverContext(config.ContextDocker))
+			spec := hostnvme.NewAttachSpec(publishInfo, volumeName, mountpoint, nil)
+			if _, err = driver.Attach(ctx, volumeName, spec); err != nil {
 				return err
 			}
 

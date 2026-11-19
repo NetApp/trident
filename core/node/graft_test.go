@@ -4,6 +4,8 @@ package node
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -119,9 +121,20 @@ func TestCore_Graft_NVMeSuccess(t *testing.T) {
 	req.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
+	mocks.NVMeDriver.EXPECT().Graft(gomock.Any(), gomock.Any(), nvmeTargets(req.NVMeTargetIPs)).DoAndReturn(
+		func(ctx context.Context, state *models.VolumeAttachState, _ *models.GraftAttachmentRequest) (*models.VolumeAttachState, error) {
+			_, hasDeadline := ctx.Deadline()
+			assert.True(t, hasDeadline, "graft must be bounded")
+			assert.Equal(t, trackingInfo.NVMeSubsystemNQN, state.NVMeSubsystemNQN)
+			grafted := *state
+			grafted.BlockAttachInfo.Devices = models.BlockDeviceStack{{ID: "ns", Type: models.BlockDeviceDisk, Name: "nvme0n2"}}
+			return &grafted, nil
+		})
+	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			assert.Equal(t, "/dev/nvme0n2", publishInfo.DevicePath)
+			return nil
+		})
 
 	resp, err := core.Graft(context.Background(), "vol1", req)
 
@@ -140,7 +153,7 @@ func TestCore_Graft_NVMeTargetIPsOnlyUsesTrackedIdentity(t *testing.T) {
 	req.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NVMeDriver.EXPECT().Graft(gomock.Any(), gomock.Any(), nvmeTargets(req.NVMeTargetIPs)).DoAndReturn(echoGraftedState)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
 		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
 			assert.Equal(t, trackedNQN, publishInfo.NVMeSubsystemNQN)
@@ -148,7 +161,6 @@ func TestCore_Graft_NVMeTargetIPsOnlyUsesTrackedIdentity(t *testing.T) {
 			assert.Equal(t, req.NVMeTargetIPs, publishInfo.NVMeTargetIPs)
 			return nil
 		})
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
 
 	resp, err := core.Graft(context.Background(), "vol1", req)
 
@@ -490,3 +502,25 @@ func TestDecryptCHAPAccessInfo_Success(t *testing.T) {
 	assert.Equal(t, "targetUser", accessInfo.IscsiTargetUsername)
 	assert.Equal(t, "targetSecret", accessInfo.IscsiTargetSecret)
 }
+
+// echoGraftedState is a driver Graft that finds the namespace where the tracking file says it is.
+func echoGraftedState(
+	_ context.Context, state *models.VolumeAttachState, _ *models.GraftAttachmentRequest,
+) (*models.VolumeAttachState, error) {
+	return state, nil
+}
+
+// nvmeTargets matches a graft or prune request whose NVMe target IPs equal targetIPs.
+type nvmeTargets []string
+
+func (m nvmeTargets) Matches(x any) bool {
+	switch req := x.(type) {
+	case *models.GraftAttachmentRequest:
+		return slices.Equal(req.NVMeTargetIPs, m)
+	case *models.PruneAttachmentRequest:
+		return slices.Equal(req.NVMeTargetIPs, m)
+	}
+	return false
+}
+
+func (m nvmeTargets) String() string { return fmt.Sprintf("has NVMe target IPs %v", []string(m)) }

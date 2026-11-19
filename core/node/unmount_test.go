@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestUnmount_EmptyVolume_ReturnsError(t *testing.T) {
@@ -45,6 +46,7 @@ func TestUnmount_AcquiresVolumeLock_SerializesConcurrentCalls(t *testing.T) {
 
 	core.volumeLocks.Lock(volume)
 
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volume).Return(nil, errors.New("read failed"))
 	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, errors.New("stat failed"))
 
 	done := make(chan error, 1)
@@ -70,6 +72,7 @@ func TestUnmount_AcquiresVolumeLock_SerializesConcurrentCalls(t *testing.T) {
 func TestUnmount_DelegatesToUnmountGeneric(t *testing.T) {
 	core, mocks := newTestCore(t)
 
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(sampleTrackingInfo(ISCSI), nil)
 	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
 	mocks.Mount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), "/target").Return(true, nil)
 	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
@@ -77,6 +80,124 @@ func TestUnmount_DelegatesToUnmountGeneric(t *testing.T) {
 
 	err := core.Unmount(context.Background(), "vol1", UnmountRequest{TargetPath: "/target"})
 	assert.NoError(t, err)
+}
+
+func TestUnmount_NoTrackingInfo_FallsBackToUnmountGeneric(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(nil, errors.NotFoundError("not found"))
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+	mocks.Mount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), "/target").Return(true, nil)
+	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+	mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(errors.NotFoundError("not found"))
+
+	err := core.Unmount(context.Background(), "vol1", UnmountRequest{TargetPath: "/target"})
+	assert.NoError(t, err)
+}
+
+func TestUnmount_NVMe_UnmountsThroughDriver(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(sampleTrackingInfo(NVMe), nil)
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, nil)
+	mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", &models.VolumeUnmountSpec{MountPoint: "/target"}).Return(nil)
+	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+	mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+	// The generic mount checks must not be used for NVMe.
+
+	err := core.Unmount(context.Background(), "vol1", UnmountRequest{TargetPath: "/target"})
+	assert.NoError(t, err)
+}
+
+func TestUnmountVolume_DispatchesByProtocol(t *testing.T) {
+	t.Run("NVMe uses the driver", func(t *testing.T) {
+		core, mocks := newTestCore(t)
+		mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+		mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+		mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+		mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+		assert.NoError(t, core.unmountVolume(context.Background(), "vol1", "/target", NVMe))
+	})
+	t.Run("other protocols use the generic path", func(t *testing.T) {
+		core, mocks := newTestCore(t)
+		mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+		mocks.Mount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), "/target").Return(true, nil)
+		mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+		mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+		assert.NoError(t, core.unmountVolume(context.Background(), "vol1", "/target", FCP))
+	})
+}
+
+func TestUnmountNVMeVolume_TargetPathGone_ReturnsNilSuccess(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, os.ErrNotExist)
+	// The driver, DeleteResourceAtPath and RemovePublishedPath must not be reached.
+
+	err := core.unmountVolume(context.Background(), "vol1", "/target", NVMe)
+	assert.NoError(t, err)
+}
+
+func TestUnmountNVMeVolume_IsLikelyDirOtherError_Wrapped(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(false, errors.New("permission denied"))
+
+	err := core.unmountVolume(context.Background(), "vol1", "/target", NVMe)
+	require.Error(t, err)
+	assert.True(t, errors.IsInternalError(err))
+	assert.Contains(t, err.Error(), "could not check if the target path")
+	assert.Contains(t, err.Error(), "permission denied")
+}
+
+func TestUnmountNVMeVolume_DriverError_ReturnedWithoutDeletingTargetOrPublishedPath(t *testing.T) {
+	core, mocks := newTestCore(t)
+	unmountErr := errors.InvalidInputError("unable to unmount volume; device busy")
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+	mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", gomock.Any()).Return(unmountErr)
+	// DeleteResourceAtPath/RemovePublishedPath must not be reached.
+
+	err := core.unmountVolume(context.Background(), "vol1", "/target", NVMe)
+	assert.Equal(t, unmountErr, err)
+}
+
+func TestUnmountNVMeVolume_DeleteResourceAtPathError_IsBestEffort(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+	mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+	mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(errors.New("resource still busy"))
+	mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+	err := core.unmountVolume(context.Background(), "vol1", "/target", NVMe)
+	assert.NoError(t, err)
+}
+
+func TestUnmountNVMeVolume_RemovePublishedPathErrors(t *testing.T) {
+	t.Run("not found is swallowed", func(t *testing.T) {
+		core, mocks := newTestCore(t)
+		mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+		mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+		mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+		mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(errors.NotFoundError("not found"))
+
+		assert.NoError(t, core.unmountVolume(context.Background(), "vol1", "/target", NVMe))
+	})
+	t.Run("other error is an internal error", func(t *testing.T) {
+		core, mocks := newTestCore(t)
+		mocks.OsUtils.EXPECT().IsLikelyDir("/target").Return(true, nil)
+		mocks.NVMeDriver.EXPECT().Unmount(gomock.Any(), "vol1", gomock.Any()).Return(nil)
+		mocks.OsUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), "/target").Return(nil)
+		mocks.NodeHelper.EXPECT().RemovePublishedPath(gomock.Any(), "vol1", "/target").Return(errors.New("disk write error"))
+
+		err := core.unmountVolume(context.Background(), "vol1", "/target", NVMe)
+		require.Error(t, err)
+		assert.True(t, errors.IsInternalError(err))
+		assert.Contains(t, err.Error(), "could not remove published path")
+	})
 }
 
 func TestUnmountGeneric_TargetPathGone_ReturnsNilSuccess(t *testing.T) {

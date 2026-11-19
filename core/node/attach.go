@@ -10,13 +10,13 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
+	hostnvme "github.com/netapp/trident/pkg/host/storage/block/nvme"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 
 var (
 	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_core")
-	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_core")
+	betweenAttachAndLUKSPassphrase = hostnvme.BetweenAttachAndLUKSPassphrase
 	beforeTrackingInfoWrite        = fiji.Register("beforeTrackingInfoWrite", "node_core")
 
 	// afterLuksMapBeforeFormatAndMount fires after the LUKS format/map lease section completed and the Lease was
@@ -78,6 +78,8 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 		return fmt.Errorf("failed to create distributed lock for volume %s: %v", volumeID, err)
 	}
 
+	// attachState is what the NVMe driver established; the tracking write below persists it.
+	var attachState *models.VolumeAttachState
 	trackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		PublishedPaths:    map[string]struct{}{},
@@ -112,6 +114,7 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 			VolumePublishInfo: *publishInfo, // This may be healed during attach. Update it to the latest value.
 			PublishedPaths:    map[string]struct{}{},
 		}
+		trackingInfo.RecordAttachState(attachState)
 		if fileErr := c.nodeHelper.WriteTrackingInfo(ctx, volumeID, trackingInfo); fileErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID":          volumeID,
@@ -134,7 +137,9 @@ func (c *Core) Attach(ctx context.Context, volumeID string, req AttachRequest) (
 	case SMB:
 		err = c.attachSMBVolume(ctx, volumeID, publishInfo)
 	case NVMe:
-		err = c.attachNVMeVolume(ctx, volumeID, publishInfo, req.Secrets)
+		// NVMe stage never mounts at the staging path: publish mounts the device at each target path.
+		spec := hostnvme.NewAttachSpec(publishInfo, publishInfo.InternalID, "", req.Secrets)
+		attachState, err = c.nvmeDriver.Attach(ctx, volumeID, spec)
 	case ISCSI:
 		err = c.attachISCSIVolume(ctx, volumeID, publishInfo, req.Secrets, locker)
 	case FCP:
@@ -394,132 +399,4 @@ func (c *Core) ensureAttachFCPVolume(
 	}
 
 	return mpathSize, nil
-}
-
-func (c *Core) attachNVMeVolume(
-	ctx context.Context, volume string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-) (err error) {
-	Logc(ctx).Debug(">>>> attachNVMeVolume")
-	defer Logc(ctx).Debug("<<<< attachNVMeVolume")
-
-	release, err := c.acquireLimiter(ctx, attachNVMeVolumeKey)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	// Acquire self-healing read lock to allow parallel operations
-	nvmeNodeOperationWaitingCount.Add(1)
-	nvmeSelfHealingLock.RLock()
-	defer nvmeSelfHealingLock.RUnlock()
-	nvmeNodeOperationWaitingCount.Add(-1)
-
-	addedNamespace, err := c.registerNVMeSessionForAttach(ctx, publishInfo)
-	if err != nil {
-		return err
-	}
-	// Once the volume is formatted and mounted, the namespace is in use on this node. A later failure
-	// leaves it published, so self-healing keeps its paths up and NodeUnstageVolume (which reads the
-	// tracking info Attach always writes) tears it down. Disconnecting the subsystem here would pull the
-	// device out from under the mount.
-	mounted := false
-	defer func() {
-		if addedNamespace && err != nil && !mounted {
-			c.removePublishedNVMeSessionAfterAttachError(ctx, publishInfo)
-		}
-	}()
-
-	if err = c.nvme.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout); err != nil {
-		return err
-	}
-
-	// The passphrase name is updated only for a new volume that has never had it set.
-	if err = c.recordInitialLUKSPassphraseName(ctx, volume, publishInfo, secrets); err != nil {
-		return err
-	}
-
-	// Cryptsetup format if necessary and map to host
-	luksFormatted, safeToFormat, err := c.nvme.EnsureCryptsetupFormattedAndMappedOnHost(
-		ctx, publishInfo.InternalID, publishInfo, secrets,
-	)
-	if err != nil {
-		return err
-	}
-
-	// Format and mount if necessary
-	if err = c.nvme.EnsureVolumeFormattedAndMounted(
-		ctx, publishInfo.InternalID, "", publishInfo, luksFormatted, safeToFormat,
-	); err != nil {
-		return err
-	}
-	mounted = true
-
-	if convert.ToBool(publishInfo.LUKSEncryption) {
-		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
-			return err
-		}
-		luksDevice := luks.NewDevice(publishInfo.DevicePath, publishInfo.InternalID, c.cmd, c.dev)
-
-		err = ensureLUKSVolumePassphrase(ctx, luksDevice, volume, secrets, c.controller)
-		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
-		}
-	}
-
-	return nil
-}
-
-// registerNVMeSessionForAttach makes attach ownership visible before connect work begins. It
-// reports whether this call published the namespace, so a failed attach removes only what it
-// added; the published session tracks which target IPs that namespace claimed.
-func (c *Core) registerNVMeSessionForAttach(
-	ctx context.Context, publishInfo *models.VolumePublishInfo,
-) (bool, error) {
-	lockContext := "registerNVMeSessionForAttach"
-	subsystemLockID := nvmeSubsystemOperationLockID(publishInfo.NVMeSubsystemNQN)
-	if !attemptLock(ctx, lockContext, subsystemLockID, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, subsystemLockID)
-		return false, errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	defer locks.Unlock(ctx, lockContext, subsystemLockID)
-
-	sessionLockContext := "registerNVMeSessionForAttach.AddSession"
-	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
-		return false, errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	defer locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
-
-	sessionData := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]
-	addedNamespace := sessionData == nil || !sessionData.Namespaces[publishInfo.NVMeNamespaceUUID]
-	c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
-	return addedNamespace, nil
-}
-
-func (c *Core) removePublishedNVMeSessionAfterAttachError(
-	ctx context.Context, publishInfo *models.VolumePublishInfo,
-) {
-	subsystemLockContext := "removePublishedNVMeSessionAfterAttachError"
-	subsystemLockID := nvmeSubsystemOperationLockID(publishInfo.NVMeSubsystemNQN)
-	if !attemptLock(ctx, subsystemLockContext, subsystemLockID, sharedLocksNodeLockTimeout) {
-		Logc(ctx).Warn("NVMe session cleanup waited longer than expected for the subsystem lock.")
-	}
-
-	sessionLockContext := "removePublishedNVMeSessionAfterAttachError.RemoveSession"
-	if !attemptLock(ctx, sessionLockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		Logc(ctx).Warn("NVMe session cleanup waited longer than expected for the session lock.")
-	}
-
-	requiresDisconnectCheck := c.nvme.RemovePublishedNVMeSession(
-		&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	)
-	locks.Unlock(ctx, sessionLockContext, nvmeSelfHealingSessionLock)
-	locks.Unlock(ctx, subsystemLockContext, subsystemLockID)
-
-	if requiresDisconnectCheck {
-		nvmeSubsys := c.nvme.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
-		if err := c.disconnectNVMeSubsystemForAttachCleanup(ctx, nvmeSubsys, publishInfo); err != nil {
-			Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check after attach cleanup.")
-		}
-	}
 }

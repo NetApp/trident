@@ -11,6 +11,7 @@ import (
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
@@ -21,7 +22,6 @@ import (
 	"github.com/netapp/trident/utils/limiter"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
-	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -96,10 +96,6 @@ type Core struct {
 	// same AES key the CSI frontend was configured with.
 	aesKey []byte
 
-	// nvmeSelfHealingInterval gates whether disconnectNVMeSubsystemIfNeeded honors the
-	// self-healing "disconnect" hint. Zero/negative means self-healing is disabled.
-	nvmeSelfHealingInterval time.Duration
-
 	// iSCSISelfHealingInterval/WaitTime gate the periodic iSCSI self-healing sweep.
 	// Zero/negative interval means self-healing is disabled.
 	iSCSISelfHealingInterval time.Duration
@@ -107,8 +103,9 @@ type Core struct {
 	iSCSISelfHealingTicker   *time.Ticker
 	iSCSISelfHealingChannel  chan struct{}
 
-	nvmeSelfHealingTicker  *time.Ticker
-	nvmeSelfHealingChannel chan struct{}
+	// nvmeSelfHealingInterval is the period of the NVMe driver's self-healing loop.
+	// Zero/negative means self-healing is disabled.
+	nvmeSelfHealingInterval time.Duration
 
 	// enableForceDetach gates the node publication reconciliation loop, which may force-detach
 	// volumes with no matching publication record on the Trident controller.
@@ -120,11 +117,13 @@ type Core struct {
 	fcp     fcp.FCP
 	cmd     exec.Command
 	dev     devices.Devices
-	nvme    nvme.NVMeInterface
 	iscsi   legacyiscsi.ISCSI
 	fs      filesystem.Filesystem
 	mount   mount.Mount
 	osutils osutils.Utils
+
+	// nvmeDriver is the NVMe host storage stack. NewCore builds the default one if no option sets it.
+	nvmeDriver storage.Protocol
 }
 
 type Option func(*Core)
@@ -135,9 +134,9 @@ func WithFCP(f fcp.FCP) Option {
 	}
 }
 
-func WithNVMe(n nvme.NVMeInterface) Option {
+func WithNVMeDriver(d storage.Protocol) Option {
 	return func(core *Core) {
-		core.nvme = n
+		core.nvmeDriver = d
 	}
 }
 
@@ -262,6 +261,9 @@ func NewCore(opts ...Option) *Core {
 	}
 	for _, opt := range opts {
 		opt(core)
+	}
+	if core.nvmeDriver == nil {
+		core.nvmeDriver = newNVMeDriver(core)
 	}
 
 	// Initialize self-healing maps.

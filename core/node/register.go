@@ -16,6 +16,7 @@ import (
 
 	"github.com/netapp/trident/frontend/csi/tridentcontroller"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
 	legacyiscsi "github.com/netapp/trident/utils/iscsi"
@@ -184,16 +185,18 @@ func (c *Core) buildNodeInfo(ctx context.Context, warnDiscovery bool) (*models.N
 	}
 
 	var nvmeNQN string
-	isNVMeActive, err := c.nvme.NVMeActiveOnHost(ctx)
-	if err != nil {
+	isNVMeActive := false
+	if err := c.nvmeDriver.PreChecks(ctx); err == nil {
+		isNVMeActive = true
+	} else if errors.Is(err, storage.ErrTransportNotLoaded) {
+		logDiscoveryIssue(ctx, nil, "NVMe is not active on this host.", warnDiscovery)
+	} else {
 		unknownServices = append(unknownServices, "nvme")
 		logDiscoveryIssue(ctx, err, "Error discovering NVMe service on host.", warnDiscovery)
-	} else if !isNVMeActive {
-		logDiscoveryIssue(ctx, nil, "NVMe is not active on this host.", warnDiscovery)
 	}
 	if isNVMeActive {
 		services = append(services, "nvme")
-		nvmeNQN, err = c.nvme.GetHostNqn(ctx)
+		nvmeNQN, err = c.nvmeDriver.HostID(ctx)
 		if err != nil {
 			logDiscoveryIssue(ctx, err, "Problem getting Host NQN.", warnDiscovery)
 		} else {

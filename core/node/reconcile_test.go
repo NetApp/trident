@@ -12,7 +12,6 @@ import (
 
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 // This file's tests must not use t.Parallel(); see core_test.go for why.
@@ -46,18 +45,15 @@ func TestCore_ReconcileAttachment_NVMePrunesThenGrafts(t *testing.T) {
 	desired := []string{"192.0.2.10", "192.0.2.11"}
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil).Times(2)
-	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
-		Return(&nvme.NVMeSubsystem{}, nil)
+	mocks.NVMeDriver.EXPECT().Prune(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NVMeDriver.EXPECT().Graft(gomock.Any(), gomock.Any(), nvmeTargets(desired)).DoAndReturn(echoGraftedState)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
 		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
 			assert.Equal(t, trackingInfo.NVMeSubsystemNQN, publishInfo.NVMeSubsystemNQN)
 			assert.Equal(t, desired, publishInfo.NVMeTargetIPs)
 			return nil
 		})
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
 
 	err := core.ReconcileAttachment(context.Background(), "vol1", ReconcileAttachmentRequest{
 		TargetIPs: desired,
@@ -72,14 +68,12 @@ func TestCore_ReconcileAttachment_EmptyTargetSetPrunesWithoutGraft(t *testing.T)
 	trackingInfo.NVMeTargetIPs = []string{"192.0.2.10", "192.0.2.11"}
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
-	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
-		Return(&nvme.NVMeSubsystem{}, nil)
+	mocks.NVMeDriver.EXPECT().Prune(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
 		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
 			assert.Empty(t, publishInfo.NVMeTargetIPs)
 			return nil
 		})
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
 
 	err := core.ReconcileAttachment(context.Background(), "vol1", ReconcileAttachmentRequest{})
 
@@ -93,18 +87,15 @@ func TestCore_ReconcileAttachment_MissingSubsystemPrunesThenGrafts(t *testing.T)
 	desired := []string{"192.0.2.11"}
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil).Times(2)
-	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
-		Return(nil, errors.NotFoundError("no subsystem paths found"))
+	mocks.NVMeDriver.EXPECT().Prune(gomock.Any(), gomock.Any(), nvmeTargets(desired)).Return(nil)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).DoAndReturn(
 		func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
 			assert.Equal(t, trackingInfo.NVMeSubsystemNQN, publishInfo.NVMeSubsystemNQN)
 			assert.Equal(t, desired, publishInfo.NVMeTargetIPs)
 			return nil
 		})
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NVMeDriver.EXPECT().Graft(gomock.Any(), gomock.Any(), nvmeTargets(desired)).DoAndReturn(echoGraftedState)
 	mocks.NodeHelper.EXPECT().UpdatePublishInfo(gomock.Any(), "vol1", gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(&publishedNVMeSessions, gomock.Any())
 
 	err := core.ReconcileAttachment(context.Background(), "vol1", ReconcileAttachmentRequest{
 		TargetIPs: desired,
@@ -118,8 +109,8 @@ func TestCore_ReconcileAttachment_PruneErrorSkipsGraft(t *testing.T) {
 	trackingInfo := sampleTrackingInfo(NVMe)
 
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
-	mocks.NVMe.EXPECT().GetNVMeSubsystem(gomock.Any(), trackingInfo.NVMeSubsystemNQN).
-		Return(nil, errors.New("subsystem lookup failed"))
+	mocks.NVMeDriver.EXPECT().Prune(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(errors.New("subsystem lookup failed"))
 
 	err := core.ReconcileAttachment(context.Background(), "vol1", ReconcileAttachmentRequest{
 		TargetIPs: []string{"192.0.2.11"},

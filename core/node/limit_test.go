@@ -19,12 +19,11 @@ func TestInitializeLimiters_CreatesOneLimiterPerWorkflowAndProtocol(t *testing.T
 	require.NoError(t, core.initializeLimiters(context.Background()))
 
 	expectedLimiters := []string{
-		attachNFSVolumeKey, attachSMBVolumeKey, attachISCSIVolumeKey, attachFCPVolumeKey, attachNVMeVolumeKey,
-		detachNFSVolumeKey, detachSMBVolumeKey, detachISCSIVolumeKey, detachFCPVolumeKey, detachNVMeVolumeKey,
-		mountNFSVolumeKey, mountSMBVolumeKey, mountISCSIVolumeKey, mountFCPVolumeKey, mountNVMeVolumeKey,
+		attachNFSVolumeKey, attachSMBVolumeKey, attachISCSIVolumeKey, attachFCPVolumeKey,
+		detachNFSVolumeKey, detachSMBVolumeKey, detachISCSIVolumeKey, detachFCPVolumeKey,
+		mountNFSVolumeKey, mountSMBVolumeKey, mountISCSIVolumeKey, mountFCPVolumeKey,
 		unmountVolumeKey, expandVolumeKey,
 		graftISCSIAttachmentKey, pruneISCSIAttachmentKey,
-		graftNVMeAttachmentKey, pruneNVMeAttachmentKey,
 	}
 
 	for _, name := range expectedLimiters {

@@ -15,37 +15,31 @@ const (
 	attachSMBVolumeKey   = "AttachSMBVolume"
 	attachISCSIVolumeKey = "AttachISCSIVolume"
 	attachFCPVolumeKey   = "AttachFCPVolume"
-	attachNVMeVolumeKey  = "AttachNVMeVolume"
 
 	maxAttachNFSVolumeOperations   = 10
 	maxAttachSMBVolumeOperations   = 10
 	maxAttachISCSIVolumeOperations = 5
 	maxAttachFCPVolumeOperations   = 5
-	maxAttachNVMeVolumeOperations  = 5
 
 	detachNFSVolumeKey   = "DetachNFSVolume"
 	detachSMBVolumeKey   = "DetachSMBVolume"
 	detachISCSIVolumeKey = "DetachISCSIVolume"
 	detachFCPVolumeKey   = "DetachFCPVolume"
-	detachNVMeVolumeKey  = "DetachNVMeVolume"
 
 	maxDetachNFSVolumeOperations   = 10
 	maxDetachSMBVolumeOperations   = 10
 	maxDetachISCSIVolumeOperations = 10
 	maxDetachFCPVolumeOperations   = 10
-	maxDetachNVMeVolumeOperations  = 10
 
 	mountNFSVolumeKey   = "MountNFSVolume"
 	mountSMBVolumeKey   = "MountSMBVolume"
 	mountISCSIVolumeKey = "MountISCSIVolume"
 	mountFCPVolumeKey   = "MountFCPVolume"
-	mountNVMeVolumeKey  = "MountNVMeVolume"
 
 	maxMountNFSVolumeOperations   = 10
 	maxMountSMBVolumeOperations   = 10
 	maxMountISCSIVolumeOperations = 10
 	maxMountFCPVolumeOperations   = 10
-	maxMountNVMeVolumeOperations  = 10
 
 	unmountVolumeKey = "UnmountVolume"
 
@@ -57,13 +51,9 @@ const (
 
 	graftISCSIAttachmentKey = "GraftISCSIAttachment"
 	pruneISCSIAttachmentKey = "PruneISCSIAttachment"
-	graftNVMeAttachmentKey  = "GraftNVMeAttachment"
-	pruneNVMeAttachmentKey  = "PruneNVMeAttachment"
 
 	maxGraftISCSIAttachmentOperations = 10
 	maxPruneISCSIAttachmentOperations = 10
-	maxGraftNVMeAttachmentOperations  = 10
-	maxPruneNVMeAttachmentOperations  = 10
 )
 
 func (c *Core) initializeLimiters(ctx context.Context) error {
@@ -75,27 +65,22 @@ func (c *Core) initializeLimiters(ctx context.Context) error {
 		attachSMBVolumeKey:   maxAttachSMBVolumeOperations,
 		attachISCSIVolumeKey: maxAttachISCSIVolumeOperations,
 		attachFCPVolumeKey:   maxAttachFCPVolumeOperations,
-		attachNVMeVolumeKey:  maxAttachNVMeVolumeOperations,
 
 		detachNFSVolumeKey:   maxDetachNFSVolumeOperations,
 		detachSMBVolumeKey:   maxDetachSMBVolumeOperations,
 		detachISCSIVolumeKey: maxDetachISCSIVolumeOperations,
 		detachFCPVolumeKey:   maxDetachFCPVolumeOperations,
-		detachNVMeVolumeKey:  maxDetachNVMeVolumeOperations,
 
 		mountNFSVolumeKey:   maxMountNFSVolumeOperations,
 		mountSMBVolumeKey:   maxMountSMBVolumeOperations,
 		mountISCSIVolumeKey: maxMountISCSIVolumeOperations,
 		mountFCPVolumeKey:   maxMountFCPVolumeOperations,
-		mountNVMeVolumeKey:  maxMountNVMeVolumeOperations,
 
 		unmountVolumeKey: maxUnmountVolumeOperations,
 		expandVolumeKey:  maxExpandVolumeOperations,
 
 		graftISCSIAttachmentKey: maxGraftISCSIAttachmentOperations,
 		pruneISCSIAttachmentKey: maxPruneISCSIAttachmentOperations,
-		graftNVMeAttachmentKey:  maxGraftNVMeAttachmentOperations,
-		pruneNVMeAttachmentKey:  maxPruneNVMeAttachmentOperations,
 	}
 
 	sharedMap := make(map[string]limiter.Limiter, len(limiterSizes))

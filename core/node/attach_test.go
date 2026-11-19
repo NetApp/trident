@@ -4,6 +4,7 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -12,10 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	hostnvme "github.com/netapp/trident/pkg/host/storage/block/nvme"
 	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 func TestAttach_EmptyVolume(t *testing.T) {
@@ -549,270 +550,124 @@ func TestAttachFCPVolume_GratuitousResizeFailureIsSwallowed(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// attachNVMe runs Core.Attach for an NVMe volume and returns the tracking info of its final write.
+func attachNVMe(
+	core *Core, mocks *testMocks, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+) (*models.VolumeTrackingInfo, error) {
+	var tracked *models.VolumeTrackingInfo
+	mocks.NodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), "test-volume", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, trackingInfo *models.VolumeTrackingInfo) error {
+			tracked = trackingInfo
+			return nil
+		}).Times(2)
+	err := core.Attach(context.Background(), "test-volume", AttachRequest{PublishInfo: publishInfo, Secrets: secrets})
+	return tracked, err
+}
+
 func TestAttachNVMeVolume_Success(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
+	publishInfo.DevicePath = ""
+	publishInfo.FilesystemType = ""
+	devices := models.BlockDeviceStack{{ID: publishInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk, Name: "nvme0n1"}}
 
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), publishInfo.InternalID, publishInfo, gomock.Nil(),
-	).Return(false, false, nil)
-	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-		gomock.Any(), publishInfo.InternalID, "", publishInfo, false, false,
-	).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo)
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", &models.VolumeAttachSpec{
+		VolumeAccessInfo: publishInfo.VolumeAccessInfo,
+		InternalID:       publishInfo.InternalID,
+		VolumeMode:       publishInfo.VolumeMode,
+	}).Return(
+		&models.VolumeAttachState{
+			BlockAttachInfo: models.BlockAttachInfo{Devices: devices},
+			DevicePath:      "/dev/nvme0n1",
+			Filesystem:      "ext4",
+		}, nil)
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
+	tracked, err := attachNVMe(core, mocks, publishInfo, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "/dev/nvme0n1", tracked.DevicePath, "the tracking write records the device path")
+	assert.Equal(t, "ext4", tracked.FilesystemType, "the tracking write records the resolved filesystem")
+	assert.Equal(t, devices, tracked.Devices, "the tracking write records the device stack")
+}
+
+// Stage never mounts: the attach spec carries no mount point.
+func TestAttachNVMeVolume_SpecHasNoMountPoint(t *testing.T) {
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(NVMe)
+	publishInfo.GlobalMount = "/var/lib/trident/staging/test-volume"
+
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, spec *models.VolumeAttachSpec) (*models.VolumeAttachState, error) {
+			assert.Empty(t, spec.MountPoint)
+			return &models.VolumeAttachState{}, nil
+		})
+
+	_, err := attachNVMe(core, mocks, publishInfo, nil)
 	assert.NoError(t, err)
 }
 
-func TestAttachNVMeVolume_ProtectsSubsystemDuringAttachAndCryptsetup(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	unstagePublishInfo := samplePublishInfo(NVMe)
-	unstagePublishInfo.NVMeSubsystemNQN = publishInfo.NVMeSubsystemNQN
-	unstagePublishInfo.NVMeNamespaceUUID = "departing-namespace"
-	subsystem := &fakeNVMeSubsystem{}
-
-	gomock.InOrder(
-		mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-			Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-				sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-				sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
-			}),
-		mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).
-			DoAndReturn(func(context.Context, *models.VolumePublishInfo, time.Duration) error {
-				err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), subsystem, unstagePublishInfo)
-				require.NoError(t, err)
-				assert.Zero(t, subsystem.disconnectCalls)
-				return nil
-			}),
-		mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-			gomock.Any(), publishInfo.InternalID, publishInfo, publishInfo.Secrets,
-		).DoAndReturn(func(
-			context.Context, string, *models.VolumePublishInfo, map[string]string,
-		) (bool, bool, error) {
-			err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), subsystem, unstagePublishInfo)
-			require.NoError(t, err)
-			assert.Zero(t, subsystem.disconnectCalls)
-			return false, false, nil
-		}),
-		mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-			gomock.Any(), publishInfo.InternalID, "", publishInfo, false, false,
-		).Return(nil),
-	)
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-	require.NoError(t, err)
-	assert.Zero(t, subsystem.disconnectCalls)
-	assert.Equal(t, 1, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-}
-
 func TestAttachNVMeVolume_AttachError(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	unstagePublishInfo := samplePublishInfo(NVMe)
-	unstagePublishInfo.NVMeSubsystemNQN = publishInfo.NVMeSubsystemNQN
-	unstagePublishInfo.NVMeNamespaceUUID = "departing-namespace"
-	subsystem := &fakeNVMeSubsystem{}
 
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-			sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
-		})
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(context.Context, *models.VolumePublishInfo, time.Duration) error {
-			err := core.disconnectNVMeSubsystemIfNeeded(context.Background(), subsystem, unstagePublishInfo)
-			require.NoError(t, err)
-			assert.Zero(t, subsystem.disconnectCalls)
-			return errors.New("nvme connect failed")
-		})
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).DoAndReturn(func(sessions *nvme.NVMeSessions, subsystemNQN, namespaceUUID string) bool {
-		sessions.RemoveNamespaceFromSession(subsystemNQN, namespaceUUID)
-		sessions.RemoveNVMeSession(subsystemNQN)
-		return true
-	})
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).Return(
+		&models.VolumeAttachState{}, errors.New("nvme connect failed"))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
+	_, err := attachNVMe(core, mocks, publishInfo, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "nvme connect failed")
-	assert.Zero(t, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-	assert.Equal(t, 1, subsystem.disconnectCalls)
 }
 
-func TestAttachNVMeVolume_CryptsetupError(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
+func TestAttachNVMeVolume_PassphraseErrorReturnsAttachState(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeNVMeSubsystem{}
+	devices := models.BlockDeviceStack{{ID: publishInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk, Name: "nvme0n1"}}
 
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-			sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
-		})
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(false, false, errors.New("cryptsetup failed"))
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).DoAndReturn(func(sessions *nvme.NVMeSessions, subsystemNQN, namespaceUUID string) bool {
-		sessions.RemoveNamespaceFromSession(subsystemNQN, namespaceUUID)
-		sessions.RemoveNVMeSession(subsystemNQN)
-		return true
-	})
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).Return(
+		&models.VolumeAttachState{
+			BlockAttachInfo: models.BlockAttachInfo{Devices: devices},
+			DevicePath:      "/dev/nvme0n1",
+			Filesystem:      "ext4",
+		},
+		fmt.Errorf("attach: %w", hostnvme.NewLUKSPassphraseError(errors.New("could not set LUKS volume passphrase; boom"))))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
+	tracked, err := attachNVMe(core, mocks, publishInfo, nil)
+
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cryptsetup failed")
-	assert.Zero(t, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-	assert.Equal(t, 1, subsystem.disconnectCalls)
+	assert.True(t, hostnvme.IsLUKSPassphraseError(err))
+	assert.Contains(t, err.Error(), "could not set LUKS volume passphrase")
+	assert.Equal(t, devices, tracked.Devices, "state is recorded on error so unstage can clean up")
+	assert.Equal(t, "/dev/nvme0n1", tracked.DevicePath)
 }
 
-func TestAttachNVMeVolume_CryptsetupErrorPreservesExistingSession(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
+// The tracking info is written on every attach, including one that fails after the device is attached.
+func TestAttach_NVMeWritesAttachStateToTrackingInfoOnError(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.NVMeTargetIPs = []string{"existing-ip", "added-ip"}
-	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: publishInfo.NVMeSubsystemNQN}, nil)
-	publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN].AddTargetIP("existing-ip")
-	publishedNVMeSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID, nil)
+	devices := models.BlockDeviceStack{{ID: publishInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk, Name: "nvme3n1"}}
 
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			sessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: info.NVMeSubsystemNQN}, info.NVMeTargetIPs)
-			sessions.AddNamespaceToSession(info.NVMeSubsystemNQN, info.NVMeNamespaceUUID, nil)
+	var writes []*models.VolumeTrackingInfo
+	mocks.NodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), "test-volume", gomock.Any()).
+		Times(2).
+		DoAndReturn(func(_ context.Context, _ string, ti *models.VolumeTrackingInfo) error {
+			writes = append(writes, ti)
+			return nil
 		})
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(false, false, errors.New("cryptsetup failed"))
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).Return(
+		&models.VolumeAttachState{
+			BlockAttachInfo: models.BlockAttachInfo{Devices: devices},
+			DevicePath:      "/dev/dm-7",
+			Filesystem:      "xfs",
+		},
+		hostnvme.NewLUKSPassphraseError(errors.New("could not set LUKS volume passphrase; boom")))
 
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cryptsetup failed")
-	assert.Equal(t, 1, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-
-	// This attach did not publish the namespace, so it owns nothing to roll back and the
-	// namespace keeps the target IPs it is published with.
-	sessionData := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]
-	require.NotNil(t, sessionData)
-	assert.Equal(t, []string{"existing-ip", "added-ip"}, sessionData.NVMeTargetIPs)
-}
-
-// NVMeTargetIPs is a subsystem-wide set, so "this attach added the IP" does not mean "only this
-// attach needs it". A second volume can publish the same IP while this attach is still connecting;
-// rolling back must not strip a target IP that the second volume still claims.
-func TestAttachNVMeVolume_RollbackKeepsTargetIPClaimedByAnotherNamespace(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, mocks := newTestCore(t)
-	handler := nvme.NewNVMeHandler()
-
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
-
-	// A volume already published on this subsystem, claiming only the first target IP.
-	establishedPublishInfo := samplePublishInfo(NVMe)
-	establishedPublishInfo.NVMeSubsystemNQN = publishInfo.NVMeSubsystemNQN
-	establishedPublishInfo.NVMeNamespaceUUID = "established-namespace"
-	establishedPublishInfo.NVMeTargetIPs = []string{"1.1.1.1"}
-	handler.AddPublishedNVMeSession(&publishedNVMeSessions, establishedPublishInfo)
-
-	// A volume that publishes both target IPs while this attach is still connecting.
-	concurrentPublishInfo := samplePublishInfo(NVMe)
-	concurrentPublishInfo.NVMeSubsystemNQN = publishInfo.NVMeSubsystemNQN
-	concurrentPublishInfo.NVMeNamespaceUUID = "concurrent-namespace"
-	concurrentPublishInfo.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
-
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			handler.AddPublishedNVMeSession(sessions, info)
-		})
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).
-		DoAndReturn(func(context.Context, *models.VolumePublishInfo, time.Duration) error {
-			handler.AddPublishedNVMeSession(&publishedNVMeSessions, concurrentPublishInfo)
-			return errors.New("nvme connect failed")
-		})
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).DoAndReturn(func(sessions *nvme.NVMeSessions, subsystemNQN, namespaceUUID string) bool {
-		return handler.RemovePublishedNVMeSession(sessions, subsystemNQN, namespaceUUID)
-	})
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
+	err := core.Attach(context.Background(), "test-volume", AttachRequest{PublishInfo: publishInfo})
 
 	require.Error(t, err)
-	sessionData := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]
-	require.NotNil(t, sessionData, "the remaining namespaces must keep the session alive")
-	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, sessionData.NVMeTargetIPs)
-	assert.Equal(t, 2, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-}
-
-func TestAttachNVMeVolume_RollbackDropsExclusivelyClaimedTargetIP(t *testing.T) {
-	withCleanPublishedNVMeSessions(t)
-	core, mocks := newTestCore(t)
-	handler := nvme.NewNVMeHandler()
-
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.NVMeTargetIPs = []string{"1.1.1.1", "2.2.2.2"}
-
-	establishedPublishInfo := samplePublishInfo(NVMe)
-	establishedPublishInfo.NVMeSubsystemNQN = publishInfo.NVMeSubsystemNQN
-	establishedPublishInfo.NVMeNamespaceUUID = "established-namespace"
-	establishedPublishInfo.NVMeTargetIPs = []string{"1.1.1.1"}
-	handler.AddPublishedNVMeSession(&publishedNVMeSessions, establishedPublishInfo)
-
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo).
-		Do(func(sessions *nvme.NVMeSessions, info *models.VolumePublishInfo) {
-			handler.AddPublishedNVMeSession(sessions, info)
-		})
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), publishInfo, gomock.Any()).
-		Return(errors.New("nvme connect failed"))
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).DoAndReturn(func(sessions *nvme.NVMeSessions, subsystemNQN, namespaceUUID string) bool {
-		return handler.RemovePublishedNVMeSession(sessions, subsystemNQN, namespaceUUID)
-	})
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-
-	require.Error(t, err)
-	sessionData := publishedNVMeSessions.Info[publishInfo.NVMeSubsystemNQN]
-	require.NotNil(t, sessionData)
-	assert.Equal(t, []string{"1.1.1.1"}, sessionData.NVMeTargetIPs)
-	assert.Equal(t, 1, publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN))
-}
-
-func TestAttachNVMeVolume_FormatMountError(t *testing.T) {
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeNVMeSubsystem{}
-
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo)
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(false, false, nil)
-	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(errors.New("mkfs failed"))
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).Return(true)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
-
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "mkfs failed")
-	assert.Equal(t, 1, subsystem.disconnectCalls)
+	require.Len(t, writes, 2)
+	assert.Empty(t, writes[0].Devices)
+	assert.Equal(t, devices, writes[1].Devices)
+	assert.Equal(t, "/dev/nvme3n1", writes[1].DevicePath, "the namespace path is tracked, not the top device")
+	assert.Equal(t, "xfs", writes[1].FilesystemType)
 }
 
 func TestAttachNVMeVolume_LUKSBranchSkippedWhenDisabled(t *testing.T) {
@@ -820,16 +675,13 @@ func TestAttachNVMeVolume_LUKSBranchSkippedWhenDisabled(t *testing.T) {
 	publishInfo := samplePublishInfo(NVMe)
 	publishInfo.LUKSEncryption = "false"
 
-	mocks.NVMe.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NVMe.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(false, false, nil)
-	mocks.NVMe.EXPECT().EnsureVolumeFormattedAndMounted(
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-	).Return(nil)
-	mocks.NVMe.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfo)
+	mocks.NVMeDriver.EXPECT().Attach(gomock.Any(), "test-volume", gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, spec *models.VolumeAttachSpec) (*models.VolumeAttachState, error) {
+			assert.False(t, spec.Encryption.IsLUKS())
+			return &models.VolumeAttachState{}, nil
+		})
 
-	// No controller.GetChap or luks calls expected since LUKSEncryption is false.
-	err := core.attachNVMeVolume(context.Background(), "test-volume", publishInfo, nil)
+	// No controller or luks calls are expected since LUKSEncryption is false.
+	_, err := attachNVMe(core, mocks, publishInfo, nil)
 	assert.NoError(t, err)
 }

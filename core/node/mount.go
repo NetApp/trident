@@ -89,7 +89,16 @@ func (c *Core) Mount(ctx context.Context, volumeID string, req MountRequest) err
 	case ISCSI:
 		return c.mountISCSIVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets, locker)
 	case NVMe:
-		return c.mountNVMeVolume(ctx, volumeID, targetPath, publishInfo, req.Secrets)
+		spec := &models.VolumeMountSpec{
+			MountPoint:   targetPath,
+			MountOptions: publishInfo.MountOptions,
+			InternalID:   publishInfo.InternalID,
+			Secrets:      req.Secrets,
+		}
+		if err = c.nvmeDriver.Mount(ctx, volumeID, trackingInfo.AttachState(), spec); err != nil {
+			return err
+		}
+		return c.nodeHelper.AddPublishedPath(ctx, volumeID, targetPath)
 	default:
 		return errors.PreconditionError("unknown storage protocol")
 	}
@@ -213,34 +222,7 @@ func (c *Core) mountFCPVolume(
 	return c.mountDeviceAtTargetPath(ctx, volumeID, targetPath, devicePath, publishInfo)
 }
 
-func (c *Core) mountNVMeVolume(
-	ctx context.Context, volumeID, targetPath string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-) error {
-	Logc(ctx).Debug(">>>> mountNVMeVolume")
-	defer Logc(ctx).Debug("<<<< mountNVMeVolume")
-
-	release, err := c.acquireLimiter(ctx, mountNVMeVolumeKey)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	devicePath := publishInfo.DevicePath
-	if convert.ToBool(publishInfo.LUKSEncryption) {
-		luksDevice := luks.NewDevice(devicePath, publishInfo.InternalID, c.cmd, c.dev)
-
-		if err := ensureLUKSVolumePassphrase(ctx, luksDevice, volumeID, secrets, c.controller); err != nil {
-			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
-		}
-
-		devicePath = luksDevice.MappedDevicePath()
-	}
-
-	return c.mountDeviceAtTargetPath(ctx, volumeID, targetPath, devicePath, publishInfo)
-}
-
-// mountDeviceAtTargetPath mounts a raw block device at targetPath, shared by the FCP and NVMe
-// stopgap publish paths.
+// mountDeviceAtTargetPath mounts a raw block device at targetPath, shared by the FCP and iSCSI publish paths.
 func (c *Core) mountDeviceAtTargetPath(
 	ctx context.Context, volumeID, targetPath, devicePath string, publishInfo *models.VolumePublishInfo,
 ) error {

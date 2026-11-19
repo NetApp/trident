@@ -33,8 +33,8 @@ type GraftRequest struct {
 // number, target IQN, portals) are consistent with the incoming request, then delegates to the
 // protocol-specific graft handler. It is intended to support volume-move workflows, where the
 // volume move controller asks every node the volume is (or will be) published to, to extend its
-// attachment to a new set of paths. Block NVMe attachments are handed to graftNVMeAttachment,
-// which does its own validation; File protocol returns a terminal reconciliation error.
+// attachment to a new set of paths. Block NVMe attachments are handed to the NVMe driver, which validates
+// them against the tracked NVMe identity; File protocol returns a terminal reconciliation error.
 func (c *Core) Graft(
 	ctx context.Context, volumeID string, req GraftRequest,
 ) (*models.GraftAttachmentResponse, error) {
@@ -66,8 +66,8 @@ func (c *Core) Graft(
 	}
 
 	// iSCSI checks LUN, IQN, and portals against tracking, then replaces VolumeAccessInfo with
-	// the request. NVMe keeps the tracked publish info; graftNVMeAttachment copies only the
-	// requested target IPs.
+	// the request. NVMe keeps the tracked publish info and copies only the requested
+	// target IPs.
 	storageProtocol := blockAttachmentProtocol(trackingInfo, req.VolumeAccessInfo)
 
 	publishInfo := &models.VolumePublishInfo{}
@@ -93,7 +93,36 @@ func (c *Core) Graft(
 	case tridentconfig.Block:
 		switch storageProtocol {
 		case NVMe:
-			return c.graftNVMeAttachment(ctx, volumeID, req, publishInfo)
+			// Only the target IPs are taken from the request; the tracked NVMe identity is retained.
+			if trackingInfo == nil || trackingInfo.GetStorageProtocol() != NVMe {
+				if isNVMeTargetIPsOnly(req.VolumeAccessInfo) {
+					Logc(ctx).WithField("volume", volumeID).Debug(
+						"Volume has no NVMe attachment on this node; nothing to graft.")
+					return &models.GraftAttachmentResponse{VolumeName: volumeID, Protocol: req.Protocol}, nil
+				}
+				return nil, errors.TerminalReconciliationError("NVMe tracking info not found")
+			}
+
+			graftCtx, cancel := context.WithTimeout(ctx, GraftAttachmentTimeoutShort)
+			defer cancel()
+			attachState, err := c.nvmeDriver.Graft(graftCtx, trackingInfo.AttachState(), &models.GraftAttachmentRequest{
+				VolumeAccessInfo: req.VolumeAccessInfo,
+				VolumeName:       volumeID,
+				Protocol:         req.Protocol,
+			})
+			if err != nil {
+				return nil, err
+			}
+			trackingInfo.RecordAttachState(attachState)
+			publishInfo.NVMeTargetIPs = slices.Clone(req.NVMeTargetIPs)
+			if err := c.nodeHelper.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
+				return nil, err
+			}
+			return &models.GraftAttachmentResponse{
+				VolumeAccessInfo: req.VolumeAccessInfo,
+				VolumeName:       volumeID,
+				Protocol:         req.Protocol,
+			}, nil
 		default:
 			return c.graftISCSIAttachment(ctx, volumeID, req, publishInfo)
 		}
@@ -126,76 +155,6 @@ func blockAttachmentProtocol(
 func isNVMeTargetIPsOnly(accessInfo models.VolumeAccessInfo) bool {
 	return accessInfo.NVMeSubsystemNQN == "" && accessInfo.NVMeNamespaceUUID == "" &&
 		accessInfo.IscsiTargetIQN == "" && accessInfo.IscsiTargetPortal == "" && len(accessInfo.IscsiPortals) == 0
-}
-
-// validateNVMeIdentity rejects a request whose NVMe identity differs from the tracked one. Empty
-// identity fields in the request are allowed and mean "the tracked volume".
-func validateNVMeIdentity(accessInfo models.VolumeAccessInfo, publishInfo *models.VolumePublishInfo) error {
-	if accessInfo.NVMeSubsystemNQN != "" && accessInfo.NVMeSubsystemNQN != publishInfo.NVMeSubsystemNQN {
-		return errors.TerminalReconciliationError("NVMe subsystem NQN mismatch")
-	}
-	if accessInfo.NVMeNamespaceUUID != "" && accessInfo.NVMeNamespaceUUID != publishInfo.NVMeNamespaceUUID {
-		return errors.TerminalReconciliationError("NVMe namespace UUID mismatch")
-	}
-	return nil
-}
-
-// graftNVMeAttachment establishes missing paths for an already staged namespace, then makes the
-// desired target IPs durable in both tracking and self-healing session state. publishInfo is the
-// tracked publish info. A nil or non-NVMe value means this node has no NVMe attachment. Only the
-// target IPs are taken from the request; the tracked NVMe identity and other publish fields are retained.
-func (c *Core) graftNVMeAttachment(
-	ctx context.Context, volumeID string, req GraftRequest, publishInfo *models.VolumePublishInfo,
-) (*models.GraftAttachmentResponse, error) {
-	if publishInfo == nil || publishInfo.GetStorageProtocol() != NVMe {
-		if isNVMeTargetIPsOnly(req.VolumeAccessInfo) {
-			Logc(ctx).WithField("volume", volumeID).Debug(
-				"Volume has no NVMe attachment on this node; nothing to graft.")
-			return &models.GraftAttachmentResponse{VolumeName: volumeID, Protocol: req.Protocol}, nil
-		}
-		return nil, errors.TerminalReconciliationError("NVMe tracking info not found")
-	}
-
-	// Look for unreconcilable arguments.
-	if len(req.NVMeTargetIPs) == 0 {
-		return nil, errors.TerminalReconciliationError("no NVMe target IPs specified")
-	}
-	if err := validateNVMeIdentity(req.VolumeAccessInfo, publishInfo); err != nil {
-		return nil, err
-	}
-	publishInfo.NVMeTargetIPs = slices.Clone(req.NVMeTargetIPs)
-
-	release, err := c.acquireLimiter(ctx, graftNVMeAttachmentKey)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	nvmeNodeOperationWaitingCount.Add(1)
-	nvmeSelfHealingLock.RLock()
-	defer nvmeSelfHealingLock.RUnlock()
-	nvmeNodeOperationWaitingCount.Add(-1)
-
-	if err := c.nvme.AttachNVMeVolumeRetry(ctx, publishInfo, GraftAttachmentTimeoutShort); err != nil {
-		return nil, err
-	}
-	if err := c.nodeHelper.UpdatePublishInfo(ctx, volumeID, publishInfo); err != nil {
-		return nil, err
-	}
-
-	lockContext := "graftNVMeAttachment.AddSession"
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-		return nil, errors.MaxWaitExceededError("request waited too long for the lock")
-	}
-	c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
-	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-
-	return &models.GraftAttachmentResponse{
-		VolumeAccessInfo: req.VolumeAccessInfo,
-		VolumeName:       volumeID,
-		Protocol:         req.Protocol,
-	}, nil
 }
 
 // graftISCSIAttachment extends an existing iSCSI attachment for a LUN by establishing new

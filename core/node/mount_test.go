@@ -191,7 +191,7 @@ func TestMount_DispatchesToProtocol(t *testing.T) {
 			name:     "NVMe",
 			protocol: NVMe,
 			setup: func(mocks *testMocks) {
-				mocks.Mount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+				mocks.NVMeDriver.EXPECT().Mount(gomock.Any(), "vol1", gomock.Any(), gomock.Any()).Return(nil)
 				mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 		},
@@ -449,32 +449,100 @@ func TestMountFCPVolume_NonLUKS_MountsRawDevicePath(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestMountNVMeVolume_LUKS_MountsMappedDevice(t *testing.T) {
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.LUKSEncryption = "true"
-	publishInfo.InternalID = "pvc-nvme"
-	publishInfo.DevicePath = "/dev/nvme0n1"
+func nvmeMountTrackingInfo() *models.VolumeTrackingInfo {
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.InternalID = "pvc-nvme"
+	trackingInfo.MountOptions = "rw"
+	return trackingInfo
+}
 
-	expectedMappedPath := "/dev/mapper/luks-pvc-nvme"
-	mocks.Mount.EXPECT().MountDevice(gomock.Any(), expectedMappedPath, "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
+func mountNVMe(core *Core, mocks *testMocks, trackingInfo *models.VolumeTrackingInfo, secrets map[string]string) error {
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	return core.Mount(context.Background(), "vol1", testMountReq("/target", false, secrets))
+}
+
+func TestMountNVMeVolume_MountsThroughDriverAndTracksPublishedPath(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := nvmeMountTrackingInfo()
+	trackingInfo.LUKSEncryption = "true"
+	secrets := map[string]string{"luks-passphrase": "secret"}
+
+	mocks.NVMeDriver.EXPECT().Mount(
+		gomock.Any(), "vol1", trackingInfo.AttachState(),
+		&models.VolumeMountSpec{MountPoint: "/target", MountOptions: "rw", InternalID: "pvc-nvme", Secrets: secrets},
+	).Return(nil)
 	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
-	err := core.mountNVMeVolume(context.Background(), "vol1", "/target", publishInfo, nil)
+	err := mountNVMe(core, mocks, trackingInfo, secrets)
 	assert.NoError(t, err)
 }
 
-func TestMountNVMeVolume_NonLUKS_MountsRawDevicePath(t *testing.T) {
+func TestMountNVMeVolume_StateCarriesNamespaceIdentityAndFilesystem(t *testing.T) {
 	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.LUKSEncryption = "false"
-	publishInfo.DevicePath = "/dev/nvme0n1"
+	trackingInfo := nvmeMountTrackingInfo()
+	trackingInfo.FilesystemType = filesystem.Raw
 
-	mocks.Mount.EXPECT().MountDevice(gomock.Any(), "/dev/nvme0n1", "/target", gomock.Any(), gomock.Eq(false)).Return(nil)
+	mocks.NVMeDriver.EXPECT().Mount(gomock.Any(), "vol1", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, state *models.VolumeAttachState, _ *models.VolumeMountSpec) error {
+			assert.Equal(t, trackingInfo.NVMeSubsystemNQN, state.NVMeSubsystemNQN)
+			assert.Equal(t, trackingInfo.NVMeNamespaceUUID, state.NVMeNamespaceUUID)
+			assert.Equal(t, filesystem.Raw, state.Filesystem)
+			assert.False(t, state.Encryption.IsLUKS())
+			return nil
+		})
 	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
 
-	err := core.mountNVMeVolume(context.Background(), "vol1", "/target", publishInfo, nil)
+	err := mountNVMe(core, mocks, trackingInfo, nil)
 	assert.NoError(t, err)
+}
+
+func TestMountNVMeVolume_DriverError_ReturnedWithoutTrackingPublishedPath(t *testing.T) {
+	core, mocks := newTestCore(t)
+	mountErr := errors.InternalError("unable to mount device; boom")
+
+	mocks.NVMeDriver.EXPECT().Mount(gomock.Any(), "vol1", gomock.Any(), gomock.Any()).Return(mountErr)
+	// AddPublishedPath must not be reached.
+
+	err := mountNVMe(core, mocks, nvmeMountTrackingInfo(), nil)
+	assert.Equal(t, mountErr, err)
+}
+
+func TestMountNVMeVolume_AddPublishedPathError_Propagates(t *testing.T) {
+	core, mocks := newTestCore(t)
+
+	mocks.NVMeDriver.EXPECT().Mount(gomock.Any(), "vol1", gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(errors.New("write failed"))
+
+	err := mountNVMe(core, mocks, nvmeMountTrackingInfo(), nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "write failed")
+}
+
+func TestMount_NVMe_ReadOnly_AppendsRoToDriverMountOptions(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := nvmeMountTrackingInfo()
+
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+	mocks.NVMeDriver.EXPECT().Mount(gomock.Any(), "vol1", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, _ *models.VolumeAttachState, spec *models.VolumeMountSpec) error {
+			assert.Equal(t, "rw,ro", spec.MountOptions)
+			return nil
+		})
+	mocks.NodeHelper.EXPECT().AddPublishedPath(gomock.Any(), "vol1", "/target").Return(nil)
+
+	err := core.Mount(context.Background(), "vol1", testMountReq("/target", true, nil))
+	require.NoError(t, err)
+}
+
+func TestMount_NVMe_SingleNodeSingleWriterPublishedElsewhere_DoesNotReachDriver(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := nvmeMountTrackingInfo()
+	trackingInfo.PublishedPaths = map[string]struct{}{"/other-target": {}}
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "vol1").Return(trackingInfo, nil)
+
+	err := core.Mount(context.Background(), "vol1", MountRequest{TargetPath: "/target", SingleNodeSingleWriter: true})
+	require.Error(t, err)
+	assert.True(t, errors.IsPreconditionError(err))
 }
 
 func TestMountDeviceAtTargetPath_RawBlock_BindMountsWithIsRawBlockTrue(t *testing.T) {

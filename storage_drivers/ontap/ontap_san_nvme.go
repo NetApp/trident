@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	hostnvme "github.com/netapp/trident/pkg/host/service/nvme"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -32,7 +33,6 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 var (
@@ -1175,8 +1175,7 @@ func (d *NVMeStorageDriver) Publish(
 
 	if publishInfo.Localhost {
 		// Get its HostNQN and populate it in publishInfo.
-		nvmeHandler := nvme.NewNVMeHandler()
-		nqn, err := nvmeHandler.GetHostNqn(ctx)
+		nqn, err := hostnvme.New().HostNQN(ctx)
 		if err != nil {
 			return err
 		}

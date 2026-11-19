@@ -28,9 +28,10 @@ import (
 	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	mock_node_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mock_tridentcontroller "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_tridentcontroller"
+	"github.com/netapp/trident/mocks/mock_pkg/mock_host/mock_storage"
 	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	mock_osutils "github.com/netapp/trident/mocks/mock_utils/mock_osutils"
-	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -71,8 +72,11 @@ func newTestNodeCore(
 	mockISCSI := mock_iscsi.NewMockISCSI(ctrl)
 	mockISCSI.EXPECT().ISCSIActiveOnHost(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-	mockNVMe := mock_nvme.NewMockNVMeInterface(ctrl)
-	mockNVMe.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(false, nil).AnyTimes()
+	mockNVMe := mock_storage.NewMockProtocol(ctrl)
+	mockNVMe.EXPECT().Register(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockNVMe.EXPECT().Start(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockNVMe.EXPECT().Stop().AnyTimes()
+	mockNVMe.EXPECT().PreChecks(gomock.Any()).Return(storage.ErrTransportNotLoaded).AnyTimes()
 
 	return node.NewCore(
 		node.WithController(node.NewController(mockClient, mockChap)),
@@ -80,7 +84,7 @@ func newTestNodeCore(
 		node.WithHostName("test-node"),
 		node.WithOsUtils(mockOsUtils),
 		node.WithLegacyISCSI(mockISCSI),
-		node.WithNVMe(mockNVMe),
+		node.WithNVMeDriver(mockNVMe),
 	)
 }
 

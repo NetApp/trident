@@ -148,10 +148,10 @@ func TestExpand_ProtocolFCP_Delegates(t *testing.T) {
 
 func TestExpand_ProtocolNVMe_Delegates(t *testing.T) {
 	core, mocks := newTestCore(t)
-	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo := sampleNVMeTrackingInfo()
 	trackingInfo.VolumePublishInfo.FilesystemType = filesystem.Raw
-	trackingInfo.VolumePublishInfo.DevicePath = ""
 	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-vol").Return(trackingInfo, nil)
+	mocks.NVMeDriver.EXPECT().Expand(gomock.Any(), "test-vol", gomock.Any(), gomock.Any()).Return(nil)
 
 	err := core.Expand(context.Background(), "test-vol", ExpandRequest{MountPath: trackingInfo.GlobalMount, RequiredBytes: 2048, Secrets: nil})
 	assert.NoError(t, err)
@@ -306,26 +306,91 @@ func TestExpandFCPVolume_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestExpandNVMeVolume_CapturePreExpandBaselineErrorPropagates(t *testing.T) {
-	core, _ := newTestCore(t)
-	pi := samplePublishInfo(NVMe)
-	pi.FilesystemType = "unsupported-fs"
+// sampleNVMeTrackingInfo returns a tracking file whose device stack is recorded, so the attach state resolves
+// without discovery.
+func sampleNVMeTrackingInfo() *models.VolumeTrackingInfo {
+	trackingInfo := sampleTrackingInfo(NVMe)
+	trackingInfo.BlockAttachInfo.Devices = models.BlockDeviceStack{
+		{ID: trackingInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk},
+	}
+	return trackingInfo
+}
 
-	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, "", nil)
+func sampleLUKSNVMeTrackingInfo() *models.VolumeTrackingInfo {
+	trackingInfo := sampleNVMeTrackingInfo()
+	trackingInfo.LUKSEncryption = "true"
+	trackingInfo.BlockAttachInfo.Devices = append(trackingInfo.BlockAttachInfo.Devices,
+		models.BlockDeviceInfo{ID: "CRYPT-LUKS2-x", Type: models.BlockDeviceCrypt, Base: trackingInfo.NVMeNamespaceUUID})
+	return trackingInfo
+}
+
+func expandNVMe(
+	core *Core, mocks *testMocks, trackingInfo *models.VolumeTrackingInfo, requiredBytes int64,
+	secrets map[string]string,
+) error {
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-vol").Return(trackingInfo, nil)
+	return core.Expand(context.Background(), "test-vol", ExpandRequest{
+		MountPath: trackingInfo.GlobalMount, RequiredBytes: requiredBytes, Secrets: secrets,
+	})
+}
+
+func TestExpandNVMeVolume_UnsupportedFilesystemFailsBeforeDriver(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleNVMeTrackingInfo()
+	trackingInfo.FilesystemType = "unsupported-fs"
+
+	err := expandNVMe(core, mocks, trackingInfo, 1024, nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported fileSystemType option")
 }
 
-func TestExpandNVMeVolume_Success(t *testing.T) {
-	core, _ := newTestCore(t)
-	pi := samplePublishInfo(NVMe)
-	pi.FilesystemType = filesystem.Raw
-	pi.DevicePath = ""
+func TestExpandNVMeVolume_PassesRequestToDriver(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleNVMeTrackingInfo()
+	trackingInfo.FilesystemType = "XFS"
+	trackingInfo.MountOptions = "-o discard"
+	secrets := map[string]string{"k": "v"}
 
-	// No rescan step for NVMe: no NVMe/Devices/Filesystem mock calls expected at all, since
-	// Raw+empty-DevicePath skips every size lookup in capturePreExpandSizeBaseline and
-	// expandFilesystemAndLUKS.
-	err := core.expandNVMeVolume(context.Background(), "test-vol", pi, 1024, "", nil)
+	mocks.NVMeDriver.EXPECT().Expand(gomock.Any(), "test-vol", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, state *models.VolumeAttachState, spec *models.VolumeExpandSpec) error {
+			assert.Equal(t, filesystem.Xfs, state.Filesystem, "the verified filesystem type is used")
+			assert.Equal(t, trackingInfo.GlobalMount, state.GlobalMount)
+			assert.Equal(t, trackingInfo.NVMeNamespaceUUID, state.NVMeNamespaceUUID)
+			assert.Equal(t, models.BlockDeviceStack{{ID: trackingInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk}},
+				state.Devices)
+			assert.Equal(t, &models.VolumeExpandSpec{
+				SizeBytes: 2048,
+				Secrets:   secrets,
+			}, spec)
+			assert.Equal(t, "-o discard", state.MountOptions, "the temporary resize mount uses the publish mount options")
+			return nil
+		})
+
+	err := expandNVMe(core, mocks, trackingInfo, 2048, secrets)
+	assert.NoError(t, err)
+}
+
+func TestExpandNVMeVolume_DriverErrorReturnedUnwrapped(t *testing.T) {
+	core, mocks := newTestCore(t)
+	trackingInfo := sampleNVMeTrackingInfo()
+	driverErr := errors.InternalError("failed to expand filesystem for volume test-vol: boom")
+	mocks.NVMeDriver.EXPECT().Expand(gomock.Any(), "test-vol", gomock.Any(), gomock.Any()).Return(driverErr)
+
+	err := expandNVMe(core, mocks, trackingInfo, 1024, nil)
+	assert.Same(t, driverErr, err)
+}
+
+// NVMe does not support RWX LUKS volumes, so a LUKS expand takes no distributed lease.
+func TestExpandNVMeVolume_LUKSTakesNoLease(t *testing.T) {
+	nodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+	core, mocks := newTestCore(t, WithNodeHelper(nodeHelper))
+	trackingInfo := sampleLUKSNVMeTrackingInfo()
+	nodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-vol").Return(trackingInfo, nil)
+	mocks.NVMeDriver.EXPECT().Expand(gomock.Any(), "test-vol", gomock.Any(), gomock.Any()).Return(nil)
+
+	err := core.Expand(context.Background(), "test-vol", ExpandRequest{
+		MountPath: trackingInfo.GlobalMount, RequiredBytes: 1024, Secrets: map[string]string{"luks-passphrase": "secret"},
+	})
 	assert.NoError(t, err)
 }
 

@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -18,7 +17,6 @@ import (
 	"github.com/netapp/trident/pkg/locks/distlock"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 // withMockedFcpUtils swaps the package-level fcpUtils var for a mock for the duration of a test.
@@ -37,16 +35,6 @@ func withMockedIscsiUtils(t *testing.T) *mock_iscsi.MockIscsiReconcileUtils {
 	iscsiUtils = mock
 	t.Cleanup(func() { iscsiUtils = origIscsiUtils })
 	return mock
-}
-
-// clearNVMeFlushRetryMap ensures NVMeNamespacesFlushRetry (a package-level global) starts and
-// ends each test clean, since it's shared across the whole test binary.
-func clearNVMeFlushRetryMap(t *testing.T) {
-	t.Cleanup(func() {
-		for k := range NVMeNamespacesFlushRetry {
-			delete(NVMeNamespacesFlushRetry, k)
-		}
-	})
 }
 
 func TestDetach_EmptyVolume(t *testing.T) {
@@ -1112,236 +1100,145 @@ func TestDetachISCSIVolume_LUKS_PostBlockDeviceRemoval_LockDeleteFailed(t *testi
 	assert.True(t, errors.IsInternalError(err), "expected InternalError, got: %v", err)
 }
 
-// fakeDetachNVMeSubsystem hand-implements the slice of nvme.NVMeSubsystemInterface that
-// detachNVMeVolume actually calls (rather than using the real *nvme.NVMeSubsystem), so these
-// tests are not at the mercy of nvme_linux.go/nvme_darwin.go's platform-gated (GOOS-specific)
-// real device-discovery and flush logic - e.g. on non-Linux dev machines,
-// nvme.NVMeSubsystem.GetNVMeDeviceAt/NVMeDevice.FlushNVMeDevice unconditionally return
-// errors.UnsupportedError, which would make every "device found" scenario untestable there. This
-// also sidesteps nvme.NVMeDevice's unexported `command` field, which only real GOOS-specific
-// scanning code can populate, so a *nvme.NVMeDevice built via struct literal from this package
-// would panic if FlushDevice ever reached the real command execution path. Any interface method
-// not overridden here is intentionally left nil-embedded (panics if called), matching the
-// pattern already used by utils_test.go's fakeNVMeSubsystem.
-type fakeDetachNVMeSubsystem struct {
-	nvme.NVMeSubsystemInterface
-	getDeviceErr       error
-	disconnectErr      error
-	disconnectCalls    int
-	otherNamespaces    bool
-	otherNamespacesErr error
-	// queriedNsUUID records the namespace identity excluded from the host enumeration.
-	queriedNsUUID string
+const nvmeTestCryptID = "CRYPT-LUKS2-x"
+
+// nvmeTrackingInfo is the tracking info of a staged NVMe volume whose device stack is recorded, so detach
+// reads it from the file instead of discovering it. A LUKS volume has the crypt layer on top of the namespace.
+func nvmeTrackingInfo(publishInfo *models.VolumePublishInfo) *models.VolumeTrackingInfo {
+	trackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo: *publishInfo,
+		PublishedPaths:    map[string]struct{}{},
+	}
+	trackingInfo.BlockAttachInfo.Devices = models.BlockDeviceStack{
+		{ID: publishInfo.NVMeNamespaceUUID, Type: models.BlockDeviceDisk},
+	}
+	if publishInfo.UseLUKS() {
+		trackingInfo.BlockAttachInfo.Devices = append(trackingInfo.BlockAttachInfo.Devices,
+			models.BlockDeviceInfo{ID: nvmeTestCryptID, Type: models.BlockDeviceCrypt, Base: publishInfo.NVMeNamespaceUUID})
+	}
+	return trackingInfo
 }
 
-func (f *fakeDetachNVMeSubsystem) Disconnect(context.Context) error {
-	f.disconnectCalls++
-	return f.disconnectErr
+func detachNVMe(core *Core, mocks *testMocks, publishInfo *models.VolumePublishInfo, force bool) error {
+	return detachNVMeTracked(core, mocks, nvmeTrackingInfo(publishInfo), force)
 }
 
-// HasNamespacesOtherThan feeds disconnectNVMeSubsystemIfNeeded's host-level identity check; the
-// zero value therefore leaves the disconnect decision to the published session count.
-func (f *fakeDetachNVMeSubsystem) HasNamespacesOtherThan(_ context.Context, nsUUID string) (bool, error) {
-	f.queriedNsUUID = nsUUID
-	return f.otherNamespaces, f.otherNamespacesErr
+func detachNVMeTracked(core *Core, mocks *testMocks, trackingInfo *models.VolumeTrackingInfo, force bool) error {
+	mocks.NodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), "test-volume").Return(trackingInfo, nil)
+	return core.detach(context.Background(), "test-volume", force)
 }
 
-// GetNVMeDevice/GetNVMeDeviceAt always report "no device found" (nil, getDeviceErr): every
-// detachNVMeVolume test below therefore exercises the nvmeDev==nil branches, which is sufficient
-// to cover subsystem lookup, LUKS teardown, and disconnect-decision logic without needing a real,
-// working *nvme.NVMeDevice (see the flush-retry-map note in this file's summary for why the flush
-// branch itself is out of reach here).
-func (f *fakeDetachNVMeSubsystem) GetNVMeDevice(context.Context, string) (*nvme.NVMeDevice, error) {
-	return nil, f.getDeviceErr
-}
-
-func (f *fakeDetachNVMeSubsystem) GetNVMeDeviceAt(context.Context, string) (*nvme.NVMeDevice, error) {
-	return nil, f.getDeviceErr
-}
-
-var _ nvme.NVMeSubsystemInterface = (*fakeDetachNVMeSubsystem)(nil)
-
-func TestDetachNVMeVolume_NoDeviceFound_Success(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{}
-
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID).
-		Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), publishInfo.GlobalMount).Return(nil)
+// expectNVMeDetachCleanup expects the tracking info deletion that follows a successful driver detach.
+func expectNVMeDetachCleanup(mocks *testMocks, publishInfo *models.VolumePublishInfo) {
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
-
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, subsystem.disconnectCalls, "numNs==0 by default, so Disconnect must be invoked")
-	assert.Equal(t, publishInfo.NVMeNamespaceUUID, subsystem.queriedNsUUID,
-		"the namespace being detached must be the one excluded from the host enumeration")
 }
 
-func TestDetachNVMeVolume_GetNVMeDeviceNonNotFoundError(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
+func TestDetachNVMeVolume_Success_Order(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{getDeviceErr: errors.New("nvme-cli failed")}
 
-	// No RemovePublishedNVMeSession expectation: the session is now removed only after the device is
-	// torn down, so bailing out here leaves the published session in place for a later retry.
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
+	gomock.InOrder(
+		mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ string, state *models.VolumeAttachState, spec *models.VolumeDetachSpec) error {
+				assert.Equal(t, publishInfo.NVMeSubsystemNQN, state.NVMeSubsystemNQN)
+				assert.Equal(t, publishInfo.NVMeNamespaceUUID, state.NVMeNamespaceUUID)
+				assert.Equal(t, publishInfo.GlobalMount, state.GlobalMount, "for the temporary expand mount")
+				assert.Equal(t, &models.VolumeDetachSpec{InternalID: publishInfo.InternalID}, spec)
+				return nil
+			}),
+		mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil),
+	)
 
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+	err := detachNVMe(core, mocks, publishInfo, false)
+	assert.NoError(t, err)
+}
+
+func TestDetachNVMeVolume_SpecCarriesForceAndUnsafeDetach(t *testing.T) {
+	core, mocks := newTestCore(t, WithUnsafeDetach(true))
+	publishInfo := samplePublishInfo(NVMe)
+
+	mocks.NVMeDriver.EXPECT().Detach(
+		gomock.Any(), "test-volume", gomock.Any(), &models.VolumeDetachSpec{Force: true, IgnoreFlushErrors: true},
+	).Return(nil)
+	expectNVMeDetachCleanup(mocks, publishInfo)
+
+	assert.NoError(t, detachNVMe(core, mocks, publishInfo, true))
+}
+
+// A driver failure to find the namespace, other than not found, aborts the detach.
+func TestDetachNVMeVolume_DriverDetachError(t *testing.T) {
+	core, mocks := newTestCore(t)
+	publishInfo := samplePublishInfo(NVMe)
+
+	mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).
+		Return(errors.New("failed to get NVMe device: nvme-cli failed"))
+
+	err := detachNVMe(core, mocks, publishInfo, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get NVMe device")
 }
 
-func TestDetachNVMeVolume_GetNVMeDeviceNotFoundError_ContinuesCleanup(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
+func TestDetachNVMeVolume_TrackingInfoWithoutDeviceStack(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{getDeviceErr: errors.NotFoundError("no device")}
 
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
+	// A tracking file with no device stack reaches the driver unchanged; the driver resolves it from the host.
+	mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, state *models.VolumeAttachState, _ *models.VolumeDetachSpec) error {
+			assert.Empty(t, state.Devices)
+			assert.Equal(t, publishInfo.NVMeNamespaceUUID, state.NVMeNamespaceUUID)
+			return nil
+		})
+	expectNVMeDetachCleanup(mocks, publishInfo)
 
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+	trackingInfo := &models.VolumeTrackingInfo{VolumePublishInfo: *publishInfo}
+	err := detachNVMeTracked(core, mocks, trackingInfo, false)
 	assert.NoError(t, err)
 }
 
-func TestDetachNVMeVolume_LUKSTeardown_NoDeviceFound(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
+func TestDetachNVMeVolume_LUKSTeardown(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
 	publishInfo.LUKSEncryption = "true"
-	subsystem := &fakeDetachNVMeSubsystem{}
+	publishInfo.InternalID = "trident_pvc_1"
 
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Devices.EXPECT().GetLUKSDevicePathForDevicePath(gomock.Any(), publishInfo.DevicePath).
-		Return("/dev/mapper/luks-uuid", nil)
-	mocks.Devices.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
-	mocks.Devices.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), "/dev/mapper/luks-uuid").Return(nil)
+	mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ string, state *models.VolumeAttachState, spec *models.VolumeDetachSpec) error {
+			assert.True(t, state.Encryption.IsLUKS())
+			crypt, ok := state.BlockAttachInfo.Devices.Find(models.BlockDeviceCrypt)
+			require.True(t, ok)
+			assert.Equal(t, nvmeTestCryptID, crypt.ID)
+			assert.Equal(t, &models.VolumeDetachSpec{InternalID: "trident_pvc_1"}, spec)
+			return nil
+		})
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
 
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+	err := detachNVMe(core, mocks, publishInfo, false)
 	assert.NoError(t, err)
-}
-
-func TestDetachNVMeVolume_LUKSDevicePathLookupError(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	publishInfo.LUKSEncryption = "true"
-	subsystem := &fakeDetachNVMeSubsystem{}
-
-	// No RemovePublishedNVMeSession expectation: this failure precedes the session removal, which now
-	// happens only after LUKS teardown completes.
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Devices.EXPECT().GetLUKSDevicePathForDevicePath(gomock.Any(), publishInfo.DevicePath).
-		Return("", errors.New("lookup failed"))
-
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "lookup failed")
-}
-
-func TestDetachNVMeVolume_UmountTempMountPointError(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{}
-
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).
-		Return(errors.New("umount failed"))
-
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to remove temporary directory")
 }
 
 func TestDetachNVMeVolume_DeleteTrackingInfoError(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{}
 
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+	mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).Return(nil)
 	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(errors.New("delete failed"))
 
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+	err := detachNVMe(core, mocks, publishInfo, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "delete failed")
 }
 
-func TestDetachNVMeVolume_DisconnectSkippedWhenNamespacesRemain(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
+func TestDetachNVMeVolume_DetachMaxWaitExceededReturnsEarly(t *testing.T) {
 	core, mocks := newTestCore(t)
 	publishInfo := samplePublishInfo(NVMe)
 
-	// Pre-populate the package-level published session map with a namespace still attached to
-	// this subsystem, so disconnectNVMeSubsystemIfNeeded's numNs>0 check skips Disconnect().
-	publishedNVMeSessions.AddNVMeSession(*nvme.NewNVMeSubsystem(publishInfo.NVMeSubsystemNQN, mocks.Command, afero.NewMemMapFs()), nil)
-	publishedNVMeSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, "some-other-namespace-uuid", nil)
-	t.Cleanup(func() { publishedNVMeSessions.RemoveNVMeSession(publishInfo.NVMeSubsystemNQN) })
+	// DeleteTrackingInfo is not expected: the early return skips it and kubelet retries.
+	mocks.NVMeDriver.EXPECT().Detach(gomock.Any(), "test-volume", gomock.Any(), gomock.Any()).
+		Return(errors.MaxWaitExceededError("request waited too long for the lock"))
 
-	subsystem := &fakeDetachNVMeSubsystem{}
-
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
-
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
-	assert.NoError(t, err)
-	assert.Equal(t, 0, subsystem.disconnectCalls, "a remaining namespace must prevent disconnect")
-}
-
-func TestDetachNVMeVolume_DisconnectErrorIsNonFatal(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{disconnectErr: errors.New("disconnect failed")}
-
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(subsystem)
-	mocks.Mount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
-	mocks.NodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), "test-volume").Return(nil)
-
-	// disconnectNVMeSubsystemIfNeeded's error is logged and swallowed; detach must still proceed
-	// with the rest of cleanup and return success.
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
-	assert.NoError(t, err)
-}
-
-func TestDetachNVMeVolume_DisconnectLockTimeoutPropagates(t *testing.T) {
-	clearNVMeFlushRetryMap(t)
-	core, mocks := newTestCore(t)
-	publishInfo := samplePublishInfo(NVMe)
-	subsystem := &fakeDetachNVMeSubsystem{}
-
-	previousTimeout := sharedLocksNodeLockTimeout
-	t.Cleanup(func() { sharedLocksNodeLockTimeout = previousTimeout })
-
-	mocks.NVMe.EXPECT().RemovePublishedNVMeSession(
-		gomock.Any(), publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID,
-	).DoAndReturn(func(*nvme.NVMeSessions, string, string) bool {
-		// The initial session-lock operation has completed. Make the following disconnect
-		// lock attempt report a timeout without relying on wall-clock scheduling.
-		sharedLocksNodeLockTimeout = -time.Nanosecond
-		return false
-	})
-	mocks.NVMe.EXPECT().NewNVMeSubsystem(gomock.Any(), publishInfo.NVMeSubsystemNQN).Return(subsystem)
-
-	err := core.detachNVMeVolume(context.Background(), "test-volume", publishInfo, false)
+	err := detachNVMe(core, mocks, publishInfo, false)
 
 	require.Error(t, err)
 	assert.True(t, errors.IsMaxWaitExceededError(err))
-	assert.Zero(t, subsystem.disconnectCalls)
 }

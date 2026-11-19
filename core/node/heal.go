@@ -15,12 +15,12 @@ import (
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/host/storage"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
-	"github.com/netapp/trident/utils/nvme"
 )
 
 const (
@@ -31,30 +31,22 @@ const (
 
 	// LockID Constants for the self-healing global locks.
 	iSCSISelfHealingSessionLock = "iSCSISelfHealingSessionLock"
-	nvmeSelfHealingSessionLock  = "nvmeSelfHealingSessionLock"
 )
 
-// currentISCSISessions/currentNVMeSessions track the sessions actually observed on this host
-// during the most recent self-healing sweep, for comparison against the published sessions
-// recorded from tracking files.
+// currentISCSISessions tracks the sessions actually observed on this host during the most recent
+// self-healing sweep, for comparison against the published sessions recorded from tracking files.
+// NVMe sessions and self-healing are the NVMe driver's.
 var (
 	currentISCSISessions   *models.ISCSISessions
 	publishedISCSISessions *models.ISCSISessions
 
 	iSCSISelfHealingLock           = sync.RWMutex{}
 	iSCSINodeOperationWaitingCount atomic.Int32
-
-	currentNVMeSessions   nvme.NVMeSessions
-	publishedNVMeSessions nvme.NVMeSessions
-
-	// NVMe Self-healing lock and counter for parallelism
-	nvmeSelfHealingLock           = sync.RWMutex{}
-	nvmeNodeOperationWaitingCount atomic.Int32
 )
 
-// populatePublishedSessions rebuilds the in-memory published iSCSI/NVMe session bookkeeping
-// from the on-disk tracking files. Callers should invoke this once at startup, before self-healing
-// begins, so self-healing has an accurate view of what should be attached.
+// populatePublishedSessions rebuilds the in-memory published iSCSI session bookkeeping from the on-disk
+// tracking files, and registers the NVMe volumes with the NVMe driver. Callers should invoke this once at
+// startup, before self-healing begins, so self-healing has an accurate view of what should be attached.
 func (c *Core) populatePublishedSessions(ctx context.Context) {
 	volumeIDs := iscsi.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
@@ -73,7 +65,7 @@ func (c *Core) populatePublishedSessions(ctx context.Context) {
 			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceTrackingInfo)
 			c.iscsi.AddSession(newCtx, publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
-			c.nvme.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
+			c.nvmeDriver.Register(ctx, volumeID, trackingInfo)
 		}
 	}
 }
@@ -83,13 +75,19 @@ func (c *Core) populatePublishedSessions(ctx context.Context) {
 // business starting or stopping self-healing independently of the Core's own lifecycle.
 func (c *Core) startSelfHealing(ctx context.Context) {
 	c.startISCSISelfHealingThread(ctx)
-	c.startNVMeSelfHealingThread(ctx)
+
+	// Halve the interval for the first pass to run the iSCSI and NVMe self-healing apart.
+	nvmeCtx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeHealNVMe, LogLayerCore)
+	cfg := &storage.HealConfig{Interval: c.nvmeSelfHealingInterval, Delay: c.nvmeSelfHealingInterval / 2}
+	if err := c.nvmeDriver.Start(nvmeCtx, cfg); err != nil {
+		Logc(ctx).WithError(err).Error("Failed to start NVMe self-healing.")
+	}
 }
 
 // stopSelfHealing gracefully stops the periodic iSCSI and NVMe self-healing background sweeps.
 func (c *Core) stopSelfHealing(ctx context.Context) {
 	c.stopISCSISelfHealingThread(ctx)
-	c.stopNVMeSelfHealingThread(ctx)
+	c.nvmeDriver.Stop()
 }
 
 // startISCSISelfHealingThread starts the iSCSI self-healing thread to heal faulty sessions.
@@ -133,52 +131,6 @@ func (c *Core) stopISCSISelfHealingThread(_ context.Context) {
 	}
 	if c.iSCSISelfHealingChannel != nil {
 		close(c.iSCSISelfHealingChannel)
-	}
-}
-
-// startNVMeSelfHealingThread starts the NVMe self-healing thread to heal faulty sessions.
-func (c *Core) startNVMeSelfHealingThread(ctx context.Context) {
-	if c.nvmeSelfHealingInterval <= 0 {
-		Logc(ctx).Info("NVMe self-healing is disabled.")
-		return
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"NVMeSelfHealingInterval": c.nvmeSelfHealingInterval,
-	}).Info("NVMe self-healing is enabled.")
-	// Halve the interval initially to jitter the iSCSI and NVMe self-healing threads apart; reset
-	// to the proper interval after the first run.
-	c.nvmeSelfHealingTicker = time.NewTicker(c.nvmeSelfHealingInterval / 2)
-	c.nvmeSelfHealingChannel = make(chan struct{})
-
-	go func() {
-		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeHealNVMe, LogLayerCore)
-		resetTicker := true
-
-		for {
-			select {
-			case tick := <-c.nvmeSelfHealingTicker.C:
-				Logc(ctx).WithField("tick", tick).Debug("NVMe self-healing is running.")
-				c.performNVMeSelfHealing(ctx)
-				if resetTicker {
-					c.nvmeSelfHealingTicker.Reset(c.nvmeSelfHealingInterval)
-					resetTicker = false
-				}
-			case <-c.nvmeSelfHealingChannel:
-				Logc(ctx).Info("NVMe self-healing stopped.")
-				return
-			}
-		}
-	}()
-}
-
-// stopNVMeSelfHealingThread stops the NVMe self-healing thread.
-func (c *Core) stopNVMeSelfHealingThread(_ context.Context) {
-	if c.nvmeSelfHealingTicker != nil {
-		c.nvmeSelfHealingTicker.Stop()
-	}
-	if c.nvmeSelfHealingChannel != nil {
-		close(c.nvmeSelfHealingChannel)
 	}
 }
 
@@ -431,65 +383,6 @@ func (c *Core) updateCHAPInfoForSessions(ctx context.Context, publishedSessions,
 	return nil
 }
 
-// performNVMeSelfHealing inspects the desired state of the NVMe sessions against the current
-// state and remediates any that have drifted. Invoked periodically.
-func (c *Core) performNVMeSelfHealing(ctx context.Context) {
-	nvmeSelfHealingLock.Lock()
-	defer nvmeSelfHealingLock.Unlock()
-
-	lockContext := "performNVMeSelfHealing.SessionLock"
-	defer locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
-	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, sharedLocksNodeLockTimeout) {
-		Logc(ctx).WithError(fmt.Errorf("request waited too long for the lock"))
-		return
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			Logc(ctx).Errorf("Panic in NVMeSelfHealing. \nStack Trace: %v", string(debug.Stack()))
-		}
-	}()
-
-	if publishedNVMeSessions.IsEmpty() {
-		Logc(ctx).Debug("No NVMe volumes are published. Self healing is not required.")
-		return
-	}
-
-	stopSelfHealingAt := time.Now().Add(60 * time.Second)
-
-	publishedNVMeSessions.ResetRemediationForAll()
-	currentNVMeSessions = nvme.NVMeSessions{}
-
-	if err := c.nvme.PopulateCurrentNVMeSessions(ctx, &currentNVMeSessions); err != nil {
-		Logc(ctx).Errorf("Failed to populate current sessions %v.", err)
-		return
-	}
-
-	Logc(ctx).Debugf("Published NVMe sessions %v.", publishedNVMeSessions)
-	Logc(ctx).Debugf("Current NVMe sessions %v.", currentNVMeSessions)
-
-	subsToFix := c.nvme.InspectNVMeSessions(ctx, &publishedNVMeSessions, &currentNVMeSessions)
-
-	Logc(ctx).Debug("Start NVMe healing.")
-	c.fixNVMeSessions(ctx, stopSelfHealingAt, subsToFix)
-	Logc(ctx).Debug("NVMe healing finished.")
-}
-
-func (c *Core) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsystems []nvme.NVMeSubsystem) {
-	for index, sub := range subsystems {
-		if !publishedNVMeSessions.CheckNVMeSessionExists(sub.NQN) {
-			continue
-		}
-
-		if index > 0 && nvmeNodeOperationWaitingCount.Load() > 0 && time.Now().After(stopAt) {
-			Logc(ctx).Info("Self-healing has exceeded maximum runtime; preempting NVMe session self-healing.")
-			break
-		}
-
-		c.nvme.RectifyNVMeSession(ctx, sub, &publishedNVMeSessions)
-	}
-}
-
 // startPublicationReconciliation starts an infinite background task to periodically reconcile the node's
 // actual volume publication state against the desired state known to the Trident controller. Stale
 // publications (volumes attached/staged on the node with no matching publication record on the controller)
@@ -703,7 +596,7 @@ func (c *Core) cleanStalePublications(
 					"targetPath": targetPath,
 				}
 
-				unpublishErr := c.unmountGeneric(ctx, volumeID, targetPath)
+				unpublishErr := c.unmountVolume(ctx, volumeID, targetPath, trackingInfo.GetStorageProtocol())
 
 				if unpublishErr != nil {
 					Logc(ctx).WithFields(fields).WithError(unpublishErr).Debug("Failed to unpublish volume.")
