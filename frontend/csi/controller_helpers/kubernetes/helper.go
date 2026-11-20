@@ -15,6 +15,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/util/retry"
 
 	"github.com/netapp/trident/config"
@@ -523,16 +524,9 @@ func (h *helper) validateSubordinateVolumeConfig(
 		return err
 	}
 
-	// Ensure the source PVC has shared itself with the subordinate volume's namespace
-	sourceAnnotations := sourcePVC.Annotations
-	if sourceAnnotations == nil {
-		sourceAnnotations = make(map[string]string)
-	}
-	shareToAnnotation := sourceAnnotations[AnnVolumeShareToNS]
-
 	// Ensure the source PVC has been explicitly shared with the subordinate PVC namespace
-	if !h.matchNamespaceToAnnotation(subordinatePVC.Namespace, shareToAnnotation) {
-		return fmt.Errorf("subordinate volume source PVC is not shared with namespace %s", subordinatePVC.Namespace)
+	if err := h.validateNamespaceSharing(ctx, subordinatePVC.Namespace, sourcePVC); err != nil {
+		return err
 	}
 
 	// Ensure the subordinate volume and its source volume are the same storage class
@@ -559,6 +553,53 @@ func (h *helper) validateSubordinateVolumeConfig(
 
 	// Update the subordinate volume config to refer to its source volume/PV
 	volConfig.ShareSourceVolume = sourcePV.Name
+	return nil
+}
+
+// validateNamespaceSharing checks the source PVC's sharing policy at provisioning time.
+// The source PVC authorizes namespaces either by name with shareToNamespace or by namespace labels with
+// shareToNamespaceSelector. The two annotations are mutually exclusive.
+func (h *helper) validateNamespaceSharing(
+	ctx context.Context, namespace string, sourcePVC *v1.PersistentVolumeClaim,
+) error {
+	annotations := sourcePVC.Annotations
+	shareTo, hasShareTo := annotations[AnnVolumeShareToNS]
+	selectorValue, hasSelector := annotations[AnnVolumeShareToNSSelector]
+
+	// Reject an ambiguous policy rather than guessing which annotation the user intended to apply.
+	if hasShareTo && hasSelector {
+		return fmt.Errorf("cannot share source PVC %s/%s with namespace %s: the %s and %s annotations are "+
+			"mutually exclusive; set only one of them on the source PVC",
+			sourcePVC.Namespace, sourcePVC.Name, namespace, AnnVolumeShareToNS, AnnVolumeShareToNSSelector)
+	}
+
+	if !hasSelector {
+		if !h.matchNamespaceToAnnotation(namespace, shareTo) {
+			return fmt.Errorf("subordinate volume source PVC is not shared with namespace %s", namespace)
+		}
+		return nil
+	}
+
+	// Empty selectors match every label set in Kubernetes, so reject them for explicit sharing authorization.
+	if strings.TrimSpace(selectorValue) == "" {
+		return fmt.Errorf("%s annotation must contain a nonempty namespace label selector", AnnVolumeShareToNSSelector)
+	}
+	selector, err := labels.Parse(selectorValue)
+	if err != nil {
+		return fmt.Errorf("invalid %s annotation: %w", AnnVolumeShareToNSSelector, err)
+	}
+	if selector.Empty() {
+		return fmt.Errorf("%s annotation must contain a nonempty namespace label selector", AnnVolumeShareToNSSelector)
+	}
+
+	// Read current namespace labels directly so a later provisioning attempt observes label removal.
+	targetNamespace, err := h.kubeClient.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("could not get namespace %s to evaluate %s: %w", namespace, AnnVolumeShareToNSSelector, err)
+	}
+	if !selector.Matches(labels.Set(targetNamespace.Labels)) {
+		return fmt.Errorf("subordinate volume source PVC namespace selector does not match namespace %s", namespace)
+	}
 	return nil
 }
 

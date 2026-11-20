@@ -73,6 +73,7 @@ const (
 	AnnVolumeCloneToNS          = prefix + "/cloneToNamespace"
 	AnnVolumeCloneFromNS        = prefix + "/cloneFromNamespace"
 	AnnVolumeShareToNS          = prefix + "/shareToNamespace"
+	AnnVolumeShareToNSSelector  = prefix + "/shareToNamespaceSelector"
 	AnnReadOnlyClone            = prefix + "/readOnlyClone"
 	AnnLUKSEncryption           = prefix + "/luksEncryption" // import only
 	AnnSkipRecoveryQueue        = prefix + "/skipRecoveryQueue"
