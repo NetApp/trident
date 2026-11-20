@@ -290,12 +290,12 @@ const (
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry          = "registry.k8s.io/sig-storage"
-	CSISidecarProvisionerImageTag         = "csi-provisioner:v6.3.0"
-	CSISidecarAttacherImageTag            = "csi-attacher:v4.11.0"
-	CSISidecarResizerImageTag             = "csi-resizer:v2.1.0"
-	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.6.0"
-	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.17.0"
-	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.19.0"
+	CSISidecarProvisionerImageTag         = "csi-provisioner:v6.4.0"
+	CSISidecarAttacherImageTag            = "csi-attacher:v4.13.0"
+	CSISidecarResizerImageTag             = "csi-resizer:v2.3.0"
+	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.7.0"
+	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.18.0"
+	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.20.0"
 
 	DefaultK8sAPIQPS   = 100.0
 	MinimumK8sAPIQPS   = 10.0

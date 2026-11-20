@@ -26,7 +26,7 @@ const (
 	testOldSnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v7.2.0"
 	testV84SnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.4.0"
 	testV85SnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.5.0"
-	testNewSnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.6.0"
+	testNewSnapshotterImage = "docker.repo.eng.netapp.com/globalcicd/trident/csi-snapshotter:v8.7.0"
 )
 
 // fakeKubeClientWithReactors constructs a KubeClient with the given reactors.
