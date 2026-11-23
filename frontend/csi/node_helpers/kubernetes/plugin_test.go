@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -653,5 +654,80 @@ func newValidHelper(
 		},
 		VolumePublishManager: mockPubMgr,
 		mount:                mountClient,
+	}
+}
+
+func TestAddPublishedPath_ConcurrentMapWritePanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("unexpected panic: %v", r)
+		}
+	}()
+
+	mockCtrl := gomock.NewController(t)
+	mockVPM := mockNodeHelpers.NewMockVolumePublishManager(mockCtrl)
+
+	const n = 64
+	const iters = 200
+
+	type volState struct {
+		paths map[string]struct{}
+	}
+	trackingByVol := make(map[string]*volState, n)
+	for i := 0; i < n; i++ {
+		vol := fmt.Sprintf("pvc-%08d-aaaa-bbbb-cccc-dddddddddddd", i)
+		trackingByVol[vol] = &volState{paths: make(map[string]struct{}, iters)}
+	}
+
+	// Each ReadTrackingInfo returns a FRESH PublishedPaths map, matching the
+	// production path (JSON unmarshal into a new struct). The race is on the
+	// helper's shared publishedPaths outer map, not on a shared inner map.
+	mockVPM.EXPECT().
+		ReadTrackingInfo(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, volumeID string) (*models.VolumeTrackingInfo, error) {
+			existing := trackingByVol[volumeID].paths
+			copied := make(map[string]struct{}, len(existing)+1)
+			for k, v := range existing {
+				copied[k] = v
+			}
+			return &models.VolumeTrackingInfo{
+				PublishedPaths: copied,
+			}, nil
+		}).AnyTimes()
+	mockVPM.EXPECT().
+		WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
+			trackingByVol[volumeID].paths = info.PublishedPaths
+			return nil
+		}).AnyTimes()
+
+	h := &helper{
+		VolumePublishManager: mockVPM,
+		publishedPaths:       make(map[string]map[string]struct{}),
+	}
+
+	ctx := context.Background()
+	var wg sync.WaitGroup
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		go func(id int) {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("unexpected panic in worker %d: %v", id, r)
+				}
+			}()
+			vol := fmt.Sprintf("pvc-%08d-aaaa-bbbb-cccc-dddddddddddd", id)
+			for j := 0; j < iters; j++ {
+				path := fmt.Sprintf("/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/%s/%d", vol, j)
+				assert.NoError(t, h.AddPublishedPath(ctx, vol, path))
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	require.Len(t, h.publishedPaths, n)
+	for vol, paths := range h.publishedPaths {
+		require.Len(t, paths, iters, "volume %s should have %d published paths", vol, iters)
 	}
 }
