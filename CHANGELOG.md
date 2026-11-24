@@ -2,15 +2,28 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-**IMPORTANT:** Do not upgrade to Trident 26.10.0 from 25.10 or any earlier version. Upgrade directly to 26.10.1 instead. In 26.10.0, Trident node pods may detach in-use NAS (NFS, SMB) and SAN (iSCSI, FC, NVMe/TCP) volumes at startup, and the affected pods may fail with `volume ... is not staged`.
+## Changes since v26.10.1
 
-## Changes since v26.10.0
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed crash caused by concurrent NodePublish calls.
+- **Kubernetes:** Fixed issue where a subset of possible SVM data LIFs were discovered during backend initialize and subsequent iSCSI volume attachments.
+- **Kubernetes:** Fixed volume clone metadata so the TridentVolume records the requested StorageClass and AccessMode when cloning across StorageClasses on the same backend,
+ including when concurrency is enabled (Issue [#1162](https://github.com/NetApp/trident/issues/1162)).
+
+
+## v26.10.1
+
+**IMPORTANT:** Do not upgrade to Trident 26.10.0 from 25.10 or any earlier version. Upgrade directly to 26.10.1 instead. In 26.10.0, Trident node pods may detach in-use NAS (NFS, SMB) and SAN (iSCSI, FC, NVMe/TCP) volumes at startup, and the affected pods may fail with `volume ... is not staged`.
 
 ### Trident
 
 **Fixes:**
 
 - **Kubernetes:** Fixed Trident node pods force-detaching in-use volumes at startup after upgrading from Trident 25.10 or earlier, which caused pods to fail with `volume ... is not staged`.
+
 
 ## v26.10.0
 
